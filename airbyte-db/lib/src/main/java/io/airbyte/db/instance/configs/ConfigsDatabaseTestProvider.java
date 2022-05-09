@@ -15,29 +15,28 @@ import io.airbyte.db.instance.test.TestDatabaseProvider;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
 import org.jooq.JSONB;
 
 public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
 
-  private final String user;
-  private final String password;
-  private final String jdbcUrl;
+  private final DSLContext dslContext;
+  private final Flyway flyway;
 
-  public ConfigsDatabaseTestProvider(final String user, final String password, final String jdbcUrl) {
-    this.user = user;
-    this.password = password;
-    this.jdbcUrl = jdbcUrl;
+  public ConfigsDatabaseTestProvider(final DSLContext dslContext, final Flyway flyway) {
+    this.dslContext = dslContext;
+    this.flyway = flyway;
   }
 
   @Override
   public Database create(final boolean runMigration) throws IOException {
-    final Database database = new ConfigsDatabaseInstance(user, password, jdbcUrl)
+    final Database database = new ConfigsDatabaseInstance(dslContext)
         .getAndInitialize();
 
     if (runMigration) {
       final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(
-          database,
-          ConfigsDatabaseTestProvider.class.getSimpleName());
+          database, flyway);
       migrator.createBaseline();
       migrator.migrate();
     } else {

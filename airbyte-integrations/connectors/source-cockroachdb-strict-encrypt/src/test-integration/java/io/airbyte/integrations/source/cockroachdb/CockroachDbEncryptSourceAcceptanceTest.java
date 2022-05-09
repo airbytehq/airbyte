@@ -10,7 +10,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -23,6 +25,8 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 
 public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -46,27 +50,27 @@ public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         .put("password", "test_user")
         .build());
 
-    final Database database = Databases.createDatabase(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.POSTGRES)){
+      final Database database = new Database(dslContext);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.fetch(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        return null;
+      });
+    }
 
-    database.close();
   }
 
   @Override

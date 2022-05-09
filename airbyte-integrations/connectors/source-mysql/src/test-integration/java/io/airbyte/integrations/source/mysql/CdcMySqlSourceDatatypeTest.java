@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +61,15 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("replication_method", MySqlSource.ReplicationMethod.CDC)
         .build());
 
-    final Database database = Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.MYSQL);
+    final Database database = new Database(dslContext);
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -95,15 +97,16 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
-        SQLDialect.MYSQL)) {
+            container.getDatabaseName()), SQLDialect.MYSQL);
+
+    try (final Database database = new Database(dslContext)) {
       database.query(
           ctx -> ctx
               .execute(query));
@@ -409,10 +412,10 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   private String getFileDataInBase64() {
-    File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
+    final File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
     try {
       return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
     return null;

@@ -80,8 +80,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -117,6 +117,7 @@ import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -596,7 +597,6 @@ public class AcceptanceTests {
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    source.close();
 
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
@@ -747,7 +747,6 @@ public class AcceptanceTests {
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
     // destination should mirror this latest state of records
     final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
-    source.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -1332,7 +1331,7 @@ public class AcceptanceTests {
   }
 
   private Database getDatabase(final PostgreSQLContainer db) {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    return new Database(DatabaseConnectionHelper.createDslContext(db, SQLDialect.POSTGRES));
   }
 
   private Set<SchemaTableNamePair> listAllTables(final Database database) throws SQLException {
