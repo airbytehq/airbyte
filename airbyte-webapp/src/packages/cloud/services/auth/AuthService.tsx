@@ -107,8 +107,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       async logout(): Promise<void> {
         await authService.signOut();
+        queryClient.removeQueries();
         loggedOut();
-        await queryClient.invalidateQueries();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);
