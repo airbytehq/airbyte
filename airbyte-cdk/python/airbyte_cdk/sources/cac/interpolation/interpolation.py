@@ -10,5 +10,5 @@ if TYPE_CHECKING:
 
 class Interpolation(ABC):
     @abstractmethod
-    def eval(self, input_str: str, vars: "Vars", config: "Config"):  # FIXME: declare the output!
+    def eval(self, input_str: str, vars: "Vars", config: "Config", stream_slice, stream_state):  # FIXME: declare the output!
         pass

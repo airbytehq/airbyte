@@ -12,19 +12,20 @@ class JinjaInterpolation(Interpolation):
         self._environment = Environment()
         self._environment.globals["now_local"] = datetime.datetime.now
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
+        self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
 
-    def eval(self, input_str: str, vars, config):
-        # print(f"jinajinterpolation.eval: {input_str}")
-        # print(f"eval vars: {vars}")
-        # print(f"eval config: {config}")
-        context = {"vars": vars, "config": config}
-        # print(f"context: {context}")
-        # print(f"type: {type(input_str)}")
+    def eval(self, input_str: str, vars, config, stream_slice, stream_state):
+        print(f"jinajinterpolation.eval: {input_str}")
+        print(f"eval vars: {vars}")
+        print(f"eval config: {config}")
+        context = {"vars": vars, "config": config, "stream_slice": stream_slice, "stream_state": stream_state}
+        print(f"context: {context}")
+        print(f"type: {type(input_str)}")
         if isinstance(input_str, str):
-            # print("eval")
+            print("eval")
             ret = self._environment.from_string(input_str).render(context)
         else:
-            # print(f"noteval for {input_str}")
+            print(f"noteval for {input_str}")
             ret = None
-        # print(f"interpolation result: {ret}")
+        print(f"interpolation result: {ret}")
         return ret

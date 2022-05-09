@@ -4,8 +4,8 @@
 import datetime
 from typing import Any, Iterable, Mapping
 
-import pendulum
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.iterators.iterator import Iterator
 from pendulum.tz.timezone import Timezone
 
@@ -13,19 +13,26 @@ from pendulum.tz.timezone import Timezone
 class DatetimeIterator(Iterator):
 
     # FIXME: start_time, end_time, and step should be datetime and timedelta?
-    def __init__(self, start_time, end_time, step, timezone: Timezone, vars, config):
-        self._start_time = start_time
-        self._end_time = end_time
+    def __init__(self, start_time, end_time, step, timezone: Timezone, values, datetime_format, vars, config):
+        self._timezone = timezone
+        self._interpolation = JinjaInterpolation()
+        self._datetime_format = datetime_format
+        self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config, None, None))
+        if not self._start_time:
+            self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config, None, None))
+        self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config, None, None))
+        # FIXME: step should also come from the config
         self._step = step
         self._vars = vars
         self._config = config
-        self._timezone = timezone
         # FIXME these need to come from params
-        self._cursor_value = "date"
-        self._end_cursor = "date_end"
+        self._values = values
+
+    # FIXME: this needs an update state method?
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
+        # FIXME need to get cursor from self._values
         cursor_value = stream_state.get(self._cursor_value)
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
@@ -35,7 +42,6 @@ class DatetimeIterator(Iterator):
     # FIXME start and end field should come from config
     def _partition_daterange(self, start, end, step: datetime.timedelta, start_field: str, end_field: str):
         dates = []
-        print(f"end: {end}")
         while start <= end:
             end_date = self._get_date(start + step, end, min)
             dates.append({start_field: start, end_field: end_date})
@@ -48,7 +54,7 @@ class DatetimeIterator(Iterator):
 
     def parse_date(self, date: Any) -> datetime:
         if date and isinstance(date, str):
-            return pendulum.parse(date).replace(tzinfo=self._timezone)
+            return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
 
         return date
 
