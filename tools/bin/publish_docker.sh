@@ -15,6 +15,10 @@ projectDir=(
   "scheduler/app"
 )
 
+JDK_VERSION="17.0.1"
+ALPINE_IMAGE="alpine:3.14"
+POSTGRES_IMAGE="postgres:13-alpine"
+
 for workdir in "${projectDir[@]}"
   do
     if [ $workdir = "metrics/reporter" ]; then
