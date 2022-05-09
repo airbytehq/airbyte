@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
@@ -22,6 +23,8 @@ import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -267,6 +271,17 @@ public class ConnectionsHandler {
   public ConnectionRead getConnection(final UUID connectionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionId);
+  }
+
+  public Optional<AirbyteCatalog> getConnectionAirbyteCatalog(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync connection = configRepository.getStandardSync(connectionId);
+    if (connection.getSourceCatalogId() == null) {
+      return Optional.empty();
+    }
+    final ActorCatalog catalog = configRepository.getActorCatalogById(connection.getSourceCatalogId());
+    return Optional.of(CatalogConverter.toApi(Jsons.object(catalog.getCatalog(),
+        io.airbyte.protocol.models.AirbyteCatalog.class)));
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)
