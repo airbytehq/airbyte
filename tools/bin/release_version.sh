@@ -27,5 +27,6 @@ echo $JDK_VERSION
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew clean build -x :airbyte-db:lib:test
 VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew publish
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 VERSION=$VERSION JDK_VERSION=$JDK_VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
