@@ -175,7 +175,8 @@ public class BootloaderAppTest {
           spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
 
       // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
-      // configs database requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
+      // configs database requires the env var to be set. Flyway prevents injection, so we dynamically set
+      // this instead.
       environmentVariables.set("DATABASE_USER", "docker");
       environmentVariables.set("DATABASE_PASSWORD", "docker");
       environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
