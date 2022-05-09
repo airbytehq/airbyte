@@ -12,35 +12,37 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Notification client that uses customer.io API send emails.
+ *
+ * These notifications rely on `TRANSACTION_MESSAGE_ID`, which are basically templates you create
+ * through customer.io. These IDs are specific to a user's account on customer.io, so they will be
+ * different for every user. For now they are stored as variables here, but in the future they may
+ * be stored in as a notification config in the database.
+ *
+ * For Airbyte Cloud, Airbyte engineers may use `DEFAULT_TRANSACTION_MESSAGE_ID = "6"` as a generic
+ * template for notifications.
  */
-public class CustomeriolNotificationClient extends NotificationClient {
+public class CustomerioNotificationClient extends NotificationClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CustomeriolNotificationClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CustomerioNotificationClient.class);
 
-  // Once the configs are editable through the UI, these should be stored in
-  // airbyte-config/models/src/main/resources/types/CustomerioNotificationConfiguration.yaml
-  // - SENDER_EMAIL
-  // - receiver email
-  // - customer.io identifier email
-  // - customer.io TRANSACTION_MESSAGE_ID
-  private static final String SENDER_EMAIL = "Airbyte Notification <no-reply@airbyte.io>";
-  private static final String TRANSACTION_MESSAGE_ID = "6";
+  private static final String AUTO_DISABLE_TRANSACTION_MESSAGE_ID = "7";
+  private static final String AUTO_DISABLE_WARNING_TRANSACTION_MESSAGE_ID = "8";
 
   private static final String CUSTOMERIO_EMAIL_API_ENDPOINT = "https://api.customer.io/v1/send/email";
   private static final String AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_notification_template.json";
-  private static final String AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_warning_notification_template.json";
 
   private final HttpClient httpClient;
   private final String apiToken;
   private final String emailApiEndpoint;
 
-  public CustomeriolNotificationClient(final Notification notification) {
+  public CustomerioNotificationClient(final Notification notification) {
     super(notification);
     this.apiToken = System.getenv("CUSTOMERIO_API_KEY");
     this.emailApiEndpoint = CUSTOMERIO_EMAIL_API_ENDPOINT;
@@ -50,10 +52,10 @@ public class CustomeriolNotificationClient extends NotificationClient {
   }
 
   @VisibleForTesting
-  public CustomeriolNotificationClient(final Notification notification,
-                                       final String apiToken,
-                                       final String emailApiEndpoint,
-                                       final HttpClient httpClient) {
+  public CustomerioNotificationClient(final Notification notification,
+                                      final String apiToken,
+                                      final String emailApiEndpoint,
+                                      final HttpClient httpClient) {
     super(notification);
     this.apiToken = apiToken;
     this.emailApiEndpoint = emailApiEndpoint;
@@ -72,28 +74,32 @@ public class CustomeriolNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
+  // Once the configs are editable through the UI, the reciever email should be stored in
+  // airbyte-config/models/src/main/resources/types/CustomerioNotificationConfiguration.yaml
+  // instead of being passed in
   @Override
   public boolean notifyConnectionDisabled(final String receiverEmail,
                                           final String sourceConnector,
                                           final String destinationConnector,
                                           final String jobDescription,
-                                          final String logUrl)
+                                          final UUID workspaceId,
+                                          final UUID connectionId)
       throws IOException, InterruptedException {
-    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
-        receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
+    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, AUTO_DISABLE_TRANSACTION_MESSAGE_ID, receiverEmail,
+        receiverEmail, sourceConnector, destinationConnector, jobDescription, workspaceId.toString(), connectionId.toString());
     return notifyByEmail(requestBody);
   }
 
   @Override
-  public boolean notifyConnectionDisableWarning(
-                                                final String receiverEmail,
+  public boolean notifyConnectionDisableWarning(final String receiverEmail,
                                                 final String sourceConnector,
                                                 final String destinationConnector,
                                                 final String jobDescription,
-                                                final String logUrl)
+                                                final UUID workspaceId,
+                                                final UUID connectionId)
       throws IOException, InterruptedException {
-    final String requestBody = renderTemplate(AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
-        receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
+    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, AUTO_DISABLE_WARNING_TRANSACTION_MESSAGE_ID, receiverEmail,
+        receiverEmail, sourceConnector, destinationConnector, jobDescription, workspaceId.toString(), connectionId.toString());
     return notifyByEmail(requestBody);
   }
 
