@@ -6,7 +6,7 @@ export interface Transformation extends OperationRead {
 
 export interface DbtOperationConfiguration {
   operatorType: typeof OperatorType.dbt;
-  dbt: DbtConfiguration;
+  dbt: OperatorDbt;
 }
 
 export interface Normalization extends OperationRead {
@@ -17,8 +17,6 @@ export interface NormalizationOperationConfiguration {
   operatorType: typeof OperatorType.normalization;
   normalization: OperatorNormalization;
 }
-
-export type DbtConfiguration = OperatorDbt;
 
 export enum NormalizationType {
   BASIC = "basic",
