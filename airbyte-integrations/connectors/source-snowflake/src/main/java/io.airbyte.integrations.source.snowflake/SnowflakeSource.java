@@ -11,6 +11,7 @@ import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
-  public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.SNOWFLAKE.getDriverClassName();
   public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
   public SnowflakeSource() {

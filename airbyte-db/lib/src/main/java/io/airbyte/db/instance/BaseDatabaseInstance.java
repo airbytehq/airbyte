@@ -7,7 +7,6 @@ package io.airbyte.db.instance;
 import static org.jooq.impl.DSL.select;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import java.io.IOException;
 import java.util.Set;
@@ -24,45 +23,37 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseInstance.class);
 
-  protected final String username;
-  protected final String password;
-  protected final String connectionString;
-  protected final String initialSchema;
+  protected final DSLContext dslContext;
   protected final String databaseName;
   protected final Set<String> initialExpectedTables;
+  protected final String initialSchema;
   protected final Function<Database, Boolean> isDatabaseReady;
 
   /**
-   * @param connectionString in the format of
-   *        jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+   * @param dslContext The configured {@link DSLContext}.
    * @param databaseName this name is only for logging purpose; it may not be the actual database name
    *        in the server
    * @param initialSchema the initial database structure.
+   * @param initialExpectedTables The set of tables that should be present in order to consider the
+   *        database ready for use.
    * @param isDatabaseReady a function to check if the database has been initialized and ready for
    *        consumption
    */
-  protected BaseDatabaseInstance(final String username,
-                                 final String password,
-                                 final String connectionString,
-                                 final String initialSchema,
+  protected BaseDatabaseInstance(final DSLContext dslContext,
                                  final String databaseName,
+                                 final String initialSchema,
                                  final Set<String> initialExpectedTables,
                                  final Function<Database, Boolean> isDatabaseReady) {
-    this.username = username;
-    this.password = password;
-    this.connectionString = connectionString;
-    this.initialSchema = initialSchema;
+    this.dslContext = dslContext;
     this.databaseName = databaseName;
+    this.initialSchema = initialSchema;
     this.initialExpectedTables = initialExpectedTables;
     this.isDatabaseReady = isDatabaseReady;
   }
 
   @Override
   public boolean isInitialized() throws IOException {
-    final Database database = Databases.createPostgresDatabaseWithRetryTimeout(
-        username,
-        password,
-        connectionString,
+    final Database database = Database.createWithRetryTimeout(dslContext,
         isDatabaseConnected(databaseName),
         DEFAULT_CONNECTION_TIMEOUT_MS);
     return new ExceptionWrappingDatabase(database).transaction(ctx -> initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName)));
@@ -72,11 +63,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   public Database getInitialized() {
     // When we don't need to setup the database, it means the database is initialized
     // somewhere else, and it is considered ready only when data has been loaded into it.
-    return Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
-        isDatabaseReady);
+    return Database.createWithRetry(dslContext, isDatabaseReady);
   }
 
   @Override
@@ -84,11 +71,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
-    final Database database = Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
-        isDatabaseConnected(databaseName));
+    final Database database = Database.createWithRetry(dslContext, isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
       final boolean hasTables = initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName));
