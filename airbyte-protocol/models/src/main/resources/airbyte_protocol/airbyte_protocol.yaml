@@ -70,7 +70,7 @@ definitions:
         type: string
   AirbyteStateMessage:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     properties:
       type:
         "$ref": "#/definitions/AirbyteStateType"
