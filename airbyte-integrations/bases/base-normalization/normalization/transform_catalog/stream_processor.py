@@ -297,7 +297,13 @@ class StreamProcessor(object):
                 unique_key=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
                 partition_by=PartitionScheme.ACTIVE_ROW,
             )
-            where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
+            where_clause = f"""\nand (
+  {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1
+  or
+  cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}})
+    >=
+    (select max(cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}})) from {{{{ this }}}})
+)"""
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
                 self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
@@ -305,6 +311,8 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
+                do_deletions=True,
+                scd_table=from_table,
             )
         return self.find_children_streams(from_table, column_names)
 
@@ -1060,6 +1068,8 @@ where 1 = 1
         unique_key: str = "",
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
+        do_deletions: bool = False,
+        scd_table: str = "",
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -1095,6 +1105,23 @@ where 1 = 1
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
+                if do_deletions:
+                    # TODO figure out how to get SCD table name correctly
+                    config[
+                        "post_hook"
+                    ] = f"""["
+delete from {{{{ this }}}}
+where _airbyte_ab_id in (
+  select _airbyte_ab_id
+  from {{{{ {scd_table} }}}}
+  where
+    _airbyte_active_row = 0
+    and
+    cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}})
+      >=
+      (select max(cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}})) from {{{{ {scd_table} }}}})
+)
+                    "]"""
         template = Template(
             """
 {{ '{{' }} config(
