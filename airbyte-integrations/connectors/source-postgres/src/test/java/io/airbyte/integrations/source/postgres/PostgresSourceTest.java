@@ -37,8 +37,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.xml.crypto.Data;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -291,7 +293,8 @@ class PostgresSourceTest {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();
       final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name_7(id INTEGER, name VARCHAR(200));");
           ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -315,7 +318,8 @@ class PostgresSourceTest {
           return null;
         });
       }
-      try (final Database database = getDatabaseWithSpecifiedUser(config, "test_user_4", "132")) {
+      try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
+        final Database database = new Database(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
           return null;
