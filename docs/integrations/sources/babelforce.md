@@ -45,6 +45,6 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                           | Subject                     |
-|:--------|:-----------| :------------------------------------------------------| :---------------------------|
- 0.1.0    | 2022-05-09 | [<id>](https://github.com/airbytehq/airbyte/pull/<id>) | Introduce Babelforce source |
+| Version | Date       | Pull Request                                             | Subject                     |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------|
+ 0.1.0    | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |
