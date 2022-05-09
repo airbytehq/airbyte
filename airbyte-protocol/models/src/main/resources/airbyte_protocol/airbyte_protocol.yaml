@@ -72,11 +72,12 @@ definitions:
     type: object
     additionalProperties: true
     properties:
-      type:
+      state_type:
         "$ref": "#/definitions/AirbyteStateType"
       data:
-        description: "Deprecated"
-        "$ref": "#/definitions/AirbyteStateBlob"
+        description: "the state data"
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
       global:
         "$ref": "#/definitions/AirbyteStateBlob"
       streams:
