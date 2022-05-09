@@ -170,9 +170,9 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final String connectorType) {
-    if (connectorType == CONNECTOR_TYPES.DESTINATION.toString()) {
+    if (connectorType.equals(CONNECTOR_TYPES.DESTINATION.toString())) {
       destinationErrorTraceMessages.add(errorTraceMessage);
-    } else if (connectorType == CONNECTOR_TYPES.SOURCE.toString()) {
+    } else if (connectorType.equals(CONNECTOR_TYPES.SOURCE.toString())) {
       sourceErrorTraceMessages.add(errorTraceMessage);
     }
   }
