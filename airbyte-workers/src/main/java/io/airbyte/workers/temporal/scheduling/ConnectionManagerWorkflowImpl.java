@@ -182,13 +182,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
         if (workflowState.isFailed()) {
           reportFailure(connectionUpdaterInput, standardSyncOutput);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+        } else {
+          reportSuccess(connectionUpdaterInput, standardSyncOutput);
         }
 
-        // If we don't fail, it's a success.
-        reportSuccess(connectionUpdaterInput, standardSyncOutput);
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
