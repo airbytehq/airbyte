@@ -180,7 +180,7 @@ public class BootloaderAppTest {
       environmentVariables.set("DATABASE_PASSWORD", "docker");
       environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-      // TODO
+      // Bootstrap the database for the test
       val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       initBootloader.load();
 
@@ -219,7 +219,7 @@ public class BootloaderAppTest {
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
 
-      // TODO
+      // Perform secrets migration
       var bootloader =
           new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       boolean isMigrated = jobsPersistence.isSecretMigrated();
@@ -237,7 +237,7 @@ public class BootloaderAppTest {
       isMigrated = jobsPersistence.isSecretMigrated();
       assertTrue(isMigrated);
 
-      // TODO
+      // Verify that the migration does not happen if it has already been performed
       reset(spiedSecretMigrator);
       // We need to re-create the bootloader because it is closing the persistence after running load
       bootloader =
@@ -245,7 +245,7 @@ public class BootloaderAppTest {
       bootloader.load();
       verifyNoInteractions(spiedSecretMigrator);
 
-      // TODO
+      // Verify that the migration occurs if the force migration feature flag is enabled
       reset(spiedSecretMigrator);
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
       // We need to re-create the bootloader because it is closing the persistence after running load
