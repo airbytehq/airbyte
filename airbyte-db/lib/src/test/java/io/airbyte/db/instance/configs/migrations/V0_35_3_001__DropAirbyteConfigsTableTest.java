@@ -8,7 +8,6 @@ import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -20,8 +19,7 @@ public class V0_35_3_001__DropAirbyteConfigsTableTest extends AbstractConfigsDat
 
   @Test
   public void test() throws IOException, SQLException {
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = getDslContext();
     assertTrue(airbyteConfigsExists(context));
     V0_35_3_001__DropAirbyteConfigsTable.dropTable(context);
     assertFalse(airbyteConfigsExists(context));

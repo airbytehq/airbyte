@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.db2_strict_encrypt;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class Db2StrictEncryptSource extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2StrictEncryptSource.class);
-  public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  public static final String DRIVER_CLASS = Db2Source.DRIVER_CLASS;
 
   public Db2StrictEncryptSource() {
     super(new Db2Source());

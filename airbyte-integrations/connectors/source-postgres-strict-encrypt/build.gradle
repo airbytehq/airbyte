@@ -23,7 +23,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
+    testImplementation libs.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
