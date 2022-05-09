@@ -264,7 +264,7 @@ class Events(IncrementalKlaviyoStream):
             yield record
 
 
-class Flows(IncrementalKlaviyoStream):
+class Flows(ReverseIncrementalKlaviyoStream):
     schema = Flow
     cursor_field = "created"
 
