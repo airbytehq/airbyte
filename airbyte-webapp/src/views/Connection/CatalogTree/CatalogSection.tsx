@@ -75,7 +75,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const onSelectStream = useCallback(
     () =>
       updateStreamWithConfig({
-        selected: !config?.selected,
+        selected: !(config && config.selected),
       }),
     [config, updateStreamWithConfig]
   );

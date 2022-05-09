@@ -68,7 +68,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       source,
       destination,
       sourceDefinition: {
-        name: source?.name ?? "",
         sourceDefinitionId: source?.sourceDefinitionId ?? "",
       },
       destinationDefinition: {

@@ -5,12 +5,11 @@ import styled from "styled-components";
 import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-
-import { SourceRead, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const Content = styled.div`
   max-width: 813px;

@@ -44,7 +44,7 @@ type CreateConnectionProps = {
   values: ValuesProps;
   source: SourceRead;
   destination: DestinationRead;
-  sourceDefinition?: SourceDefinitionRead | { name: string; sourceDefinitionId: string };
+  sourceDefinition?: Pick<SourceDefinitionRead, "sourceDefinitionId">;
   destinationDefinition?: { name: string; destinationDefinitionId: string };
   sourceCatalogId: string | undefined;
 };
@@ -121,8 +121,14 @@ const useCreateConnection = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    async (conn: CreateConnectionProps) => {
-      const { values, source, destination, sourceDefinition, destinationDefinition, sourceCatalogId } = conn;
+    async ({
+      values,
+      source,
+      destination,
+      sourceDefinition,
+      destinationDefinition,
+      sourceCatalogId,
+    }: CreateConnectionProps) => {
       const response = await service.create({
         sourceId: source.sourceId,
         destinationId: destination.destinationId,
