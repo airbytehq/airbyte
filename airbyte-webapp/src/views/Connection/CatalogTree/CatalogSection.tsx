@@ -5,19 +5,18 @@ import styled from "styled-components";
 
 import { DropDownRow } from "components";
 
-import {
-  AirbyteStreamConfiguration,
-  getDestinationNamespace,
-  SyncSchemaField,
-  SyncSchemaFieldObject,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { DestinationSyncMode, NamespaceDefinitionType, SyncMode } from "../../../core/request/AirbyteClient";
+import {
+  AirbyteStreamConfiguration,
+  DestinationSyncMode,
+  NamespaceDefinitionType,
+  SyncMode,
+} from "../../../core/request/AirbyteClient";
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";

@@ -1,8 +1,8 @@
 import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
-import { AirbyteStreamConfiguration, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode } from "core/request/AirbyteClient";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { AirbyteStreamConfiguration, DestinationSyncMode } from "core/request/AirbyteClient";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";

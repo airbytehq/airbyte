@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { AirbyteStreamConfiguration, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
@@ -18,6 +18,7 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import {
+  AirbyteStreamConfiguration,
   ConnectionSchedule,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,

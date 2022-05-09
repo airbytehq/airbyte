@@ -2,7 +2,8 @@ import { setIn } from "formik";
 import React, { useContext, useMemo, useState } from "react";
 import { useSet } from "react-use";
 
-import { AirbyteStreamConfiguration, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
 const Context = React.createContext<BatchContext | null>(null);
 
