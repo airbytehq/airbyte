@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
@@ -44,6 +45,10 @@ import org.slf4j.LoggerFactory;
 // todo (cgardens) - this needs more love and thought. we should be able to test this without having
 // to rewrite so much data. it is enough for now to sanity check that our JdbcSources can actually
 // handle more data than fits in memory.
+@SuppressFBWarnings(
+    value = {"MS_SHOULD_BE_FINAL"},
+    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
+)
 public abstract class JdbcStressTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStressTest.class);

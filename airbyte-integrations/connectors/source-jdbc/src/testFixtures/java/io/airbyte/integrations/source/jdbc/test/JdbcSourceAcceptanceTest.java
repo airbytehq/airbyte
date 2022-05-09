@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -70,6 +71,10 @@ import org.junit.jupiter.api.Test;
 // 3. From the class that extends this one, implement a @AfterEach that cleans out the database
 // between each test.
 // 4. Then implement the abstract methods documented below.
+@SuppressFBWarnings(
+    value = {"MS_SHOULD_BE_FINAL"},
+    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
+)
 public abstract class JdbcSourceAcceptanceTest {
 
   // schema name must be randomized for each test run,
