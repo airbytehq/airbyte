@@ -195,7 +195,7 @@ public class FailureHelper {
       if (metadata != null) {
         return f.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
       } else {
-       return 1;
+        return 1;
       }
     });
     final Comparator<FailureReason> compareByTimestamp = Comparator.comparing(FailureReason::getTimestamp);
