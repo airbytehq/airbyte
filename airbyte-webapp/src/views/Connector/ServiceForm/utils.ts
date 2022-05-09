@@ -7,20 +7,27 @@ export function makeConnectionConfigurationPath(path: string[]): string {
   return `connectionConfiguration.${path.join(".")}`;
 }
 
+export type OauthOutputSpec = {
+  client_id: {
+    type: string;
+    path_in_connector_config: ["credentials", "client_id"];
+  };
+  client_secret: {
+    type: string;
+    path_in_connector_config: ["credentials", "client_secret"];
+  };
+};
+
+type OAuthOutputSpec = { properties: Record<string, { type: string; path_in_connector_config: string[] }> } | undefined;
+
 export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecification): {
   [key: string]: { path_in_connector_config: string[] };
 } {
   return {
-    ...((
-      connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as
-        | { properties: Record<string, { path_in_connector_config: string[] }> }
-        | undefined
-    )?.properties ?? {}),
-    ...((
-      connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthServerOutputSpecification as
-        | { properties: Record<string, { path_in_connector_config: string[] }> }
-        | undefined
-    )?.properties ?? {}),
+    ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as OAuthOutputSpec)
+      ?.properties ?? {}),
+    ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthServerOutputSpecification as OAuthOutputSpec)
+      ?.properties ?? {}),
   };
 }
 
