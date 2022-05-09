@@ -37,6 +37,8 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +46,8 @@ import javax.sql.DataSource;
 import lombok.val;
 import org.flywaydb.core.Flyway;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -54,16 +58,36 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @ExtendWith(SystemStubsExtension.class)
 public class BootloaderAppTest {
 
+  private PostgreSQLContainer container;
+  private DataSource configsDataSource;
+  private DataSource jobsDataSource;
+
+  @BeforeEach
+  void setup() {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("public")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+
+    configsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    jobsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+  }
+
+  @AfterEach
+  void cleanup() throws IOException {
+    closeDataSource(configsDataSource);
+    closeDataSource(jobsDataSource);
+    container.stop();
+  }
+
   @SystemStub
   private EnvironmentVariables environmentVariables;
 
   @Test
   void testBootloaderAppBlankDb() throws Exception {
-    val container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("public")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
     val version = "0.33.0-alpha";
 
     val mockedConfigs = mock(Configs.class);
@@ -87,11 +111,6 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_USER", "docker");
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
-
-    val configsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-    val jobsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
 
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
@@ -120,11 +139,6 @@ public class BootloaderAppTest {
 
   @Test
   void testBootloaderAppRunSecretMigration() throws Exception {
-    val container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("public")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
     val version = "0.33.0-alpha";
 
     val mockedConfigs = mock(Configs.class);
@@ -146,11 +160,6 @@ public class BootloaderAppTest {
         .maskSecrets(true)
         .build();
 
-    val configsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-    val jobsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
@@ -166,12 +175,12 @@ public class BootloaderAppTest {
           spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
 
       // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
-      // configs database
-      // requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
+      // configs database requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
       environmentVariables.set("DATABASE_USER", "docker");
       environmentVariables.set("DATABASE_PASSWORD", "docker");
       environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
+      // TODO
       val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       initBootloader.load();
 
@@ -209,6 +218,8 @@ public class BootloaderAppTest {
           .withConfiguration(mapper.readTree(sourceSpecs)));
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
+
+      // TODO
       var bootloader =
           new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       boolean isMigrated = jobsPersistence.isSecretMigrated();
@@ -226,6 +237,7 @@ public class BootloaderAppTest {
       isMigrated = jobsPersistence.isSecretMigrated();
       assertTrue(isMigrated);
 
+      // TODO
       reset(spiedSecretMigrator);
       // We need to re-create the bootloader because it is closing the persistence after running load
       bootloader =
@@ -233,6 +245,7 @@ public class BootloaderAppTest {
       bootloader.load();
       verifyNoInteractions(spiedSecretMigrator);
 
+      // TODO
       reset(spiedSecretMigrator);
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
       // We need to re-create the bootloader because it is closing the persistence after running load
@@ -268,12 +281,6 @@ public class BootloaderAppTest {
   @Test
   void testPostLoadExecutionExecutes() throws Exception {
     final var testTriggered = new AtomicBoolean();
-
-    val container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("public")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
     val version = "0.33.0-alpha";
 
     val mockedConfigs = mock(Configs.class);
@@ -290,11 +297,6 @@ public class BootloaderAppTest {
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     val mockedSecretMigrator = mock(SecretMigrator.class);
-
-    val configsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-    val jobsDataSource =
-        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
 
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
@@ -318,6 +320,12 @@ public class BootloaderAppTest {
   private Flyway createJobsFlyway(final DataSource dataSource) {
     return FlywayFactory.create(dataSource, getClass().getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+  }
+
+  private void closeDataSource(final DataSource dataSource) throws IOException {
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
 }
