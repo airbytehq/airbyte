@@ -46,7 +46,7 @@ class CustomerioNotificationClientTest {
   // this test does _not_ check the body of the request.
   @Test
   void notifyConnectionDisabled() throws IOException, InterruptedException {
-    final CustomeriolNotificationClient customeriolNotificationClient = new CustomeriolNotificationClient(new Notification()
+    final CustomerioNotificationClient customerioNotificationClient = new CustomerioNotificationClient(new Notification()
         .withNotificationType(NotificationType.CUSTOMERIO), API_KEY, URI_BASE, mHttpClient);
 
     final HttpRequest expectedRequest = HttpRequest.newBuilder()
@@ -61,7 +61,7 @@ class CustomerioNotificationClientTest {
     Mockito.when(httpResponse.statusCode()).thenReturn(200);
 
     final boolean result =
-        customeriolNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, WORKSPACE_ID,
+        customerioNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, WORKSPACE_ID,
             CONNECTION_ID);
     Mockito.verify(mHttpClient).send(expectedRequest, HttpResponse.BodyHandlers.ofString());
 

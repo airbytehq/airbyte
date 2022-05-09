@@ -56,7 +56,7 @@ public abstract class NotificationClient {
   public static NotificationClient createNotificationClient(final Notification notification) {
     return switch (notification.getNotificationType()) {
       case SLACK -> new SlackNotificationClient(notification);
-      case CUSTOMERIO -> new CustomeriolNotificationClient(notification);
+      case CUSTOMERIO -> new CustomerioNotificationClient(notification);
       default -> throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     };
   }

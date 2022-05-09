@@ -19,21 +19,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Notification client that uses customer.io API send emails.
+ *
+ * These notifications rely on `TRANSACTION_MESSAGE_ID`, which are basically templates you create
+ * through customer.io. These IDs are specific to a user's account on customer.io, so they will be
+ * different for every user. For now they are stored as variables here, but in the future they may
+ * be stored in as a notification config in the database.
+ *
+ * For Airbyte Cloud, Airbyte engineers may use `DEFAULT_TRANSACTION_MESSAGE_ID = "6"` as a generic
+ * template for notifications.
  */
-public class CustomeriolNotificationClient extends NotificationClient {
+public class CustomerioNotificationClient extends NotificationClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CustomeriolNotificationClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CustomerioNotificationClient.class);
 
-  // Once the configs are editable through the UI, these should be stored in
-  // airbyte-config/models/src/main/resources/types/CustomerioNotificationConfiguration.yaml
-  // - SENDER_EMAIL
-  // - receiver email
-  // - customer.io identifier email
-  // - customer.io TRANSACTION_MESSAGE_ID
-
-  // DEFAULT_TRANSACTION_MESSAGE_ID is currently unused but the template can be used for any generic
-  // messaging.
-  // private static final String DEFAULT_TRANSACTION_MESSAGE_ID = "6";
   private static final String AUTO_DISABLE_TRANSACTION_MESSAGE_ID = "7";
   private static final String AUTO_DISABLE_WARNING_TRANSACTION_MESSAGE_ID = "8";
 
@@ -44,7 +42,7 @@ public class CustomeriolNotificationClient extends NotificationClient {
   private final String apiToken;
   private final String emailApiEndpoint;
 
-  public CustomeriolNotificationClient(final Notification notification) {
+  public CustomerioNotificationClient(final Notification notification) {
     super(notification);
     this.apiToken = System.getenv("CUSTOMERIO_API_KEY");
     this.emailApiEndpoint = CUSTOMERIO_EMAIL_API_ENDPOINT;
@@ -54,10 +52,10 @@ public class CustomeriolNotificationClient extends NotificationClient {
   }
 
   @VisibleForTesting
-  public CustomeriolNotificationClient(final Notification notification,
-                                       final String apiToken,
-                                       final String emailApiEndpoint,
-                                       final HttpClient httpClient) {
+  public CustomerioNotificationClient(final Notification notification,
+                                      final String apiToken,
+                                      final String emailApiEndpoint,
+                                      final HttpClient httpClient) {
     super(notification);
     this.apiToken = apiToken;
     this.emailApiEndpoint = emailApiEndpoint;
@@ -76,6 +74,9 @@ public class CustomeriolNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
+  // Once the configs are editable through the UI, the reciever email should be stored in
+  // airbyte-config/models/src/main/resources/types/CustomerioNotificationConfiguration.yaml
+  // instead of being passed in
   @Override
   public boolean notifyConnectionDisabled(final String receiverEmail,
                                           final String sourceConnector,
