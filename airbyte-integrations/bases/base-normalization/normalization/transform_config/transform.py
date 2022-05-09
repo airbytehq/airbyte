@@ -10,6 +10,7 @@ import pkgutil
 import socket
 from typing import Any, Dict
 
+import urllib.parse
 import yaml
 from normalization.destination_type import DestinationType
 
@@ -194,6 +195,7 @@ class TransformConfig:
         print("transform_snowflake")
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
         account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
+        query_tag=TransformConfig.get_jdbc_param_value("query_tag".upper(),config["jdbc_url_params"].upper(),"normalization")
         # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         # snowflake coerces most of these values to uppercase, but if dbt has them as a different casing it has trouble finding the resources it needs. thus we coerce them to upper.
         dbt_config = {
@@ -206,7 +208,7 @@ class TransformConfig:
             "schema": config["schema"].upper(),
             "threads": 5,
             "client_session_keep_alive": False,
-            "query_tag": "normalization",
+            "query_tag": query_tag,
             "retry_all": True,
             "retry_on_database_errors": True,
             "connect_retries": 3,
@@ -224,6 +226,17 @@ class TransformConfig:
         else:
             dbt_config["password"] = config["password"]
         return dbt_config
+    
+    def get_jdbc_param_value(parameter,jdbc_url_params,default_value):
+        parameter_length=len(parameter) + 1 # +1 because of the = sign
+        parameters=jdbc_url_params.split(',')
+        parameter_value=default_value
+        
+        for i in parameters:
+            if i.startswith(parameter):
+                parameter_value=urllib.parse.unquote(i[parameter_length:])
+                                
+                return parameter_value
 
     @staticmethod
     def transform_mysql(config: Dict[str, Any]):
