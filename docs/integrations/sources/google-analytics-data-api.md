@@ -65,4 +65,4 @@ a new connection.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-05-09 | [<id>](https://github.com/airbytehq/airbyte/pull/<id>)   | Introduce Google Analytics Data API source                                                   |
+| 0.1.0   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source                                                   |
