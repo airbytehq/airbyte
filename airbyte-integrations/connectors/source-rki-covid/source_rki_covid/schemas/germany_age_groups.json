@@ -95,7 +95,7 @@
               "type": "integer"
             },
             "incidence7Days": {
-              "type": "integer"
+              "type": "number"
             },
             "date": {
               "type": "string"
@@ -139,7 +139,7 @@
           "type": "number"
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": "integer"
         },
         "deathsMalePer100k": {
           "type": "number"
@@ -195,7 +195,7 @@
           "type": "integer"
         },
         "casesMalePer100k": {
-          "type": "integer"
+          "type": "number"
         },
         "casesFemalePer100k": {
           "type": "number"
@@ -204,7 +204,7 @@
           "type": "number"
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": "integer"
         },
         "hospitalization": {
           "type": "object",
@@ -316,7 +316,7 @@
           "type": "number"
         },
         "casesFemalePer100k": {
-          "type": "integer"
+          "type": "number"
         },
         "deathsMalePer100k": {
           "type": "number"
