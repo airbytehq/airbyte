@@ -1,12 +1,11 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
-import ResetDataModal from "components/ResetDataModal";
 
 import { Connection, ConnectionStatus } from "core/domain/connection";
 import Status from "core/statuses";
@@ -18,6 +17,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { useListJobs } from "services/job/JobService";
 
 import ToolTip from "../../../../../components/ToolTip";
+import { useConfirmationModalService } from "../../../../../hooks/services/ConfirmationModal";
 import JobsList from "./JobsList";
 import { StatusMainInfo } from "./StatusMainInfo";
 
@@ -54,7 +54,7 @@ const SyncButton = styled(LoadingButton)`
 `;
 
 const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();
   const allowSync = hasFeature(FeatureItem.AllowSync);
@@ -77,8 +77,22 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
 
+  const onResetDataButtonClick = () => {
+    openConfirmationModal({
+      text: `form.resetDataText`,
+      title: `form.resetData`,
+      submitButtonText: "form.reset",
+      cancelButtonText: "form.noNeed",
+      onSubmit: async () => {
+        await onReset();
+        closeConfirmationModal();
+      },
+      submitButtonDataId: "reset",
+    });
+  };
+
   const resetDataBtn = (
-    <Button disabled={isAtLeastOneJobRunningOrPending} onClick={() => setIsModalOpen(true)}>
+    <Button disabled={isAtLeastOneJobRunningOrPending} onClick={onResetDataButtonClick}>
       <FormattedMessage id={"connection.resetData"} />
     </Button>
   );
@@ -129,15 +143,6 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
       >
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </StyledContentCard>
-      {isModalOpen && (
-        <ResetDataModal
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={async () => {
-            await onReset();
-            setIsModalOpen(false);
-          }}
-        />
-      )}
     </Content>
   );
 };
