@@ -5,20 +5,22 @@
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -27,8 +29,6 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
-  private final ObjectMapper mapper = new ObjectMapper();
-  private JsonNode configWithoutDbName;
   private JsonNode config;
 
   @Override
@@ -98,8 +98,8 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
+    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
+    return new Database(dslContext).query(
             ctx -> {
               ctx.fetch(String.format("USE %s;", config.get("database")));
               return ctx
@@ -117,16 +117,14 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private static Database getDatabase(final JsonNode config) {
-    // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
-    // constructor. at least explicitly handle it, even if the impl doesn't change.
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
             config.get("host").asText(),
-            config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+            config.get("port").asInt()), null);
+    return new Database(dslContext);
   }
 
   // how to interact with the mssql test container manaully.
@@ -134,7 +132,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws SQLException {
-    configWithoutDbName = getConfig(db);
+    final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final Database database = getDatabase(configWithoutDbName);

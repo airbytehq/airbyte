@@ -20,9 +20,9 @@ dependencies {
     implementation project(':airbyte-workers')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
-    testImplementation 'org.postgresql:postgresql:42.2.18'
-    testImplementation 'org.testcontainers:testcontainers:1.15.3'
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
+    testImplementation libs.postgresql
+    testImplementation libs.testcontainers
+    testImplementation libs.testcontainers.postgresql
 
     testImplementation project(':airbyte-commons-docker')
 }

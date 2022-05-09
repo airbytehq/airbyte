@@ -4,9 +4,11 @@
 
 package io.airbyte.db.instance.configs;
 
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
 public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
@@ -15,7 +17,9 @@ public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
 
   @Test
   public void dumpSchema() throws IOException {
-    final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
+    final Flyway flyway = FlywayFactory.create(getDataSource(), getClass().getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, flyway);
     migrator.migrate();
     final String schema = migrator.dumpSchema();
     MigrationDevHelper.dumpSchema(schema, SCHEMA_DUMP_FILE, false);

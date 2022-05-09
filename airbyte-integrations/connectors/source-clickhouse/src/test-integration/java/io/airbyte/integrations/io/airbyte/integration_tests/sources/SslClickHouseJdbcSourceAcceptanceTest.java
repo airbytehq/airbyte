@@ -9,7 +9,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -71,13 +72,16 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
         .put("password", "")
         .build());
 
-    db = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asText()),
-        ClickHouseSource.DRIVER_CLASS);
+    db = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            ClickHouseSource.DRIVER_CLASS,
+            String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
+                config.get("host").asText(),
+                config.get("port").asInt())
+        )
+    );
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 

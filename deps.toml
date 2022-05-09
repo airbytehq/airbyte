@@ -1,11 +1,16 @@
 [versions]
 fasterxml_version = "2.13.0"
+flyway = "7.14.0"
 glassfish_version = "2.31"
+hikaricp = "5.0.1"
 commons_io = "2.7"
 log4j = "2.17.1"
 slf4j = "1.7.30"
 lombok = "1.18.22"
+jooq = "3.13.4"
 junit-jupiter = "5.7.2"
+postgresql = "42.3.4"
+testcontainers = "1.17.1"
 
 [libraries]
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
@@ -25,6 +30,27 @@ log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
+jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-cassandra = { module = "org.testcontainers:cassandra", version.ref = "testcontainers" }
+testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "testcontainers" }
+testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "testcontainers" }
+testcontainers-db2 = { module = "org.testcontainers:db2", version.ref = "testcontainers" }
+testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "testcontainers" }
+testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "testcontainers" }
+testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "testcontainers" }
+testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "testcontainers" }
 log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
 aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
