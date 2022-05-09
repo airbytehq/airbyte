@@ -26,7 +26,7 @@ const SideViewButton = styled.button`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-const DocumentationLink = styled.a`
+const DocumentationLinkContent = styled.a`
   cursor: pointer;
   margin-top: 5px;
   font-weight: 500;
@@ -38,23 +38,22 @@ const DocumentationLink = styled.a`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-export const Instruction: React.FC<InstructionProps> = ({ documentationUrl }) => {
-  const { documentationPanelOpen: sidePanelStatus, setDocumentationPanelOpen: setSidePanelStatus } =
-    useDocumentationPanelContext();
+export const DocumentationLink: React.FC<InstructionProps> = ({ documentationUrl }) => {
+  const { documentationPanelOpen, setDocumentationPanelOpen } = useDocumentationPanelContext();
 
   const docType = getDocumentationType(documentationUrl);
 
   return (
     <>
       {docType === "internal" && (
-        <SideViewButton type="button" onClick={() => setSidePanelStatus(!sidePanelStatus)}>
+        <SideViewButton type="button" onClick={() => setDocumentationPanelOpen(!documentationPanelOpen)}>
           <FormattedMessage id="form.setupGuide" />
         </SideViewButton>
       )}
       {docType === "external" && (
-        <DocumentationLink href={documentationUrl} target="_blank" rel="noopener noreferrer">
+        <DocumentationLinkContent href={documentationUrl} target="_blank" rel="noopener noreferrer">
           <FormattedMessage id="form.setupGuide" />
-        </DocumentationLink>
+        </DocumentationLinkContent>
       )}
     </>
   );

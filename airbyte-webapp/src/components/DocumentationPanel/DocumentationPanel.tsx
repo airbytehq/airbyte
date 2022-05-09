@@ -55,33 +55,29 @@ export const DocumentationPanel: React.FC = () => {
     [rehypeSlug],
   ];
 
-  return (
-    <>
-      {isLoading ? (
-        <LoadingPage />
-      ) : docs ? (
-        <DocumentationContainer>
-          <PageTitle
-            withLine
-            title={<FormattedMessage id="connector.setupGuide" />}
-            endComponent={
-              <Button
-                onClick={() => {
-                  setDocumentationPanelOpen(false);
-                }}
-                iconOnly={true}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </Button>
-            }
-          />
-          <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
-        </DocumentationContainer>
-      ) : (
-        <ReflexElement className="right-pane" maxSize={1000}>
-          <FormattedMessage id="docs.notFoundError" />
-        </ReflexElement>
-      )}
-    </>
+  return isLoading ? (
+    <LoadingPage />
+  ) : docs ? (
+    <DocumentationContainer>
+      <PageTitle
+        withLine
+        title={<FormattedMessage id="connector.setupGuide" />}
+        endComponent={
+          <Button
+            onClick={() => {
+              setDocumentationPanelOpen(false);
+            }}
+            iconOnly={true}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </Button>
+        }
+      />
+      <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
+    </DocumentationContainer>
+  ) : (
+    <ReflexElement className="right-pane" maxSize={1000}>
+      <FormattedMessage id="docs.notFoundError" />
+    </ReflexElement>
   );
 };

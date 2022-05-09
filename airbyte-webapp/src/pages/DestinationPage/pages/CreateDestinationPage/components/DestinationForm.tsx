@@ -56,7 +56,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     setDocumentationPanelOpen(false);
     setDestinationDefinitionId(destinationDefinitionId);
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
-    setDocumentationUrl(connector?.documentationUrl || "");
+    setDocumentationUrl(connector?.documentationUrl ?? "");
 
     if (afterSelectConnector) {
       afterSelectConnector();

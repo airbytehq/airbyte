@@ -119,19 +119,18 @@ export const CreationFormPage: React.FC = () => {
             {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
-            <>
-              <ConnectionCreateSourceForm
-                afterSubmit={() => {
-                  if (type === "connection") {
-                    setCurrentEntityStep(EntityStepsTypes.DESTINATION);
-                    setCurrentStep(StepsTypes.CREATE_CONNECTOR);
-                  } else {
-                    setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-                    setCurrentStep(StepsTypes.CREATE_CONNECTION);
-                  }
-                }}
-              />
-            </>
+
+            <ConnectionCreateSourceForm
+              afterSubmit={() => {
+                if (type === "connection") {
+                  setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+                } else {
+                  setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                  setCurrentStep(StepsTypes.CREATE_CONNECTION);
+                }
+              }}
+            />
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {

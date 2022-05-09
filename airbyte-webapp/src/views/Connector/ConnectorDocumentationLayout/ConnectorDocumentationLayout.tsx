@@ -27,7 +27,7 @@ export const ConnectorDocumentationLayout = ({ children }: { children: [React.Re
 
   return (
     <ReflexContainer orientation="vertical" windowResizeAware={true}>
-      <ReflexElement className="left-pane"> {left}</ReflexElement>
+      <ReflexElement className="left-pane">{left}</ReflexElement>
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
           <PanelGrabber>
