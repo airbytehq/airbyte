@@ -124,7 +124,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
-    sourceNamespace: stream?.namespace,
+    sourceNamespace: stream?.namespace ?? undefined,
   });
 
   const fields = useMemo(() => {
