@@ -1,6 +1,12 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+#
+# These tests are the replacement for one of standard SAT cases.
+# It is disabled due to current constraints, which (as well as solution for it) are described
+# in https://github.com/airbytehq/airbyte/issues/12665 and https://github.com/airbytehq/airbyte/issues/12467.
+# After these issues are implemented, standard SATs can be enabled
+# and this file may be removed.
 
 import pendulum
 import pytest
