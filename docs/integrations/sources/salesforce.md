@@ -117,9 +117,12 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.9   | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)     | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions                                                     |
 | 1.0.8   | 2022-05-04 | [12576](https://github.com/airbytehq/airbyte/pull/12576)     | Decode responses as utf-8 and fallback to ISO-8859-1 if needed                                                                   |
 | 1.0.7   | 2022-05-03 | [12552](https://github.com/airbytehq/airbyte/pull/12552)     | Decode responses as ISO-8859-1 instead of utf-8                                                                                  |
-| 1.0.4   | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335)     | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                          |
+| 1.0.6   | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335)     | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                          |
+| 1.0.5   | 2022-04-25 | [12304](https://github.com/airbytehq/airbyte/pull/12304)     | Add `Describe` stream                                                                                                            |
+| 1.0.4   | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230)     | Update connector to use a `spec.yaml`                                                                                            |
 | 1.0.3   | 2022-04-04 | [11692](https://github.com/airbytehq/airbyte/pull/11692)     | Optimised memory usage for `BULK` API calls                                                                                      |
 | 1.0.2   | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751)     | Fix broken link anchor in connector configuration                                                                                |
 | 1.0.1   | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679)     | Reorganize input parameter order on the UI                                                                                       |

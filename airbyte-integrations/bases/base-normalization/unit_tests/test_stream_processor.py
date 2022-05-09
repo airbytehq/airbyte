@@ -7,7 +7,7 @@ import os
 from typing import List
 
 import pytest
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.stream_processor import StreamProcessor
 from normalization.transform_catalog.table_name_registry import TableNameRegistry

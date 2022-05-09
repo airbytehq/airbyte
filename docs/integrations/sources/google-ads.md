@@ -108,7 +108,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 ## CHANGELOG
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                      |
-| :------- | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| :------- | :--------- |:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| `0.1.37` | 2022-05-06 | [12651](https://github.com/airbytehq/airbyte/pull/12651) | Improve integration and unit tests                                                           |
 | `0.1.36` | 2022-04-19 | [12158](https://github.com/airbytehq/airbyte/pull/12158) | Fix `*_labels` streams data type                                                             |
 | `0.1.35` | 2022-04-18 | [9310](https://github.com/airbytehq/airbyte/pull/9310)   | Add new fields to reports                                                                    |
 | `0.1.34` | 2022-03-29 | [11602](https://github.com/airbytehq/airbyte/pull/11602) | Add budget amount to campaigns stream.                                                       |

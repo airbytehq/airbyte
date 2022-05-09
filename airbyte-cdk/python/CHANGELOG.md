@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.56
+- Update protocol models to include `AirbyteTraceMessage`
+- Emit an `AirbyteTraceMessage` on uncaught exceptions
+- Add `AirbyteTracedException`
+
 ## 0.1.55
 Add support for reading the spec from a YAML file (`spec.yaml`) 
 

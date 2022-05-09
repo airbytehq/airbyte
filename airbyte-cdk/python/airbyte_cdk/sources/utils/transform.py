@@ -2,14 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from distutils.util import strtobool
 from enum import Flag, auto
 from typing import Any, Callable, Dict, Mapping, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
 from jsonschema import Draft7Validator, validators
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class TransformConfig(Flag):
@@ -174,4 +174,4 @@ class TypeTransformer:
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.
             """
-            logger.warn(e.message)
+            logger.warning(e.message)
