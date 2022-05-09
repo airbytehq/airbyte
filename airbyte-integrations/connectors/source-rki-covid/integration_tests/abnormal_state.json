@@ -14,5 +14,7 @@
   "german_history_hospitalization": {
     "date": "2024-04-07T00:00:00.000Z"
   },
-  "german_history_frozen_incidence": {}
+  "german_history_frozen_incidence": {
+    "date": "2024-01-01T00:00:00.000Z"
+  }
 }
