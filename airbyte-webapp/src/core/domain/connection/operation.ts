@@ -1,32 +1,24 @@
-import { OperationRead, OperatorDbt } from "../../request/AirbyteClient";
+import { OperationRead, OperatorDbt, OperatorNormalization, OperatorType } from "../../request/AirbyteClient";
 
 export interface Transformation extends OperationRead {
   operatorConfiguration: DbtOperationConfiguration;
 }
 
 export interface DbtOperationConfiguration {
-  operatorType: OperatorType.Dbt;
+  operatorType: typeof OperatorType.dbt;
   dbt: DbtConfiguration;
 }
 
 export interface Normalization extends OperationRead {
-  operatorType: OperatorType.Normalization;
   operatorConfiguration: NormalizationOperationConfiguration;
 }
 
 export interface NormalizationOperationConfiguration {
-  operatorType: OperatorType.Normalization;
-  normalization: {
-    option: undefined;
-  };
+  operatorType: typeof OperatorType.normalization;
+  normalization: OperatorNormalization;
 }
 
 export type DbtConfiguration = OperatorDbt;
-
-export enum OperatorType {
-  Normalization = "normalization",
-  Dbt = "dbt",
-}
 
 export enum NormalizationType {
   BASIC = "basic",
@@ -34,9 +26,9 @@ export enum NormalizationType {
 }
 
 export const isDbtTransformation = (op: OperationRead): op is Transformation => {
-  return op.operatorConfiguration.operatorType === OperatorType.Dbt;
+  return op.operatorConfiguration.operatorType === OperatorType.dbt;
 };
 
 export const isNormalizationTransformation = (op: OperationRead): op is Normalization => {
-  return op.operatorConfiguration.operatorType === OperatorType.Normalization;
+  return op.operatorConfiguration.operatorType === OperatorType.normalization;
 };

@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import { NormalizationType, OperatorType, Transformation } from "core/domain/connection";
+import { NormalizationType, Transformation } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -22,7 +22,12 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-import { ConnectionStatus, OperationRead, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import {
+  ConnectionStatus,
+  OperationRead,
+  OperatorType,
+  WebBackendConnectionRead,
+} from "../../../../../core/request/AirbyteClient";
 
 interface TransformationViewProps {
   connection: WebBackendConnectionRead;
@@ -124,10 +129,10 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
 
     const operations = values.transformations
       ? connection.operations
-          ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
+          ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.normalization)
           .concat(newOp)
       : newOp.concat(
-          (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt)
+          (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
         );
 
     await updateConnection({
@@ -145,9 +150,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
     if (values.transformations) {
       nextFormValues.transformations = getInitialTransformations(operations);
     }
-    if (values.normalization) {
-      nextFormValues.normalization = getInitialNormalization(operations, true);
-    }
+    nextFormValues.normalization = getInitialNormalization(operations, true);
 
     resetForm({ values: nextFormValues });
   };

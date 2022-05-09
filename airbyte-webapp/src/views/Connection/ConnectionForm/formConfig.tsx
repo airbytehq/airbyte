@@ -11,7 +11,6 @@ import {
   isDbtTransformation,
   isNormalizationTransformation,
   NormalizationType,
-  OperatorType,
   Transformation,
 } from "core/domain/connection/operation";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
@@ -24,6 +23,7 @@ import {
   DestinationSyncMode,
   NamespaceDefinitionType,
   OperationRead,
+  OperatorType,
   SyncMode,
   WebBackendConnectionRead,
 } from "../../../core/request/AirbyteClient";
@@ -59,7 +59,7 @@ function useDefaultTransformation(): Transformation {
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,
     operatorConfiguration: {
-      operatorType: OperatorType.Dbt,
+      operatorType: OperatorType.dbt,
       dbt: {
         gitRepoUrl: "", // TODO: Does this need a value?
         dockerImage: "fishtownanalytics/dbt:0.19.1",
@@ -183,7 +183,7 @@ function mapFormPropsToOperation(
           workspaceId,
           operationId: "", // TODO: Is this necessary?
           operatorConfiguration: {
-            operatorType: OperatorType.Normalization,
+            operatorType: OperatorType.normalization,
             normalization: {
               option: values.normalization,
             },
@@ -254,15 +254,21 @@ const getInitialTransformations = (operations?: OperationRead[]): Transformation
   operations?.filter(isDbtTransformation) ?? [];
 
 const getInitialNormalization = (operations?: OperationRead[], isEditMode?: boolean): NormalizationType => {
-  let initialNormalization =
+  /*
+    TODO: I'm not entirely certain about the logic around this.
+    The types say this is either "basic" | "undefined".
+    So if it's undefined we want RAW, otherwise we want basic.
+    This _seems_ logical to me.
+  */
+  const initialNormalization =
     operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
 
   // If no normalization was selected for already present normalization -> select Raw one
   if (!initialNormalization && isEditMode) {
-    initialNormalization = undefined;
+    return NormalizationType.RAW;
   }
 
-  return initialNormalization ?? NormalizationType.BASIC;
+  return NormalizationType.BASIC;
 };
 
 const useInitialValues = (
