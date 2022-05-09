@@ -7,6 +7,8 @@
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
   "login.yourEmail.placeholder": "christophersmith@gmail.com",
+  "login.yourEmail.notFound": "User not found",
+  "login.unknownError": "An unknown error has occurred",
   "login.password": "Enter your password*",
   "login.password.placeholder": "Enter a strong password",
   "login.yourPassword": "Enter your password*",

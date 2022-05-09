@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
+import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
-import Placeholder, { ResourceTypes } from "components/Placeholder";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
@@ -18,7 +18,7 @@ const AllDestinationsPage: React.FC = () => {
 
   const onCreateDestination = () => push(`${RoutePaths.DestinationNew}`);
 
-  return (
+  return destinations.length ? (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
@@ -26,18 +26,16 @@ const AllDestinationsPage: React.FC = () => {
           title={<FormattedMessage id="admin.destinations" />}
           endComponent={
             <Button onClick={onCreateDestination} data-id="new-destination">
-              <FormattedMessage id="destination.newDestination" />
+              <FormattedMessage id="destinations.newDestination" />
             </Button>
           }
         />
       }
     >
-      {destinations.length ? (
-        <DestinationsTable destinations={destinations} />
-      ) : (
-        <Placeholder resource={ResourceTypes.Destinations} />
-      )}
+      <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
+  ) : (
+    <EmptyResourceListView resourceType="destinations" onCreateClick={onCreateDestination} />
   );
 };
 

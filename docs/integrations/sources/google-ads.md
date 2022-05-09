@@ -8,12 +8,12 @@ If you don't already have a developer token from Google Ads, make sure you follo
 
 ## Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | Yes        |
+| Replicate Incremental Deletes | No         |
+| SSL connection                | Yes        |
 
 ## Supported Tables
 
@@ -21,27 +21,27 @@ This source is capable of syncing the following tables and their data:
 
 ### Main Tables
 
-* [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
-* [ad\_group\_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
-* [ad\_group\_ad\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label)
-* [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
-* [ad\_group\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_label)
-* [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
-* [campaign\_labels](https://developers.google.com/google-ads/api/fields/v8/campaign_label)
-* [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
-* [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
-* [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
+- [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
+- [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+- [ad_group_ad_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label)
+- [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+- [ad_group_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_label)
+- [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+- [campaign_labels](https://developers.google.com/google-ads/api/fields/v8/campaign_label)
+- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
+- [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
+- [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 ### Report Tables
 
-* [account\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
-* [ad\_group\_ad\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
-* [display\_keyword\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
-* [display\_topics\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
-* [shopping\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
-* [user_location_report](https://developers.google.com/google-ads/api/fields/v8/user_location_view)
+- [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
+- [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
+- [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
+- [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+- [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+- [user_location_report](https://developers.google.com/google-ads/api/fields/v8/user_location_view)
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
@@ -64,13 +64,14 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 Google Ads Account with an approved Developer Token. \(note: In order to get API access to Google Ads, you must have a "manager" account; standard accounts cannot generate a Developer Token. This manager account must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://support.google.com/google-ads/answer/6139186).\)
 
 You'll need to find these values. See the [setup guide](#setup-guide) for instructions.
-* developer\_token
-* client\_id
-* client\_secret
-* refresh\_token
-* start\_date
-* customer\_id
-* login\_customer\_id \(you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)\)
+
+- developer_token
+- client_id
+- client_secret
+- refresh_token
+- start_date
+- customer_id
+- login_customer_id \(you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)\)
 
 ### Setup guide
 
@@ -79,7 +80,7 @@ This guide will provide information as if starting from scratch. Please skip ove
 1. Create an Google Ads Account. Here are [Google's instruction](https://support.google.com/google-ads/answer/6366720) on how to create one.
 2. Create an Google Ads MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
 3. You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
-4. Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
+4. Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account. This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
 5. Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
 6. Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
@@ -91,10 +92,10 @@ Google is very picky about which software and which use case can get access to a
 
 When you apply for a token, you need to mention:
 
-* Why you need the token \(eg: want to run some internal analytics...\)
-* That you will be using the Airbyte Open Source project
-* That you have full access to the code base \(because we're open source\)
-* That you have full access to the server running the code \(because you're self-hosting Airbyte\)
+- Why you need the token \(eg: want to run some internal analytics...\)
+- That you will be using the Airbyte Open Source project
+- That you have full access to the code base \(because we're open source\)
+- That you have full access to the server running the code \(because you're self-hosting Airbyte\)
 
 #### Understanding Google Ads Query Language
 
@@ -106,9 +107,10 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 ## CHANGELOG
 
-| Version  | Date       | Pull Request | Subject                                                                                      |
-|:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
-| `0.1.35` | 2022-04-18 | [9310](https://github.com/airbytehq/airbyte/pull/9310) | Add new fields to reports                                                       |
+| Version  | Date       | Pull Request                                             | Subject                                                                                      |
+| :------- | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| `0.1.36` | 2022-04-19 | [12158](https://github.com/airbytehq/airbyte/pull/12158) | Fix `*_labels` streams data type                                                             |
+| `0.1.35` | 2022-04-18 | [9310](https://github.com/airbytehq/airbyte/pull/9310)   | Add new fields to reports                                                                    |
 | `0.1.34` | 2022-03-29 | [11602](https://github.com/airbytehq/airbyte/pull/11602) | Add budget amount to campaigns stream.                                                       |
 | `0.1.33` | 2022-03-29 | [11513](https://github.com/airbytehq/airbyte/pull/11513) | When `end_date` is configured in the future, use today's date instead.                       |
 | `0.1.32` | 2022-03-24 | [11371](https://github.com/airbytehq/airbyte/pull/11371) | Improve how connection check returns error messages                                          |

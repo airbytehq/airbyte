@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -33,7 +33,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   }
 
   public TiDBSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), new TiDBSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new TiDBSourceOperations());
   }
 
   @Override
