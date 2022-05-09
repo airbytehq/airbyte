@@ -29,9 +29,9 @@ interactions:
       Content-Type:
       - text/html; charset=utf-8
       Date:
-      - Wed, 04 May 2022 10:48:03 GMT
+      - Mon, 09 May 2022 11:54:10 GMT
       Expires:
-      - Wed, 04 May 2022 10:48:03 GMT
+      - Mon, 09 May 2022 11:54:10 GMT
       Location:
       - https://ads.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=eb84ec191e411910dd399658868285769d63bb74&secret=27325d9aeba472ee3488ca19fba858d0b9256528&app_id=7059398826003529729
       Pragma:
@@ -39,24 +39,19 @@ interactions:
       Server:
       - nginx
       Server-Timing:
-      - cdn-cache; desc=MISS, edge; dur=80, origin; dur=2
-      - inner; dur=1
+      - inner; dur=3
+      - cdn-cache; desc=MISS, edge; dur=15, origin; dur=105
       X-Akamai-Request-ID:
-      - e1d0c7b.1b2e3154
+      - 104915bf
       X-Cache:
-      - TCP_MISS from a2-16-100-37.deploy.akamaitechnologies.com (AkamaiGHost/10.8.0-41078462)
-        (-)
-      X-Cache-Remote:
-      - TCP_MISS from a23-220-107-15.deploy.akamaitechnologies.com (AkamaiGHost/10.7.5-41022941)
+      - TCP_MISS from a88-221-221-109.deploy.akamaitechnologies.com (AkamaiGHost/10.8.0-41078462)
         (-)
       X-Origin-Response-Time:
-      - 2,23.220.107.15
-      X-Parent-Response-Time:
-      - 82,2.16.100.37
+      - 105,88.221.221.109
       x-tt-logid:
-      - 202205041048030101130060690F278C0D
+      - 20220509115410010113006104212BE2DC
       x-tt-trace-host:
-      - 0187fa220474ed9f3ce919185a4a99d3a849c53a0c205d2c6cd5bdc4e5216e291338f15036208f402362dbf7a3489e51e569aa82e8655ea0ccf6f908e42e4fb839d19496350d0c54a958590b538a6d9a4d9833f7f68aeb720d08d5e7381108398e422875ee383845a909ccb50f974fc61d
+      - 0187fa220474ed9f3ce919185a4a99d3a85c8911db5690a876694b55e309216ace0ddbd7d3aff37a297bb8be22108156f0700ecaef99e0095c7b6da7ef72dfc622147867f6017142897e3d28bf5d8698591244dfd24c531039fbd78054f403507d
       x-tt-trace-tag:
       - id=16;cdn-cache=miss;type=dyn
     status:
@@ -78,39 +73,39 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAwAAAP//rJbbbts4EIZfhfDFogs0wfBM9s6nxKnjJLCTDbDbxYK2aEewLaWk1C0Q
-        5N13JDeqL8zNTQGbEkmJ38xw5qdeeqsy871PBD6S3t7H6DZNr3c77eFA8F9rH6t/8qwZY8AYSBAU
-        hAEBFJiQVEpGAQbScMlF807mKodPv/R2eazw5q+Xnsu++VDl0YfDSspIwMdBaGq5NsB4Qz96qnD7
-        1oqJi8+OnJFJf9a0br+sw8YHsnh2Yeti9KR/iRNaGeDW9F4/klMwhWYiRIKhkgHl/DTss1ttyWO5
-        W8dtXuCqg+CKrIN/7g+n5PH2+mIxvboh/TqGLzXAehWrutiQ9aETyCi4Gu1q3kcUxkpByiwjbfMH
-        oFZQapU9bdbFzq3KIm8MGs+xfetf7pcT7ApumZE86bzlRguhMN5aSsN0wvnG/kw1689G887p2dX9
-        /fh6NH64XwwnSJ8/3IwuHm6mOEWp0rj1LMG1FH/CKKkUV9xKmeAuvtYueDIu8u8d9Xjsh5cawLAk
-        C10EjANe0VPKaYI1u725H3eUP8uqIosx+Y0My3MybfIIXxZS2CRHMMPAWk0ZIFCmOKMy5FUZO9Kd
-        f475sCQjX1dx9bRr0qr160vdpCMRkmvNjfofLLegjVJGK/ROn8bOy9U2Vi68zz17F4mpAlZRJShj
-        2mgjTyNbwsx9J7+CqTjHiuEaMHUESJFgrg/5n1rFYDpYSZmy2mpjDD29yvDirrO5uW+LPZLFoY7b
-        alj/i1lYPOG438WDE0e5QplkWqessEKgqikAzSjKY8qK/nLZZCEWWv8K2x/dt3ihzKJA0iTDUIap
-        aBgmLXDBEvG6Ljd55VdPDeVhiG038MZRmpqEfmjgxgI6CtqCNdYw9Z5+jFwk4xAr38W3Px+Ru1Bu
-        gtvvszz4bZWXBZkdQl2snlq1xHhKSMQTrUBvlZRUA+oJQ8FMVLjbVR4HcJuKyhcVmdTLn2L2NjnJ
-        UeOz3BexIv78j3Oc48AU+ihTfCOZEkJzQD5gPSa0Ovol3mXdhi6w//zkwt4d5U+bPhJrCpUkDVSg
-        lbZMooZqFNIE8KTDHy4xmavff4njljKrmpOKoZKjJiS05+f2Px4dH4/47ZAdhADp87rI1nWxJdN2
-        59Wu3XY8vlDcE5J74BuLp4nWTKMgsff488Gg43fEgQ+7vDhri9wXS/yIwFndrM3xeP779fU/AAAA
-        //8DAIEkycYHCQAA
+        H4sIAAAAAAAAA6yW227bOBCGX4XwxaILNMHwTPbOxzh1nAR2sgF2u1jQFm0LtqWUlLoFgrz7juxG
+        9YW5uSlgUyIp8ZsZzvzUS2dZZr7zicBH0tn7GN266XXuJh0cCP5r7WP1T541YwwYAwmWUikoAAUm
+        JBOCWguaqR4fmeadzFUOn37p7PJY4c1fLx2XffOhyqMPx5WUkcAlB6Gp5doA4w395KnC7Q9WjF18
+        duSCjLvTpnX7RR3WPpD5swtbF6Mn3Suc0MoAt6bz+pGcgykhKUIkGCoZUM7Pwz675ZY8lbtV3OYF
+        rtoLrsha+Oduf0Ke7m5G88n1LenWMXypAVbLWNXFmqyOnUAGwdVoV/M+okBQBSmzjLTNHwNpBaVW
+        2fNmjXZuWRZ5Y9Bwhu1b/2q/GGNXcMuM5EnnLTdaCIXx1lIaphPON/Znqll/Opi1Tk+vHx6GN4Ph
+        48O8P0b67PF2MHq8neAUpUpLRlmCayn+hFFSKa64lTLBnX+tXfBkWOTfW+rp2A8vNYBhSRa6CBgH
+        vKKnlNMEa3p3+zBsKX+WVUXmQ/Ib6ZeXZNLkEb4spLBJjmCGgbWaMkCgTHEGZcirMrake/8c835J
+        Br6u4nKza9Lq4NeXuklHIiTXmhv1P1iOJWaUMlqhd/o8dlYut7Fy4X3uxbtITBWwiipBGdNGG3ke
+        eSBM3XfyK5iKc6wYrgFTR4AUCebqmP+pVQymg5WUKautNsbQ86v0R/etzc39odgjmR/r+FANq38x
+        C4sNjvtdPDpxkiuUSaZ1ygorBKqaAhRGilKZsqK7WDRZiIXWvcb2R/ctXiAMCiRNMgxlmIqGYdIC
+        FywRr5tynVd+uWkoj31s24E3jtLUJPRDAzcW0FHQFqyxhqn39GPgIhmGWPk2vt3ZgNyHch3cfp/l
+        wW+rvCzI9BjqYrk5qCXGU0IinmgFequkpBpQTxgKZqLC3a7yOIDbVFS+qMi4XvwUs7fJcY4an+W+
+        iBXxl39c4hwHptBHmeIbyZQQmgPyAesxodXRL/Auazd0jv3njQt7d5I/h/SRWFOoJGmgAq20ZRI1
+        VKOQJoBnHf5whclc/f5LHLeUWdWcVAyVHDUhoT0/t//p5Ph4wm+H7CgESJ/VRbaqiy2ZHHZe7Q7b
+        jscXintCco98Y/E00ZppFCT2Hn/W67X8ltjzYZcXF4ci98UCPyJwVjdrczye/359/Q8AAP//AwDh
+        C7zBBwkAAA==
     headers:
       Connection:
       - keep-alive
       Content-Encoding:
       - gzip
       Content-Length:
-      - '924'
+      - '919'
       Content-Type:
       - application/json
       Date:
-      - Wed, 04 May 2022 10:48:04 GMT
+      - Mon, 09 May 2022 11:54:10 GMT
       Server:
       - nginx
       Server-Timing:
-      - cdn-cache; desc=MISS, edge; dur=154, origin; dur=60
-      - inner; dur=53
+      - cdn-cache; desc=MISS, edge; dur=160, origin; dur=57
+      - inner; dur=54
       Vary:
       - Accept-Encoding
       X-Domain-Change-Info:
@@ -118,20 +113,20 @@ interactions:
         on 09/30/2021. Please update all of your requests with the new domain if you
         haven't done so already. For more information, please visit https://ads.tiktok.com/marketing_api/docs?rid=esb88xalm6m&id=1709207085043713
       X-Origin-Response-Time:
-      - 60,23.61.0.115
+      - 57,23.44.4.84
       X-Parent-Response-Time:
-      - 213,2.16.100.37
+      - 217,88.221.221.109
       X-TT-LOGID:
-      - 202205041048040102451552100B583534
-      - 202205041048040102451552100B583534
+      - 202205091154100102452441990726B3F8
+      - 202205091154100102452441990726B3F8
       X_TT_LOGID:
-      - 202205041048040102451552100B583534
+      - 202205091154100102452441990726B3F8
       stablecode:
       - '0'
       upstream-caught:
       - None
       x-tt-trace-host:
-      - 0187fa220474ed9f3ce919185a4a99d3a849c53a0c205d2c6cd5bdc4e5216e2913c39bec8c59efd1818e8ac8f081098943e42630d94e3ac0dbf7e837dd0051c1abe888f65d1f22faba9858651ec4c879fed92abeb3f022990d571c1e3cd77449c5820d033f9f7397d9730edb4b97f09be6
+      - 0187fa220474ed9f3ce919185a4a99d3a8e996518fc1d65fa5113a443513eda0108f68b705ddc3b60486eb7bb41502c1097224ac8ffaadb632ec43bae7c134fbab127d4ccfacda115a0e88d3b3e43cc82c1b9b43a05cb48ed359981763a1b3ddc630046040694a10c62fd08fd35e09cc23
       x-tt-trace-tag:
       - id=16;cdn-cache=miss;type=dyn
     status:
