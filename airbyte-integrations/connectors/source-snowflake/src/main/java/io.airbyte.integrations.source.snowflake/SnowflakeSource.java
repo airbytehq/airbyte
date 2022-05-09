@@ -72,7 +72,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       return buildUsernamePasswordConfig(config, jdbcUrl);
     }
   }
-        config.get("host").asText()));
 
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {
     final String accessToken;
