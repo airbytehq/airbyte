@@ -4,7 +4,6 @@
 
 package io.airbyte.bootloader;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
@@ -63,16 +62,13 @@ public class BootloaderApp {
   private final Configs configs;
   private final Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
-  private SecretMigrator secretMigrator;
+  private final SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
-
-  @VisibleForTesting
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
-    this(configs, () -> {}, featureFlags, null);
-  }
+  private final Flyway configsFlyway;
+  private final Flyway jobsFlyway;
 
   /**
    * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
@@ -89,27 +85,44 @@ public class BootloaderApp {
                        final Runnable postLoadExecution,
                        final FeatureFlags featureFlags,
                        final SecretMigrator secretMigrator,
-                       final DSLContext configsDslContext) {
+                       final DSLContext configsDslContext,
+                       final DSLContext jobsDslContext,
+                       final Flyway configsFlyway,
+                       final Flyway jobsFlyway) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
+    this.configsFlyway = configsFlyway;
+    this.jobsFlyway = jobsFlyway;
 
-    initPersistences(configsDslContext);
+    initPersistences(configsDslContext, jobsDslContext);
   }
 
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
+  public BootloaderApp(final Configs configs,
+                       final FeatureFlags featureFlags,
+                       final SecretMigrator secretMigrator,
+                       final DSLContext configsDslContext,
+                       final DSLContext jobsDslContext,
+                       final Flyway configsFlyway,
+                       final Flyway jobsFlyway) {
     this.configs = configs;
     this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
+    this.configsFlyway = configsFlyway;
+    this.jobsFlyway = jobsFlyway;
 
-    initPersistences();
+    initPersistences(configsDslContext, jobsDslContext);
 
     postLoadExecution = () -> {
       try {
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
-          secretMigrator.migrateSecrets();
+          if (this.secretMigrator != null) {
+            this.secretMigrator.migrateSecrets();
+            LOGGER.info("Secrets successfully migrated.");
+          }
         }
         LOGGER.info("Loaded seed data..");
       } catch (final IOException | JsonValidationException e) {
@@ -119,56 +132,39 @@ public class BootloaderApp {
   }
 
   public void load() throws Exception {
-    LOGGER.info("Setting up config database and default workspace..");
-
-    try {
-      LOGGER.info("Created initial jobs and configs database...");
-
+    LOGGER.info("Setting up config database and default workspace...");
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
     assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
-
-    // TODO Will be converted to an injected singleton during DI migration
-    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
     final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
 
     runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
+    LOGGER.info("Ran Flyway migrations.");
 
     final ConfigRepository configRepository =
         new ConfigRepository(configPersistence, configDatabase);
 
     createWorkspaceIfNoneExists(configRepository);
-    LOGGER.info("Default workspace created..");
+    LOGGER.info("Default workspace created.");
 
     createDeploymentIfNoneExists(jobPersistence);
-    LOGGER.info("Default deployment created..");
+    LOGGER.info("Default deployment created.");
 
-      jobPersistence.setVersion(currAirbyteVersion.serialize());
-      LOGGER.info("Set version to {}", currAirbyteVersion);
+    jobPersistence.setVersion(currAirbyteVersion.serialize());
+    LOGGER.info("Set version to {}", currAirbyteVersion);
 
-      postLoadExecution.run();
-    } finally {
-      jobDatabase.close();
-      configDatabase.close();
-    }
+    postLoadExecution.run();
 
-    LOGGER.info("Finished running post load Execution..");
+    LOGGER.info("Finished running post load Execution.");
 
-    LOGGER.info("Finished bootstrapping Airbyte environment..");
+    LOGGER.info("Finished bootstrapping Airbyte environment.");
   }
 
-<<<<<<< HEAD
-  private static Database getConfigDatabase(final Configs configs) throws IOException {
-    return new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl()).getAndInitialize();
+  private static Database getConfigDatabase(final DSLContext dslContext) throws IOException {
+    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
   }
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
@@ -180,19 +176,19 @@ public class BootloaderApp {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
-  private static Database getJobDatabase(final Configs configs) throws IOException {
-    return new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize();
+  private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
+    return new JobsDatabaseInstance(dslContext).getAndInitialize();
   }
 
   private static JobPersistence getJobPersistence(final Database jobDatabase) throws IOException {
     return new DefaultJobPersistence(jobDatabase);
   }
 
-  private void initPersistences() {
+  private void initPersistences(final DSLContext configsDslContext, final DSLContext jobsDslContext) {
     try {
-      configDatabase = getConfigDatabase(configs);
+      configDatabase = getConfigDatabase(configsDslContext);
       configPersistence = getConfigPersistence(configDatabase);
-      jobDatabase = getJobDatabase(configs);
+      jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
       LOGGER.error("Unable to initialize persistence.", e);
@@ -202,20 +198,33 @@ public class BootloaderApp {
   public static void main(final String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final Database configDatabase = getConfigDatabase(configs);
-    final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
-    final Database jobDatabase = getJobDatabase(configs);
-    final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
-    final SecretMigrator secretMigrator = new SecretMigrator(configPersistence, jobPersistence, SecretPersistence.getLongLived(configs));
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator);
-    bootloader.load();
+
+    // Manual configuration that will be replaced by Dependency Injection in the future
+    final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
+        DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl());
+    final DataSource jobsDataSource =
+        DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl());
+
+    try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+        final DSLContext jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
+
+      // TODO Will be converted to an injected singleton during DI migration
+      final Database configDatabase = getConfigDatabase(configsDslContext);
+      final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
+      final Database jobDatabase = getJobDatabase(jobsDslContext);
+      final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
+      final SecretMigrator secretMigrator =
+          new SecretMigrator(configPersistence, jobPersistence, SecretPersistence.getLongLived(configsDslContext, configs));
+      final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+          ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+      final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+          JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
       // Ensure that the database resources are closed on application shutdown
       CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-      final var bootloader = new BootloaderApp(configs, featureFlags, configsDslContext);
-      bootloader.load(configsDataSource, jobsDataSource, jobsDslContext);
+      final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      bootloader.load();
     }
   }
 

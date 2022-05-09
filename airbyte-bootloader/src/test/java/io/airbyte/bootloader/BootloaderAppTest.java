@@ -40,7 +40,9 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.sql.DataSource;
 import lombok.val;
+import org.flywaydb.core.Flyway;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,24 +88,26 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
-    bootloader.load();
+    val configsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    val jobsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
 
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
-      val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext);
-      bootloader.load(configsDataSource, jobsDataSource, jobsDslContext);
+      val configsFlyway = createConfigsFlyway(configsDataSource);
+      val jobsFlyway = createJobsFlyway(jobsDataSource);
+
+      val bootloader =
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      bootloader.load();
 
       val jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
-      val jobsFlyway = FlywayFactory.create(jobsDataSource, getClass().getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-          JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
-      val configsFlyway = FlywayFactory.create(configsDataSource, getClass().getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-          ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
@@ -141,33 +145,36 @@ public class BootloaderAppTest {
         .copySecrets(true)
         .maskSecrets(true)
         .build();
-    final Database configDatabase = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
 
-    val jobsPersistence = new DefaultJobPersistence(configDatabase);
+    val configsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    val jobsDataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
 
-    val spiedSecretMigrator = spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(mockedConfigs)));
+    try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+        val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
-    // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
-    // configs database
-    // requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
-    environmentVariables.set("DATABASE_USER", "docker");
-    environmentVariables.set("DATABASE_PASSWORD", "docker");
-    environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
+      val configsFlyway = createConfigsFlyway(configsDataSource);
+      val jobsFlyway = createJobsFlyway(jobsDataSource);
 
-    val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
-    initBootloader.load();
-
-    final ConfigPersistence localSchema = YamlSeedConfigPersistence.getDefault();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
-    configRepository.loadDataNoSecrets(localSchema);
-
-      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-          .copySecrets(true)
-          .maskSecrets(true)
-          .build();
       final Database configDatabase = new Database(configsDslContext);
       final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+
+      val jobsPersistence = new DefaultJobPersistence(configDatabase);
+
+      val spiedSecretMigrator =
+          spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
+
+      // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
+      // configs database
+      // requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
+      environmentVariables.set("DATABASE_USER", "docker");
+      environmentVariables.set("DATABASE_PASSWORD", "docker");
+      environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
+
+      val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      initBootloader.load();
+
       final ConfigPersistence localSchema = YamlSeedConfigPersistence.getDefault();
       final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
       configRepository.loadDataNoSecrets(localSchema);
@@ -185,37 +192,55 @@ public class BootloaderAppTest {
 
       final ObjectMapper mapper = new ObjectMapper();
 
-    when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
-    final var bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
-    boolean isMigrated = jobsPersistence.isSecretMigrated();
+      final UUID workspaceId = UUID.randomUUID();
+      configRepository.writeStandardWorkspace(new StandardWorkspace()
+          .withWorkspaceId(workspaceId)
+          .withName("wName")
+          .withSlug("wSlug")
+          .withEmail("email@mail.com")
+          .withTombstone(false)
+          .withInitialSetupComplete(false));
+      final UUID sourceId = UUID.randomUUID();
+      configRepository.writeSourceConnectionNoSecrets(new SourceConnection()
+          .withSourceDefinitionId(UUID.fromString("e7778cfc-e97c-4458-9ecb-b4f2bba8946c")) // Facebook Marketing
+          .withSourceId(sourceId)
+          .withName("test source")
+          .withWorkspaceId(workspaceId)
+          .withConfiguration(mapper.readTree(sourceSpecs)));
 
-    assertFalse(isMigrated);
+      when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
+      var bootloader =
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      boolean isMigrated = jobsPersistence.isSecretMigrated();
 
-    bootloader.load();
-    verify(spiedSecretMigrator).migrateSecrets();
+      assertFalse(isMigrated);
 
-      when(mockedFeatureFlags.runSecretMigration()).thenReturn(true);
-      val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, configsDslContext);
-      bootloader.load(configsDataSource, jobsDataSource, jobsDslContext);
+      bootloader.load();
+      verify(spiedSecretMigrator).migrateSecrets();
 
-    assertFalse(sourceConnection.getConfiguration().toString().contains("nonhiddensecret"));
-    assertTrue(sourceConnection.getConfiguration().toString().contains("_secret"));
+      final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
 
-    isMigrated = jobsPersistence.isSecretMigrated();
-    assertTrue(isMigrated);
+      assertFalse(sourceConnection.getConfiguration().toString().contains("nonhiddensecret"));
+      assertTrue(sourceConnection.getConfiguration().toString().contains("_secret"));
 
-    reset(spiedSecretMigrator);
-    // We need to re-create the bootloader because it is closing the persistence after running load
-    bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
-    bootloader.load();
-    verifyNoInteractions(spiedSecretMigrator);
+      isMigrated = jobsPersistence.isSecretMigrated();
+      assertTrue(isMigrated);
 
-    reset(spiedSecretMigrator);
-    when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
-    // We need to re-create the bootloader because it is closing the persistence after running load
-    bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
-    bootloader.load();
-    verify(spiedSecretMigrator).migrateSecrets();
+      reset(spiedSecretMigrator);
+      // We need to re-create the bootloader because it is closing the persistence after running load
+      bootloader =
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      bootloader.load();
+      verifyNoInteractions(spiedSecretMigrator);
+
+      reset(spiedSecretMigrator);
+      when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
+      // We need to re-create the bootloader because it is closing the persistence after running load
+      bootloader =
+          new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      bootloader.load();
+      verify(spiedSecretMigrator).migrateSecrets();
+    }
   }
 
   @Test
@@ -273,11 +298,26 @@ public class BootloaderAppTest {
 
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
-      new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags, mockedSecretMigrator, configsDslContext)
-          .load(configsDataSource, jobsDataSource, jobsDslContext);
+
+      val configsFlyway = createConfigsFlyway(configsDataSource);
+      val jobsFlyway = createJobsFlyway(jobsDataSource);
+
+      new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext,
+          configsFlyway, jobsFlyway)
+              .load();
 
       assertTrue(testTriggered.get());
     }
+  }
+
+  private Flyway createConfigsFlyway(final DataSource dataSource) {
+    return FlywayFactory.create(dataSource, getClass().getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+  }
+
+  private Flyway createJobsFlyway(final DataSource dataSource) {
+    return FlywayFactory.create(dataSource, getClass().getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
   }
 
 }
