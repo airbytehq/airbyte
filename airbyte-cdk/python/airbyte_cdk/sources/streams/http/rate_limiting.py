@@ -2,21 +2,19 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import sys
 import time
 from typing import Optional
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from requests import codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
 TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
 
-# TODO inject singleton logger?
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):

@@ -8,17 +8,17 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: airbyte/bootloader
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: airbyte/scheduler
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: airbyte/server
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: airbyte/webapp
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: airbyte/worker
-    newTag: 0.36.11-alpha
+    newTag: 0.37.0-alpha
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
