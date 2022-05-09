@@ -524,7 +524,8 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |
+| 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                              |
 | 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |
 | 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                     |
 | 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests |

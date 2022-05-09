@@ -794,6 +794,16 @@ public class ConfigRepository {
     return result;
   }
 
+  public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
+      throws IOException, ConfigNotFoundException {
+    final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
+        .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+    if (result.size() > 0) {
+      return DbConverter.buildActorCatalog(result.get(0));
+    }
+    throw new ConfigNotFoundException(ConfigSchema.ACTOR_CATALOG, actorCatalogId);
+  }
+
   /**
    * Store an Airbyte catalog in DB if it is not present already
    *

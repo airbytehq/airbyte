@@ -680,7 +680,8 @@ class WebBackendConnectionsHandlerTest {
         .cursorField(Collections.emptyList())
         .destinationSyncMode(DestinationSyncMode.OVERWRITE)
         .primaryKey(Collections.emptyList())
-        .aliasName("stream1");
+        .aliasName("stream1")
+        .setSelected(false);
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
 
@@ -729,7 +730,8 @@ class WebBackendConnectionsHandlerTest {
         .cursorField(Collections.emptyList())
         .destinationSyncMode(DestinationSyncMode.OVERWRITE)
         .primaryKey(Collections.emptyList())
-        .aliasName("stream1");
+        .aliasName("stream1")
+        .setSelected(false);
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
 
@@ -791,7 +793,8 @@ class WebBackendConnectionsHandlerTest {
         .cursorField(List.of("field1"))
         .destinationSyncMode(DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
-        .aliasName("renamed_stream");
+        .aliasName("renamed_stream")
+        .setSelected(true);
     final AirbyteStreamAndConfiguration expectedNewStream = ConnectionHelpers.generateBasicApiCatalog().getStreams().get(0);
     expectedNewStream.getStream()
         .name("stream2")
@@ -803,7 +806,8 @@ class WebBackendConnectionsHandlerTest {
         .cursorField(Collections.emptyList())
         .destinationSyncMode(DestinationSyncMode.OVERWRITE)
         .primaryKey(Collections.emptyList())
-        .aliasName("stream2");
+        .aliasName("stream2")
+        .setSelected(false);
     expected.getStreams().add(expectedNewStream);
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
