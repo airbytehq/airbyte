@@ -81,6 +81,7 @@
     - [GitHub](integrations/sources/github.md)
     - [GitLab](integrations/sources/gitlab.md)
     - [Google Ads](integrations/sources/google-ads.md)
+    - [Google Analytics Data API](integrations/sources/google-analytics-data-api.md)
     - [Google Analytics](integrations/sources/google-analytics-v4.md)
     - [Google Directory](integrations/sources/google-directory.md)
     - [Google Search Console](integrations/sources/google-search-console.md)
