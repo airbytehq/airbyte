@@ -194,9 +194,5 @@
     "required": ["dataset", "path_pattern", "provider"]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ]
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }
