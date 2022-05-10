@@ -6,9 +6,11 @@ import styled from "styled-components";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
+import ToolTip from "components/ToolTip";
 
 import { Connection, ConnectionStatus } from "core/domain/connection";
 import Status from "core/statuses";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
@@ -16,8 +18,6 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
-import ToolTip from "../../../../../components/ToolTip";
-import { useConfirmationModalService } from "../../../../../hooks/services/ConfirmationModal";
 import JobsList from "./JobsList";
 import { StatusMainInfo } from "./StatusMainInfo";
 

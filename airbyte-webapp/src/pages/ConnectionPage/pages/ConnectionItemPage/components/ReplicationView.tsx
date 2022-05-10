@@ -10,6 +10,7 @@ import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
 import { ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectionLoad,
   useResetConnection,
@@ -18,8 +19,6 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
-
-import { useConfirmationModalService } from "../../../../../hooks/services/ConfirmationModal";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;

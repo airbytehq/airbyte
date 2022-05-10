@@ -7,13 +7,13 @@ import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "componen
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { equal } from "utils/objects";
 
-import { useConfirmationModalService } from "../../../hooks/services/ConfirmationModal";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
