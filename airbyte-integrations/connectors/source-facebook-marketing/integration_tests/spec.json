@@ -37,24 +37,30 @@
         "airbyte_secret": true,
         "type": "string"
       },
+      "business_id": {
+        "title": "Your Facebook Business ID",
+        "description": "We will fetch all the AdAccounts that this business has access to. See docs for more information: https://go.estuary.dev/OzUqlE",
+        "order": 4,
+        "type": "string"
+      },
       "include_deleted": {
         "title": "Include Deleted",
         "description": "Include data from deleted Campaigns, Ads, and AdSets",
         "default": false,
-        "order": 4,
+        "order": 5,
         "type": "boolean"
       },
       "fetch_thumbnail_images": {
         "title": "Fetch Thumbnail Images",
         "description": "In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
         "default": false,
-        "order": 5,
+        "order": 6,
         "type": "boolean"
       },
       "custom_insights": {
         "title": "Custom Insights",
         "description": "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
-        "order": 6,
+        "order": 7,
         "type": "array",
         "items": {
           "title": "InsightConfig",
@@ -298,12 +304,12 @@
         "title": "Page Size of Requests",
         "description": "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         "default": 100,
-        "order": 7,
+        "order": 8,
         "exclusiveMinimum": 0,
         "type": "integer"
       }
     },
-    "required": ["account_id", "start_date", "access_token"]
+    "required": ["account_id", "start_date", "access_token", "business_id"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],

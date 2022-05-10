@@ -12,7 +12,7 @@ import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
-from facebook_business.adobjects import user as fb_user
+from facebook_business.adobjects import business as fb_business
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
@@ -160,14 +160,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, access_token: str):
+    def __init__(self, access_token: str, business_id: str):
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
+        self._business_id = business_id
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
     def accounts(self) -> List[AdAccount]:
         try:
-            return list(fb_user.User(fbid="me", api=self.api).get_ad_accounts())
+            return list(fb_business.Business(fbid=self._business_id, api=self.api).get_client_ad_accounts())
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc

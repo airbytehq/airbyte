@@ -47,7 +47,7 @@ def account_id_fixture():
 @pytest.fixture(autouse=True)
 def mock_accounts(mocker, account_id):
     account = FBAdAccount(f"act_{account_id}")
-    mocker.patch("facebook_business.adobjects.user.User.get_ad_accounts", return_value=[account])
+    mocker.patch("facebook_business.adobjects.business.Business.get_client_ad_accounts", return_value=[account])
 
 
 class TestBackoff:

@@ -37,7 +37,7 @@ class FBMarketingStream(Stream, ABC):
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size = 100, **kwargs):
+    def __init__(self, api: "API", include_deleted: bool = False, page_size=100, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self.page_size = page_size if page_size is not None else 100

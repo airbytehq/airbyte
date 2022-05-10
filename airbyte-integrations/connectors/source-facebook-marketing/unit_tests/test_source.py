@@ -13,6 +13,7 @@ from source_facebook_marketing.spec import ConnectorConfig
 def config_fixture():
     config = {
         "access_token": "TOKEN",
+        "business_id": "BUSINESS_ID",
         "start_date": "2019-10-10T00:00:00",
         "end_date": "2020-10-10T00:00:00",
     }
@@ -43,7 +44,7 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
-        api.assert_called_once_with(access_token="TOKEN")
+        api.assert_called_once_with(access_token="TOKEN", business_id="BUSINESS_ID")
 
     def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
         config["start_date"] = "2019-10-10T00:00:00"

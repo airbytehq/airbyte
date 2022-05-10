@@ -45,7 +45,7 @@ class SourceFacebookMarketing(AbstractSource):
         if pendulum.instance(config.end_date) < pendulum.instance(config.start_date):
             raise ValueError("end_date must be equal or after start_date.")
         try:
-            api = API(access_token=config.access_token)
+            api = API(access_token=config.access_token, business_id=config.business_id)
             logger.info(f"Select accounts {api.accounts}")
             return True, None
         except requests.exceptions.RequestException as e:
@@ -58,7 +58,7 @@ class SourceFacebookMarketing(AbstractSource):
         :return: list of the stream instances
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)
-        api = API(access_token=config.access_token)
+        api = API(access_token=config.access_token, business_id=config.business_id)
 
         insights_args = dict(
             api=api,
@@ -67,8 +67,20 @@ class SourceFacebookMarketing(AbstractSource):
         )
         streams = [
             AdAccount(api=api),
-            AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
+            AdSets(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Ads(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
             AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images, page_size=config.page_size),
             AdsInsights(page_size=config.page_size, **insights_args),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
@@ -77,10 +89,34 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(page_size=config.page_size, **insights_args),
             AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, **insights_args),
-            Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Activities(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
+            Campaigns(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Images(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Videos(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Activities(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, default_args=insights_args, streams=streams)
