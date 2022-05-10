@@ -52,6 +52,12 @@
           "description": "Account currency code.",
           "minLength": 1,
           "maxLength": 3
+        },
+        "lastKnownBalanceDate": {
+          "type": ["null", "string"],
+          "format": "date",
+          "example": "2019-11-11",
+          "description": "Date of last known balance within the last 365 days."
         }
       },
       "title": "BK-BalanceModel"
