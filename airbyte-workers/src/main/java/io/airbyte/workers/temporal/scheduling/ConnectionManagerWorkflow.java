@@ -9,6 +9,7 @@ import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -54,7 +55,7 @@ public interface ConnectionManagerWorkflow {
   void connectionUpdated();
 
   @SignalMethod
-  void resetConnection();
+  void resetConnection(Set<String> streamNames);
 
   /**
    * If an activity fails the workflow will be stuck. This signal activity can be used to retry the

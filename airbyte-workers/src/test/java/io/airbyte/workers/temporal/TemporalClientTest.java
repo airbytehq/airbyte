@@ -48,6 +48,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -227,7 +228,7 @@ class TemporalClientTest {
 
       final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
 
-      verify(mConnectionManagerWorkflow).resetConnection();
+      verify(mConnectionManagerWorkflow).resetConnection(new HashSet<>());
 
       assertEquals(manualSyncSubmissionResult.getJobId().get(), jobId3);
     }

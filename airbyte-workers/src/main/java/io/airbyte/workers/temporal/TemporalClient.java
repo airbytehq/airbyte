@@ -404,7 +404,7 @@ public class TemporalClient {
 
     final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
 
-    connectionManagerWorkflow.resetConnection();
+    connectionManagerWorkflow.resetConnection(new HashSet<>());
 
     do {
       try {

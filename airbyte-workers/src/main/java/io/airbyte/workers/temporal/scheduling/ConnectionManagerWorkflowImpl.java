@@ -319,7 +319,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
-  public void resetConnection() {
+  public void resetConnection(final Set<String> streamNames) {
     workflowState.setResetConnection(true);
     workflowState.setResetWithScheduling(false);
     if (workflowState.isRunning()) {
