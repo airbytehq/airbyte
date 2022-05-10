@@ -25,12 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
+ * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration test
  * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
-public class RedshiftCopyDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
