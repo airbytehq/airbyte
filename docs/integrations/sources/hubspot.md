@@ -147,7 +147,7 @@ If you are using OAuth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.59  | 2022-05-10 | [\#12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure all oauth scopes for "check" command |
+| 0.1.59  | 2022-05-10 | [\#12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure all oauth scopes in "check" command |
 | 0.1.58  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes
 | 0.1.56  | 2022-05-02 | [12515](https://github.com/airbytehq/airbyte/pull/12515) | Extra logs for troubleshooting 403 errors                                                                                                      |
