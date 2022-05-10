@@ -7,14 +7,12 @@ package io.airbyte.workers.temporal.sync;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
@@ -26,9 +24,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 1;
-
-  private final CheckConnectionActivity checkActivity =
-      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
   private final ReplicationActivity replicationActivity =
       Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
   private final NormalizationActivity normalizationActivity =
@@ -45,13 +40,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
-    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
-        .withConnectionConfiguration(syncInput.getSourceConfiguration());
-    final StandardCheckConnectionInput destinationConfiguration =
-        new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
-
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
     if (version > Workflow.DEFAULT_VERSION) {
       // the state is persisted immediately after the replication succeeded, because the
