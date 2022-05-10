@@ -10,9 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
 import java.util.Map;
@@ -266,6 +268,27 @@ class AirbyteMessageTrackerTest {
     assertTrue(messageTracker.getTotalRecordsCommitted().isEmpty());
   }
 
+  @Test
+  public void testGetFirstDestinationAndSourceMessages() throws Exception {
+    final AirbyteMessage sourceMessage1 = createTraceMessage("source trace 1", Long.valueOf(123));
+    final AirbyteMessage sourceMessage2 = createTraceMessage("source trace 2", Long.valueOf(124));
+    final AirbyteMessage destMessage1 = createTraceMessage("dest trace 1", Long.valueOf(125));
+    final AirbyteMessage destMessage2 = createTraceMessage("dest trace 2", Long.valueOf(126));
+    messageTracker.acceptFromSource(sourceMessage1);
+    messageTracker.acceptFromSource(sourceMessage2);
+    messageTracker.acceptFromDestination(destMessage1);
+    messageTracker.acceptFromDestination(destMessage2);
+
+    assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), destMessage1.getTrace());
+    assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), sourceMessage1.getTrace());
+  }
+
+  @Test
+  public void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
+    assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), null);
+    assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), null);
+  }
+
   private AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
@@ -276,6 +299,15 @@ class AirbyteMessageTrackerTest {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(stateData)));
+  }
+
+  private AirbyteMessage createTraceMessage(final String message, final Long emittedAt) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.TRACE)
+        .withTrace(new AirbyteTraceMessage()
+            .withType(AirbyteTraceMessage.Type.ERROR)
+            .withEmittedAt(emittedAt)
+            .withError(new AirbyteErrorTraceMessage().withMessage(message)));
   }
 
 }
