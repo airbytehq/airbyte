@@ -38,11 +38,11 @@ class DatetimeIterator(Iterator):
             self._end_time = start_date
         return self._partition_daterange(start_date, self._end_time, self._step)
 
-    # FIXME start and end field should come from config
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
+            # FIXME should start_date and end_date labels be configurable?
             dates.append({"start_date": start.strftime(self._datetime_format), "end_date": end_date.strftime(self._datetime_format)})
             start += step
         return dates

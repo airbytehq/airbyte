@@ -14,7 +14,7 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
 
-    def eval(self, input_str: str, vars, config, stream_slice, stream_state):
+    def eval(self, input_str: str, vars, config, stream_slice=None, stream_state=None):
         print(f"jinajinterpolation.eval: {input_str}")
         print(f"eval vars: {vars}")
         print(f"eval config: {config}")
