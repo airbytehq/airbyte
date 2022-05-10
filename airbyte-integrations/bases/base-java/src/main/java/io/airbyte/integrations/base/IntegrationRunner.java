@@ -86,6 +86,8 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
+
+    Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
   @VisibleForTesting
@@ -104,14 +106,10 @@ public class IntegrationRunner {
     try {
       runInternal(parsed);
       transaction.finish(SpanStatus.OK);
-    } catch (final AirbyteTracedException tracedException) {
-      transaction.setThrowable(tracedException);
-      transaction.finish(SpanStatus.INTERNAL_ERROR);
-      throw tracedException;
     } catch (final Exception e) {
       transaction.setThrowable(e);
       transaction.finish(SpanStatus.INTERNAL_ERROR);
-      throw new AirbyteTracedException(e, "Something went wrong in the connector. See the logs for more details.");
+      throw e;
     } finally {
       /*
        * This finally block may not run, probably because the container can be terminated by the worker.
