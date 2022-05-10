@@ -4,8 +4,13 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.*;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.destinationConnections;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.destinationOauthParameters;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.now;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.sourceConnections;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.sourceOauthParameters;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardDestinationDefinitions;
+import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSourceDefinitions;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncOperations;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncStates;
 import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncs;
@@ -31,7 +36,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.ActorType;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.NamespaceDefinitionType;
@@ -60,8 +64,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
   @Test
   public void testCompleteMigration() throws IOException, SQLException {
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = getDslContext();
     SetupForNormalizedTablesTest.setup(context);
 
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);
@@ -79,7 +82,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
   }
 
   private void assertDataForWorkspace(final DSLContext context) {
-    Result<Record> workspaces = context.select(asterisk())
+    final Result<Record> workspaces = context.select(asterisk())
         .from(table("workspace"))
         .fetch();
     Assertions.assertEquals(1, workspaces.size());
@@ -105,7 +108,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
     final List<Notification> notificationList = new ArrayList<>();
     final List fetchedNotifications = Jsons.deserialize(workspace.get(notifications).data(), List.class);
-    for (Object notification : fetchedNotifications) {
+    for (final Object notification : fetchedNotifications) {
       notificationList.add(Jsons.convertValue(notification, Notification.class));
     }
     final StandardWorkspace workspaceFromNewTable = new StandardWorkspace()
@@ -428,7 +431,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
     final List<UUID> ids = new ArrayList<>();
 
-    for (Record record : connectionOperations) {
+    for (final Record record : connectionOperations) {
       ids.add(record.get(operationId));
       Assertions.assertNotNull(record.get(id));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());

@@ -330,7 +330,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           assertColumnsWithSameNameAreSame(t.getNameSpace(), t.getName(), t.getFields());
           final List<Field> fields = t.getFields()
               .stream()
-              .map(f -> Field.of(f.getName(), getType(f.getType())))
+              .map(this::toField)
               .distinct()
               .collect(Collectors.toList());
           final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(), t.getName());
@@ -341,6 +341,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               .build();
         })
         .collect(Collectors.toList());
+  }
+
+  protected Field toField(CommonField<DataType> field) {
+    if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null && !field.getProperties().isEmpty()) {
+      var properties = field.getProperties().stream().map(this::toField).toList();
+      return Field.of(field.getName(), getType(field.getType()), properties);
+    } else {
+      return Field.of(field.getName(), getType(field.getType()));
+    }
   }
 
   protected void assertColumnsWithSameNameAreSame(final String nameSpace, final String tableName, final List<CommonField<DataType>> columns) {

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,12 +142,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    return Databases.createDatabase(
-        DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(),
-        DatabricksDestination.getDatabricksConnectionString(databricksConfig),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        SQLDialect.DEFAULT);
+    final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME, databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS, DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
+    return new Database(dslContext);
   }
 
 }

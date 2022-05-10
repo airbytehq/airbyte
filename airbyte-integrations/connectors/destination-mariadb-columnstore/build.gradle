@@ -22,5 +22,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mariadb-columnstore')
-    integrationTestJavaImplementation "org.testcontainers:mariadb:1.16.2"
+    integrationTestJavaImplementation libs.testcontainers.mariadb
 }

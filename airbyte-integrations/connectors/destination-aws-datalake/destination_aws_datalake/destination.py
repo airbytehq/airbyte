@@ -45,30 +45,28 @@ class DestinationAwsDatalake(Destination):
             raise
         self.logger.debug("AWS session creation OK")
 
-        with LakeformationTransaction(aws_handler) as tx:
-            # creating stream writers
-            streams = {
-                s.stream.name: StreamWriter(
-                    name=s.stream.name,
-                    aws_handler=aws_handler,
-                    tx=tx,
-                    connector_config=connector_config,
-                    schema=s.stream.json_schema["properties"],
-                    sync_mode=s.destination_sync_mode,
-                )
-                for s in configured_catalog.streams
-            }
+        # creating stream writers
+        streams = {
+            s.stream.name: StreamWriter(
+                name=s.stream.name,
+                aws_handler=aws_handler,
+                connector_config=connector_config,
+                schema=s.stream.json_schema["properties"],
+                sync_mode=s.destination_sync_mode,
+            )
+            for s in configured_catalog.streams
+        }
 
-            for message in input_messages:
-                if message.type == Type.STATE:
-                    yield message
-                else:
-                    data = message.record.data
-                    stream = message.record.stream
-                    streams[stream].append_message(json.dumps(data, default=str))
+        for message in input_messages:
+            if message.type == Type.STATE:
+                yield message
+            else:
+                data = message.record.data
+                stream = message.record.stream
+                streams[stream].append_message(json.dumps(data, default=str))
 
-            for stream_name, stream in streams.items():
-                stream.add_to_datalake()
+        for stream_name, stream in streams.items():
+            stream.add_to_datalake()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

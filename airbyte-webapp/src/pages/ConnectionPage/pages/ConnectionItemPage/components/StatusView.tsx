@@ -8,7 +8,7 @@ import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 
-import { Connection } from "core/domain/connection";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
@@ -17,12 +17,12 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
-import StatusMainInfo from "./StatusMainInfo";
+import { StatusMainInfo } from "./StatusMainInfo";
 
-type IProps = {
+interface StatusViewProps {
   connection: Connection;
   frequencyText?: string;
-};
+}
 
 const Content = styled.div`
   margin: 0 10px;
@@ -51,7 +51,7 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
+const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();
@@ -85,26 +85,28 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            <div>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <FormattedMessage id={"connection.resetData"} />
-              </Button>
-              <SyncButton
-                disabled={!allowSync}
-                isLoading={isLoading}
-                wasActive={showFeedback}
-                onClick={() => startAction({ action: onSync })}
-              >
-                {showFeedback ? (
-                  <FormattedMessage id={"sources.syncingNow"} />
-                ) : (
-                  <>
-                    <TryArrow icon={faRedoAlt} />
-                    <FormattedMessage id={"sources.syncNow"} />
-                  </>
-                )}
-              </SyncButton>
-            </div>
+            {connection.status === ConnectionStatus.ACTIVE && (
+              <div>
+                <Button onClick={() => setIsModalOpen(true)}>
+                  <FormattedMessage id={"connection.resetData"} />
+                </Button>
+                <SyncButton
+                  disabled={!allowSync}
+                  isLoading={isLoading}
+                  wasActive={showFeedback}
+                  onClick={() => startAction({ action: onSync })}
+                >
+                  {showFeedback ? (
+                    <FormattedMessage id={"sources.syncingNow"} />
+                  ) : (
+                    <>
+                      <TryArrow icon={faRedoAlt} />
+                      <FormattedMessage id={"sources.syncNow"} />
+                    </>
+                  )}
+                </SyncButton>
+              </div>
+            )}
           </Title>
         }
       >

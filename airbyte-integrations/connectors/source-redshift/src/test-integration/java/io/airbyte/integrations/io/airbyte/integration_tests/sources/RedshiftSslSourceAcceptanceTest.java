@@ -5,25 +5,29 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.redshift.RedshiftSource;
 
 public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTest {
 
   @Override
   protected JdbcDatabase createDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        RedshiftSource.DRIVER_CLASS,
-        JdbcUtils.parseJdbcParameters("ssl=true&" +
-            "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory"));
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.REDSHIFT.getDriverClassName(),
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText()),
+            JdbcUtils.parseJdbcParameters("ssl=true&" +
+                "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory")
+        )
+    );
   }
 
 }

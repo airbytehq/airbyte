@@ -45,7 +45,7 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
   const statusIconStatus = useMemo<StatusIconStatus | undefined>(
     () =>
       status === Status.EMPTY
-        ? "empty"
+        ? "sleep"
         : status === Status.ACTIVE
         ? "success"
         : status === Status.INACTIVE
