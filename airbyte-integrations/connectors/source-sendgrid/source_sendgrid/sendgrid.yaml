@@ -28,6 +28,8 @@ source:
             data_field: "results"
           options:
             name: segments
+            primary_key: "id"
+            cursor_field: []
             schema:
               class_name: "airbyte_cdk.sources.cac.schema.json_schema.JsonSchema"
               options:
@@ -60,6 +62,8 @@ source:
           data_field: "results"
         options:
           name: segments
+          primary_key: "id"
+          cursor_field: []
           schema:
             class_name: "airbyte_cdk.sources.cac.schema.json_schema.JsonSchema"
             options:
@@ -89,6 +93,51 @@ source:
                 options:
                   url_base: "https://api.sendgrid.com/v3/"
                   path: "marketing/segments"
+                  method: GET
+                  authenticator:
+                    class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
+                    options:
+                      token: "{{ config.apikey }}"
+              extractor:
+                class_name: "airbyte_cdk.sources.cac.extractors.jq.JqExtractor"
+                options:
+                  transform: ".{{ vars['data_field'] }}[]"
+      bounces:
+        class_name: "airbyte_cdk.sources.cac.configurable_stream.ConfigurableStream"
+        vars:
+          data_field: "results"
+        options:
+          name: bounces
+          primary_key: "id"
+          cursor_field: "created_at"
+          schema:
+            class_name: "airbyte_cdk.sources.cac.schema.json_schema.JsonSchema"
+            options:
+              file_path: "/Users/alex/code/airbyte/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/schemas/segments.json"
+          retriever:
+            class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
+            options:
+              iterator:
+                class_name: "airbyte_cdk.sources.cac.iterators.datetime_iterator.DatetimeIterator"
+                options:
+                  start_time:
+                    value: "{{ stream_state['date'] }}"
+                    default: "{{ config['start_time'] }}"
+                  end_time:
+                    value: "{{ today_utc() }}"
+                  step: "1000d"
+                  cursor_value: "{{ stream_state['created_at'] }}"
+                  datetime_format: "%Y-%m-%d"
+              state:
+                class_name: "airbyte_cdk.sources.cac.states.dict_state.DictState"
+                options:
+                  name: "created_at"
+                  value: "{{ last_record['created_at'] }}"
+              requester:
+                class_name: "airbyte_cdk.sources.cac.requesters.http_requester.HttpRequester"
+                options:
+                  url_base: "https://api.sendgrid.com/v3/"
+                  path: "marketing/bounces"
                   method: GET
                   authenticator:
                     class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"

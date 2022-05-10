@@ -10,7 +10,11 @@ from airbyte_cdk.sources.cac.types import Record
 
 
 class JqExtractor:
-    def __init__(self, transform, vars, config):
+    def __init__(self, transform, vars=None, config=None):
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
         # print(f"creating JqExtractor with transform: {transform}")
         # print(f"creating JqExtractor with config:{config}")
         # print(f"creating JqExtractor with vars:{vars}")

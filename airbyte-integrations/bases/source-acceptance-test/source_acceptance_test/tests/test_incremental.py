@@ -90,6 +90,9 @@ class TestIncremental(BaseTest):
 
         latest_state = states_1[-1].state.data
         for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
+            if isinstance(record_value, int):
+                state_value = int(state_value)
+            # raise Exception(f"record:{type(record_value)} - state:{type(state_value)}")
             assert (
                 record_value <= state_value
             ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
@@ -98,6 +101,8 @@ class TestIncremental(BaseTest):
         records_2 = filter_output(output, type_=Type.RECORD)
 
         for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
+            if isinstance(record_value, int):
+                state_value = int(state_value)
             assert (
                 record_value >= state_value
             ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"

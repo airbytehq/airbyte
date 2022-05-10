@@ -2,28 +2,34 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import datetime
+import re
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.iterators.iterator import Iterator
-from pendulum.tz.timezone import Timezone
 
 
 class DatetimeIterator(Iterator):
 
     # FIXME: start_time, end_time, and step should be datetime and timedelta?
-    def __init__(self, start_time, end_time, step, timezone: Timezone, cursor_value, datetime_format, vars, config):
-        self._timezone = timezone
+    # FIXME: timezone should be configurable?
+    def __init__(self, start_time, end_time, step, cursor_value, datetime_format, vars, config):
+        self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
         self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config))
+        print(f"start_timeHERE: {self._start_time}: {type(self._start_time)}")
         if not self._start_time:
+            print("start time was none!")
             self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config))
         self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config))
+        print(f"end_time1: {self._end_time}: {type(self._end_time)}")
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
+        print(f"end_time2: {self._end_time}: {type(self._end_time)}")
+        print(f"start_time: {self._start_time}: {type(self._start_time)}")
         self._start_time = min(self._start_time, self._end_time)
-        self._step = step
+        self._step = parse_timedelta(step)
         self._vars = vars
         self._config = config
         self._cursor_value = cursor_value
@@ -43,7 +49,7 @@ class DatetimeIterator(Iterator):
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
             # FIXME should start_date and end_date labels be configurable?
-            dates.append({"start_date": start.strftime(self._datetime_format), "end_date": end_date.strftime(self._datetime_format)})
+            dates.append({"start_date": start.timestamp(), "end_date": end_date.timestamp()})
             start += step
         return dates
 
@@ -53,8 +59,44 @@ class DatetimeIterator(Iterator):
 
     def parse_date(self, date: Any) -> datetime:
         if date and isinstance(date, str):
-            return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
+            if self.is_int(date):
+                return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
+            else:
+                return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
         return date
 
     def is_start_date_valid(self, start_date: datetime) -> bool:
         return start_date <= self._end_time
+
+    def is_int(self, s) -> bool:
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+
+timedelta_regex = re.compile(
+    r"((?P<weeks>[\.\d]+?)w)?"
+    r"((?P<days>[\.\d]+?)d)?"
+    r"((?P<hours>[\.\d]+?)h)?"
+    r"((?P<minutes>[\.\d]+?)m)?"
+    r"((?P<seconds>[\.\d]+?)s)?"
+    r"((?P<microseconds>[\.\d]+?)ms)?"
+    r"((?P<milliseconds>[\.\d]+?)us)?$"
+)
+
+
+def parse_timedelta(time_str):
+    """
+    Parse a time string e.g. (2h13m) into a timedelta object.
+    Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
+    :param time_str: A string identifying a duration. (eg. 2h13m)
+    :return datetime.timedelta: A datetime.timedelta object
+    """
+    parts = timedelta_regex.match(time_str)
+
+    assert parts is not None
+
+    time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
+    return datetime.timedelta(**time_params)

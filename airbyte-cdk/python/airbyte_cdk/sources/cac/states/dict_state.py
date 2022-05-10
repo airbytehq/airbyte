@@ -7,25 +7,51 @@ from airbyte_cdk.sources.cac.states.state import State
 
 # FIXME: currently only support single values
 class DictState(State):
-    def __init__(self, name, value, vars, config):
+    def __init__(self, name, value, vars=None, config=None):
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
         self._name = name
         self._value = value
         self._interpolator = JinjaInterpolation()
         self._context = dict()
         self._vars = vars
         self._config = config
+        self._state = None
 
     def update_state(self, stream_slice, stream_state, last_response, last_record):
+        # FIXME: should the last record be reset if none were returned ?
+        # print(f"updating state. current: {self._context} - {last_record}")
         self._context.update(
             {"stream_slice": stream_slice, "stream_state": stream_state, "last_response": last_response, "last_record": last_record}
         )
 
+        self._state = self.compute_state()
+        if stream_state and not self._state:
+            raise Exception("UNEXPECTED!")
+        self._context["stream_state"] = self._state
+
     def get_state(self):
+        return self._state
+
+    def compute_state(self):
+        # FIXME: date needs to be properly formatted!
         name = self._interpolator.eval(self._name, self._vars, self._config)
         val = self._interpolator.eval(self._value, self._vars, self._config, **self._context)
-        prev_state = self._context.get("stream_state", {})
+
+        prev_state = self._state
+
         if prev_state:
             prev_val = prev_state.get(name)
             if prev_val:
                 val = max(val, prev_val)
+        # print(f"STATE: {val}")
+
+        updated_state = {name: val}
+        self._context["stream_state"] = updated_state
+        # print(f"contextß: {self._context}")
+        # print(f"prev state: {prev_state}")
+        # print(f"updated_state: {updated_state}")
+        # print(self._context)
         return {name: val}

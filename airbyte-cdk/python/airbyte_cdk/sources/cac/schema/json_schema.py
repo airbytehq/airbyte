@@ -9,7 +9,11 @@ from airbyte_cdk.sources.cac.schema.schema_loader import SchemaLoader
 
 
 class JsonSchema(SchemaLoader):
-    def __init__(self, file_path, vars, config):
+    def __init__(self, file_path, vars=None, config=None):
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
         # Small hack until i figure out the docker issue
         if not os.path.exists(file_path):
             relative = "/".join(file_path.split("/")[-3:])

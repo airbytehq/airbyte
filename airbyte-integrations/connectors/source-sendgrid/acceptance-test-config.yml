@@ -20,3 +20,9 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/new_configured_catalog.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/no_spam_reports_configured_catalog.json"
+      future_state_path: "sample_files/abnormal_state.json"
+      cursor_paths:
+        bounces: ["created"]

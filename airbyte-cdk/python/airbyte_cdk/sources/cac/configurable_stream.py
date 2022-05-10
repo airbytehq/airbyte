@@ -4,27 +4,42 @@
 
 # from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator, NoAuth
 # from airbyte_cdk.sources.streams.http.http import HttpStream
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
 from airbyte_cdk.sources.cac.retrievers.retriever import Retriever
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.cac.types import Vars, Config
 
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.core import IncrementalMixin, Stream
 
 
-class ConfigurableStream(Stream):
-    def __init__(self, name, schema, retriever, vars: "Vars", config: "Config"):
+class ConfigurableStream(Stream, IncrementalMixin):
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._retriever._state.get_state()
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        # FIXME: Do we still need this?
+        self._retriever._state.update_state(None, value, None, None)
+
+    def __init__(self, name, primary_key, cursor_field, schema, retriever, vars: "Vars" = None, config: "Config" = None):
         # print(f"creating a configurable stream with {name}")
         # print(f"schema: {schema}")
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
         self._name = name
+        self._primary_key = primary_key
+        self._cursor_field = cursor_field
         self._vars = vars
-        self._schema_loader = LowCodeComponentFactory().create_component(schema, vars, config)
+        self._schema_loader = schema  # LowCodeComponentFactory().create_component(schema, vars, config)
         # print(f"stream.vars: {self._vars}")
-        self._retriever: Retriever = LowCodeComponentFactory().create_component(retriever, vars, config)
+        self._retriever: Retriever = retriever  # LowCodeComponentFactory().create_component(retriever, vars, config)
 
     def read_records(
         self,
@@ -40,7 +55,7 @@ class ConfigurableStream(Stream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         # FIXME: TODO
-        return "id"
+        return self._primary_key
 
     def merge_dicts(self, d1, d2):
         return {**d1, **d2}
@@ -75,3 +90,25 @@ class ConfigurableStream(Stream):
         """
         # FIXME: this is not passing the cursor field because i think it should be known at init time. Is this always true?
         return self._retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        """
+        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        """
+        return self._cursor_field
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+        100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
+
+        Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
+
+        return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+        ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+        created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
+        """
+        return self._retriever.state_checkpoint_interval

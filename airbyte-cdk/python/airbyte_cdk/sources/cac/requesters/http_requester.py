@@ -4,14 +4,17 @@
 from typing import Optional
 
 import requests
-from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 
 
 class HttpRequester(Requester):
-    def __init__(self, url_base, path, method, authenticator, vars, config):
+    def __init__(self, url_base, path, method, authenticator, vars=None, config=None):
         # print("creating HttpRequester")
-        self._authenticator = LowCodeComponentFactory().create_component(authenticator, vars, config)
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
+        self._authenticator = authenticator  # LowCodeComponentFactory().create_component(authenticator, vars, config)
         # print(f"authenticator: {self._authenticator.auth_method}")
         # print(f"authenticator: {self._authenticator.auth_header}")
         self._url_base = url_base
