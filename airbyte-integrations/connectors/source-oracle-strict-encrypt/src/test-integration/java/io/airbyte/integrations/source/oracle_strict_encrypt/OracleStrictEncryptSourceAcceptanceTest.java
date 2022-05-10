@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -22,8 +24,10 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.List;
+import javax.sql.DataSource;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -54,15 +58,19 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .build()))
         .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )", ";"));
+            "oracle.net.encryption_types_client=( 3DES168 )", ";")
+    );
+
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -76,7 +84,9 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
       connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
     });
 
-    database.close();
+    if(dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   @Override

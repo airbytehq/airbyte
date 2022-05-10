@@ -63,7 +63,9 @@ class TelemetryClient:
             self._create_command_name(ctx.parent, command_names)
         return " ".join(command_names) if not extra_info_name else " ".join(command_names + [extra_info_name])
 
-    def send_command_telemetry(self, ctx: click.Context, error: Optional[Exception] = None, extra_info_name: Optional[str] = None):
+    def send_command_telemetry(
+        self, ctx: click.Context, error: Optional[Exception] = None, extra_info_name: Optional[str] = None, is_help: bool = False
+    ):
         """Send telemetry with the analytics client.
         The event name is the command name.
         The context has the octavia version.
@@ -76,15 +78,15 @@ class TelemetryClient:
         """
         user_id = ctx.obj.get("WORKSPACE_ID") if ctx.obj.get("ANONYMOUS_DATA_COLLECTION", True) is False else None
         anonymous_id = None if user_id else str(uuid.uuid1())
-
         segment_context = {"app": {"name": "octavia-cli", "version": ctx.obj.get("OCTAVIA_VERSION")}}
         segment_properties = {
             "success": error is None,
+            "is_help": is_help,
             "error_type": error.__class__.__name__ if error is not None else None,
             "project_is_initialized": ctx.obj.get("PROJECT_IS_INITIALIZED"),
             "airbyter": os.getenv("AIRBYTE_ROLE") == "airbyter",
         }
-        command_name = self._create_command_name(ctx, extra_info_name)
+        command_name = self._create_command_name(ctx, extra_info_name=extra_info_name)
         self.segment_client.track(
             user_id=user_id, anonymous_id=anonymous_id, event=command_name, properties=segment_properties, context=segment_context
         )

@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Metadata;
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.jobs.AbstractJobsDatabaseTest;
 import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.AttemptFailureSummaryForMigration;
 import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration;
@@ -100,8 +99,7 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
 
   @Test
   public void test() throws Exception {
-    final Database database = getDatabase();
-    final DSLContext ctx = DSL.using(database.getDataSource().getConnection());
+    final DSLContext ctx = getDslContext();
 
     V0_35_5_001__Add_failureSummary_col_to_Attempts.migrate(ctx);
 

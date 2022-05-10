@@ -13,7 +13,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -114,11 +115,14 @@ public abstract class JdbcStressTest {
     config = getConfig();
 
     final JsonNode jdbcConfig = source.toDatabaseConfig(config);
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass());
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            getDriverClass(),
+            jdbcConfig.get("jdbc_url").asText()
+        )
+    );
 
     database.execute(connection -> connection.createStatement().execute(
         createTableQuery("id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));

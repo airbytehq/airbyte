@@ -8,9 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.AbstractDatabaseTest;
 import io.airbyte.db.instance.DatabaseMigrator;
 import java.io.IOException;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 
 class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
@@ -19,13 +23,16 @@ class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
   private static final String POST_MIGRATION_SCHEMA_DUMP = "toys_database/schema_dump.txt";
 
   @Override
-  public Database getDatabase() throws IOException {
-    return new ToysDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+  public Database getDatabase(final DataSource dataSource, final DSLContext dslContext) throws IOException {
+    return new ToysDatabaseInstance(dslContext).getAndInitialize();
   }
 
   @Test
   public void testMigration() throws Exception {
-    final DatabaseMigrator migrator = new ToysDatabaseMigrator(database, ToysDatabaseMigratorTest.class.getSimpleName());
+    final DataSource dataSource = getDataSource();
+    final Flyway flyway = FlywayFactory.create(dataSource, getClass().getSimpleName(), ToysDatabaseMigrator.DB_IDENTIFIER,
+        ToysDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final DatabaseMigrator migrator = new ToysDatabaseMigrator(database, flyway);
 
     // Compare pre migration baseline schema
     migrator.createBaseline();
