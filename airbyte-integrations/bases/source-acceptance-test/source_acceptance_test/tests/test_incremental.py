@@ -89,7 +89,7 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days) -> 
         record_date_value = record_value if isinstance(record_value, datetime) else dateutil.parser.parse(record_value)
         state_date_value = state_value if isinstance(state_value, datetime) else dateutil.parser.parse(state_value)
 
-        return record_date_value >= (state_date_value - timedelta(days=1))
+        return record_date_value >= (state_date_value - timedelta(days=threshold_days))
 
     return record_value >= state_value
 
