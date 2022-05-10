@@ -25,6 +25,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -185,6 +186,10 @@ public abstract class JdbcSourceAcceptanceTest {
     return clause.toString();
   }
 
+  protected String getJdbcParameterDelimiter() {
+    return "&";
+  }
+
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
@@ -192,12 +197,14 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = Databases.createJdbcDatabase(
+    database = Databases.createStreamingJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         getDriverClass(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
+        AdaptiveStreamingQueryConfig::new,
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
+        JdbcUtils.getDefaultSourceOperations());
 
     if (supportsSchemas()) {
       createSchemas();

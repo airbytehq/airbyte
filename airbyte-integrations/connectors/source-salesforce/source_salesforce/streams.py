@@ -485,6 +485,7 @@ class Describe(Stream):
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
     """
+
     name = "Describe"
     primary_key = "name"
 

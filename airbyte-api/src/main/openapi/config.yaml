@@ -2323,6 +2323,7 @@ components:
           type: string
     CustomerioNotificationConfiguration:
       type: object
+      nullable: true
     NotificationType:
       type: string
       enum:
@@ -3143,7 +3144,6 @@ components:
     WebBackendConnectionCreate:
       type: object
       required:
-        - connection
         - sourceId
         - destinationId
         - status
@@ -3507,6 +3507,7 @@ components:
             #- unnesting
     OperatorDbt:
       type: object
+      nullable: true
       required:
         - gitRepoUrl
       properties:
@@ -3781,6 +3782,7 @@ components:
           $ref: "#/components/schemas/AttemptFailureSummary"
     AttemptStats:
       type: object
+      nullable: true
       properties:
         recordsEmitted:
           type: integer
@@ -3806,6 +3808,7 @@ components:
           $ref: "#/components/schemas/AttemptStats"
     AttemptFailureSummary:
       type: object
+      nullable: true
       required:
         - failures
       properties:
@@ -4016,6 +4019,7 @@ components:
     ResourceRequirements:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object
+      nullable: true
       properties:
         cpu_request:
           type: string

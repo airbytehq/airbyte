@@ -27,6 +27,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -316,7 +317,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get("port").asInt(),
             dbName),
         DRIVER_CLASS,
-        new MssqlJdbcStreamingQueryConfiguration(),
+        AdaptiveStreamingQueryConfig::new,
         Maps.newHashMap(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);

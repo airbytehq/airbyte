@@ -22,8 +22,8 @@
       },
       "window_in_days": {
         "type": "integer",
-        "title": "Window in days (Optional)",
-        "description": "The amount of days each stream slice would consist of beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "title": "Data request window (Optional)",
+        "description": "The amount of data batched by the number of days. The bigger the value, the bigger the batch size and the lower the API requests made. (Min=1, as for a Day; Max=364, as for a Year).",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1
       },
