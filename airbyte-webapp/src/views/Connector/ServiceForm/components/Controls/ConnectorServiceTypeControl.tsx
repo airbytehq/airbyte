@@ -23,7 +23,7 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
 
 import { WarningMessage } from "../WarningMessage";
-import { DocumentationLink } from "./Instruction";
+import { DocumentationLink } from "./DocumentationLink";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
