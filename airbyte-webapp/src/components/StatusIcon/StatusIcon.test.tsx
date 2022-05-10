@@ -17,7 +17,7 @@ describe("<StatusIcon />", () => {
   const statusCases: { status: StatusIconStatus; icon: string }[] = [
     { status: "success", icon: "check" },
     { status: "inactive", icon: "pause" },
-    { status: "empty", icon: "ban" },
+    { status: "sleep", icon: "moon" },
     { status: "warning", icon: "triangle-exclamation" },
     { status: "loading", icon: "circle-loader" },
   ];

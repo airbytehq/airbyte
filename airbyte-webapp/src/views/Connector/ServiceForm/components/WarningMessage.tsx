@@ -33,7 +33,7 @@ const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
     <Content>
       <FormattedMessage id={`connector.releaseStage.${stage}.description`} />{" "}
       <FormattedMessage
-        id={`connector.docsLink`}
+        id="connector.connectorsInDevelopment.docLink"
         values={{
           lnk: (node: React.ReactNode) => (
             <Link href={config.ui.productReleaseStages} target="_blank" rel="noreferrer">

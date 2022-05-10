@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
 }
 dependencies {
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')

@@ -1,4 +1,4 @@
-export type IProps = {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   full?: boolean;
   danger?: boolean;
   secondary?: boolean;
@@ -7,4 +7,4 @@ export type IProps = {
   wasActive?: boolean;
   clickable?: boolean;
   size?: "m" | "xl";
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+}

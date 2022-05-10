@@ -37,6 +37,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -793,6 +794,16 @@ public class ConfigRepository {
     return result;
   }
 
+  public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
+      throws IOException, ConfigNotFoundException {
+    final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
+        .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+    if (result.size() > 0) {
+      return DbConverter.buildActorCatalog(result.get(0));
+    }
+    throw new ConfigNotFoundException(ConfigSchema.ACTOR_CATALOG, actorCatalogId);
+  }
+
   /**
    * Store an Airbyte catalog in DB if it is not present already
    *
@@ -968,6 +979,17 @@ public class ConfigRepository {
     } else {
       return tombstoneField.eq(false);
     }
+  }
+
+  public WorkspaceServiceAccount getWorkspaceServiceAccountNoSecrets(final UUID workspaceId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId.toString(), WorkspaceServiceAccount.class);
+  }
+
+  public void writeWorkspaceServiceAccountNoSecrets(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceServiceAccount.getWorkspaceId().toString(),
+        workspaceServiceAccount);
   }
 
 }

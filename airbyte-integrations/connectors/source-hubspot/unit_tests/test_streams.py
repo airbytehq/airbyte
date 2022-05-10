@@ -33,6 +33,12 @@ from source_hubspot.streams import (
 from .utils import read_full_refresh, read_incremental
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
     stream = ContactLists(**common_params)
 

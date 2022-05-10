@@ -13,7 +13,8 @@
             "gender": { "type": "string" },
             "ip_address": { "type": "string" },
             "primary_email": { "type": "string" },
-            "dob": { "type": "string", "format": "date" }
+            "dob": { "type": "string", "format": "date" },
+            "modifiedAt": { "type": "string", "format": "date-time" }
           }
         },
         "supported_sync_modes": ["full_refresh"]
