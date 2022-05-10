@@ -6,7 +6,10 @@ Documentation is written as [Markdown](https://guides.github.com/features/master
 
 1. Modify docs using Git or the Github UI \(All docs live in the `docs/` folder in the [Airbyte repository](https://github.com/airbytehq/airbyte)\)
 2. If you're adding new files, update `docs/SUMMARY.md`.
-4. Create a Pull Request
+3. Create a Pull Request
+
+### Sidebar updates
+To edit the sidebar you must [edit this JSON in this Javascript file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js).
 
 ### Modify in the Github UI
 
@@ -34,9 +37,6 @@ Documentation is written as [Markdown](https://guides.github.com/features/master
 
 3. Modify the documentation.
 4. Create a pull request
-
-### Sidebar updates
-To edit the sidebar you must [edit this JSON in this Javascript file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js).
 
 ### Testing Changes
 * You can run a copy of the website locally to test how your changes will look in production
