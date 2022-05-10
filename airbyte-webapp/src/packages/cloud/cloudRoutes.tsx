@@ -162,6 +162,7 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
+      {/* <LDExperimentServiceProvider> */}
       <Suspense fallback={<LoadingPage />}>
         {/* Allow email verification no matter whether the user is logged in or not */}
         <Routes>
@@ -172,6 +173,7 @@ export const Routing: React.FC = () => {
         {/* Allow all regular routes if the user is logged in */}
         {user && <MainViewRoutes />}
       </Suspense>
+      {/* </LDExperimentServiceProvider> */}
     </WorkspaceServiceProvider>
   );
 };

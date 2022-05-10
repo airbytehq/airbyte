@@ -36,6 +36,7 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
       authEmulatorHost: window.FIREBASE_AUTH_EMULATOR_HOST,
     },
     cloudApiUrl: window.CLOUD_API_URL,
+    launchdarkly: window.LAUNCHDARKLY_KEY,
   };
 };
 
