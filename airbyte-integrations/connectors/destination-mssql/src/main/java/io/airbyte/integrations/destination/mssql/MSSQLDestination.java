@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -23,7 +24,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
-  public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");

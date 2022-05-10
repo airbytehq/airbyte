@@ -16,7 +16,8 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-secretmanager:2.0.5'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.flyway.core
     testImplementation project(':airbyte-test-utils')
     integrationTestJavaImplementation project(':airbyte-config:persistence')
 }

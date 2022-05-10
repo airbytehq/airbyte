@@ -17,6 +17,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -51,7 +52,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
-  static final String DRIVER_CLASS = "org.postgresql.Driver";
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
