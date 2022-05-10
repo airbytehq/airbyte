@@ -1,9 +1,10 @@
-# Introduction
+# Updating Gradle Dependencies
+We use [Gradle Catalogs](https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies)
+to keep dependencies synced up across different Java projects. This is particularly useful for Airbyte Cloud, and can be
+used by any project seeking to build off Airbyte.
 
-This document describes how to update dependency versions for Airbyte's **Gradle** build and how to share them with other **projects**.      
-Dependencies should be represented as dependency coordinates, that a user can pick from when declaring dependencies in a build script.
-
-We use [Gradle Catalogs](https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies) to keep dependencies synced up across different Java projects.
+Catalogs allow dependencies to be represented as dependency coordinates. A user can reference preset dependencies/versions
+when declaring dependencies in a build script.
 
 > Version Catalog Example:
 > ```gradle
@@ -11,7 +12,22 @@ We use [Gradle Catalogs](https://docs.gradle.org/current/userguide/platforms.htm
 >    implementation(libs.groovy.core)
 > }
 > ```
-> In this context, libs is a catalog and groovy represents a dependency available in this catalog.
+> In this context, libs is a catalog and groovy represents a dependency available in this catalog. Instead of declaring a
+> specific version, we reference the version in the Catalog.
+
+This helps reduce the chances of dependency drift and dependency hell.
+
+Thus, please use the Catalog when:
+- declaring new common dependencies.
+- specifying new common dependencies.
+
+A common dependency is a foundational Java package e.g. Apache commons, Log4j etc that is often the basis on which libraries
+are built upon.
+
+This is a relatively new addition, so devs should keep this in mind and use the top-level Catalog on a best-effort basis.
+
+### Setup Details
+This section is for engineers wanting to understand Gradle Catalog details and how Airbyte has set this up.
 
 #### The version catalog TOML file format
 Gradle offers a conventional file to declare a catalog.   
