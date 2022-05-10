@@ -10,7 +10,9 @@ public enum ConnectionErrorType {
   INCORRECT_CREDENTIALS("Incorrect credentials"),
   INCORRECT_BUCKET_NAME("Incorrect bucket name"),
   INCORRECT_HOST_OR_PORT("Incorrect host or port"),
-  INCORRECT_DB_NAME("Incorrect data base name");
+  INCORRECT_DB_NAME("Incorrect data base name"),
+  INCORRECT_SCHEMA_NAME("Incorrect schema name"),
+  INCORRECT_ACCESS_PERMISSION("Insufficient privilege");
 
   private final String value;
 
