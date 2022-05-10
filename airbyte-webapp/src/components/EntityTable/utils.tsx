@@ -1,8 +1,8 @@
-import { Connection } from "core/domain/connection";
-import Status from "core/statuses";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
+import Status from "core/statuses";
 
-import { ITableDataItem, EntityTableDataItem, Status as ConnectionStatus } from "./types";
+import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -13,8 +13,8 @@ export function getEntityTableData<
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
-    const entitySoDId = entityItem[`${type}Id` as keyof SoD] as unknown as string;
-    const entitySoDName = entityItem[`${type}Name` as keyof SoD] as unknown as string;
+    const entitySoDId = (entityItem[`${type}Id` as keyof SoD] as unknown) as string;
+    const entitySoDName = (entityItem[`${type}Name` as keyof SoD] as unknown) as string;
     const entityConnections = connections.filter(
       (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
     );
@@ -106,10 +106,25 @@ export const getConnectionTableData = (
   });
 };
 
-export const getConnectionSyncStatus = (status: string, lastSyncStatus: string | null): string | null => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
-  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+export const getConnectionSyncStatus = (
+  status: ConnectionStatus,
+  lastSyncJobStatus: Status | null
+): ConnectionSyncStatus => {
+  if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
 
-  return ConnectionStatus.ACTIVE;
+  switch (lastSyncJobStatus) {
+    case Status.SUCCEEDED:
+      return ConnectionSyncStatus.ACTIVE;
+
+    case Status.FAILED:
+    case Status.CANCELLED:
+      return ConnectionSyncStatus.FAILED;
+
+    case Status.PENDING:
+    case Status.RUNNING:
+      return ConnectionSyncStatus.PENDING;
+
+    default:
+      return ConnectionSyncStatus.EMPTY;
+  }
 };

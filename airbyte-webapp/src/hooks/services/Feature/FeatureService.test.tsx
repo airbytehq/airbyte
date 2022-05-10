@@ -1,8 +1,8 @@
-import React from "react";
 import { act, renderHook } from "@testing-library/react-hooks";
+import React from "react";
 
-import { TestWrapper } from "utils/testutils";
 import { ConfigContext, configContext } from "config";
+import { TestWrapper } from "utils/testutils";
 
 import { FeatureService, useFeatureRegisterValues, useFeatureService } from "./FeatureService";
 import { FeatureItem } from "./types";
@@ -17,9 +17,9 @@ const wrapper: React.FC = ({ children }) => (
   <TestWrapper>
     <configContext.Provider
       value={
-        {
+        ({
           config: { features: predefinedFeatures },
-        } as unknown as ConfigContext
+        } as unknown) as ConfigContext
       }
     >
       <FeatureService>{children}</FeatureService>

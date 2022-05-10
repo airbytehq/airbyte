@@ -1,6 +1,6 @@
+import { DEV_IMAGE_TAG } from "./constants";
 import { isSource, isSourceDefinition, isSourceDefinitionSpecification } from "./source";
 import { ConnectorDefinition, ConnectorDefinitionSpecification, ConnectorT } from "./types";
-import { DEV_IMAGE_TAG } from "./constants";
 
 export class Connector {
   static id(connector: ConnectorDefinition): string {

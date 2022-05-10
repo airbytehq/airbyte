@@ -10,6 +10,7 @@ Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
 Available commands:
   scaffold
+  test <integration_root_path>
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
   publish_external  <image_name> <image_version>
@@ -49,6 +50,117 @@ cmd_build() {
     echo "Running integration tests..."
     ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
+}
+
+# Experimental version of the above for a new way to build/tag images
+cmd_build_experiment() {
+  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  echo "Building $path"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+
+  # After this happens this image should exist: "image_name:dev"
+  # Re-tag with CI candidate label
+  local image_name; image_name=$(_get_docker_image_name "$path/Dockerfile")
+  local image_version; image_version=$(_get_docker_image_version "$path/Dockerfile")
+  local image_candidate_tag; image_candidate_tag="$image_version-candidate-$PR_NUMBER"
+
+  # If running via the bump-build-test-connector job, re-tag gradle built image following candidate image pattern
+  if [[ "$GITHUB_JOB" == "bump-build-test-connector" ]]; then
+    docker tag "$image_name:dev" "$image_name:$image_candidate_tag"
+    # TODO: docker push "$image_name:$image_candidate_tag"
+  fi
+}
+
+cmd_test() {
+  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  # TODO: needs to know to use alternate image tag from cmd_build_experiment
+  echo "Running integration tests..."
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+}
+
+# Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
+# This does not build or test, it solely manages the versions of connectors to be +1'd.
+#
+# NOTE: this does NOT update changelogs because the changelog markdown files do not have a reliable machine-readable
+# format to automatically handle this. Someday it could though: https://github.com/airbytehq/airbyte/issues/12031
+cmd_bump_version() {
+  # Take params
+  local connector_path
+  local bump_version
+  connector_path="$1" # Should look like airbyte-integrations/connectors/source-X
+  bump_version="$2" || bump_version="patch"
+
+  # Set local constants
+  connector=${connector_path#airbyte-integrations/connectors/}
+  if [[ "$connector" =~ "source-" ]]; then
+    connector_type="source"
+  elif [[ "$connector" =~ "destination-" ]]; then
+    connector_type="destination"
+  else
+    echo "Invalid connector_type from $connector"
+    exit 1
+  fi
+  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
+  dockerfile="$connector_path/Dockerfile"
+  master_dockerfile="/tmp/master_${connector}_dockerfile"
+  # This allows getting the contents of a file without checking it out
+  git --no-pager show "origin/master:$dockerfile" > "$master_dockerfile"
+
+  # Current version always comes from master, this way we can always bump correctly relative to master
+  # verses a potentially stale local branch
+  current_version=$(_get_docker_image_version "$master_dockerfile")
+  local image_name; image_name=$(_get_docker_image_name "$dockerfile")
+  rm "$master_dockerfile"
+
+  ## Create bumped version
+  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
+  case "$bump_version" in
+    "major")
+      ((major_version++))
+      minor_version=0
+      patch_version=0
+      ;;
+    "minor")
+      ((minor_version++))
+      patch_version=0
+      ;;
+    "patch")
+      ((patch_version++))
+      ;;
+    *)
+      echo "Invalid bump_version option: $bump_version. Valid options are major, minor, patch"
+      exit 1
+  esac
+
+  bumped_version="$major_version.$minor_version.$patch_version"
+  # This image should not already exist, if it does, something weird happened
+  _error_if_tag_exists "$image_name:$bumped_version"
+  echo "$connector:$current_version will be bumped to $connector:$bumped_version"
+
+  ## Write new version to files
+  # 1) Dockerfile
+  sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
+
+  # 2) Definitions YAML file
+  definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitions_path")
+
+  if [[ (-z "$definitions_check") ]]; then
+    echo "Could not find $connector in $definitions_path, exiting 1"
+    exit 1
+  fi
+
+  connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitions_path")
+  yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
+
+  # 3) Seed files
+  ./gradlew :airbyte-config:init:processResources
+
+  echo "Woohoo! Successfully bumped $connector:$current_version to $connector:$bumped_version"
 }
 
 cmd_publish() {
@@ -149,7 +261,7 @@ cmd_publish() {
       echo "Using environment gcloud"
     fi
 
-    gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
+    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
   else
     echo "Publishing without writing to spec cache."
   fi
@@ -176,7 +288,7 @@ cmd_publish_external() {
 
   echo "Using environment gcloud"
 
-  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
+  gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
 }
 
 main() {

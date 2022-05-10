@@ -3,8 +3,8 @@ import { useAsync } from "react-use";
 
 import { LoadingPage } from "components";
 
-import { Config, ValueProvider } from "./types";
 import { applyProviders } from "./configProviders";
+import { Config, ValueProvider } from "./types";
 
 export type ConfigContext<T extends Config = Config> = {
   config: T;
@@ -19,7 +19,7 @@ export function useConfig<T extends Config>(): T {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return useMemo(() => configService.config as unknown as T, [configService.config]);
+  return useMemo(() => (configService.config as unknown) as T, [configService.config]);
 }
 
 const ConfigServiceInner: React.FC<{

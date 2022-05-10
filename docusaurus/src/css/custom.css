@@ -17,8 +17,10 @@
   --ifm-color-primary-lightest: #c8c7ff;
   --ifm-code-font-size: 95%;
   --ifm-navbar-height: 82px;
+  --ifm-alert-border-color:  #615eff;
   --ifm-navbar-link-color: #615eff;
-  --ifm-font-family-base: 'Inter'
+  --ifm-font-family-base: 'Inter';
+  --ifm-alert-shadow: none;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -68,5 +70,12 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
     text-decoration: none;
 }
 
+.codeBlockContainer_I0IT {
+    box-shadow: none !important;
+}
 
+img {
+    max-width: 100%;
+    border-radius: 8px;
+}
 

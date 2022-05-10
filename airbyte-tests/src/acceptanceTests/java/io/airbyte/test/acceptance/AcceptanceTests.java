@@ -42,6 +42,7 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
@@ -64,6 +65,7 @@ import io.airbyte.api.client.model.OperatorType;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
@@ -78,8 +80,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -115,6 +117,7 @@ import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -332,7 +335,8 @@ public class AcceptanceTests {
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -343,7 +347,8 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
 
@@ -354,7 +359,7 @@ public class AcceptanceTests {
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
-        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
+        .getSourceDefinitionSpecification(new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(sourceDefId).workspaceId(UUID.randomUUID()));
     assertEquals(sourceDefId, spec.getSourceDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -451,6 +456,7 @@ public class AcceptanceTests {
         .name(STREAM_NAME)
         .namespace("public")
         .jsonSchema(jsonSchema)
+        .sourceDefinedCursor(null)
         .defaultCursorField(Collections.emptyList())
         .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
@@ -591,7 +597,6 @@ public class AcceptanceTests {
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    source.close();
 
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
@@ -742,7 +747,6 @@ public class AcceptanceTests {
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
     // destination should mirror this latest state of records
     final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
-    source.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -1327,7 +1331,7 @@ public class AcceptanceTests {
   }
 
   private Database getDatabase(final PostgreSQLContainer db) {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    return new Database(DatabaseConnectionHelper.createDslContext(db, SQLDialect.POSTGRES));
   }
 
   private Set<SchemaTableNamePair> listAllTables(final Database database) throws SQLException {

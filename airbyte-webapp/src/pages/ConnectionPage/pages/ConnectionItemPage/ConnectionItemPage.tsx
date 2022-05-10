@@ -2,18 +2,20 @@ import React, { Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
+import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { equal } from "utils/objects";
-import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
+import { ConnectionStatus } from "core/domain/connection";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
+import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
+import { equal } from "utils/objects";
 
-import ReplicationView from "./components/ReplicationView";
-import StatusView from "./components/StatusView";
-import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
+import { ReplicationView } from "./components/ReplicationView";
+import SettingsView from "./components/SettingsView";
+import StatusView from "./components/StatusView";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 const ConnectionItemPage: React.FC = () => {
@@ -42,6 +44,8 @@ const ConnectionItemPage: React.FC = () => {
     });
   };
 
+  const isConnectionDeleted = connection.status === ConnectionStatus.DEPRECATED;
+
   return (
     <MainPageWithScroll
       headTitle={
@@ -58,7 +62,19 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
+      pageTitle={
+        <ConnectionPageTitle
+          source={source}
+          destination={destination}
+          connection={connection}
+          currentStep={currentStep}
+        />
+      }
+      error={
+        isConnectionDeleted ? (
+          <AlertBanner alertType="connectionDeleted" id={"connection.connectionDeletedView"} />
+        ) : null
+      }
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
@@ -74,8 +90,11 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
+          <Route
+            path={ConnectionSettingsRoutes.SETTINGS}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connectionId={connectionId} />}
+          />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

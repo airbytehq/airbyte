@@ -1,7 +1,7 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import Status from "core/statuses";
-import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import Status from "core/statuses";
 
 import { Destination, Scheduler } from "./types";
 

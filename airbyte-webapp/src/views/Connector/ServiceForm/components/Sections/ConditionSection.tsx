@@ -1,6 +1,6 @@
+import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { useFormikContext, setIn } from "formik";
 
 import { Label, DropDown } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -9,8 +9,8 @@ import GroupControls from "components/GroupControls";
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
-import { ServiceFormValues } from "../../types";
 import { useServiceForm } from "../../serviceFormContext";
+import { ServiceFormValues } from "../../types";
 import { FormSection } from "./FormSection";
 
 const GroupLabel = styled(Label)`

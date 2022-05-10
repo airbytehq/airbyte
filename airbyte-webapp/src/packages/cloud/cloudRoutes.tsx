@@ -4,36 +4,35 @@ import { useEffectOnce } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
 
-import SourcesPage from "pages/SourcesPage";
-import DestinationPage from "pages/DestinationPage";
-import ConnectionPage from "pages/ConnectionPage";
-import MainView from "packages/cloud/views/layout/MainView";
-import { WorkspacesPage } from "packages/cloud/views/workspaces";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
+import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { Auth } from "packages/cloud/views/auth";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import useRouter from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
-import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
-import OnboardingPage from "pages/OnboardingPage";
+import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
-import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
-import { CompleteOauthRequest } from "views/CompleteOauthRequest";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import useRouter from "hooks/useRouter";
-import { storeUtmFromQuery } from "utils/utmStorage";
+import MainView from "packages/cloud/views/layout/MainView";
+import { WorkspacesPage } from "packages/cloud/views/workspaces";
+import ConnectionPage from "pages/ConnectionPage";
+import DestinationPage from "pages/DestinationPage";
+import OnboardingPage from "pages/OnboardingPage";
+import SourcesPage from "pages/SourcesPage";
+import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { hasFromState } from "utils/stateUtils";
-import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
+import { storeUtmFromQuery } from "utils/utmStorage";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
+import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
-import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { DefaultView } from "./views/DefaultView";
-import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
-import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
+import { DefaultView } from "./views/DefaultView";
+import { VerifyEmailAction } from "./views/FirebaseActionRoute";
+import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 
 export const CloudRoutes = {
   Root: "/",
@@ -47,7 +46,6 @@ export const CloudRoutes = {
   Signup: "/signup",
   Login: "/login",
   ResetPassword: "/reset-password",
-  ConfirmVerifyEmail: "/confirm-verify-email",
 
   // Firebase action routes
   // These URLs come from Firebase emails, and all have the same
@@ -135,7 +133,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, emailVerified } = useAuthService();
+  const { user, inited } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -156,6 +154,7 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId);
+  useTrackPageAnalytics();
 
   if (!inited) {
     return <LoadingPage />;
@@ -163,17 +162,15 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
-      <TrackPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
+        {/* Allow email verification no matter whether the user is logged in or not */}
+        <Routes>
+          <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+        </Routes>
+        {/* Show the login screen if the user is not logged in */}
         {!user && <Auth />}
-        {user && emailVerified && <MainViewRoutes />}
-        {user && !emailVerified && (
-          <Routes>
-            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
-            <Route path={CloudRoutes.ConfirmVerifyEmail} element={<ConfirmEmailPage />} />
-            <Route path="*" element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />} />
-          </Routes>
-        )}
+        {/* Allow all regular routes if the user is logged in */}
+        {user && <MainViewRoutes />}
       </Suspense>
     </WorkspaceServiceProvider>
   );

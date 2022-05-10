@@ -21,10 +21,10 @@ dependencies {
     implementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1-patch'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    testImplementation 'org.testcontainers:clickhouse:1.16.2'
+    testImplementation libs.testcontainers.clickhouse
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    integrationTestJavaImplementation "org.testcontainers:clickhouse:1.16.2"
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

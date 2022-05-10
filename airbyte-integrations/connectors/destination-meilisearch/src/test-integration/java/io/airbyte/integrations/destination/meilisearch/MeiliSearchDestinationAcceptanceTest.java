@@ -14,6 +14,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,6 +73,26 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     final JsonNode invalidConfig = Jsons.clone(getConfig());
     ((ObjectNode) invalidConfig).put("host", "localhost:7702");
     return invalidConfig;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override

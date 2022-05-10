@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -120,6 +121,7 @@ public class WebBackendConnectionsHandler {
     final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
     WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
     setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
+    WebBackendConnectionRead.setCatalogId(connectionRead.getSourceCatalogId());
     return WebBackendConnectionRead;
   }
 
@@ -197,18 +199,24 @@ public class WebBackendConnectionsHandler {
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
+    final Optional<AirbyteCatalog> discovered;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
       final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
           new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
-      final AirbyteCatalog original = connection.getSyncCatalog();
-      final AirbyteCatalog discovered = discoverSchema.getCatalog();
-      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
-
-      connection.setSyncCatalog(combined);
+      discovered = Optional.of(discoverSchema.getCatalog());
+      connection.setSourceCatalogId(discoverSchema.getCatalogId());
+    } else {
+      discovered = connectionsHandler.getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
     }
-
+    final AirbyteCatalog original = connection.getSyncCatalog();
+    if (discovered.isPresent()) {
+      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered.get());
+      connection.setSyncCatalog(combined);
+    } else {
+      connection.setSyncCatalog(original);
+    }
     return buildWebBackendConnectionRead(connection);
   }
 
@@ -250,9 +258,10 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
-        outputStreamConfig.setSelected(originalStreamConfig.getSelected());
+        outputStreamConfig.setSelected(true);
       } else {
         outputStreamConfig = s.getConfig();
+        outputStreamConfig.setSelected(false);
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
           .stream(Jsons.clone(stream))
@@ -380,6 +389,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
+    connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
 
     return connectionCreate;
   }
@@ -398,6 +408,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
+    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
 
     return connectionUpdate;
   }

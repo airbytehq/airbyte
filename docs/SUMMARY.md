@@ -166,6 +166,7 @@
     - [TikTok Marketing](integrations/sources/tiktok-marketing.md)
     - [Trello](integrations/sources/trello.md)
     - [Twilio](integrations/sources/twilio.md)
+    - [TiDB](integrations/sources/tidb.md)
     - [Typeform](integrations/sources/typeform.md)
     - [US Census API](integrations/sources/us-census.md)
     - [VictorOps (Sponsored by Faros AI)](integrations/sources/victorops.md)

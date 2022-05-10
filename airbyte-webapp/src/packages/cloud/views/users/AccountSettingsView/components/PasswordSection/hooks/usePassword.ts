@@ -1,6 +1,6 @@
+import { AuthErrorCodes } from "firebase/auth";
 import { FormikHelpers } from "formik/dist/types";
 import { useState } from "react";
-import { AuthErrorCodes } from "firebase/auth";
 import { useIntl } from "react-intl";
 
 import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";

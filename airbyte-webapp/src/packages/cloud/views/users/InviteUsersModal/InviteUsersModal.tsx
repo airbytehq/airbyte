@@ -1,7 +1,7 @@
+import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";

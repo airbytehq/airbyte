@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 from collections import UserDict
 from pathlib import Path
 from typing import Iterable, List, Union
@@ -102,3 +102,15 @@ def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     except StopIteration:
         return True
     return False
+
+
+def load_yaml_or_json_path(path: Path):
+    with open(str(path), "r") as file:
+        file_data = file.read()
+        file_ext = path.suffix
+        if file_ext == ".json":
+            return json.loads(file_data)
+        elif file_ext == ".yaml":
+            return load(file_data, Loader=Loader)
+        else:
+            raise RuntimeError("path must be a '.yaml' or '.json' file")

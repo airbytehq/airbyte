@@ -45,8 +45,7 @@ public class GcsCsvFormatConfigTest {
         + "  \"part_size_mb\": 6\n"
         + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
@@ -69,8 +68,7 @@ public class GcsCsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(

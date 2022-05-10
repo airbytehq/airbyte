@@ -1,20 +1,22 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
+import styled from "styled-components";
 
+import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import SideMenu from "components/SideMenu";
-import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
-import { PageTitle } from "components";
 
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import RemainingCredits from "./components/RemainingCredits";
 import CreditsUsagePage from "./components/CreditsUsagePage";
+import { EmailVerificationHint } from "./components/EmailVerificationHint";
+import RemainingCredits from "./components/RemainingCredits";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -32,9 +34,14 @@ const MainView = styled.div`
   margin-left: 47px;
 `;
 
+const EmailVerificationHintWithMargin = styled(EmailVerificationHint)`
+  margin-bottom: 8px;
+`;
+
 const CreditsPage: React.FC = () => {
   const { push, pathname } = useRouter();
   const onSelectMenuItem = (newPath: string) => push(newPath);
+  const { emailVerified } = useAuthService();
 
   const menuItems: CategoryItem[] = [
     {
@@ -56,7 +63,8 @@ const CreditsPage: React.FC = () => {
       pageTitle={<PageTitle title={<FormattedMessage id="credits.credits" />} />}
     >
       <Content>
-        <RemainingCredits />
+        {!emailVerified && <EmailVerificationHintWithMargin />}
+        <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
         <MainInfo>
           <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
           <MainView>

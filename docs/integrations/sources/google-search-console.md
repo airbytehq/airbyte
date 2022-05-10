@@ -94,17 +94,18 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+| Version  | Date | Pull Request | Subject |
+|:---------| :--- | :--- | :--- |
+| `0.1.12`  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | `0.1.11` | 2022-01-05 | [9186](https://github.com/airbytehq/airbyte/pull/9186) [9194](https://github.com/airbytehq/airbyte/pull/9194) | Fix incremental sync: keep all urls in state object |
 | `0.1.10` | 2021-12-23 | [9073](https://github.com/airbytehq/airbyte/pull/9073) | Add slicing by date range |
-| `0.1.9` | 2021-12-22 | [9047](https://github.com/airbytehq/airbyte/pull/9047) | Add 'order' to spec.json props |
-| `0.1.8` | 2021-12-21 | [8248](https://github.com/airbytehq/airbyte/pull/8248) | Enable Sentry for performance and errors tracking |
-| `0.1.7` | 2021-11-26 | [7431](https://github.com/airbytehq/airbyte/pull/7431) | Add default `end_date` param value |
-| `0.1.6` | 2021-09-27 | [6460](https://github.com/airbytehq/airbyte/pull/6460) | Update OAuth Spec File |
-| `0.1.4` | 2021-09-23 | [6394](https://github.com/airbytehq/airbyte/pull/6394) | Update Doc link Spec File |
-| `0.1.3` | 2021-09-23 | [6405](https://github.com/airbytehq/airbyte/pull/6405) | Correct Spec File |
-| `0.1.2` | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222) | Correct Spec File |
-| `0.1.1` | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315) | Verify access to all sites when performing connection check |
-| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
+| `0.1.9`  | 2021-12-22 | [9047](https://github.com/airbytehq/airbyte/pull/9047) | Add 'order' to spec.json props |
+| `0.1.8`  | 2021-12-21 | [8248](https://github.com/airbytehq/airbyte/pull/8248) | Enable Sentry for performance and errors tracking |
+| `0.1.7`  | 2021-11-26 | [7431](https://github.com/airbytehq/airbyte/pull/7431) | Add default `end_date` param value |
+| `0.1.6`  | 2021-09-27 | [6460](https://github.com/airbytehq/airbyte/pull/6460) | Update OAuth Spec File |
+| `0.1.4`  | 2021-09-23 | [6394](https://github.com/airbytehq/airbyte/pull/6394) | Update Doc link Spec File |
+| `0.1.3`  | 2021-09-23 | [6405](https://github.com/airbytehq/airbyte/pull/6405) | Correct Spec File |
+| `0.1.2`  | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222) | Correct Spec File |
+| `0.1.1`  | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315) | Verify access to all sites when performing connection check |
+| `0.1.0`  | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
 
