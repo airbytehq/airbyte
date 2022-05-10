@@ -35,6 +35,9 @@ Documentation is written as [Markdown](https://guides.github.com/features/master
 3. Modify the documentation.
 4. Create a pull request
 
+### Sidebar updates
+To edit the sidebar you must [edit this JSON in this Javascript file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js).
+
 ### Testing Changes
 * You can run a copy of the website locally to test how your changes will look in production
 * This is not necessary for smaller changes, but is suggested for large changes and **any** change to the sidebar, as the JSON will blow up if we misplace a comma.
@@ -77,9 +80,6 @@ Every module should have a README containing:
 * how to install dependencies
 * how to build and run the code locally & via Docker
 * any other information needed for local iteration
-
-### Sidebar updates
-# To edit the sidebar you must [edit this JSON in this Javascript file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js)
 
 ### Changelogs
 
