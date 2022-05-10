@@ -22,14 +22,21 @@ class TestOctaviaCommand:
         parent_make_context.assert_called_with("my_info_name", ["arg1", "arg2"], mock_parent_ctx, foo="foo", bar="bar")
         assert made_context == parent_make_context.return_value
 
-    def test_make_context_error(self, mocker, octavia_command, mock_telemetry_client):
+    @pytest.mark.parametrize("error", [Exception(), click.exceptions.Exit(0), click.exceptions.Exit(1)])
+    def test_make_context_error(self, mocker, octavia_command, mock_telemetry_client, error):
         mock_parent_ctx = mocker.Mock(obj={"TELEMETRY_CLIENT": mock_telemetry_client})
-        error = Exception()
         parent_make_context = mocker.Mock(side_effect=error)
         mocker.patch.object(click.Command, "make_context", parent_make_context)
-        with pytest.raises(Exception):
+        with pytest.raises(type(error)):
             octavia_command.make_context("my_info_name", ["arg1", "arg2"], parent=mock_parent_ctx, foo="foo", bar="bar")
-            mock_telemetry_client.send_command_telemetry.assert_called_with(mock_parent_ctx, error=error, extra_info_name="my_info_name")
+            if isinstance(error, click.exceptions.Exit) and error.exit_code == 0:
+                mock_telemetry_client.send_command_telemetry.assert_called_with(
+                    mock_parent_ctx, extra_info_name="my_info_name", is_help=True
+                )
+            else:
+                mock_telemetry_client.send_command_telemetry.assert_called_with(
+                    mock_parent_ctx, error=error, extra_info_name="my_info_name"
+                )
 
     def test_invoke(self, mocker, octavia_command, mock_telemetry_client):
         mock_ctx = mocker.Mock(obj={"TELEMETRY_CLIENT": mock_telemetry_client})
