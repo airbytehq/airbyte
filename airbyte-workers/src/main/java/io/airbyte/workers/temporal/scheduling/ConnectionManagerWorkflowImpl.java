@@ -6,11 +6,18 @@ package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.SyncStats;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
@@ -53,6 +60,7 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -88,6 +96,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final AutoDisableConnectionActivity autoDisableConnectionActivity =
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final CheckConnectionActivity checkActivity =
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -169,21 +179,28 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
-
       workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
 
       final GeneratedJobInput jobInputs = getJobInput();
 
       reportJobStarting();
       StandardSyncOutput standardSyncOutput = null;
-      try {
-        standardSyncOutput = runChildWorkflow(jobInputs);
-        workflowState.setFailed(getFailStatus(standardSyncOutput));
+      StandardSyncOutput checkFailureOutput = null;
 
-        if (workflowState.isFailed()) {
-          reportFailure(connectionUpdaterInput, standardSyncOutput);
+      try {
+        checkFailureOutput = checkConnections(jobInputs);
+        if (checkFailureOutput != null) {
+          workflowState.setFailed(getFailStatus(checkFailureOutput));
+          reportFailure(connectionUpdaterInput, checkFailureOutput);
         } else {
-          reportSuccess(connectionUpdaterInput, standardSyncOutput);
+          standardSyncOutput = runChildWorkflow(jobInputs);
+          workflowState.setFailed(getFailStatus(standardSyncOutput));
+
+          if (workflowState.isFailed()) {
+            reportFailure(connectionUpdaterInput, standardSyncOutput);
+          } else {
+            reportSuccess(connectionUpdaterInput, standardSyncOutput);
+          }
         }
 
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
@@ -293,6 +310,35 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         connectionUpdaterInput.setFromJobResetFailure(true);
       }
     }
+  }
+
+  private StandardSyncOutput checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(jobInputs.getSyncInput().getSourceConfiguration());
+    final CheckConnectionInput checkSourceInput =
+        new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getSourceLauncherConfig(), sourceConfiguration);
+    final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::check, checkSourceInput);
+
+    if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
+      log.info("SOURCE CHECK: Failed");
+      return checkFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobInputs.getJobRunConfig(), sourceCheckResponse);
+    } else {
+      log.info("SOURCE CHECK: Successful");
+    }
+
+    final StandardCheckConnectionInput destinationConfiguration =
+        new StandardCheckConnectionInput().withConnectionConfiguration(jobInputs.getSyncInput().getDestinationConfiguration());
+    final CheckConnectionInput checkDestinationInput =
+        new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getDestinationLauncherConfig(), destinationConfiguration);
+    final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::check, checkDestinationInput);
+    if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
+      log.info("DESTINATION CHECK: Failed");
+      return checkFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobInputs.getJobRunConfig(), destinationCheckResponse);
+    } else {
+      log.info("DESTINATION CHECK: Successful");
+    }
+
+    return null;
   }
 
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -648,6 +694,30 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
     resetNewConnectionInput(connectionUpdaterInput);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+  }
+
+  private StandardSyncOutput checkFailureSyncOutput(FailureReason.FailureOrigin origin,
+                                                    JobRunConfig jobRunConfig,
+                                                    StandardCheckConnectionOutput checkResponse) {
+    final Exception ex = new IllegalArgumentException(checkResponse.getMessage());
+    // TODO: Why are these values null and needing a default?
+    final String jobId = jobRunConfig.getJobId() != null ? jobRunConfig.getJobId() : "1";
+    final long attemptId = jobRunConfig.getAttemptId() != null ? jobRunConfig.getAttemptId() : 1L;
+    final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobId), Math.toIntExact(attemptId), origin);
+    return new StandardSyncOutput()
+        .withFailures(List.of(checkFailureReason))
+        .withStandardSyncSummary(
+            new StandardSyncSummary()
+                .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
+                .withStartTime(System.currentTimeMillis())
+                .withEndTime(System.currentTimeMillis())
+                .withRecordsSynced(0L)
+                .withBytesSynced(0L)
+                .withTotalStats(new SyncStats()
+                    .withRecordsEmitted(0L)
+                    .withBytesEmitted(0L)
+                    .withStateMessagesEmitted(0L)
+                    .withRecordsCommitted(0L)));
   }
 
 }

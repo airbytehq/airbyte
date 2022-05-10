@@ -8,6 +8,7 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
 
@@ -21,7 +22,7 @@ public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
                                            final IntegrationLauncherConfig launcherConfig,
                                            final StandardCheckConnectionInput connectionConfiguration) {
 
-    return activity.check(jobRunConfig, launcherConfig, connectionConfiguration);
+    return activity.check(new CheckConnectionInput(jobRunConfig, launcherConfig, connectionConfiguration));
   }
 
 }

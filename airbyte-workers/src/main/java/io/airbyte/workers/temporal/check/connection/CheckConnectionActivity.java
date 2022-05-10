@@ -10,13 +10,25 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @ActivityInterface
 public interface CheckConnectionActivity {
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class CheckConnectionInput {
+
+    private JobRunConfig jobRunConfig;
+    private IntegrationLauncherConfig launcherConfig;
+    private StandardCheckConnectionInput connectionConfiguration;
+
+  }
+
   @ActivityMethod
-  StandardCheckConnectionOutput check(JobRunConfig jobRunConfig,
-                                      IntegrationLauncherConfig launcherConfig,
-                                      StandardCheckConnectionInput connectionConfiguration);
+  StandardCheckConnectionOutput check(CheckConnectionInput input);
 
 }

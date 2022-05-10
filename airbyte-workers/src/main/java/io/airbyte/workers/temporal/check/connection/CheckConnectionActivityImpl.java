@@ -12,7 +12,6 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
@@ -55,11 +54,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public StandardCheckConnectionOutput check(final JobRunConfig jobRunConfig,
-                                             final IntegrationLauncherConfig launcherConfig,
-                                             final StandardCheckConnectionInput connectionConfiguration) {
-
-    final JsonNode fullConfig = secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
+  public StandardCheckConnectionOutput check(CheckConnectionInput args) {
+    final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withConnectionConfiguration(fullConfig);
@@ -69,8 +65,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot, workerEnvironment, logConfigs,
-            jobRunConfig,
-            getWorkerFactory(launcherConfig),
+            args.getJobRunConfig(),
+            getWorkerFactory(args.getLauncherConfig()),
             () -> input,
             new CancellationHandler.TemporalCancellationHandler(context),
             jobPersistence,
