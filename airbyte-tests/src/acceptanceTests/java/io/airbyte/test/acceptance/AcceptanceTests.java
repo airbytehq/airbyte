@@ -1671,7 +1671,7 @@ public class AcceptanceTests {
 
   private static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
-    return waitWhileJobHasStatus(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(10));
+    return waitWhileJobHasStatus(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
   }
 
   @SuppressWarnings("BusyWait")
