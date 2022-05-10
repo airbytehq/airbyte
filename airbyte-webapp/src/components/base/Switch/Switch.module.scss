@@ -1,3 +1,69 @@
 .loading {
   border: 1em red dashed;
 }
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  min-width: 42px;
+  height: 24px;
+
+  &.small {
+    width: 28px;
+    min-width: 28px;
+    height: 18px;
+  }
+
+  .switchInput {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #e8e8ed; // theme.greyColor20, TODO: Make SASS or CSS Variable
+    transition: 0.3s;
+    border-radius: 19px;
+
+    &:before {
+      position: absolute;
+      z-index: 1;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 1px;
+      top: 1px;
+      background: #ffffff; // theme.whiteColor, TODO: Make SASS or CSS Variable
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    &.checked {
+      background: #615eff; // theme.primaryColor, TODO: Make SASS or CSS Variable
+
+      &:before {
+        transform: translateX(18px);
+      }
+
+      &.small {
+        &:before {
+          transform: translateX(10px);
+          height: 16px;
+          width: 16px;
+        }
+      }
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: auto;
+    }
+  }
+}
