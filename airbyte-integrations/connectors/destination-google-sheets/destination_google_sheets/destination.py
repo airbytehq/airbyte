@@ -10,10 +10,9 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from google.auth.exceptions import RefreshError
 
 from .client import GoogleSheetsClient
-from .helpers import ConnectionTest, get_spreadsheet_id
+from .helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog
 from .spreadsheet import GoogleSheets
 from .writer import GoogleSheetsWriter
-
 
 class DestinationGoogleSheets(Destination):
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
@@ -29,7 +28,7 @@ class DestinationGoogleSheets(Destination):
         try:
             client = GoogleSheetsClient(config).authorize()
             spreadsheet = GoogleSheets(client, spreadsheet_id)
-            check_result = ConnectionTest(spreadsheet).result
+            check_result = ConnectionTest(spreadsheet).perform_connection_test()
             if check_result:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
@@ -49,17 +48,24 @@ class DestinationGoogleSheets(Destination):
         client = GoogleSheetsClient(config).authorize()
         spreadsheet = GoogleSheets(client, spreadsheet_id)
         writer = GoogleSheetsWriter(spreadsheet)
-
-        for configured_stream in configured_catalog.streams:
-            writer.buffer_stream(configured_stream)
+        
+        # get streams from catalog up to the limit
+        configured_streams = get_streams_from_catalog(configured_catalog)
+        # getting stream names explicitly
+        configured_stream_names = [stream.stream.name for stream in configured_streams]
+        
+        for configured_stream in configured_streams:
+            writer.init_buffer_stream(configured_stream)
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
-
+        
         for message in input_messages:
             if message.type == Type.RECORD:
                 record = message.record
-                writer.add_to_buffer(record.stream, record.data)
-                writer.queue_write_operation(record.stream)
+                # process messages for available streams only
+                if record.stream in configured_stream_names:
+                    writer.add_to_buffer(record.stream, record.data)
+                    writer.queue_write_operation(record.stream)
             elif message.type == Type.STATE:
                 yield message
             else:
@@ -69,6 +75,6 @@ class DestinationGoogleSheets(Destination):
         writer.write_whats_left()
 
         # deduplicating records for `append_dedup` sync-mode
-        for configured_stream in configured_catalog.streams:
+        for configured_stream in configured_streams:
             if configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
                 writer.deduplicate_records(configured_stream)

@@ -6,17 +6,33 @@
 import re
 from typing import List
 
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 
+
+STREAMS_COUNT_LIMIT = 200
+
+
+logger = AirbyteLogger()
 
 def get_spreadsheet_id(id_or_url: str) -> str:
     if re.match(r"(http://)|(https://)", id_or_url):
         m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
         if m.group(2):
             return m.group(2)
+        else: 
+            logger.error("The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details.")
     else:
         return id_or_url
+
+def get_streams_from_catalog(catalog: ConfiguredAirbyteCatalog, limit: int = STREAMS_COUNT_LIMIT):
+    streams_count = len(catalog.streams)
+    if streams_count > limit:
+        logger.warn(f"Only {limit} of {streams_count} will be processed due to Google Sheets (worksheet count < {limit}) limitations.")
+        return catalog.streams[:limit]
+    return catalog.streams
 
 
 class ConnectionTest:
@@ -30,7 +46,6 @@ class ConnectionTest:
         self.spreadsheet = spreadsheet
         self.wks_name: str = "_airbyte_conn_test"
         self.test_data: List[str] = ["conn_test", "success"]
-        self.result = self.perform_connection_test()
 
     def add_test_wks(self) -> Worksheet:
         self.spreadsheet.spreadsheet.add_worksheet(self.wks_name, rows=2, cols=1)
@@ -55,6 +70,6 @@ class ConnectionTest:
             result: bool = self.check_values(self.populate_test_wks(self.add_test_wks()))
         except WorksheetNotFound:
             result: bool = self.check_values(self.populate_test_wks(self.add_test_wks()))
-        finally:
-            self.remove_test_wks()
+
+        self.remove_test_wks()          
         return result

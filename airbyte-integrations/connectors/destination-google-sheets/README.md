@@ -49,8 +49,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config_oauth.json
 python main.py discover --config secrets/config_oauth.json
-python main.py write --config secrets/config_oauth.json --catalog integration_tests/configured_catalog.json
-cat integration_tests/messages.txt | python main.py write --config secrets/config_oauth.json --catalog integration_tests/configured_catalog.json
+cat integration_tests/test_data/messages.txt | python main.py write --config secrets/config_oauth.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -73,8 +72,8 @@ Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/destination-google-sheets:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-google-sheets:dev check --config /secrets/config_oauth.json
-# messages.jsonl is a file containing line-separated JSON representing AirbyteMessages
-cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-google-sheets:dev write --config /secrets/config_oauth.json --catalog /integration_tests/configured_catalog.json
+# messages.txt is a file containing line-separated JSON representing AirbyteMessages
+cat integration_tests/test_data/messages.txt | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-google-sheets:dev write --config /secrets/config_oauth.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.

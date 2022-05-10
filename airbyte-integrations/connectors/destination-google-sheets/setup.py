@@ -7,9 +7,9 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "pygsheets",
-    "google-auth-oauthlib",
-    "google-api-python-client",
+    "pygsheets==2.0.5",
+    "google-auth-oauthlib==0.5.1",
+    "google-api-python-client==2.47.0",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock"]

@@ -9,17 +9,19 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 
 
-class WriteBuffer:
-
+class WriteBufferMixin:
+    
     # Default instance of AirbyteLogger
     logger = AirbyteLogger()
-    # Buffer for input records
-    records_buffer = {}
-    # Placeholder for streams metadata
-    stream_info = {}
     # interval after which the records_buffer should be cleaned up for selected stream
     flush_interval = 1000
 
+    def __init__(self):
+        # Buffer for input records
+        self.records_buffer = {}
+        # Placeholder for streams metadata
+        self.stream_info = {}
+        
     @property
     def default_missing(self) -> str:
         """
@@ -28,7 +30,7 @@ class WriteBuffer:
         """
         return ""
 
-    def buffer_stream(self, configured_stream: AirbyteStream):
+    def init_buffer_stream(self, configured_stream: AirbyteStream):
         """
         Saves important stream's information for later use.
 
@@ -51,17 +53,17 @@ class WriteBuffer:
         3) gets values as list of record values from record mapping.
         """
         
-        norm_record = self.normalize_record(stream_name, record)
+        norm_record = self._normalize_record(stream_name, record)
         norm_values = list(map(str, norm_record.values()))
         self.records_buffer[stream_name].append(norm_values)
 
-    def flush_buffer(self, stream_name: str):
+    def clear_buffer(self, stream_name: str):
         """
         Cleans up the `records_buffer` values, belonging to input stream.
         """
         self.records_buffer[stream_name].clear()
 
-    def normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
+    def _normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
         """
         Updates the record keys up to the input configured_stream catalog keys.
 

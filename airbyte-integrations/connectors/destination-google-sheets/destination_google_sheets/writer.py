@@ -6,13 +6,14 @@
 from airbyte_cdk.models import AirbyteStream
 from pygsheets import Worksheet
 
-from .buffer import WriteBuffer
+from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets
 
 
-class GoogleSheetsWriter(WriteBuffer):
+class GoogleSheetsWriter(WriteBufferMixin):
     def __init__(self, spreadsheet: GoogleSheets):
         self.spreadsheet = spreadsheet
+        super().__init__()
 
     def delete_stream_entries(self, stream_name: str):
         """
@@ -40,7 +41,7 @@ class GoogleSheetsWriter(WriteBuffer):
         
         if len(self.records_buffer[stream_name]) == self.flush_interval:
             self.write_from_queue(stream_name)
-            self.flush_buffer(stream_name)
+            self.clear_buffer(stream_name)
 
     def write_from_queue(self, stream_name: str):
         """
@@ -68,7 +69,7 @@ class GoogleSheetsWriter(WriteBuffer):
         """
         for stream_name in self.records_buffer:
             self.write_from_queue(stream_name)
-            self.flush_buffer(stream_name)
+            self.clear_buffer(stream_name)
 
     def deduplicate_records(self, configured_stream: AirbyteStream):
         """

@@ -9,7 +9,7 @@ from typing import Iterable
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
-from destination_google_sheets.buffer import WriteBuffer
+from destination_google_sheets.buffer import WriteBufferMixin
 
 # ----- PREPARE ENV -----
 
@@ -19,8 +19,8 @@ TEST_CATALOG_PATH: str = "integration_tests/test_data/test_buffer_catalog.json"
 TEST_RECORDS_PATH: str = "integration_tests/test_data/messages.txt"
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
-# instance of WriteBuffer
-TEST_WRITE_BUFFER: WriteBuffer = WriteBuffer()
+# instance of WriteBufferMixin
+TEST_WRITE_BUFFER: WriteBufferMixin = WriteBufferMixin()
 
 
 # reading input messages from file
@@ -58,9 +58,9 @@ def test_logger():
         "stream_info_stream_3",
     ],
 )
-def test_buffer_stream(buffer, stream_name):
+def test_init_buffer_stream(buffer, stream_name):
     for configured_stream in TEST_CATALOG.streams:
-        TEST_WRITE_BUFFER.buffer_stream(configured_stream)
+        TEST_WRITE_BUFFER.init_buffer_stream(configured_stream)
 
     for stream in buffer:
         if stream_name in stream:
@@ -101,8 +101,8 @@ def test_records_count_in_buffer(stream_name, expected_count):
     ],
     ids=["stream_1", "stream_2", "stream_3"],
 )
-def test_flush_buffer(stream_name):
-    TEST_WRITE_BUFFER.flush_buffer(stream_name)
+def test_clear_buffer(stream_name):
+    TEST_WRITE_BUFFER.clear_buffer(stream_name)
     # check the buffer is cleaned
     assert len(TEST_WRITE_BUFFER.records_buffer[stream_name]) == 0
 
@@ -117,7 +117,7 @@ def test_flush_buffer(stream_name):
     ids=["Undersetting", "Oversetting", "empty_record"],
 )
 def test_normalize_record(stream_name, record, expected):
-    actual = TEST_WRITE_BUFFER.normalize_record(stream_name, record)
+    actual = TEST_WRITE_BUFFER._normalize_record(stream_name, record)
     assert actual == expected
 
 

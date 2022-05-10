@@ -11,12 +11,49 @@ Each worksheet in the selected spreadsheet will be the output as a separate sour
 
 Airbyte only supports replicating `Grid Sheets`, which means the text raw data only could be replicated to the target spreadsheet. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
 
+#### Note:
+* The output columns are ordered alphabetically. The output columns should not be reordered manually after the sync, this could cause the data corruption for all next syncs.
+* The underlying process of record normalization is applied to avoid data corruption during the write process. This handles two scenarios:
+1. UnderSetting - when record has less keys (columns) than catalog declares
+2. OverSetting - when record has more keys (columns) than catalog declares
+```
+EXAMPLE:
+
+- UnderSetting:
+    * Catalog:
+        - has 3 entities:
+            [ 'id', 'key1', 'key2' ]
+                        ^
+    * Input record:
+        - missing 1 entity, compare to catalog
+            { 'id': 123,    'key2': 'value' }
+                            ^
+    * Result:
+        - 'key1' has been added to the record, because it was declared in catalog, to keep the data structure.
+            {'id': 123, 'key1': '', {'key2': 'value'} }
+                            ^
+- OverSetting:
+    * Catalog:
+        - has 3 entities:
+            [ 'id', 'key1', 'key2',   ]
+                                    ^
+    * Input record:
+        - doesn't have entity 'key1'
+        - has 1 more enitity, compare to catalog 'key3'
+            { 'id': 123,     ,'key2': 'value', 'key3': 'value' }
+                            ^                      ^
+    * Result:
+        - 'key1' was added, because it expected be the part of the record, to keep the data structure
+        - 'key3' was dropped, because it was not declared in catalog, to keep the data structure
+            { 'id': 123, 'key1': '', 'key2': 'value',   }
+                            ^                          ^
+```
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| Any Type | `string` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| Any Type | `string` |
 
 ### Features
 
@@ -66,7 +103,6 @@ These two steps are highlighted in the screenshot below:
 
 #### Future improvements:
 - Handle multiple spreadsheets to split big amount of data into parts, once the main spreadsheet is full and cannot be extended more, due to [limitations](#limitations).
-- Support of Airbyte OSS version with Service Account, currently the Airbyte Cloud supported only.
 
 ## Changelog
 

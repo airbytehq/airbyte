@@ -29,8 +29,7 @@ class GoogleSheets:
             stream = self.spreadsheet.worksheet_by_title(stream_name)
         except WorksheetNotFound:
             stream = self.spreadsheet.add_worksheet(stream_name)
-        finally:
-            return stream
+        return stream
 
     def clean_worksheet(self, stream_name: str):
         """
@@ -68,10 +67,11 @@ class GoogleSheets:
             [1, 4, 5, ..., 99]
         """        
         rows_unique_values, rows_to_delete = {}, []
-
         pk_col_index = self.index_cols(stream)[primary_key]
+        
         # get all values except 0, because it's a header value
         pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  
+        
         for i, row_value in enumerate(pk_col_values, 2):
             if row_value not in rows_unique_values:
                 rows_unique_values[row_value] = None
@@ -80,6 +80,7 @@ class GoogleSheets:
 
         # reverse the order of the list
         rows_to_delete.reverse()
+        
         return rows_to_delete
 
     def remove_duplicates(self, stream: Worksheet, rows_list: list):

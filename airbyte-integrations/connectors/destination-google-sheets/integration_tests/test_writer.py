@@ -27,7 +27,7 @@ TEST_STREAM: str = "stream_1"
 
 def _prepare_buffers():
     for configured_stream in TEST_CATALOG.streams:
-        TEST_WRITER.buffer_stream(configured_stream)
+        TEST_WRITER.init_buffer_stream(configured_stream)
 
 
 def test_delete_stream_entries():
