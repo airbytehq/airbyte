@@ -28,6 +28,7 @@ def build_state_message(state: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
 
 
+@pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
     "records1, records2, latest_state, threshold_days, expected_error",
     [
@@ -40,7 +41,7 @@ def build_state_message(state: dict) -> AirbyteMessage:
         ([{"date": "2020-01-01"}], [{"date": "2020-01-02"}], "2020-01-06", 3, "Second incremental sync should produce records older"),
     ],
 )
-def test_incremental_two_sequential_reads(records1, records2, latest_state, threshold_days, expected_error):
+def test_incremental_two_sequential_reads(records1, records2, latest_state, threshold_days, cursor_type, expected_error):
     input_config = IncrementalConfig(threshold_days=threshold_days)
     cursor_paths = {"test_stream": ["date"]}
     catalog = ConfiguredAirbyteCatalog(
@@ -48,7 +49,7 @@ def test_incremental_two_sequential_reads(records1, records2, latest_state, thre
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(
                     name="test_stream",
-                    json_schema={"type": "object", "properties": {"date": {"type": "string"}}},
+                    json_schema={"type": "object", "properties": {"date": {"type": cursor_type}}},
                     supported_sync_modes=["full_refresh", "incremental"],
                 ),
                 sync_mode="incremental",

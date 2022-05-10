@@ -3,7 +3,7 @@
 #
 
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
@@ -83,13 +83,13 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days) -> 
     Checks if the record's cursor value is older or equal to the state cursor value.
 
     If the threshold_days option is set, the values will be converted to dates so that the time-based offset can be applied.
-    Note that a ParserError will be raised if threshold_days is passed with non-date cursor values.
+    :raises dateutil.parser._parser.ParserError: if threshold_days is passed with non-date cursor values.
     """
     if threshold_days:
-        record_date_value = dateutil.parser.parse(record_value)
-        state_date_value = dateutil.parser.parse(state_value)
+        record_date_value = record_value if isinstance(record_value, datetime) else dateutil.parser.parse(record_value)
+        state_date_value = state_value if isinstance(state_value, datetime) else dateutil.parser.parse(state_value)
 
-        return record_date_value >= (state_date_value - timedelta(days=threshold_days))
+        return record_date_value >= (state_date_value - timedelta(days=1))
 
     return record_value >= state_value
 
