@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# List of directories without "airbyte-" prefix.
 projectDir=( 
   "workers"
   "cli"
@@ -15,10 +16,13 @@ projectDir=(
   "scheduler/app"
 )
 
-JDK_VERSION="17.0.1"
-ALPINE_IMAGE="alpine:3.14"
-POSTGRES_IMAGE="postgres:13-alpine"
+# Set default values to required vars. If set in env, values will be taken from there.
+JDK_VERSION=${JDK_VERSION:-17.0.1}
+ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
+POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 
+# Iterate over all directories in list to build one by one.
+# metrics-reporter are exception due to wrong artifact naming that  
 for workdir in "${projectDir[@]}"
   do
     if [ $workdir = "metrics/reporter" ]; then

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -xe
+set -e
 
 . tools/lib/lib.sh
 
@@ -21,12 +21,13 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-#source ./tools/bin/bump_version.sh
-echo $JDK_VERSION
+source ./tools/bin/bump_version.sh
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build -x :airbyte-db:lib:test
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew clean build
+VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew publish
+
+# Container should be running before build starts
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-VERSION=$NEW_VERSION ./tools/bin/publish_docker.sh
+VERSION=$VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
