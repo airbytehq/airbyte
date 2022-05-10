@@ -5,8 +5,13 @@
 package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import java.io.IOException;
 import java.sql.Connection;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -32,9 +37,15 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
   private Connection connection;
 
-  protected abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
+  protected abstract Database getAndInitializeDatabase(DSLContext dslContext) throws IOException;
 
-  protected abstract DatabaseMigrator getDatabaseMigrator(Database database);
+  protected abstract DatabaseMigrator getDatabaseMigrator(Database database, Flyway flyway);
+
+  protected abstract String getInstalledBy();
+
+  protected abstract String getDbIdentifier();
+
+  protected abstract String[] getMigrationFileLocations();
 
   @Override
   protected DSLContext create0() {
@@ -64,11 +75,15 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
         .withPassword("jooq_generator");
     container.start();
 
-    final Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    final DatabaseMigrator migrator = getDatabaseMigrator(database);
+    final DataSource dataSource =
+        DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final Flyway flyway = FlywayFactory.create(dataSource, getInstalledBy(), getDbIdentifier(), getMigrationFileLocations());
+    final Database database = getAndInitializeDatabase(dslContext);
+    final DatabaseMigrator migrator = getDatabaseMigrator(database, flyway);
     migrator.migrate();
 
-    connection = database.getDataSource().getConnection();
+    connection = dataSource.getConnection();
     setConnection(connection);
   }
 
