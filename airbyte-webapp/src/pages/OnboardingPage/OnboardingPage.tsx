@@ -11,8 +11,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
-import { DocumentationPanelProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
-import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { RoutePaths } from "../routePaths";
 import ConnectionStep from "./components/ConnectionStep";
@@ -83,54 +82,54 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <DocumentationPanelProvider>
-      <ConnectorDocumentationLayout>
-        <ScreenContent>
-          {currentStep === StepType.CREATE_SOURCE ? (
-            <LetterLine exit={animateExit} />
-          ) : currentStep === StepType.CREATE_DESTINATION ? (
-            <LetterLine onRight exit={animateExit} />
-          ) : null}
-          <Content
-            big={currentStep === StepType.SET_UP_CONNECTION}
-            medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
-          >
-            <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-            <StepsCounter steps={steps} currentStep={currentStep} />
-            <Suspense fallback={<LoadingPage />}>
-              {currentStep === StepType.INSTRUCTION && (
-                <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
+    <ConnectorDocumentationWrapper>
+      <ScreenContent>
+        {currentStep === StepType.CREATE_SOURCE ? (
+          <LetterLine exit={animateExit} />
+        ) : currentStep === StepType.CREATE_DESTINATION ? (
+          <LetterLine onRight exit={animateExit} />
+        ) : null}
+        <Content
+          big={currentStep === StepType.SET_UP_CONNECTION}
+          medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
+        >
+          <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
+          <StepsCounter steps={steps} currentStep={currentStep} />
+
+          <Suspense fallback={<LoadingPage />}>
+            {currentStep === StepType.INSTRUCTION && (
+              <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
+            )}
+            {currentStep === StepType.CREATE_SOURCE && (
+              <SourceStep
+                onSuccess={() => setAnimateExit(true)}
+                onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
+              />
+            )}
+            {currentStep === StepType.CREATE_DESTINATION && (
+              <DestinationStep
+                onSuccess={() => setAnimateExit(true)}
+                onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
+              />
+            )}
+            {currentStep === StepType.SET_UP_CONNECTION && (
+              <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAl)} />
+            )}
+            {currentStep === StepType.FINAl && <FinalStep />}
+          </Suspense>
+
+          <Footer>
+            <Button secondary onClick={() => handleFinishOnboarding()}>
+              {currentStep === StepType.FINAl ? (
+                <FormattedMessage id="onboarding.closeOnboarding" />
+              ) : (
+                <FormattedMessage id="onboarding.skipOnboarding" />
               )}
-              {currentStep === StepType.CREATE_SOURCE && (
-                <SourceStep
-                  onSuccess={() => setAnimateExit(true)}
-                  onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
-                />
-              )}
-              {currentStep === StepType.CREATE_DESTINATION && (
-                <DestinationStep
-                  onSuccess={() => setAnimateExit(true)}
-                  onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
-                />
-              )}
-              {currentStep === StepType.SET_UP_CONNECTION && (
-                <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAl)} />
-              )}
-              {currentStep === StepType.FINAl && <FinalStep />}
-            </Suspense>
-            <Footer>
-              <Button secondary onClick={() => handleFinishOnboarding()}>
-                {currentStep === StepType.FINAl ? (
-                  <FormattedMessage id="onboarding.closeOnboarding" />
-                ) : (
-                  <FormattedMessage id="onboarding.skipOnboarding" />
-                )}
-              </Button>
-            </Footer>
-          </Content>
-        </ScreenContent>
-      </ConnectorDocumentationLayout>
-    </DocumentationPanelProvider>
+            </Button>
+          </Footer>
+        </Content>
+      </ScreenContent>
+    </ConnectorDocumentationWrapper>
   );
 };
 

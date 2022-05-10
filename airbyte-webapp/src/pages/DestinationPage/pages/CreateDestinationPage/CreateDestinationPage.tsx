@@ -9,8 +9,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { DocumentationPanelProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
-import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { DestinationForm } from "./components/DestinationForm";
 
@@ -41,20 +40,18 @@ export const CreateDestinationPage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
-      <DocumentationPanelProvider>
-        <ConnectorDocumentationLayout>
-          <>
-            <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
-            <FormPageContent>
-              <DestinationForm
-                onSubmit={onSubmitDestinationForm}
-                destinationDefinitions={destinationDefinitions}
-                hasSuccess={successRequest}
-              />
-            </FormPageContent>
-          </>
-        </ConnectorDocumentationLayout>
-      </DocumentationPanelProvider>
+      <ConnectorDocumentationWrapper>
+        <>
+          <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
+          <FormPageContent>
+            <DestinationForm
+              onSubmit={onSubmitDestinationForm}
+              destinationDefinitions={destinationDefinitions}
+              hasSuccess={successRequest}
+            />
+          </FormPageContent>
+        </>
+      </ConnectorDocumentationWrapper>
     </>
   );
 };

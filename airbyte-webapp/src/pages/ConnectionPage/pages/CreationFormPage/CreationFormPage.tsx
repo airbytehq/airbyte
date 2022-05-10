@@ -15,8 +15,7 @@ import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { DocumentationPanelProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
-import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
@@ -218,9 +217,9 @@ export const CreationFormPage: React.FC = () => {
   )[type];
 
   return (
-    <DocumentationPanelProvider>
+    <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <ConnectorDocumentationLayout>
+      <ConnectorDocumentationWrapper>
         <>
           <PageTitle
             withLine
@@ -244,7 +243,7 @@ export const CreationFormPage: React.FC = () => {
             {renderStep()}
           </FormPageContent>
         </>
-      </ConnectorDocumentationLayout>
-    </DocumentationPanelProvider>
+      </ConnectorDocumentationWrapper>
+    </>
   );
 };

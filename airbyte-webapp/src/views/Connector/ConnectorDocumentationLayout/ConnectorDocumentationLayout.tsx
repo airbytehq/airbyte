@@ -1,6 +1,5 @@
 import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import styled from "styled-components";
 
@@ -22,7 +21,7 @@ const GrabberHandle = styled(FontAwesomeIcon)`
 
 //NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const ConnectorDocumentationLayout = ({ children }: { children: React.ReactNode }) => {
+export const ConnectorDocumentationLayout = ({ children }: { children: JSX.Element }) => {
   const leftPanel = children;
 
   const { documentationPanelOpen } = useDocumentationPanelContext();
