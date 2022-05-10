@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteExceptionHandler.class);
+  public static final String logMessage = "Something went wrong in the connector. See the logs for more details.";
 
   @Override
   public void uncaughtException(Thread t, Throwable e) {
@@ -14,8 +15,13 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // this is fine tho because:
     //  "The earliest AirbyteTraceMessage where type=error will be used to populate the FailureReason for the sync."
     //  from the spec: https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
-    LOGGER.error("Something went wrong in the connector. See the logs for more details.", e);
-    AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Something went wrong in the connector. See the logs for more details.");
+    LOGGER.error(logMessage, e);
+    AirbyteTraceMessageUtility.emitSystemErrorTrace(e, logMessage);
+    terminate();
+  }
+
+  // by doing this in a separate method we can mock it to avoid closing the jvm and therefore test properly
+  protected void terminate() {
     System.exit(0);
   }
 }
