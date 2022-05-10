@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -27,6 +30,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -101,15 +106,15 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        db.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             db.getHost(),
             db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
+            db.getDatabaseName()), SQLDialect.MYSQL);
+    return new Database(dslContext).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
@@ -162,15 +167,15 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private void executeQuery(final String query) {
     try {
-      Databases.createDatabase(
+      final DSLContext dslContext = DSLContextFactory.create(
           "root",
           "test",
-          String.format("jdbc:mysql://%s:%s/%s",
+          db.getDriverClassName(),
+          String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
+              db.getDatabaseName()), SQLDialect.MYSQL);
+      new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));
     } catch (final SQLException e) {

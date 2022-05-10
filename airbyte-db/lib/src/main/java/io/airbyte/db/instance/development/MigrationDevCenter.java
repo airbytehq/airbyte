@@ -5,10 +5,16 @@
 package io.airbyte.db.instance.development;
 
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrationDevCenter;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrationDevCenter;
 import java.io.IOException;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -44,37 +50,57 @@ public abstract class MigrationDevCenter {
     return container;
   }
 
-  protected abstract FlywayDatabaseMigrator getMigrator(Database database);
+  protected abstract FlywayDatabaseMigrator getMigrator(Database database, Flyway flyway);
 
-  protected abstract Database getDatabase(PostgreSQLContainer<?> container) throws IOException;
+  protected abstract Database getDatabase(DSLContext dslContext) throws IOException;
+
+  protected abstract Flyway getFlyway(DataSource dataSource);
 
   private void createMigration() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
-      final FlywayDatabaseMigrator migrator = getMigrator(database);
-      MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
+    try (final PostgreSQLContainer<?> container = createContainer()) {
+      final DataSource dataSource =
+          DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
+        MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   private void runLastMigration() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
-      final FlywayDatabaseMigrator fullMigrator = getMigrator(database);
-      final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
-      MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-      final String schema = fullMigrator.dumpSchema();
-      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
+    try (final PostgreSQLContainer<?> container = createContainer()) {
+      final DataSource dataSource =
+          DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator fullMigrator = getMigrator(database, flyway);
+        final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
+        MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+        final String schema = fullMigrator.dumpSchema();
+        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   private void dumpSchema() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
-      final FlywayDatabaseMigrator migrator = getMigrator(database);
-      migrator.migrate();
-      final String schema = migrator.dumpSchema();
-      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+    try (final PostgreSQLContainer<?> container = createContainer()) {
+      final DataSource dataSource =
+          DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
+        migrator.migrate();
+        final String schema = migrator.dumpSchema();
+        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

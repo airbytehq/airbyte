@@ -9,6 +9,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.util.Optional;
+import org.jooq.DSLContext;
 
 /**
  * Provides the ability to read and write secrets to a backing store. Assumes that secret payloads
@@ -21,15 +22,10 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
 
-  static Optional<SecretPersistence> getLongLived(final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
-        final Database configDatabase = new ConfigsDatabaseInstance(
-            configs.getConfigDatabaseUser(),
-            configs.getConfigDatabasePassword(),
-            configs.getConfigDatabaseUrl())
-                .getAndInitialize();
-
+        final Database configDatabase = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {
@@ -41,8 +37,8 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static SecretsHydrator getSecretsHydrator(final Configs configs) throws IOException {
-    final var persistence = getLongLived(configs);
+  static SecretsHydrator getSecretsHydrator(final DSLContext dslContext, final Configs configs) throws IOException {
+    final var persistence = getLongLived(dslContext, configs);
 
     if (persistence.isPresent()) {
       return new RealSecretsHydrator(persistence.get());
@@ -51,15 +47,10 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static Optional<SecretPersistence> getEphemeral(final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
-        final Database configDatabase = new ConfigsDatabaseInstance(
-            configs.getConfigDatabaseUser(),
-            configs.getConfigDatabasePassword(),
-            configs.getConfigDatabaseUrl())
-                .getAndInitialize();
-
+        final Database configDatabase = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {

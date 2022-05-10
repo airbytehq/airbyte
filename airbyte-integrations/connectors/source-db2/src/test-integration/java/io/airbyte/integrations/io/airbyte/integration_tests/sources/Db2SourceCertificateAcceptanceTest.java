@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -119,11 +120,14 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        jdbcUrl,
-        Db2Source.DRIVER_CLASS);
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            Db2Source.DRIVER_CLASS,
+            jdbcUrl
+        )
+    );
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
     final String createTableQuery1 = String
