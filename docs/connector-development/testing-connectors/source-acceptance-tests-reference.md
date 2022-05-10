@@ -185,12 +185,13 @@ This test performs two read operations on all streams which support full refresh
 
 This test verifies that all streams in the input catalog which support incremental sync can do so correctly. It does this by running two read operations: the first takes the configured catalog and config provided to this test as input. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. The second read takes the same catalog and config used in the first test, plus the last `STATE` message output by the first read operation as the input state file. It verifies that either no records are produced \(since we read all records in the first sync\) or all records that produced have cursor value greater or equal to cursor value from `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `cursor_paths` | dict | {} | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
-| `timeout_seconds` | int | 20\*60 | Test execution timeout in seconds |
+| Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
+|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
+| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
+| `cursor_paths`            | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
+| `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
+| `threshold_days`          | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
 
 ### TestStateWithAbnormallyLargeValues
 
