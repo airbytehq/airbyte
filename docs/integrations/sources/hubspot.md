@@ -132,6 +132,8 @@ If you are using OAuth, most of the streams require the appropriate [scopes](htt
 | `deals` | `contacts` |
 | `email_events` | `content` |
 | `engagements` | `contacts` |
+| `engagements_emails` | `sales-email-read` |
+| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
 | `forms` | `forms` |
 | `form_submissions`| `forms` |
 | `line_items` | `e-commerce` |
