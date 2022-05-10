@@ -8,10 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.StreamingJdbcDatabase;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,15 +17,7 @@ import javax.sql.DataSource;
 public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptanceTest {
 
   @Override
-  protected JdbcDatabase setupDataBase() {
-    config = getStaticConfig();
-    final DataSource dataSource = createDataSource(getStaticConfig());
-    return new StreamingJdbcDatabase(dataSource,
-        JdbcUtils.getDefaultSourceOperations(),
-        AdaptiveStreamingQueryConfig::new);
-  }
-
-  private HikariDataSource createDataSource(final JsonNode config) {
+  protected DataSource createDataSource() {
     final HikariDataSource dataSource = new HikariDataSource();
     final Properties properties = new Properties();
 
