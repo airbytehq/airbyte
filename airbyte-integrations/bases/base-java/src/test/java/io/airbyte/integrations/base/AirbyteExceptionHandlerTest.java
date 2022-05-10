@@ -52,7 +52,7 @@ public class AirbyteExceptionHandlerTest {
 
     // now we turn the std out from the thread into json and check it's the expected TRACE message
     JsonNode traceMsgJson = Jsons.deserialize(outContent.toString());
-    LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).info(traceMsgJson.toString());
+    LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).debug(traceMsgJson.toString());
     Assertions.assertEquals("TRACE", traceMsgJson.get("type").asText());
     Assertions.assertEquals("ERROR", traceMsgJson.get("trace").get("type").asText());
     Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMsgJson.get("trace").get("error").get("message").asText());
