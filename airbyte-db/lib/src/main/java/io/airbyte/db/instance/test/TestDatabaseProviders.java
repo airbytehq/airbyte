@@ -4,14 +4,16 @@
 
 package io.airbyte.db.instance.test;
 
-import com.google.api.client.util.Preconditions;
-import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import java.io.IOException;
-import java.util.Optional;
-import org.testcontainers.containers.PostgreSQLContainer;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
 
 /**
  * Use this class to create mock databases in unit tests. This class takes care of database
@@ -20,13 +22,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class TestDatabaseProviders {
 
-  private final Optional<Configs> configs;
-  private final Optional<PostgreSQLContainer<?>> container;
+  private final DataSource dataSource;
+  private final DSLContext dslContext;
   private boolean runMigration = true;
 
-  public TestDatabaseProviders(final PostgreSQLContainer<?> container) {
-    this.configs = Optional.empty();
-    this.container = Optional.of(container);
+  public TestDatabaseProviders(final DataSource dataSource, final DSLContext dslContext) {
+    this.dataSource = dataSource;
+    this.dslContext = dslContext;
   }
 
   /**
@@ -39,41 +41,17 @@ public class TestDatabaseProviders {
   }
 
   public Database createNewConfigsDatabase() throws IOException {
-    Preconditions.checkArgument(configs.isPresent() || container.isPresent());
-    if (configs.isPresent()) {
-      final Configs c = configs.get();
-      return new ConfigsDatabaseTestProvider(
-          c.getConfigDatabaseUser(),
-          c.getConfigDatabasePassword(),
-          c.getConfigDatabaseUrl())
-              .create(runMigration);
-    } else {
-      final PostgreSQLContainer<?> c = container.get();
-      return new ConfigsDatabaseTestProvider(
-          c.getUsername(),
-          c.getPassword(),
-          c.getJdbcUrl())
-              .create(runMigration);
-    }
+    final Flyway flyway = FlywayFactory.create(dataSource, ConfigsDatabaseTestProvider.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    return new ConfigsDatabaseTestProvider(dslContext, flyway)
+        .create(runMigration);
   }
 
   public Database createNewJobsDatabase() throws IOException {
-    Preconditions.checkArgument(configs.isPresent() || container.isPresent());
-    if (configs.isPresent()) {
-      final Configs c = configs.get();
-      return new JobsDatabaseTestProvider(
-          c.getDatabaseUser(),
-          c.getDatabasePassword(),
-          c.getDatabaseUrl())
-              .create(runMigration);
-    } else {
-      final PostgreSQLContainer<?> c = container.get();
-      return new JobsDatabaseTestProvider(
-          c.getUsername(),
-          c.getPassword(),
-          c.getJdbcUrl())
-              .create(runMigration);
-    }
+    final Flyway flyway = FlywayFactory.create(dataSource, JobsDatabaseTestProvider.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    return new JobsDatabaseTestProvider(dslContext, flyway)
+        .create(runMigration);
   }
 
 }

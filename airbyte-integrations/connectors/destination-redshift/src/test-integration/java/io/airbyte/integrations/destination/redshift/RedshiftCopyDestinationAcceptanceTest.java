@@ -11,7 +11,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -148,15 +149,19 @@ public class RedshiftCopyDestinationAcceptanceTest extends JdbcDestinationAccept
   }
 
   protected Database getDatabase() {
-    return Databases.createDatabase(
-        baseConfig.get("username").asText(),
-        baseConfig.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            baseConfig.get("host").asText(),
-            baseConfig.get("port").asText(),
-            baseConfig.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver", null,
-        RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
+    return new Database(
+        DSLContextFactory.create(
+            baseConfig.get("username").asText(),
+            baseConfig.get("password").asText(),
+            DatabaseDriver.REDSHIFT.getDriverClassName(),
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                baseConfig.get("host").asText(),
+                baseConfig.get("port").asInt(),
+                baseConfig.get("database").asText()),
+            null,
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS
+        )
+    );
   }
 
   public RedshiftSQLNameTransformer getNamingResolver() {

@@ -12,7 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -79,13 +80,16 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
         .put("password", "")
         .build());
 
-    db = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asText()),
-        ClickHouseSource.DRIVER_CLASS);
+    db = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            configWithoutDbName.get("username").asText(),
+            configWithoutDbName.get("password").asText(),
+            ClickHouseSource.DRIVER_CLASS,
+            String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
+                configWithoutDbName.get("host").asText(),
+                configWithoutDbName.get("port").asText())
+        )
+    );
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 

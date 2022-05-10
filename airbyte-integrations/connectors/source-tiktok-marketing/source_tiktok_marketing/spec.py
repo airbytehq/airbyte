@@ -23,16 +23,6 @@ class OauthCredSpec(BaseModel):
     access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
 
 
-class ProductionEnvSpec(BaseModel):
-    class Config:
-        title = "Production Access Token"
-
-    auth_type: str = Field(default="prod_access_token", const=True, order=0)
-    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
-    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
-    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
-
-
 class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox Access Token"
@@ -50,7 +40,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
+    credentials: Union[OauthCredSpec, SandboxEnvSpec] = Field(
         title="Authentication Method", description="Authentication method", order=0, default={}, type="object"
     )
 

@@ -12,7 +12,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -126,15 +128,17 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected JdbcDatabase setupDataBase() {
     config = Jsons.clone(getStaticConfig());
-    return Databases.createJdbcDatabase(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
-        SnowflakeSource.DRIVER_CLASS,
-        Map.of("role", config.get("role").asText(),
-            "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("credentials").get("username").asText(),
+            config.get("credentials").get("password").asText(),
+            SnowflakeSource.DRIVER_CLASS,
+            String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+            Map.of("role", config.get("role").asText(),
+                "warehouse", config.get("warehouse").asText(),
+                "database", config.get("database").asText())
+        )
+    );
   }
 
   @Test
