@@ -7,6 +7,14 @@
       "path": "../airbyte-webapp-e2e-tests"
     }
   ],
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-vsliveshare.vsliveshare",
+      "eamodio.gitlens"
+    ]
+  },
   "settings": {
     "javascript.preferences.quoteStyle": "double",
     "typescript.preferences.quoteStyle": "double",
