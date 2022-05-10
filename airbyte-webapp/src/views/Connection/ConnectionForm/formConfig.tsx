@@ -173,7 +173,7 @@ function mapFormPropsToOperation(
   const newOperations: OperationRead[] = [];
 
   if (values.normalization) {
-    if (values.normalization !== NormalizationType.RAW) {
+    if (values.normalization !== NormalizationType.raw) {
       const normalizationOperation = initialOperations.find(isNormalizationTransformation);
 
       if (normalizationOperation) {
@@ -264,12 +264,11 @@ const getInitialNormalization = (operations?: OperationRead[], isEditMode?: bool
   const initialNormalization =
     operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
 
-  // If no normalization was selected for already present normalization -> select Raw one
-  if (!initialNormalization && isEditMode) {
-    return NormalizationType.RAW;
-  }
-
-  return NormalizationType.BASIC;
+  return initialNormalization
+    ? NormalizationType[initialNormalization]
+    : isEditMode
+    ? NormalizationType.raw
+    : NormalizationType.basic;
 };
 
 const useInitialValues = (

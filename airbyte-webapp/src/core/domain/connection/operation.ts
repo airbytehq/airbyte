@@ -19,8 +19,8 @@ export interface NormalizationOperationConfiguration {
 }
 
 export enum NormalizationType {
-  BASIC = "basic",
-  RAW = "raw",
+  basic = "basic",
+  raw = "raw",
 }
 
 export const isDbtTransformation = (op: OperationRead): op is Transformation => {
