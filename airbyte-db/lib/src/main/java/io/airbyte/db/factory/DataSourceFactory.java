@@ -4,6 +4,7 @@
 
 package io.airbyte.db.factory;
 
+import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Map;
@@ -151,17 +152,9 @@ public class DataSourceFactory {
    */
   private static class DataSourceBuilder {
 
-    private static final Map<String, String> JDBC_URL_FORMATS = Map.of("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s",
-        "com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s",
-        "com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s",
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s",
-        "oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d:%s",
-        "ru.yandex.clickhouse.ClickHouseDriver", "jdbc:ch://%s:%d/%s",
-        "org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s");
-
     private Map<String, String> connectionProperties = Map.of();
     private String database;
-    private String driverClassName = "org.postgresql.Driver";
+    private String driverClassName;
     private String host;
     private String jdbcUrl;
     private Integer maximumPoolSize = 5;
@@ -231,19 +224,29 @@ public class DataSourceFactory {
     }
 
     public DataSource build() {
+      final DatabaseDriver databaseDriver = DatabaseDriver.findByDriverClassName(driverClassName);
+
+      Preconditions.checkNotNull(databaseDriver, "Unknown or blank driver class name: '" + driverClassName + "'.");
+
       final HikariConfig config = new HikariConfig();
-      config.setDriverClassName(driverClassName);
-      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(JDBC_URL_FORMATS.getOrDefault(driverClassName, ""), host, port, database));
+
+      config.setDriverClassName(databaseDriver.getDriverClassName());
+      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
       config.setPassword(password);
       config.setUsername(username);
 
+      /*
+       * Disable to prevent failing on startup. Applications may start prior to the database container
+       * being available. To avoid failing to create the connection pool, disable the fail check. This
+       * will preserve existing behavior that tests for the connection on first use, not on creation.
+       */
+      config.setInitializationFailTimeout(Integer.MIN_VALUE);
+
       connectionProperties.forEach(config::addDataSourceProperty);
 
-      final HikariDataSource dataSource = new HikariDataSource(config);
-      dataSource.validate();
-      return dataSource;
+      return new HikariDataSource(config);
     }
 
   }

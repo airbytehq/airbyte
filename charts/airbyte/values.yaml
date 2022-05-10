@@ -41,7 +41,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.37.0-alpha
+    tag: 0.38.1-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -207,7 +207,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.37.0-alpha
+    tag: 0.38.1-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -438,7 +438,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.37.0-alpha
+    tag: 0.38.1-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -565,7 +565,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.37.0-alpha
+    tag: 0.38.1-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -683,7 +683,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.37.0-alpha
+    tag: 0.38.1-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##

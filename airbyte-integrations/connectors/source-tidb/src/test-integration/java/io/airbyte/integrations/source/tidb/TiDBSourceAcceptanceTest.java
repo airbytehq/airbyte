@@ -9,12 +9,21 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -39,25 +48,25 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("username", "root")
         .put("database", "test")
         .build());
-    final Database database = Databases.createDatabase(
+
+    try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         "",
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        return null;
+      });
+    }
   }
 
   @Override
