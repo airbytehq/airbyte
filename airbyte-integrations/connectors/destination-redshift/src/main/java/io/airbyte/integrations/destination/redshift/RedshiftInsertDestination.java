@@ -7,7 +7,9 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
@@ -48,12 +50,14 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    return Databases.createJdbcDatabase(
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
         jdbcConfig.get(USERNAME).asText(),
         jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-        jdbcConfig.get(JDBC_URL).asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
-        SSL_JDBC_PARAMETERS);
+        jdbcConfig.get(JDBC_URL).asText(),
+        SSL_JDBC_PARAMETERS)
+    );
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {

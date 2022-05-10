@@ -11,7 +11,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -62,7 +64,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
     return config;
   }
 
-  private JsonNode getConfig(String userName, String password) {
+  private JsonNode getConfig(final String userName, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -111,14 +113,17 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = getConfig(db.getUsername(), db.getPassword());
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("db").asText()),
-        Db2Source.DRIVER_CLASS);
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            Db2Source.DRIVER_CLASS,
+            String.format(DatabaseDriver.DB2.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("db").asText())
+        )
+    );
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
     final String createTableQuery1 = String
@@ -160,10 +165,10 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   public void testCheckPrivilegesForUserWithLessPerm() throws Exception {
     createUser(LESS_PERMITTED_USER);
-    JsonNode config = getConfig(LESS_PERMITTED_USER, PASSWORD);
+    final JsonNode config = getConfig(LESS_PERMITTED_USER, PASSWORD);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
-    List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
+    final List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
     assertEquals(expected.size(), actualNamesWithPermission.size());
     assertEquals(expected, actualNamesWithPermission);
   }
@@ -172,21 +177,21 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   public void testCheckPrivilegesForUserWithoutPerm() throws Exception {
     createUser(USER_WITH_OUT_PERMISSIONS);
 
-    JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, PASSWORD);
+    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, PASSWORD);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
-    List<String> expected = Collections.emptyList();
+    final List<String> expected = Collections.emptyList();
     assertEquals(0, actualNamesWithPermission.size());
     assertEquals(expected, actualNamesWithPermission);
   }
 
-  private void createUser(String lessPermittedUser) throws IOException, InterruptedException {
-    String encryptedPassword = db.execInContainer("openssl", "passwd", PASSWORD).getStdout().replaceAll("\n", "");
+  private void createUser(final String lessPermittedUser) throws IOException, InterruptedException {
+    final String encryptedPassword = db.execInContainer("openssl", "passwd", PASSWORD).getStdout().replaceAll("\n", "");
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 
-  private List<String> getActualNamesWithPermission(JsonNode config) throws Exception {
-    AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
+  private List<String> getActualNamesWithPermission(final JsonNode config) throws Exception {
+    final AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
     return airbyteCatalog
         .getStreams()
         .stream()

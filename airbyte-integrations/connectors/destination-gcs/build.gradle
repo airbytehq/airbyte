@@ -33,6 +33,7 @@ dependencies {
     implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-gcs')
