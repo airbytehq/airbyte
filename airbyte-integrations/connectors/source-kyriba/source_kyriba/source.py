@@ -234,15 +234,17 @@ class CashFlows(IncrementalKyribaStream):
     def stream_slices(
             self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # cash flow date range has to be less than a year
-        if stream_state:
+        end_date = self.end_date or date.today()
+        if stream_state and stream_state.get(self.cursor_field):
             latest = stream_state.get(self.cursor_field)
-            start = datetime.strptime(latest, "%Y-%m-%dT%H:%M:%SZ").date() if latest else None
+            start = datetime.strptime(latest, "%Y-%m-%dT%H:%M:%SZ").date()
+            # produce at least one slice with abnormal state
+            start = start if start <= end_date else end_date
         else:
             start = date.fromisoformat(self.start_date)
-        end_date = self.end_date or date.today()
         slices = []
         while start <= end_date:
+            # cash flow date range has to be less than a year
             max_end = start + timedelta(days=365)
             end = max_end if max_end < end_date else end_date
             slices.append({"startDate": start.isoformat(), "endDate": end.isoformat()})
