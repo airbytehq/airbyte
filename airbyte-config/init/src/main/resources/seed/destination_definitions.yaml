@@ -15,7 +15,7 @@
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
   dockerRepository: airbyte/destination-amazon-sqs
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazon-sqs
   icon: amazonsqs.svg
   releaseStage: alpha
 - name: AWS Datalake
@@ -107,7 +107,7 @@
   destinationDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
   dockerRepository: airbyte/destination-firestore
   dockerImageTag: 0.1.1
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/firestore
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/firestore #page does not exist
   icon: firestore.svg
   releaseStage: alpha
 - name: Google PubSub
