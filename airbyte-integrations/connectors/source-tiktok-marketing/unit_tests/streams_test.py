@@ -22,21 +22,21 @@ from source_tiktok_marketing.streams import (
 START_DATE = "2020-01-01"
 END_DATE = "2020-03-01"
 CONFIG = {
-    "access_token": "access_token",
-    "secret": "secret",
+    "access_token": "00684a976b98efc4b4197e466c4ac71e986e8bab",
+    "secret": "27325d9aeba472ee3488ca19fba858d0b9256528",
     "authenticator": None,
     "start_date": START_DATE,
     "end_date": END_DATE,
-    "app_id": 1234,
+    "app_id": 7059398826003529729,
     "advertiser_id": 0,
 }
 CONFIG_SANDBOX = {
-    "access_token": "access_token",
-    "secret": "secret",
+    "access_token": "00684a976b98efc4b4197e466c4ac71e986e8bab",
+    "secret": "27325d9aeba472ee3488ca19fba858d0b9256528",
     "authenticator": None,
     "start_date": START_DATE,
     "end_date": END_DATE,
-    "app_id": 1234,
+    "app_id": 7059398826003529729,
     "advertiser_id": 2000,
 }
 ADV_IDS = [{"advertiser_id": 1}, {"advertiser_id": 2}]
