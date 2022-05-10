@@ -1,9 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
-type SwitchProps = {
+import styles from "./Switch.module.scss";
+
+interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   small?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  loading?: boolean;
+}
 
 const StyledSwitch = styled.label<{ small?: boolean }>`
   position: relative;
@@ -62,7 +65,11 @@ const Slider = styled.span<{ small?: boolean }>`
 
 const Switch: React.FC<SwitchProps> = (props) => {
   return (
-    <StyledSwitch small={props.small} onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
+    <StyledSwitch
+      small={props.small}
+      onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
+      className={props.loading ? styles.loading : ""}
+    >
       <SwitchInput type="checkbox" {...props} value={props.value} checked={props.checked || !!props.value} />
       <Slider small={props.small} />
     </StyledSwitch>

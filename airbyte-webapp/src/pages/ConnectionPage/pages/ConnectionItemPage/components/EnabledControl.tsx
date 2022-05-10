@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -26,36 +26,42 @@ const Content = styled.div`
   align-items: center;
 `;
 
-type IProps = {
+interface EnabledControlProps {
   connection: WebBackendConnectionRead;
   disabled?: boolean;
   frequencyText?: string;
-};
+}
 
-const EnabledControl: React.FC<IProps> = ({ connection, disabled, frequencyText }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText }) => {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
-  const onChangeStatus = async () => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      schedule: connection.schedule,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      prefix: connection.prefix,
-      operations: connection.operations,
-      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-    });
+  const [loading, setLoading] = useState(false);
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
-      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyText,
-    });
+  const onChangeStatus = async () => {
+    setLoading(true);
+    try {
+      await updateConnection({
+        connectionId: connection.connectionId,
+        syncCatalog: connection.syncCatalog,
+        schedule: connection.schedule,
+        namespaceDefinition: connection.namespaceDefinition,
+        namespaceFormat: connection.namespaceFormat,
+        prefix: connection.prefix,
+        operations: connection.operations,
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      });
+
+      analyticsService.track("Source - Action", {
+        action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
+        connector_source: connection.source?.sourceName,
+        connector_source_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.name,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+        frequency: frequencyText,
+      });
+    } catch {}
+    setLoading(false);
   };
 
   return (
@@ -67,6 +73,7 @@ const EnabledControl: React.FC<IProps> = ({ connection, disabled, frequencyText 
         disabled={disabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
+        loading={loading}
         id="toggle-enabled-source"
       />
     </Content>
