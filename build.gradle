@@ -215,6 +215,37 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
+    jacoco {
+        toolVersion = "0.8.7"
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            html.required = true
+            xml.required = true
+            csv.required = false
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        violationRules {
+            failOnViolation = false
+            rule {
+                element = 'CLASS'
+                excludes = ['**/*Test*', '**/generated*']
+                limit {
+                    counter = 'BRANCH'
+                    minimum = 0.8
+                }
+                limit {
+                    counter = 'INSTRUCTION'
+                    minimum = 0.8
+                }
+            }
+        }
+    }
+
     def integrationTagName = 'platform-integration'
     def slowIntegrationTagName = 'platform-slow-integration'
     // make tag accessible in submodules.
@@ -223,6 +254,10 @@ subprojects {
     }
 
     test {
+        jacoco {
+            enabled = true
+            excludes = ['**/*Test*', '**/generated*']
+        }
         useJUnitPlatform {
             excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
@@ -331,6 +366,7 @@ subprojects {
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    check.dependsOn 'jacocoTestCoverageVerification'
 }
 
 task('generate') {
