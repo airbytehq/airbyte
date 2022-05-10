@@ -10,6 +10,6 @@ if TYPE_CHECKING:
 
 class Interpolation(ABC):
     @abstractmethod
-    def eval(self, input_str: str, vars: "Vars", config: "Config", stream_slice=None, stream_state=None):  # FIXME: declare the output!
+    def eval(self, input_str: str, vars: "Vars", config: "Config", **kwargs):  # FIXME: declare the output!
         # FIXME: also declare parameter types
         pass

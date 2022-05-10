@@ -35,6 +35,10 @@ source:
             retriever:
               class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
               options:
+                iterator:
+                  class_name: "airbyte_cdk.sources.cac.iterators.only_once.OnlyOnceIterator"
+                state:
+                  class_name: "airbyte_cdk.sources.cac.states.no_state.NoState"
                 requester:
                   class_name: "airbyte_cdk.sources.cac.requesters.http_requester.HttpRequester"
                   options:
@@ -63,6 +67,23 @@ source:
           retriever:
             class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
             options:
+              iterator:
+                class_name: "airbyte_cdk.sources.cac.iterators.only_once.OnlyOnceIterator"
+              state:
+                class_name: "airbyte_cdk.sources.cac.states.no_state.NoState"
+              #iterator:
+              #  class_name: "airbyte_cdk.sources.cac.iterators.datetime_iterator.DatetimeIterator"
+              #  options:
+              #    start_time:
+              #      value: "{{ stream_state['date'] }}"
+              #      default: "{{ config['start_date'] }}"
+              #    end_time:
+              #      value: "{{ today_utc() }}"
+              #state:
+              #  class_name: "airbyte_cdk.sources.cac.states.dict_state.DictState"
+              #  options:
+              #    name: "date"
+              #    value: "{{ last_record[''] }}"
               requester:
                 class_name: "airbyte_cdk.sources.cac.requesters.http_requester.HttpRequester"
                 options:

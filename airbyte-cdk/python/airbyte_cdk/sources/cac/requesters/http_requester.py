@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from typing import Optional
+
+import requests
 from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 
@@ -26,3 +29,6 @@ class HttpRequester(Requester):
 
     def get_method(self):
         return self._method
+
+    def get_last_response(self) -> Optional[requests.Response]:
+        return None

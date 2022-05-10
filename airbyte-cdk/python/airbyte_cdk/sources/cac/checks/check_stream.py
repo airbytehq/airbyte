@@ -27,6 +27,7 @@ class CheckStream(ConnectionChecker):
             stream = LowCodeComponentFactory().create_component(self._stream_config, self._vars, config)
             # print("stream was created!!!!!")
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            print(f"RECORDS: {records}")
             next(records)
             return True, None
         except Exception as error:

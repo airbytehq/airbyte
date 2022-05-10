@@ -17,10 +17,10 @@ class DatetimeIterator(Iterator):
         self._timezone = timezone
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
-        self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config, None, None))
+        self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config))
         if not self._start_time:
-            self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config, None, None))
-        self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config, None, None))
+            self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config))
+        self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
         self._step = step
@@ -32,7 +32,7 @@ class DatetimeIterator(Iterator):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        cursor_value = self._interpolation.eval(self._cursor_value, self._vars, self._config, None, stream_state)
+        cursor_value = self._interpolation.eval(self._cursor_value, self._vars, self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date

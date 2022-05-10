@@ -1,0 +1,53 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+from airbyte_cdk.sources.cac.states.dict_state import DictState
+
+vars = {}
+config = {"name": "date"}
+name = "{{ config['name'] }}"
+value = "{{ last_record['updated_at'] }}"
+
+
+def test_empty_state_is_none():
+    state = DictState(name, value, vars, config)
+    initial_state = state.get_state()
+    # FIXME: Is this the right init or should it be NONE or an empty dict?
+    expected_state = {"date": None}
+    assert expected_state == initial_state
+
+
+def test_update_initial_state():
+    state = DictState(name, value, vars, config)
+    stream_slice = None
+    stream_state = None
+    last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
+    last_record = {"id": "1234", "updated_at": "2021-01-01"}
+    state.update_state(stream_slice, stream_state, last_response, last_record)
+    actual_state = state.get_state()
+    expected_state = {"date": "2021-01-01"}
+    assert expected_state == actual_state
+
+
+def test_update_state_with_recent_cursor():
+    state = DictState(name, value, vars, config)
+    stream_slice = None
+    stream_state = {"date": "2020-12-31"}
+    last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
+    last_record = {"id": "1234", "updated_at": "2021-01-01"}
+    state.update_state(stream_slice, stream_state, last_response, last_record)
+    actual_state = state.get_state()
+    expected_state = {"date": "2021-01-01"}
+    assert expected_state == actual_state
+
+
+def test_update_state_with_old_cursor():
+    state = DictState(name, value, vars, config)
+    stream_slice = None
+    stream_state = {"date": "2021-01-02"}
+    last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
+    last_record = {"id": "1234", "updated_at": "2021-01-01"}
+    state.update_state(stream_slice, stream_state, last_response, last_record)
+    actual_state = state.get_state()
+    expected_state = {"date": "2021-01-02"}
+    assert expected_state == actual_state
