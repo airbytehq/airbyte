@@ -4,7 +4,6 @@ import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
 import { Button } from "components";
-import { DocumentationPanel } from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
@@ -130,7 +129,6 @@ const OnboardingPage: React.FC = () => {
             </Footer>
           </Content>
         </ScreenContent>
-        <DocumentationPanel />
       </ConnectorDocumentationLayout>
     </DocumentationPanelProvider>
   );

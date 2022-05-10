@@ -5,7 +5,6 @@ import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
-import { DocumentationPanel } from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 import StepsMenu from "components/StepsMenu";
 
@@ -245,7 +244,6 @@ export const CreationFormPage: React.FC = () => {
             {renderStep()}
           </FormPageContent>
         </>
-        <DocumentationPanel />
       </ConnectorDocumentationLayout>
     </DocumentationPanelProvider>
   );

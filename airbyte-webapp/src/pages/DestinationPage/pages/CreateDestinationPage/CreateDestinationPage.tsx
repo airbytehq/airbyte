@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { FormPageContent } from "components/ConnectorBlocks";
-import { DocumentationPanel } from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
@@ -54,7 +53,6 @@ export const CreateDestinationPage: React.FC = () => {
               />
             </FormPageContent>
           </>
-          <DocumentationPanel />
         </ConnectorDocumentationLayout>
       </DocumentationPanelProvider>
     </>

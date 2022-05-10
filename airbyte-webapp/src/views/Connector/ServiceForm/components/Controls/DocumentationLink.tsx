@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-import { getDocumentationType } from "hooks/services/useDocumentation";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 interface DocumentationLinkProps {

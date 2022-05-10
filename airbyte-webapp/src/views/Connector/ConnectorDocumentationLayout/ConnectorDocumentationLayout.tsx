@@ -4,6 +4,8 @@ import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import styled from "styled-components";
 
+import { DocumentationPanel } from "components/DocumentationPanel/DocumentationPanel";
+
 import { useDocumentationPanelContext } from "./ConnectorDocumentationContext";
 
 const PanelGrabber = styled.div`
@@ -20,14 +22,14 @@ const GrabberHandle = styled(FontAwesomeIcon)`
 
 //NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const ConnectorDocumentationLayout = ({ children }: { children: [React.ReactNode, React.ReactNode] }) => {
-  const [left, right] = children;
+export const ConnectorDocumentationLayout = ({ children }: { children: React.ReactNode }) => {
+  const leftPanel = children;
 
   const { documentationPanelOpen } = useDocumentationPanelContext();
 
   return (
-    <ReflexContainer orientation="vertical" windowResizeAware={true}>
-      <ReflexElement className="left-pane">{left}</ReflexElement>
+    <ReflexContainer orientation="vertical" windowResizeAware>
+      <ReflexElement className="left-pane">{leftPanel}</ReflexElement>
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
           <PanelGrabber>
@@ -37,7 +39,7 @@ export const ConnectorDocumentationLayout = ({ children }: { children: [React.Re
       )}
       {documentationPanelOpen && (
         <ReflexElement className="right-pane" size={1000}>
-          {right}
+          <DocumentationPanel />
         </ReflexElement>
       )}
     </ReflexContainer>
