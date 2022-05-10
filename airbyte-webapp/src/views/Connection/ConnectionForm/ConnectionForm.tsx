@@ -91,6 +91,8 @@ interface ConnectionFormSubmitResult {
   onSubmitComplete: () => void;
 }
 
+export type ConnectionFormMode = "create" | "edit" | "readonly";
+
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
@@ -102,7 +104,7 @@ interface ConnectionFormProps {
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
-  isEditMode?: boolean;
+  mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
   connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);
@@ -114,7 +116,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onCancel,
   className,
   onDropDownSelect,
-  isEditMode,
+  mode,
   successMessage,
   additionBottomControls,
   editSchemeMode,
@@ -130,7 +132,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
-  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
+  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
 
   const workspace = useCurrentWorkspace();
   const onFormSubmit = useCallback(
@@ -148,7 +150,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         formikHelpers.resetForm({ values });
         clearFormChange(formId);
 
-        const requiresReset = isEditMode && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
+        const requiresReset =
+          mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
@@ -164,7 +167,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       onSubmit,
       clearFormChange,
       formId,
-      isEditMode,
+      mode,
       initialValues.syncCatalog,
       editSchemeMode,
     ]
@@ -199,15 +202,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       })}
                     />
                   </LeftFieldCol>
-                  <RightFieldCol>
+                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
                     <DropDown
                       {...field}
                       error={!!meta.error && meta.touched}
                       options={frequencies}
                       onChange={(item) => {
-                        if (onDropDownSelect) {
-                          onDropDownSelect(item);
-                        }
+                        onDropDownSelect?.(item);
                         setFieldValue(field.name, item.value);
                       }}
                     />
@@ -217,7 +218,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Field>
           </Section>
           <Section title={<FormattedMessage id="connection.streams" />}>
-            <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            </span>
             {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
@@ -230,7 +233,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </LeftFieldCol>
-                    <RightFieldCol>
+                    <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
                       <Input
                         {...field}
                         error={!!meta.error}
@@ -264,6 +267,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       placeholder={formatMessage({
                         id: `form.prefix.placeholder`,
                       })}
+                      data-testid="prefixInput"
+                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </RightFieldCol>
                 </FlexRow>
@@ -274,16 +279,15 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
               additionalControl={additionalSchemaControl}
               component={SchemaField}
+              mode={mode}
             />
-            {isEditMode ? (
+            {mode === "edit" && (
               <EditControls
                 isSubmitting={isSubmitting}
                 dirty={dirty}
                 resetForm={() => {
                   resetForm();
-                  if (onCancel) {
-                    onCancel();
-                  }
+                  onCancel?.();
                 }}
                 successMessage={successMessage}
                 errorMessage={
@@ -291,7 +295,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 }
                 editSchemeMode={editSchemeMode}
               />
-            ) : (
+            )}
+            {mode === "create" && (
               <>
                 <OperationsSection destDefinition={destDefinition} />
                 <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />

@@ -7,6 +7,12 @@ import os
 
 import pytest
 import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
 from octavia_cli.generate.renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
@@ -89,65 +95,12 @@ def test_expected_output_connector_specification_renderer(
 
 
 def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker):
-    mock_source = mocker.Mock(
-        resource_id="my_source_id",
-        catalog={
-            "streams": [
-                {
-                    "stream": {
-                        "name": "stream_1",
-                        "jsonSchema": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
-                            "properties": {
-                                "foo": {
-                                    "type": "number",
-                                }
-                            },
-                        },
-                        "supportedSyncModes": ["full_refresh"],
-                        "sourceDefinedCursor": None,
-                        "defaultCursorField": ["foo"],
-                        "sourceDefinedPrimaryKey": [],
-                        "namespace": None,
-                    },
-                    "config": {
-                        "syncMode": "full_refresh",
-                        "cursorField": [],
-                        "destinationSyncMode": "append",
-                        "primaryKey": [],
-                        "aliasName": "aliasMock",
-                        "selected": True,
-                    },
-                },
-                {
-                    "stream": {
-                        "name": "stream_2",
-                        "jsonSchema": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
-                            "properties": {
-                                "bar": {
-                                    "type": "number",
-                                }
-                            },
-                        },
-                        "supportedSyncModes": ["full_refresh", "incremental"],
-                        "sourceDefinedCursor": None,
-                        "defaultCursorField": [],
-                        "sourceDefinedPrimaryKey": [],
-                        "namespace": None,
-                    },
-                    "config": {
-                        "syncMode": "full_refresh",
-                        "cursorField": [],
-                        "destinationSyncMode": "append",
-                        "primaryKey": [],
-                        "aliasName": "aliasMock",
-                        "selected": True,
-                    },
-                },
-            ]
-        },
+    stream = AirbyteStream(default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")])
+    config = AirbyteStreamConfiguration(
+        alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
     )
+    catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
+    mock_source = mocker.Mock(resource_id="my_source_id", catalog=catalog)
     mock_destination = mocker.Mock(resource_id="my_destination_id")
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)

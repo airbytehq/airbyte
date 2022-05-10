@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -19,6 +20,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
+import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -48,10 +50,15 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
             container.getDatabaseName()))
         .build());
 
-    database = Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText());
+    database = new Database(
+        DSLContextFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            config.get("jdbc_url").asText(),
+            SQLDialect.POSTGRES
+        )
+    );
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");

@@ -13,17 +13,21 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -121,8 +125,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
+    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
+    return new Database(dslContext).query(
             ctx -> {
               ctx.fetch(String.format("USE %s;", config.get("database")));
               return ctx
@@ -135,12 +139,14 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private static Database getDatabase(final JsonNode config) {
-    return Databases.createSqlServerDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format(DatabaseDriver.MSSQLSERVER.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asInt()));
+            config.get("port").asInt()), SQLDialect.DEFAULT);
+    return new Database(dslContext);
   }
 
   @Override

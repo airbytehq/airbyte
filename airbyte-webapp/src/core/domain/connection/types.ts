@@ -33,7 +33,7 @@ export type ScheduleProperties = {
 export enum ConnectionStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
-  DEPRECATED = "depreacted",
+  DEPRECATED = "deprecated",
 }
 
 export interface Connection {
@@ -56,4 +56,5 @@ export interface Connection {
   source: Source;
   destination: Destination;
   operations: Operation[];
+  catalogId: string;
 }

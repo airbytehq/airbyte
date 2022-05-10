@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -31,7 +31,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   } | null>(null);
 
   const { mutateAsync: createDestination } = useCreateDestination();
-  const analyticsService = useAnalyticsService();
+  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
@@ -64,8 +64,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
-    analyticsService.track("New Destination - Action", {
-      action: "Select a connector",
+    trackNewDestinationAction("Select a connector", {
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });
