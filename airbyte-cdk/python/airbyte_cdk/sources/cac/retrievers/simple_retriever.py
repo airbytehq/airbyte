@@ -72,7 +72,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        return {}
+        return self._requester.request_params(stream_state, stream_slice, next_page_token)
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

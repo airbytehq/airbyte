@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
 
@@ -26,4 +26,13 @@ class Requester(ABC):
 
     @abstractmethod
     def get_last_response(self) -> Optional[requests.Response]:
+        pass
+
+    @abstractmethod
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         pass

@@ -48,7 +48,7 @@ class SendgridSource(AbstractSource):
         try:
             with open("/airbyte/integration_code/source_sendgrid/spec.json", "r") as f:
                 return json.loads(f.read())
-        except RuntimeError:
+        except FileNotFoundError:
             with open("./source_sendgrid/spec.json", "r") as f:
                 return json.loads(f.read())
 
@@ -73,6 +73,7 @@ class SendgridSource(AbstractSource):
                         path="marketing/segments",
                         method="GET",
                         authenticator=TokenAuthenticator(config["apikey"]),
+                        request_parameters={},
                     ),
                     extractor=SendGridExtractor("results"),
                     iterator=OnlyOnceIterator(),
@@ -90,6 +91,7 @@ class SendgridSource(AbstractSource):
                         path="suppression/bounces",
                         method="GET",
                         authenticator=TokenAuthenticator(config["apikey"]),
+                        request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
                     ),
                     extractor=SendGridExtractor(None),
                     iterator=DatetimeIterator(
