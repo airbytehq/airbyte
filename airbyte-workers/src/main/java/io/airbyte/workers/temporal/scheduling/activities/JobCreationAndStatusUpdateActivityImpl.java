@@ -22,8 +22,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -266,11 +266,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   @Override
   public void failNonTerminalJobs(final FailNonTerminalJobsInput input) {
-    log.info("failNonTerminalJobs called with input: {}", input);
     try {
       final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(input.getConnectionId(), Job.REPLICATION_TYPES,
           io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
-      log.info("failNonTerminalJobs jobs result: {}", jobs);
       for (final Job job : jobs) {
         final long jobId = job.getId();
         log.info("Failing non-terminal job {}", jobId);

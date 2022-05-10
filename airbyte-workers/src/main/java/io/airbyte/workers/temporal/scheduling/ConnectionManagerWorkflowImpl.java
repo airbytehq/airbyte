@@ -442,7 +442,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
     final int ensureCleanJobStateVersion =
         Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
-    log.info("Ensuring clean job state! Version: {}, connectionUpdaterInput: {}", ensureCleanJobStateVersion, connectionUpdaterInput);
 
     // For backwards compatibility and determinism, skip if workflow existed before this change
     if (ensureCleanJobStateVersion < ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION) {
