@@ -17,6 +17,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
 import java.util.Optional;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,6 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class MssqlStressTest extends JdbcStressTest {
 
   private static MSSQLServerContainer<?> dbContainer;
-  private static JdbcDatabase database;
   private JsonNode config;
 
   @BeforeAll
@@ -45,30 +45,32 @@ public class MssqlStressTest extends JdbcStressTest {
         .put("password", dbContainer.getPassword())
         .build());
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
-            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-            String.format("jdbc:sqlserver://%s:%d",
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asInt())
-        )
-    );
+    final DataSource dataSource = DataSourceFactory.create(
+        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get("password").asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
+            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get("port").asInt()));
 
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
-    super.setup();
+      config = Jsons.clone(configWithoutDbName);
+      ((ObjectNode) config).put("database", dbName);
+
+      super.setup();
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @AfterAll
-  public static void tearDown() throws Exception {
-    database.close();
+  public static void tearDown() {
     dbContainer.close();
   }
 

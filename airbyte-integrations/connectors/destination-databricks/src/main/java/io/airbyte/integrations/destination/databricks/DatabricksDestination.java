@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
+import javax.sql.DataSource;
 
 public class DatabricksDestination extends CopyDestination {
 
@@ -38,7 +39,7 @@ public class DatabricksDestination extends CopyDestination {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
-        getDatabase(config),
+        getDatabase(getDataSource(config)),
         getSqlOperations(),
         getNameTransformer(),
         databricksConfig,
@@ -60,8 +61,18 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(final JsonNode jsonConfig) {
-    return getDatabase(DatabricksDestinationConfig.get(jsonConfig));
+  public DataSource getDataSource(final JsonNode config) {
+    final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
+    return DataSourceFactory.create(
+        DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.getDatabricksPersonalAccessToken(),
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        getDatabricksConnectionString(databricksConfig));
+  }
+
+  @Override
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
+    return new DefaultJdbcDatabase(dataSource);
   }
 
   @Override
@@ -75,15 +86,4 @@ public class DatabricksDestination extends CopyDestination {
         databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
   }
-
-  static JdbcDatabase getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    return new DefaultJdbcDatabase(DataSourceFactory.create(
-        DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        getDatabricksConnectionString(databricksConfig)
-      )
-    );
-  }
-
 }

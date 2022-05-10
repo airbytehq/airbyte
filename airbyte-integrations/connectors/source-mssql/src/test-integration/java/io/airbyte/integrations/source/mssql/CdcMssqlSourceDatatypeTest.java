@@ -80,16 +80,15 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   private void executeQuery(final String query) {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt())), null);
-
-    try (final Database database = new Database(dslContext)) {
+            config.get("port").asInt())), null)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));

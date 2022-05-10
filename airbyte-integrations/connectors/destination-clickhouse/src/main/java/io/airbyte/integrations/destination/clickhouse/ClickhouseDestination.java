@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
@@ -16,9 +17,11 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +72,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
@@ -79,6 +84,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final IOException e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 

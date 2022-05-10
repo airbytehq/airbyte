@@ -133,7 +133,7 @@ public class CopyConsumerFactory {
                                             final SqlOperations sqlOperations)
       throws Exception {
     Exception firstException = null;
-    List<StreamCopier> streamCopiers = new ArrayList<>(pairToCopier.values());
+    final List<StreamCopier> streamCopiers = new ArrayList<>(pairToCopier.values());
     try {
       final List<String> queries = new ArrayList<>();
       for (final var copier : streamCopiers) {
@@ -165,7 +165,6 @@ public class CopyConsumerFactory {
       for (final var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
-      db.close();
     }
     if (firstException != null) {
       throw firstException;

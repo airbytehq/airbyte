@@ -38,6 +38,7 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,6 +54,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
+  protected DataSource dataSource;
 
   public AbstractJdbcSource(final String driverClass,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
@@ -290,14 +293,19 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
+
+    if (dataSource == null) {
+      dataSource = DataSourceFactory.create(
+          jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
+          jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+          driverClass,
+          jdbcConfig.get("jdbc_url").asText(),
+          JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+      );
+    }
+
     final JdbcDatabase database = new StreamingJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            driverClass,
-            jdbcConfig.get("jdbc_url").asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-        ),
+        dataSource,
         sourceOperations,
         streamingQueryConfigProvider
     );
@@ -309,6 +317,17 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   protected String getJdbcParameterDelimiter() {
     return "&";
+  }
+
+  @Override
+  public void close() {
+    try {
+      DataSourceFactory.close(dataSource);
+    } catch (final IOException e) {
+      LOGGER.warn("Unable to close data source.", e);
+    } finally {
+      dataSource = null;
+    }
   }
 
 }

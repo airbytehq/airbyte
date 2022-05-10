@@ -78,17 +78,21 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    final Database database = getDatabase(databricksConfig);
-    return database.query(ctx -> ctx.select(asterisk())
-        .from(String.format("%s.%s", schemaName, tableName))
-        .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
-        .fetch().stream()
-        .map(record -> {
-          final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
-          final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
-          return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
-        })
-        .collect(Collectors.toList()));
+    try (final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT)) {
+      final Database database = new Database(dslContext);
+      return database.query(ctx -> ctx.select(asterisk())
+          .from(String.format("%s.%s", schemaName, tableName))
+          .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
+          .fetch().stream()
+          .map(record -> {
+            final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
+            final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
+            return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
+          })
+          .collect(Collectors.toList()));
+    }
   }
 
   @Override
@@ -132,7 +136,10 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
-    try (final Database database = getDatabase(databricksConfig)) {
+    try (final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT)) {
+      final Database database = new Database(dslContext);
       // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
       // Databricks, and it incorrectly quotes the schema name
       database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
@@ -140,10 +147,4 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
       throw new SQLException(e);
     }
   }
-
-  private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME, databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS, DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
-    return new Database(dslContext);
-  }
-
 }

@@ -132,15 +132,15 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()), SQLDialect.MYSQL);
-    try (final Database database = new Database(dslContext)) {
+            container.getDatabaseName()), SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));

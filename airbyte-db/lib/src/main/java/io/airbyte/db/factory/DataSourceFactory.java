@@ -7,6 +7,8 @@ package io.airbyte.db.factory;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -145,6 +147,21 @@ public class DataSourceFactory {
         .withPassword(password)
         .withUsername(username)
         .build();
+  }
+
+  /**
+   * Utility method that attempts to close the provided {@link DataSource} if it implements
+   * {@link Closeable}.
+   *
+   * @param dataSource The {@link DataSource} to close.
+   * @throws IOException if unable to close the data source.
+   */
+  public static void close(final DataSource dataSource) throws IOException {
+    if (dataSource != null) {
+      if (dataSource instanceof Closeable closeable) {
+        closeable.close();
+      }
+    }
   }
 
   /**

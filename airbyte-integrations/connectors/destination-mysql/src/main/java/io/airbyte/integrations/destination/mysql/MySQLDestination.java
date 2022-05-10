@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
@@ -17,8 +18,10 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +61,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
       final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
@@ -80,6 +85,12 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final IOException e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 

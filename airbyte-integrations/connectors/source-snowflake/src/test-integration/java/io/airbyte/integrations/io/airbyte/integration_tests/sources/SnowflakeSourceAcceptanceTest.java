@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   protected JdbcDatabase database;
+  protected DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -96,7 +98,8 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    database = setupDataBase();
+    dataSource = createDataSource();
+    database = new DefaultJdbcDatabase(dataSource);
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String
         .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
@@ -123,21 +126,19 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
     final String dropSchemaQuery = String
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database.execute(dropSchemaQuery);
-    database.close();
+    DataSourceFactory.close(dataSource);
   }
 
-  protected JdbcDatabase setupDataBase() {
+  protected DataSource createDataSource() {
     config = Jsons.clone(getStaticConfig());
-    return new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("credentials").get("username").asText(),
-            config.get("credentials").get("password").asText(),
-            SnowflakeSource.DRIVER_CLASS,
-            String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
-            Map.of("role", config.get("role").asText(),
-                "warehouse", config.get("warehouse").asText(),
-                "database", config.get("database").asText())
-        )
+    return DataSourceFactory.create(
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
+        SnowflakeSource.DRIVER_CLASS,
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+        Map.of("role", config.get("role").asText(),
+            "warehouse", config.get("warehouse").asText(),
+            "database", config.get("database").asText())
     );
   }
 

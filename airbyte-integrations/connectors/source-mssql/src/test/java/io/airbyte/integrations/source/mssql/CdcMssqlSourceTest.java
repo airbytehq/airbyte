@@ -41,6 +41,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MssqlSource source;
   private JsonNode config;
   private DSLContext dslContext;
+  private DataSource dataSource;
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -89,24 +91,19 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("replication_method", "CDC")
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dataSource = DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%s",
             container.getHost(),
-            container.getFirstMappedPort()),
-        null);
+            container.getFirstMappedPort()));
+
+    dslContext = DSLContextFactory.create(dataSource, null);
 
     database = new Database(dslContext);
 
-    testJdbcDatabase = new DefaultJdbcDatabase(DataSourceFactory.create(
-        TEST_USER_NAME,
-        TEST_USER_PASSWORD,
-        DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort())));
+    testJdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -210,7 +207,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   public void tearDown() {
     try {
       dslContext.close();
-      testJdbcDatabase.close();
+      DataSourceFactory.close(dataSource);
       container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
