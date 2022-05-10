@@ -124,6 +124,7 @@ class SourceFacebookMarketing(AbstractSource):
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or default_args["start_date"],
                 end_date=insight.end_date or default_args["end_date"],
+                insights_lookback_window=insight.insights_lookback_window or default_args["insights_lookback_window"],
             )
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)

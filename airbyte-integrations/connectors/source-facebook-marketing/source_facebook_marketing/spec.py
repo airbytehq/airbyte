@@ -77,6 +77,14 @@ class InsightConfig(BaseModel):
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
     )
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Custom Insights Lookback Window",
+        description=(
+            "The attribution window"
+        ),
+        exclusiveMaximum=28,
+        default=28,
+    )
 
 
 class ConnectorConfig(BaseConfig):
