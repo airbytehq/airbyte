@@ -191,12 +191,20 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public AirbyteTraceMessage getFirstSourceErrorTraceMessage() {
-    return sourceErrorTraceMessages.get(0);
+    if (sourceErrorTraceMessages.size() > 0) {
+      return sourceErrorTraceMessages.get(0);
+    } else {
+      return null;
+    }
   }
 
   @Override
   public AirbyteTraceMessage getFirstDestinationErrorTraceMessage() {
-    return destinationErrorTraceMessages.get(0);
+    if (destinationErrorTraceMessages.size() > 0) {
+      return destinationErrorTraceMessages.get(0);
+    } else {
+      return null;
+    }
   }
 
   @Override
