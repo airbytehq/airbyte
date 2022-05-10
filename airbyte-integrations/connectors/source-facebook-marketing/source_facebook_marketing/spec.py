@@ -150,7 +150,7 @@ class ConnectorConfig(BaseConfig):
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
         order=8,
-        default=100,
+        default=25,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),

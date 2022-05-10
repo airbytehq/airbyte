@@ -76,11 +76,86 @@
       "type": ["null", "string"]
     },
     "extended_credit_invoice_group": {
-      "type": ["null", "number"]
-    },
-    "failed_delivery_checks": {
-      "type": ["null", "number"]
-    },
+       "items": {
+         "properties": {
+           "auto_enroll": {
+             "type": [
+               "boolean",
+               "null"
+             ]
+           },
+           "customer_po_number": {
+             "type": [
+               "string",
+               "null"
+             ]
+           },
+           "emails": {
+             "items": {
+               "type": [
+                 "string"
+               ]
+             },
+             "type": [
+               "array",
+               "null"
+             ]
+           },
+           "id": {
+             "type": [
+               "string",
+               "null"
+             ]
+           },
+           "name": {
+             "type": [
+               "string",
+               "null"
+             ]
+           }
+         },
+         "type": "object"
+       },
+       "type": [
+         "null",
+         "array"
+       ]
+     },
+     "failed_delivery_checks": {
+       "items": {
+         "properties": {
+           "check_name": {
+             "type": [
+               "string",
+               "null"
+             ]
+           },
+           "description": {
+             "type": [
+               "string",
+               "null"
+             ]
+           },
+           "extra_info": {
+             "type": [
+               "object",
+               "null"
+             ]
+           },
+           "summary": {
+             "type": [
+               "string",
+               "null"
+             ]
+           }
+         },
+         "type": "object"
+       },
+       "type": [
+         "null",
+         "array"
+       ]
+     },
     "fb_entity": {
       "type": ["null", "number"]
     },
@@ -135,7 +210,10 @@
       "type": ["null", "boolean"]
     },
     "line_numbers": {
-      "type": ["null", "number"]
+      "items": {
+        "type": ["number", "null"]
+      },
+      "type": ["null", "array"]
     },
     "media_agency": {
       "type": ["null", "number"]
@@ -192,7 +270,7 @@
       "type": ["null", "string"]
     },
     "tax_id": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "tax_id_status": {
       "type": ["null", "number"]
