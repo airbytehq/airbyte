@@ -23,24 +23,16 @@ class DatetimeIterator(Iterator):
         self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config, None, None))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
-        # FIXME: step should also come from the config
         self._step = step
         self._vars = vars
         self._config = config
-        # FIXME these need to come from params
         self._cursor_value = cursor_value
-        print(f"type _start_time: {self._start_time} ({type(self._start_time)})")
 
     # FIXME: this needs an update state method?
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        # FIXME need to get cursor from self._values
-        print(f"VALUES: {self._cursor_value}")
-        for k, v in self._cursor_value.items():
-            interpolated_cursor_value = self._interpolation.eval(v, self._vars, self._config, None, stream_state)
-            print(f"interpolated: {interpolated_cursor_value}")
-        cursor_value = stream_state.get(self._cursor_value["name"])
+        cursor_value = self._interpolation.eval(self._cursor_value, self._vars, self._config, None, stream_state)
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date

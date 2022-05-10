@@ -21,7 +21,7 @@ end_date_now = {
 end_date = {
     "value": "2021-01-10",
 }
-cursor_value = {"name": "date", "value": "{{ stream_state['start_date'] }}"}
+cursor_value = "{{ stream_state['date'] }}"
 vars = {}
 timezone = datetime.timezone.utc
 
