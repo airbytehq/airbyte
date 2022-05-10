@@ -144,7 +144,7 @@ class AccountSubStream(HttpSubStream, KyribaStream):
 
 class CashBalancesStream(AccountSubStream):
     def stream_slices(
-            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -192,7 +192,7 @@ class CashBalancesIntraday(CashBalancesStream):
 
 class BankBalancesStream(AccountSubStream):
     def stream_slices(
-            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -232,7 +232,7 @@ class CashFlows(IncrementalKyribaStream):
         return "cash-flows"
 
     def stream_slices(
-            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         end_date = self.end_date or date.today()
         if stream_state and stream_state.get(self.cursor_field):
