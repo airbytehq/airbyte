@@ -8,8 +8,6 @@ import styled from "styled-components";
 
 import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
-import ResetDataModal from "components/ResetDataModal";
-import { ModalTypes } from "components/ResetDataModal/types";
 
 import { ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
 import {
@@ -20,6 +18,8 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
+
+import { useConfirmationModalService } from "../../../../../hooks/services/ConfirmationModal";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -49,7 +49,7 @@ const Note = styled.span`
 `;
 
 export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
-  const [isModalOpen, setIsUpdateModalOpen] = useState(false);
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
@@ -96,15 +96,23 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     formikHelpers?.resetForm({ values });
   };
 
-  const onSubmitResetModal = async () => {
-    setIsUpdateModalOpen(false);
-    await onSubmit(currentValues);
+  const openResetDataModal = () => {
+    openConfirmationModal({
+      title: "connection.updateSchema",
+      text: "connection.updateSchemaText",
+      submitButtonText: "connection.updateSchema",
+      submitButtonDataId: "refresh",
+      onSubmit: async () => {
+        await onSubmit(currentValues);
+        closeConfirmationModal();
+      },
+    });
   };
 
   const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
       setCurrentValues(values);
-      setIsUpdateModalOpen(true);
+      openResetDataModal();
     } else {
       await onSubmit(values);
     }
@@ -156,13 +164,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
           <LoadingSchema />
         )}
       </Card>
-      {isModalOpen ? (
-        <ResetDataModal
-          onClose={() => setIsUpdateModalOpen(false)}
-          onSubmit={onSubmitResetModal}
-          modalType={ModalTypes.UPDATE_SCHEMA}
-        />
-      ) : null}
     </Content>
   );
 };
