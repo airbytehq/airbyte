@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-type ToggleProps = {
+type SwitchProps = {
   small?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
-const Switch = styled.label<{ small?: boolean }>`
+const StyledSwitch = styled.label<{ small?: boolean }>`
   position: relative;
   display: inline-block;
   width: ${({ small }) => (small ? 28 : 42)}px;
@@ -60,13 +60,13 @@ const Slider = styled.span<{ small?: boolean }>`
   }
 `;
 
-const Toggle: React.FC<ToggleProps> = (props) => {
+const Switch: React.FC<SwitchProps> = (props) => {
   return (
-    <Switch small={props.small} onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
+    <StyledSwitch small={props.small} onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
       <SwitchInput type="checkbox" {...props} value={props.value} checked={props.checked || !!props.value} />
       <Slider small={props.small} />
-    </Switch>
+    </StyledSwitch>
   );
 };
 
-export default Toggle;
+export default Switch;

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox, Toggle } from "components/base";
+import { CheckBox, Switch } from "components/base";
 
 type IProps = {
   message?: React.ReactNode;
@@ -38,7 +38,7 @@ const LabeledToggle: React.FC<IProps> = (props) => (
     {props.checkbox ? (
       <CheckBox {...props} id={`toggle-${props.name}`} />
     ) : (
-      <Toggle {...props} id={`toggle-${props.name}`} />
+      <Switch {...props} id={`toggle-${props.name}`} />
     )}
 
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>

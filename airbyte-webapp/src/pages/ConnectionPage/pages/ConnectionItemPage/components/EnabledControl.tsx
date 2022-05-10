@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Toggle } from "components";
+import { Switch } from "components";
 
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
@@ -63,7 +63,7 @@ const EnabledControl: React.FC<IProps> = ({ connection, disabled, frequencyText 
       <ToggleLabel htmlFor="toggle-enabled-source">
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
       </ToggleLabel>
-      <Toggle
+      <Switch
         disabled={disabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
