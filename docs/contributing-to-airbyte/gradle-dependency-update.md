@@ -3,6 +3,8 @@
 This document describes how to update dependency versions for Airbyte's **Gradle** build and how to share them with other **projects**.      
 Dependencies should be represented as dependency coordinates, that a user can pick from when declaring dependencies in a build script.
 
+We use [Gradle Catalogs](https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies) to keep dependencies synced up across different Java projects.
+
 > Version Catalog Example:
 > ```gradle
 > dependencies {
