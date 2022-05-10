@@ -75,7 +75,7 @@ definitions:
       state_type:
         "$ref": "#/definitions/AirbyteStateType"
       data:
-        description: "the state data"
+        description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       global:
