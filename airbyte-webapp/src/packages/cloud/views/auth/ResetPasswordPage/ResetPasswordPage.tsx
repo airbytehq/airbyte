@@ -19,7 +19,7 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <div>
@@ -32,13 +32,19 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          registerNotification({
-            id: "resetPassword.emailSent",
-            title: formatMessage({ id: "login.resetPassword.emailSent" }),
-            isError: false,
-          });
+        onSubmit={async ({ email }, FormikBag) => {
+          try {
+            await requirePasswordReset(email);
+            registerNotification({
+              id: "resetPassword.emailSent",
+              title: formatMessage({ id: "login.resetPassword.emailSent" }),
+              isError: false,
+            });
+          } catch (err) {
+            err.message.includes("user-not-found")
+              ? FormikBag.setFieldError("email", "login.yourEmail.notFound")
+              : FormikBag.setFieldError("email", "login.unknownError");
+          }
         }}
         validateOnBlur={true}
         validateOnChange={false}

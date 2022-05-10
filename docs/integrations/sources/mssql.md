@@ -294,6 +294,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :----------------------------------------------------- | :------------------------------------- |
+| 0.3.22  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.3.21  | 2022-04-11 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0 |
 | 0.3.19  | 2022-03-31 | [11495](https://github.com/airbytehq/airbyte/pull/11495) | Adds Support to Chinese MSSQL Server Agent |
 | 0.3.18  | 2022-03-29 | [11010](https://github.com/airbytehq/airbyte/pull/11010) | Adds JDBC Params |
@@ -326,4 +327,3 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync |  |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas |  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |  |
-

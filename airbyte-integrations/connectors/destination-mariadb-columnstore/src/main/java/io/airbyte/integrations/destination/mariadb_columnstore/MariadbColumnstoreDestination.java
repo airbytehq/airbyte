@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mariadb_columnstore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class MariadbColumnstoreDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestination.class);
-  public static final String DRIVER_CLASS = "org.mariadb.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MARIADB.getDriverClassName();
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -75,9 +76,9 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:mariadb://%s:%s/%s",
+    final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
         config.get("host").asText(),
-        config.get("port").asText(),
+        config.get("port").asInt(),
         config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

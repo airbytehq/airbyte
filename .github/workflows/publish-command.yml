@@ -68,6 +68,7 @@ jobs:
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   publish-image:
+    timeout-minutes: 240
     needs: start-publish-image-runner
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
@@ -228,6 +229,7 @@ jobs:
         run: |
           git add -u
           git commit -m "auto-bump connector version"
+          git pull origin ${{ github.event.inputs.gitref }}
           git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
         if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()

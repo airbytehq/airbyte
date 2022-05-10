@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
 
-public interface StagingOperations extends SqlOperations  {
+public interface StagingOperations extends SqlOperations {
 
   String getStageName(String namespace, String streamName);
 
