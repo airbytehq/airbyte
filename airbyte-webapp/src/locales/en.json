@@ -1,6 +1,8 @@
 {
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
   "notifications.error.health": "Cannot reach server",
+  "notifications.error.somethingWentWrong": "Something went wrong",
+  "notifications.error.noMessage": "No error message",
 
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
