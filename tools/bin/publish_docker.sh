@@ -22,7 +22,7 @@ ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 
 # Iterate over all directories in list to build one by one.
-# metrics-reporter are exception due to wrong artifact naming that  
+# metrics-reporter are exception due to wrong artifact naming 
 for workdir in "${projectDir[@]}"
   do
     if [ $workdir = "metrics/reporter" ]; then
