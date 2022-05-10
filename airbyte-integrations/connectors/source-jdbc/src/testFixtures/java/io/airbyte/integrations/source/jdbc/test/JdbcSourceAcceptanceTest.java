@@ -17,14 +17,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -69,6 +72,10 @@ import org.junit.jupiter.api.Test;
 // 3. From the class that extends this one, implement a @AfterEach that cleans out the database
 // between each test.
 // 4. Then implement the abstract methods documented below.
+@SuppressFBWarnings(
+    value = {"MS_SHOULD_BE_FINAL"},
+    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
+)
 public abstract class JdbcSourceAcceptanceTest {
 
   // schema name must be randomized for each test run,
@@ -185,6 +192,10 @@ public abstract class JdbcSourceAcceptanceTest {
     return clause.toString();
   }
 
+  protected String getJdbcParameterDelimiter() {
+    return "&";
+  }
+
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
@@ -192,12 +203,17 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
+    database = new StreamingJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            getDriverClass(),
+            jdbcConfig.get("jdbc_url").asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+        ),
+        JdbcUtils.getDefaultSourceOperations(),
+        AdaptiveStreamingQueryConfig::new
+    );
 
     if (supportsSchemas()) {
       createSchemas();

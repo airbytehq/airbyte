@@ -69,6 +69,12 @@ STREAM_RESPONSE: dict = {
 TEST_STREAM = TicketComments(**STREAM_ARGS)
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_str2datetime():
     expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
     output = BaseSourceZendeskSupportStream.str2datetime(DATETIME_STR)

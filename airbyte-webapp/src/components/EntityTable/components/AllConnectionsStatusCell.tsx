@@ -10,7 +10,7 @@ const _statusConfig: { status: Status; statusIconStatus?: StatusIconStatus; titl
   { status: Status.ACTIVE, statusIconStatus: "success", titleId: "connection.successSync" },
   { status: Status.INACTIVE, statusIconStatus: "inactive", titleId: "connection.disabledConnection" },
   { status: Status.FAILED, titleId: "connection.failedSync" },
-  { status: Status.EMPTY, statusIconStatus: "empty", titleId: "connection.noSyncData" },
+  { status: Status.EMPTY, statusIconStatus: "sleep", titleId: "connection.noSyncData" },
 ];
 
 interface AllConnectionStatusConnectEntity {

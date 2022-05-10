@@ -6,7 +6,8 @@ package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
@@ -86,12 +87,15 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   protected JdbcDatabase getDatabase(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
-    return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
-        getConnectionProperties(config));
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            driverClass,
+            jdbcConfig.get("jdbc_url").asText(),
+            getConnectionProperties(config)
+        )
+    );
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {

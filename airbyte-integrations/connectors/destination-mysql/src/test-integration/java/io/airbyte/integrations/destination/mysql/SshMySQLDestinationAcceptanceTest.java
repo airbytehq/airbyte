@@ -12,7 +12,8 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -22,7 +23,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -111,12 +115,14 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createMySqlDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
+        "com.mysql.cj.jdbc.Driver",
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
-            config.get("port").asText()));
+            config.get("port").asText()), SQLDialect.MYSQL);
+    return new Database(dslContext);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {

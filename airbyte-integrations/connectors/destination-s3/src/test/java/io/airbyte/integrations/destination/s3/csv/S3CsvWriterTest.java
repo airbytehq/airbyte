@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter.Builder;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -53,14 +54,16 @@ class S3CsvWriterTest {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final int PART_SIZE = 7;
-  public static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
+  private static final S3CsvFormatConfig CSV_FORMAT_CONFIG = new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE, CompressionType.NO_COMPRESSION);
+
+  private static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
       "fake-bucket",
       "fake-bucketPath",
       "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
       .withPartSize(PART_SIZE)
-      .withFormatConfig(new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE))
+      .withFormatConfig(CSV_FORMAT_CONFIG)
       .get();
 
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
@@ -253,7 +256,7 @@ class S3CsvWriterTest {
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
         .withPartSize(PART_SIZE)
-        .withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE))
+        .withFormatConfig(CSV_FORMAT_CONFIG)
         .get();
     final S3CsvWriter writer = new Builder(
         s3Config,

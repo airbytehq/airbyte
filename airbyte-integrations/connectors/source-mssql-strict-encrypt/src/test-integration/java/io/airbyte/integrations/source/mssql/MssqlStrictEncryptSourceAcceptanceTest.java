@@ -10,7 +10,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -21,7 +23,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -66,14 +70,14 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   }
 
   private static Database getDatabase(final JsonNode baseConfig) {
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
             baseConfig.get("host").asText(),
-            baseConfig.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+            baseConfig.get("port").asInt()), null);
+    return new Database(dslContext);
   }
 
   @Override

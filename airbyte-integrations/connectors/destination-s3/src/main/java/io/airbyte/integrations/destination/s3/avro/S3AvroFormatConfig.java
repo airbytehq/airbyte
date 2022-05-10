@@ -14,6 +14,8 @@ import org.apache.avro.file.CodecFactory;
 
 public class S3AvroFormatConfig implements S3FormatConfig {
 
+  public static final String DEFAULT_SUFFIX = ".avro";
+
   private final CodecFactory codecFactory;
   private final Long partSize;
 
@@ -96,6 +98,11 @@ public class S3AvroFormatConfig implements S3FormatConfig {
 
   public Long getPartSize() {
     return partSize;
+  }
+
+  @Override
+  public String getFileExtension() {
+    return DEFAULT_SUFFIX;
   }
 
   @Override

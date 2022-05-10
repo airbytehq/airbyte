@@ -90,17 +90,25 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 
 ## Sampling in reports 
 
-Google Analytics API may, under certain circumstances, limit the returned data based on sampling. This is done to reduce the amount of data that is returned as described in [Sampling](https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling) section of the Reporting API docs.
-The `window_in_day` parameter is used to specify the number of days to look back and can be used to avoid sampling.
+For users who are not on the Google Analytics 360 tier, the Google Analytics API may return sampled data if the amount of data in the user's Google Analytics account exceeds Google's [pre-determined compute thresholds](https://support.google.com/analytics/answer/2637192?hl=en&ref_topic=2601030&visit_id=637868645346124317-2833523666&rd=1#thresholds&zippy=%2Cin-this-article). Concretely, this means the data returned in the report is an estimate which may have some inaccuracy. This [Google page](https://support.google.com/analytics/answer/2637192) provides a comprehensive overview of how Google applies sampling to your data.  
+
+In order to minimize the chances of sampling being applied to your data, Airbyte makes data requests to Google in one day increments (the smallest allowed date increment). This reduces the amount of data the Google API processes per request, thus minimizing the chances of sampling being applied. The downside of requesting data in one day increments is that it increases the time it takes to export your Google Analytics data. If sampling is not a concern, users can override this behavior by setting the optional `window_in_day` parameter is used to specify the number of days to look back and can be used to avoid sampling.
 When sampling occurs, a warning is logged to the sync log.
 
-## IsDataGolden
+## Data processing latency
 
-Google Analytics API may return provisional or incomplete data. When this occurs, the returned data will set the flag `isDataGolden` to false, and the connector will log a warning to the sync log.
+According to the [Google Analytics API documentation in the "Data Processing Latency" section](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article), all report data may continue to be updated 48 hours after it appears in the Google Analytics API. This means that if you request the same report twice within 48 hours of that data being sent to Google Analytics, the report data might be different across the two requests. This happens when Google Analytics is still processing all events it received. 
 
-## Reading Custom Reports
+When this occurs, the returned data will set the flag `isDataGolden` to false. Like mentioned in the [Google Analytics API docs](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#reportdata):
+> the `isDataGolden` flag indicates if [data] is golden or not. Data is golden when the exact same request [for a report] will not produce any new results if asked at a later point in time. 
 
-You can replicate Google Analytics [Custom Reports](https://support.google.com/analytics/answer/1033013?hl=en) using this source. To do this, input a JSON object as a string in the "Custom Reports" field when setting up the connector. The JSON is an array of objects where each object has the following schema:
+To address this issue, the connector adds a lookback window of 2 days to ensure any previously synced non-golden data is re-synced with its potential updates. For example: If your last sync occurred 5 days ago and a sync kicks off today, it will attempt to sync data from 7 days ago up to the latest data available.
+
+To determine whether data is finished processing or not, the `isDataGolden` flag is exposed and should be used.
+
+## Requesting Custom Reports
+
+You can replicate Google Analytics [Custom Reports](https://support.google.com/analytics/answer/1033013?hl=en) using this connector. To do this, input a JSON object as a string in the "Custom Reports" field when setting up the connector. The JSON is an array of objects where each object has the following schema:
 
 ```text
 {"name": string, "dimensions": [string], "metrics": [string]}
@@ -159,6 +167,8 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.21  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.20  | 2022-04-28 | [12426](https://github.com/airbytehq/airbyte/pull/12426) | Expose `isDataGOlden` field and always resync data two days back to make sure it is golden   |
 | 0.1.19  | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation                                                               |
 | 0.1.18  | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation                                                                       |
 | 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |

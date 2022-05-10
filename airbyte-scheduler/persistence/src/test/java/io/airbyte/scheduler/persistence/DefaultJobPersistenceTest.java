@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,6 +31,7 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
@@ -38,8 +40,10 @@ import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -58,8 +62,11 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -97,9 +104,10 @@ class DefaultJobPersistenceTest {
 
   private static PostgreSQLContainer<?> container;
   private Database jobDatabase;
-  private Database configDatabase;
   private Supplier<Instant> timeSupplier;
   private JobPersistence jobPersistence;
+  private DataSource dataSource;
+  private DSLContext dslContext;
 
   @BeforeAll
   public static void dbSetup() {
@@ -167,7 +175,9 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     jobDatabase = databaseProviders.createNewJobsDatabase();
     resetDb();
 
@@ -179,8 +189,11 @@ class DefaultJobPersistenceTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    jobDatabase.close();
+  void tearDown() throws IOException {
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   private void resetDb() throws SQLException {
@@ -498,6 +511,15 @@ class DefaultJobPersistenceTest {
         }
       });
     });
+  }
+
+  @Test
+  void testMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSecretMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSecretMigrationDone();
+    isMigrated = jobPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
   }
 
   private long createJobAt(final Instant created_at) throws IOException {

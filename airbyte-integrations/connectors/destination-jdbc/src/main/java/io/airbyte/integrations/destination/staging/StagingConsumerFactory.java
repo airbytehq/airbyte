@@ -59,7 +59,8 @@ public class StagingConsumerFactory {
                                        final NamingConventionTransformer namingResolver,
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog) {
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -68,7 +69,7 @@ public class StagingConsumerFactory {
             onCreateBuffer,
             catalog,
             flushBufferFunction(database, stagingOperations, writeConfigs, catalog)),
-        onCloseFunction(database, stagingOperations, writeConfigs),
+        onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
         catalog,
         stagingOperations::isValidData);
   }
@@ -177,7 +178,8 @@ public class StagingConsumerFactory {
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                           final StagingOperations stagingOperations,
-                                          final List<WriteConfig> writeConfigs) {
+                                          final List<WriteConfig> writeConfigs,
+                                          final boolean purgeStagingData) {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
@@ -224,10 +226,12 @@ public class StagingConsumerFactory {
             tmpTableName);
 
         stagingOperations.dropTableIfExists(database, schemaName, tmpTableName);
-        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-        LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-            stageName);
-        stagingOperations.dropStageIfExists(database, stageName);
+        if (purgeStagingData) {
+          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+          LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
+              stageName);
+          stagingOperations.dropStageIfExists(database, stageName);
+        }
       }
       LOGGER.info("Cleaning up destination completed.");
     };
