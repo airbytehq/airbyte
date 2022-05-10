@@ -162,7 +162,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         const requiresReset =
           mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
 
-        if (requiresReset) openResetDataModal();
+        if (requiresReset) {
+          openResetDataModal();
+        }
 
         result?.onSubmitComplete?.();
       } catch (e) {
