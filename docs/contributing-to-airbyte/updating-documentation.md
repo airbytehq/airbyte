@@ -1,6 +1,6 @@
 # Updating Documentation
 
-Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](https://guides.github.com/features/mastering-markdown/) files are stored in our Github repository.
+Documentation is written as [Markdown](https://guides.github.com/features/mastering-markdown/) files and stored in our Github repository.
 
 ## Workflow for updating docs
 

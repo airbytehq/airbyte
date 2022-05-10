@@ -114,7 +114,7 @@ There should be specified section `dependencyResolutionManagement` which uses `d
 > ```
 
 #### Sharing Catalogs
-To share catalog for further usage by other Projects need to do 2 steps:
+To share this catalog for further usage by other Projects, we do the following 2 steps:
 - Define `version-catalog` plugin in `build.gradle` file (ignore if this record exists)
   ```gradle
   plugins {
@@ -131,14 +131,14 @@ To share catalog for further usage by other Projects need to do 2 steps:
   ``` 
 
 #### Configure the Plugin Publishing Plugin
-For **Publishing** need to define `maven-publish` plugin in `build.gradle` file (ignore if this record exists):
+To **Publishing**, first define the `maven-publish` plugin in `build.gradle` file (ignore if this already exists):
 ```gradle
 plugins {
     id '...'
     id 'maven-publish'
 }
 ```
-Further on need to describe publishing section. Please use [this](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html) official documentation for more details.
+After that, describe the publishing section. Please use [this](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html) official documentation for more details.
 > Example:
 > ```gradle
 > publishing {
