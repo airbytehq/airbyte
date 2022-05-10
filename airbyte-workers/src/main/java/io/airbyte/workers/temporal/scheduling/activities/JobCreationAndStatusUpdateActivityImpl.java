@@ -22,12 +22,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
-<<<<<<< HEAD
-import io.airbyte.metrics.lib.MetricsRegistry;
 import io.airbyte.scheduler.models.Attempt;
-=======
 import io.airbyte.metrics.lib.OssMetricsRegistry;
->>>>>>> lmossman/repair-unexpected-temporal-state
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
