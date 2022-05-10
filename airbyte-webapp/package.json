@@ -54,6 +54,7 @@
     "remark-gfm": "^3.0.0",
     "rxjs": "^7.5.5",
     "sanitize-html": "^2.7.0",
+    "sass": "^1.51.0",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
     "yup": "^0.32.11"
