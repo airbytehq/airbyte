@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,15 +21,11 @@ public class MySqlSourceTests {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
-  private static MySQLContainer<?> container;
-
-  private JsonNode config;
-  private Database database;
 
   @Test
   public void testSettingTimezones() throws Exception {
     // start DB
-    container = new MySQLContainer<>("mysql:8.0")
+    final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD)
         .withEnv("MYSQL_ROOT_HOST", "%")
@@ -41,7 +36,7 @@ public class MySqlSourceTests {
     properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
+    final JsonNode config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
     try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
       connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");

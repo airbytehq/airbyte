@@ -10,6 +10,7 @@ import yaml
 from octavia_cli.generate.renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
+
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
 DESTINATION_SPECS = "../airbyte-config/init/src/main/resources/seed/destination_specs.yaml"
 
@@ -25,7 +26,7 @@ def get_all_specs_params():
 
 
 @pytest.mark.parametrize("spec_type, spec", get_all_specs_params())
-def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
+def test_render_spec(spec_type, spec, octavia_tmp_project_directory, mocker):
     renderer = ConnectorSpecificationRenderer(
         resource_name=f"resource-{spec['dockerImage']}",
         definition=mocker.Mock(
@@ -37,7 +38,7 @@ def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
             specification=mocker.Mock(connection_specification=spec["spec"]["connectionSpecification"]),
         ),
     )
-    output_path = renderer.write_yaml(octavia_project_directory)
+    output_path = renderer.write_yaml(octavia_tmp_project_directory)
     with open(output_path, "r") as f:
         parsed_yaml = yaml.safe_load(f)
         assert all(
@@ -67,7 +68,7 @@ EXPECTED_RENDERED_YAML_PATH = f"{os.path.dirname(__file__)}/expected_rendered_ya
     ],
 )
 def test_expected_output_connector_specification_renderer(
-    resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker
+    resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_tmp_project_directory, mocker
 ):
     with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, input_spec_path), "r") as f:
         input_spec = yaml.safe_load(f)
@@ -82,12 +83,12 @@ def test_expected_output_connector_specification_renderer(
             specification=mocker.Mock(connection_specification=input_spec["spec"]["connectionSpecification"]),
         ),
     )
-    output_path = renderer.write_yaml(octavia_project_directory)
+    output_path = renderer.write_yaml(octavia_tmp_project_directory)
     expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
     assert filecmp.cmp(output_path, expect_output_path)
 
 
-def test_expected_output_connection_renderer(octavia_project_directory, mocker):
+def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker):
     mock_source = mocker.Mock(
         resource_id="my_source_id",
         catalog={
@@ -150,6 +151,6 @@ def test_expected_output_connection_renderer(octavia_project_directory, mocker):
     mock_destination = mocker.Mock(resource_id="my_destination_id")
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)
-    output_path = renderer.write_yaml(octavia_project_directory)
+    output_path = renderer.write_yaml(octavia_tmp_project_directory)
     expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/expected.yaml")
     assert filecmp.cmp(output_path, expect_output_path)

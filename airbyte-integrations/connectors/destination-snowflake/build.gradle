@@ -10,6 +10,7 @@ application {
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
             '-XX:MaxRAMPercentage=75.0',
+//            '-Xmx2000m',
 //            '-XX:NativeMemoryTracking=detail',
 //            "-Djava.rmi.server.hostname=localhost",
 //            '-Dcom.sun.management.jmxremote=true',
@@ -30,6 +31,7 @@ dependencies {
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
+    implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'com.azure:azure-storage-blob:12.12.0'
 
     implementation project(':airbyte-config:models')

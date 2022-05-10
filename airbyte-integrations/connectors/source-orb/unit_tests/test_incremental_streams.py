@@ -160,7 +160,7 @@ def test_credits_ledger_entries_stream_slices(mocker):
 def test_credits_ledger_entries_request_params(mocker, current_stream_state, current_stream_slice, next_page_token):
     stream = CreditsLedgerEntries()
     inputs = {"stream_state": current_stream_state, "stream_slice": current_stream_slice, "next_page_token": next_page_token}
-    expected_params = dict(limit=CreditsLedgerEntries.page_size)
+    expected_params = dict(limit=CreditsLedgerEntries.page_size, entry_status="committed")
     current_slice_state = current_stream_state.get(current_stream_slice["customer_id"], {})
     if current_slice_state.get("created_at"):
         expected_params["created_at[gte]"] = current_slice_state["created_at"]
@@ -168,6 +168,27 @@ def test_credits_ledger_entries_request_params(mocker, current_stream_state, cur
         expected_params["cursor"] = next_page_token["cursor"]
 
     assert stream.request_params(**inputs) == expected_params
+
+
+def test_credits_ledger_entries_transform_record(mocker):
+    stream = CreditsLedgerEntries()
+    ledger_entry_record = {
+        "event_id": "foo-event-id",
+        "entry_type": "decrement",
+        "customer": {
+            "id": "foo-customer-id",
+        },
+        "credit_block": {"expiry_date": "2023-01-25T12:00:00+00:00", "per_unit_cost_basis": "2.50"},
+    }
+
+    # Validate that calling transform record unwraps nested customer and credit block fields.
+    assert stream.transform_record(ledger_entry_record) == {
+        "event_id": "foo-event-id",
+        "entry_type": "decrement",
+        "customer_id": "foo-customer-id",
+        "block_expiry_date": "2023-01-25T12:00:00+00:00",
+        "credit_block_per_unit_cost_basis": "2.50",
+    }
 
 
 @responses.activate

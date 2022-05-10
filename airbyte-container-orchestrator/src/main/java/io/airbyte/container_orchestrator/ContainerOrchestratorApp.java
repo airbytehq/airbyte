@@ -74,14 +74,14 @@ public class ContainerOrchestratorApp {
   }
 
   private void configureLogging() {
-    for (String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
+    for (final String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
       if (envMap.containsKey(envVar)) {
         System.setProperty(envVar, envMap.get(envVar));
       }
     }
 
     // make sure the new configuration is picked up
-    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     ctx.reconfigure();
 
     final var logClient = LogClientSingleton.getInstance();
@@ -119,7 +119,7 @@ public class ContainerOrchestratorApp {
 
       // required to kill clients with thread pools
       System.exit(0);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }
@@ -177,7 +177,7 @@ public class ContainerOrchestratorApp {
 
       final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
       app.run();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       log.error("Orchestrator failed...", t);
       // otherwise the pod hangs on closing
       System.exit(1);
@@ -212,7 +212,11 @@ public class ContainerOrchestratorApp {
       // exposed)
       KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs,
+          configs.getJobKubeNamespace(),
+          fabricClient,
+          kubeHeartbeatUrl,
+          false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,

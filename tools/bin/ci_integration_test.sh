@@ -11,7 +11,7 @@ all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationT
 run() {
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
-  ./gradlew --no-daemon --scan integrationTest
+  SUB_BUILD=ALL_CONNECTORS ./gradlew --no-daemon --scan integrationTest
 else
   if [[ "$connector" == *"base-normalization"* ]]; then
     selected_integration_test="base-normalization"

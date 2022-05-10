@@ -8,12 +8,12 @@ export function makeConnectionConfigurationPath(path: string[]): string {
 
 export function serverProvidedOauthPaths(
   connector?: ConnectorDefinitionSpecification
-): { [key: string]: { path_in_connector_config: string[] } } {
+): {
+  [key: string]: { path_in_connector_config: string[] };
+} {
   return {
-    ...(connector?.advancedAuth?.oauthConfigSpecification
-      .completeOAuthOutputSpecification?.properties ?? {}),
-    ...(connector?.advancedAuth?.oauthConfigSpecification
-      .completeOAuthServerOutputSpecification?.properties ?? {}),
+    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthOutputSpecification?.properties ?? {}),
+    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthServerOutputSpecification?.properties ?? {}),
   };
 }
 

@@ -13,8 +13,13 @@ def patch_click(mocker):
 
 
 @pytest.fixture
-def context_object(mock_api_client):
-    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "workspace_id"}
+def context_object(mock_api_client, mock_telemetry_client):
+    return {
+        "PROJECT_IS_INITIALIZED": True,
+        "API_CLIENT": mock_api_client,
+        "WORKSPACE_ID": "workspace_id",
+        "TELEMETRY_CLIENT": mock_telemetry_client,
+    }
 
 
 def test_apply_not_initialized():
@@ -94,47 +99,74 @@ def test_apply_single_resource(patch_click, mocker, resource_was_created):
 
 
 @pytest.mark.parametrize(
-    "diff,local_file_changed,force,expected_should_update,expected_update_reason",
+    "force,user_validation,local_file_changed,expect_update,expected_reason",
     [
-        (True, True, True, True, "🚨 - Running update because force mode is on."),  # check if force has the top priority
-        (True, False, True, True, "🚨 - Running update because force mode is on."),  # check if force has the top priority
-        (True, False, False, True, "🚨 - Running update because force mode is on."),  # check if force has the top priority
-        (True, True, False, True, "🚨 - Running update because force mode is on."),  # check if force has the top priority
-        (
+        pytest.param(
+            True, True, True, True, "🚨 - Running update because the force mode is activated.", id="1 - Check if force has the top priority."
+        ),
+        pytest.param(
+            True,
+            False,
+            True,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="2 - Check if force has the top priority.",
+        ),
+        pytest.param(
+            True,
+            False,
+            False,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="3 - Check if force has the top priority.",
+        ),
+        pytest.param(
+            True,
+            True,
+            False,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="4 - Check if force has the top priority.",
+        ),
+        pytest.param(
             False,
             True,
             True,
             True,
-            "✍️ - Running update because a diff was detected between local and remote resource.",
-        ),  # check if diff has priority of file changed
-        (
-            False,
-            True,
-            False,
-            True,
-            "✍️ - Running update because a diff was detected between local and remote resource.",
-        ),  # check if diff has priority of file changed
-        (
+            "🟢 - Running update because you validated the changes.",
+            id="Check if user validation has priority over local file change.",
+        ),
+        pytest.param(
             False,
             False,
             True,
+            False,
+            "🔴 - Did not update because you refused the changes.",
+            id="Check if user validation has priority over local file change.",
+        ),
+        pytest.param(
+            False,
+            None,
             True,
-            "✍️ - Running update because a local file change was detected and a secret field might have been edited.",
-        ),  # check if local_file_changed runs even if no diff found
-        (
+            True,
+            "🟡 - Running update because a local file change was detected and a secret field might have been edited.",
+            id="Check if local_file_changed runs even if user validation is None.",
+        ),
+        pytest.param(
             False,
-            False,
+            None,
             False,
             False,
             "😴 - Did not update because no change detected.",
-        ),  # check if local_file_changed runs even if no diff found
+            id="Check no update if no local change and user validation is None.",
+        ),
     ],
 )
-def test_should_update_resource(patch_click, mocker, diff, local_file_changed, force, expected_should_update, expected_update_reason):
-    should_update, update_reason = commands.should_update_resource(diff, local_file_changed, force)
-    assert should_update == expected_should_update
+def test_should_update_resource(patch_click, mocker, force, user_validation, local_file_changed, expect_update, expected_reason):
+    should_update, update_reason = commands.should_update_resource(force, user_validation, local_file_changed)
+    assert should_update == expect_update
     assert update_reason == commands.click.style.return_value
-    commands.click.style.assert_called_with(expected_update_reason, fg="green")
+    commands.click.style.assert_called_with(expected_reason, fg="green")
 
 
 @pytest.mark.parametrize(
@@ -177,80 +209,52 @@ def test_create_resource(patch_click, mocker):
 
 
 @pytest.mark.parametrize(
-    "force,diff,should_update_resource,expect_prompt,user_validate_diff,expect_update,expected_number_of_messages",
+    "force,diff,local_file_changed,expect_prompt,user_validation,expect_update",
     [
-        (True, True, True, False, False, True, 3),  # Force is on, we have a diff, prompt should not be displayed: we expect update.
-        (
-            True,
-            False,
-            True,
-            False,
-            False,
-            True,
-            3,
-        ),  # Force is on, no diff, should_update_resource == true, prompt should not be displayed, we expect update.
-        (
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            1,
-        ),  # Force is on, no diff, should_update_resource == false, prompt should not be displayed, we don't expect update. This scenario should not exists in current implementation as force always trigger update.
-        (
-            False,
-            True,
-            True,
-            True,
-            True,
-            True,
-            3,
-        ),  # Force is off, we have diff, prompt should be displayed, user validate diff: we expected update.
-        (
-            False,
-            False,
-            True,
-            False,
-            False,
-            True,
-            3,
-        ),  # Force is off, no diff, should_update_resource == true (in case of file change), prompt should not be displayed, we expect update.
-        (
-            False,
-            True,
-            True,
-            True,
-            False,
-            False,
-            1,
-        ),  # Force is off, we have a diff but the user does not validate it: we don't expect update.
-        (
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
-            1,
-        ),  # Force is off, we have a no diff, should_update_resource == false: we don't expect update.
+        pytest.param(True, True, True, False, False, True, id="Force, diff, local file change -> no prompt, no validation, expect update."),
+        pytest.param(
+            True, True, False, False, False, True, id="Force, diff, no local file change -> no prompt, no validation, expect update."
+        ),
+        pytest.param(
+            True, False, False, False, False, True, id="Force, no diff, no local file change -> no prompt, no validation, expect update."
+        ),
+        pytest.param(
+            True, False, True, False, False, True, id="Force, no diff, local file change -> no prompt, no validation, expect update."
+        ),
+        pytest.param(
+            False, True, True, True, True, True, id="No force, diff, local file change -> expect prompt, validation, expect update."
+        ),
+        pytest.param(
+            False, True, True, True, False, False, id="No force, diff, local file change -> expect prompt, no validation, no update."
+        ),
+        pytest.param(
+            False, True, False, True, True, True, id="No force, diff, no local file change -> expect prompt, validation, expect update."
+        ),
+        pytest.param(
+            False, True, False, True, False, False, id="No force, diff, no local file change -> expect prompt, no validation, no update."
+        ),
+        pytest.param(
+            False, False, True, False, False, True, id="No force, no diff, local file change -> no prompt, no validation, expect update."
+        ),
+        pytest.param(
+            False, False, False, False, False, False, id="No force, no diff, no local file change -> no prompt, no validation, no update."
+        ),
     ],
 )
-def test_update_resource(
-    patch_click, mocker, force, diff, should_update_resource, user_validate_diff, expect_prompt, expect_update, expected_number_of_messages
-):
+def test_update_resource(patch_click, mocker, force, diff, local_file_changed, expect_prompt, user_validation, expect_update):
     mock_updated_resource = mocker.Mock()
     mock_state = mocker.Mock()
     mock_resource = mocker.Mock(
         get_diff_with_remote_resource=mocker.Mock(return_value=diff),
         resource_name="my_resource",
+        local_file_changed=local_file_changed,
         update=mocker.Mock(return_value=(mock_updated_resource, mock_state)),
     )
-    update_reason = "foo"
-    mocker.patch.object(commands, "should_update_resource", mocker.Mock(return_value=(should_update_resource, update_reason)))
-    mocker.patch.object(commands, "prompt_for_diff_validation", mocker.Mock(return_value=user_validate_diff))
+    mocker.patch.object(commands, "prompt_for_diff_validation", mocker.Mock(return_value=user_validation))
 
     output_messages = commands.update_resource(mock_resource, force)
+    commands.click.echo.assert_called_once()
+
     if expect_prompt:
         commands.prompt_for_diff_validation.assert_called_once_with("my_resource", diff)
     else:
@@ -259,11 +263,9 @@ def test_update_resource(
         mock_resource.update.assert_called_once()
     else:
         mock_resource.update.assert_not_called()
-    assert output_messages[0] == commands.should_update_resource.return_value[1] == update_reason
-    assert len(output_messages) == expected_number_of_messages
-    if expected_number_of_messages == 3:
+
+    if expect_update:
         assert output_messages == [
-            commands.should_update_resource.return_value[1],
             commands.click.style.return_value,
             commands.click.style.return_value,
         ]
@@ -273,6 +275,8 @@ def test_update_resource(
                 mocker.call(f"💾 - New state for {mock_updated_resource.name} stored at {mock_state.path}.", fg="yellow"),
             ]
         )
+    else:
+        assert output_messages == []
 
 
 def test_find_local_configuration_files(mocker):

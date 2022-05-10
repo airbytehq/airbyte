@@ -51,18 +51,18 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = dataSource.getConnection();
-        final Stream<T> results = toStream(query.apply(connection), recordTransform)) {
+        final Stream<T> results = toUnsafeStream(query.apply(connection), recordTransform)) {
       return results.collect(Collectors.toList());
     }
   }
 
   @Override
   @MustBeClosed
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
-    return toStream(query.apply(connection), recordTransform)
+    return toUnsafeStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -96,11 +96,11 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    */
   @Override
   @MustBeClosed
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
-    return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return toUnsafeStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");

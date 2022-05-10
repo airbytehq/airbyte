@@ -21,24 +21,10 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+source ./tools/bin/bump_version.sh
 
-[[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
-
-# uses .bumpversion.cfg to find files to bump
-# requires no git diffs to run
-# commits the bumped versions code to your branch
-pip install bumpversion
-bumpversion "$PART_TO_BUMP"
-
-NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
-GIT_REVISION=$(git rev-parse HEAD)
-[[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
-
-echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
-echo "Building and publishing version $NEW_VERSION for git revision $GIT_REVISION..."
-
+echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
 VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
-echo "Completed building and publishing..."
+echo "Completed building and publishing PLATFORM..."

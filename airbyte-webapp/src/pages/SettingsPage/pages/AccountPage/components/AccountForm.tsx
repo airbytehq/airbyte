@@ -1,12 +1,12 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { LoadingButton } from "components";
-import { Row, Cell } from "components/SimpleTableComponents";
 import LabeledInput from "components/LabeledInput";
+import { Row, Cell } from "components/SimpleTableComponents";
 
 const InputRow = styled(Row)`
   height: auto;
@@ -51,12 +51,7 @@ type AccountFormProps = {
   onSubmit: (data: { email: string }) => void;
 };
 
-const AccountForm: React.FC<AccountFormProps> = ({
-  email,
-  onSubmit,
-  successMessage,
-  errorMessage,
-}) => {
+const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessage, errorMessage }) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -79,24 +74,14 @@ const AccountForm: React.FC<AccountFormProps> = ({
                       id: "form.email.placeholder",
                     })}
                     error={!!meta.error && meta.touched}
-                    message={
-                      !!meta.error && meta.touched ? (
-                        <FormattedMessage id={meta.error} />
-                      ) : (
-                        ""
-                      )
-                    }
+                    message={!!meta.error && meta.touched ? <FormattedMessage id={meta.error} /> : ""}
                     label={<FormattedMessage id="form.yourEmail" />}
                   />
                 )}
               </Field>
             </Cell>
             <ButtonCell>
-              <LoadingButton
-                isLoading={isSubmitting}
-                type="submit"
-                disabled={!dirty || !values.email}
-              >
+              <LoadingButton isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
                 <FormattedMessage id="form.saveChanges" />
               </LoadingButton>
             </ButtonCell>

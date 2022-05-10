@@ -4,147 +4,154 @@
 
 
 import base64
-import json
-from datetime import datetime
-from typing import Dict, Generator
+import logging
+from abc import ABC
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
-from airbyte_cdk.sources import Source
-from requests.models import Response
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
-class BambooHrClient(object):
-    def __init__(self, config: json) -> None:
-        self.api_key = config["api_key"]
-        self.subdomain = config["subdomain"]
+class BambooHrStream(HttpStream, ABC):
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        self.config = config
+        super().__init__(authenticator=config["authenticator"])
 
-    def _prepare_request_auth(self):
-        return base64.b64encode("{}:x".format(self.api_key).encode("utf-8")).decode("utf-8")
+    @property
+    def url_base(self) -> str:
+        return f"https://api.bamboohr.com/api/gateway.php/{self.config['subdomain']}/v1/"
 
-    def request(self, uri: str, method: str = "GET", data={}, **kwargs) -> Response:
-        url = "https://api.bamboohr.com/api/gateway.php/{}/v1/{}".format(self.subdomain, uri)
-        headers = kwargs.get("headers", {})
-        headers.update(
-            {
-                "Authorization": "Basic {}".format(self._prepare_request_auth()),
-                "Accept": "application/json",
-                "Content-Type": kwargs.get("content_type") or "application/json",
-            }
-        )
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"Accept": "application/json"}
 
-        if data and not isinstance(data, str) and headers["Content-Type"] == "application/json":
-            data = json.dumps(data)
-
-        response = requests.request(method=method, url=url, headers=headers)
-        response.raise_for_status()
-        return response
-
-
-class SourceBambooHr(Source):
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json file
-
-        :return: AirbyteConnectionStatus indicating a Success or Failure
+        BambooHR does not support pagination.
         """
-        try:
-            bamboo = BambooHrClient(config)
-            bamboo.request("employees/directory")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+        pass
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json file
+class MetaFieldsStream(BambooHrStream):
+    primary_key = None
 
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
-            - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
-        """
-        streams = []
+    def path(self, **kwargs) -> str:
+        return "meta/fields"
 
-        bamboo = BambooHrClient(config)
-        fields = bamboo.request("meta/fields").json()
-        properties = {}
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
 
-        for field in fields:
-            # All fields are nullable strings
-            # https://documentation.bamboohr.com/docs/field-types
-            properties[field.get("alias", field["name"])] = {"type": ["null", "string"]}
 
-        stream_name = "employee"
-        json_schema = {
+class EmployeesDirectoryStream(BambooHrStream):
+    primary_key = "id"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()["employees"]
+
+    def path(self, **kwargs) -> str:
+        return "employees/directory"
+
+
+class CustomReportsStream(BambooHrStream):
+    primary_key = None
+
+    def __init__(self, *args, **kwargs):
+        self._schema = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def schema(self):
+        if not self._schema:
+            self._schema = self.get_json_schema()
+        return self._schema
+
+    def _get_json_schema_from_config(self):
+        if self.config.get("custom_reports_fields"):
+            properties = {field.strip(): {"type": ["null", "string"]} for field in self.config.get("custom_reports_fields").split(",")}
+        else:
+            properties = {}
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": properties,
         }
-        streams.append(
-            AirbyteStream(
-                name=stream_name,
-                json_schema=json_schema,
-                supported_sync_modes=[SyncMode.full_refresh],
-                supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
-            )
-        )
-        return AirbyteCatalog(streams=streams)
 
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
+    def _get_json_schema_from_file(self):
+        return super().get_json_schema()
+
+    @staticmethod
+    def _union_schemas(schema1, schema2):
+        schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
+        return schema1
+
+    def get_json_schema(self) -> Mapping[str, Any]:
         """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
+        Returns the JSON schema.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.json file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
-
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
+        The final schema is constructed by first generating a schema for the fields
+        in the config and, if default fields should be included, adding these to the
+        schema.
         """
-        stream_name = "employee"
+        schema = self._get_json_schema_from_config()
+        if self.config.get("custom_reports_include_default_fields"):
+            default_schema = self._get_json_schema_from_file()
+            schema = self._union_schemas(default_schema, schema)
+        return schema
 
-        bamboo = BambooHrClient(config)
-        data = bamboo.request("employees/directory").json()
-        employees = data["employees"]
+    def path(self, **kwargs) -> str:
+        return "reports/custom"
 
-        for employee in employees:
-            yield AirbyteMessage(
-                type=Type.RECORD,
-                record=AirbyteRecordMessage(stream=stream_name, data=employee, emitted_at=int(datetime.now().timestamp()) * 1000),
-            )
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        return {"title": "Airbyte", "fields": list(self.schema["properties"].keys())}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()["employees"]
+
+
+class SourceBambooHr(AbstractSource):
+    @staticmethod
+    def _get_authenticator(api_key):
+        """
+        Returns a TokenAuthenticator.
+
+        The API token is concatenated with `:x` and the resulting string is base-64 encoded.
+        See https://documentation.bamboohr.com/docs#authentication
+        """
+        return TokenAuthenticator(token=base64.b64encode(f"{api_key}:x".encode("utf-8")).decode("utf-8"), auth_method="Basic")
+
+    @staticmethod
+    def add_authenticator_to_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Adds an authenticator entry to the config and returns the config.
+        """
+        config["authenticator"] = SourceBambooHr._get_authenticator(config["api_key"])
+        return config
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
+        """
+        config = SourceBambooHr.add_authenticator_to_config(config)
+        if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):
+            return False, AttributeError("`custom_reports_fields` cannot be empty if `custom_reports_include_default_fields` is false")
+        try:
+            next(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
+            return True, None
+        except Exception as e:
+            return False, e
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = SourceBambooHr.add_authenticator_to_config(config)
+        return [
+            EmployeesDirectoryStream(config),
+            CustomReportsStream(config),
+        ]

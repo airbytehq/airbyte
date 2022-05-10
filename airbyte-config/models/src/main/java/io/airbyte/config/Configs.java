@@ -8,10 +8,8 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -249,6 +247,18 @@ public interface Configs {
    */
   Map<String, String> getJobDefaultEnvMap();
 
+  /**
+   * Defines the number of consecutive job failures required before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxFailedJobsInARowBeforeConnectionDisable();
+
+  /**
+   * Defines the required number of days with only failed jobs before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
+
   // Jobs - Kube only
   /**
    * Define the check job container's minimum CPU request. Defaults to
@@ -281,29 +291,56 @@ public interface Configs {
   List<TolerationPOJO> getJobKubeTolerations();
 
   /**
-   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
+   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync
+   * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
-  Optional<Map<String, String>> getJobKubeNodeSelectors();
+  Map<String, String> getJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+  Map<String, String> getSpecJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+  Map<String, String> getCheckJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
+  Map<String, String> getDiscoverJobKubeNodeSelectors();
+
+  /**
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job
+   * and as fallback in case job specific (spec, check, discover) annotations are not defined.
+   */
+  Map<String, String> getJobKubeAnnotations();
+
+  /**
+   * Define annotations for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getSpecJobKubeAnnotations();
+
+  /**
+   * Define annotations for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getCheckJobKubeAnnotations();
+
+  /**
+   * Define annotations for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getDiscoverJobKubeAnnotations();
 
   /**
    * Define the Job pod connector image pull policy.
    */
   String getJobKubeMainContainerImagePullPolicy();
+
+  /**
+   * Define the Job pod connector sidecar image pull policy.
+   */
+  String getJobKubeSidecarContainerImagePullPolicy();
 
   /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
@@ -329,41 +366,6 @@ public interface Configs {
    * Define the Kubernetes namespace Job pods are created in.
    */
   String getJobKubeNamespace();
-
-  /**
-   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDefaultWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "get spec" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getSpecWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "check connection" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getCheckWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "discover" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDiscoverWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "replication" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getReplicationWorkerStatusCheckInterval();
 
   // Logging/Monitoring/Tracking
   /**

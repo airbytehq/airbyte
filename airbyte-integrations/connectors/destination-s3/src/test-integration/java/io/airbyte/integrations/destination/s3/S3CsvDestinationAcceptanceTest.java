@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -33,10 +34,10 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"flattening\": \"Root level flattening\"\n"
-        + "}");
+    return Jsons.jsonNode(Map.of(
+        "format_type", outputFormat,
+        "flattening", Flattening.ROOT_LEVEL.getValue(),
+        "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
   /**
@@ -75,10 +76,20 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));
+        case "" -> addNoTypeValue(json, key, value);
         default -> json.put(key, value);
       }
     }
     return json;
+  }
+
+  private static void addNoTypeValue(final ObjectNode json, final String key, final String value) {
+    if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
+      final var newNode = Jsons.deserialize(value);
+      json.set(key, newNode);
+    } else {
+      json.put(key, value);
+    }
   }
 
   @Override
@@ -93,8 +104,8 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+      try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+          final Reader in = getReader(object)) {
         final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
@@ -105,6 +116,10 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     }
 
     return jsonRecords;
+  }
+
+  protected Reader getReader(final S3Object s3Object) throws IOException {
+    return new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8);
   }
 
 }

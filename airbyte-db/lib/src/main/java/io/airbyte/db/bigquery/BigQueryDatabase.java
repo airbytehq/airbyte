@@ -91,7 +91,7 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   @Override
-  public Stream<JsonNode> query(final String sql, final String... params) throws Exception {
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws Exception {
     final List<QueryParameterValue> parameterValueList;
     if (params == null)
       parameterValueList = Collections.emptyList();

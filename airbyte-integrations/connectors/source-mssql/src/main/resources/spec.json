@@ -10,7 +10,8 @@
       "host": {
         "description": "The hostname of the database.",
         "title": "Host",
-        "type": "string"
+        "type": "string",
+        "order": 0
       },
       "port": {
         "description": "The port of the database.",
@@ -18,24 +19,34 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "examples": ["1433"]
+        "examples": ["1433"],
+        "order": 1
       },
       "database": {
         "description": "The name of the database.",
         "title": "Database",
         "type": "string",
-        "examples": ["master"]
+        "examples": ["master"],
+        "order": 2
       },
       "username": {
         "description": "The username which is used to access the database.",
         "title": "Username",
-        "type": "string"
+        "type": "string",
+        "order": 3
       },
       "password": {
         "description": "The password associated with the username.",
         "title": "Password",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 5
       },
       "ssl_method": {
         "title": "SSL Method",
@@ -98,7 +109,8 @@
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"]
+        "enum": ["STANDARD", "CDC"],
+        "order": 8
       }
     }
   }

@@ -13,10 +13,7 @@ class UserService extends AirbyteRequestService {
     });
   }
 
-  public async getByAuthId(
-    authUserId: string,
-    authProvider: string
-  ): Promise<User> {
+  public async getByAuthId(authUserId: string, authProvider: string): Promise<User> {
     return this.fetch<User>(`${this.url}/get_by_auth_id`, {
       authUserId,
       authProvider,
@@ -66,10 +63,9 @@ class UserService extends AirbyteRequestService {
   }
 
   public async listByWorkspaceId(workspaceId: string): Promise<User[]> {
-    const { users } = await this.fetch<{ users: User[] }>(
-      `web_backend/permissions/list_users_by_workspace`,
-      { workspaceId }
-    );
+    const { users } = await this.fetch<{ users: User[] }>(`web_backend/permissions/list_users_by_workspace`, {
+      workspaceId,
+    });
 
     return users;
   }

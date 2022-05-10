@@ -187,24 +187,6 @@ class JsonsTest {
   }
 
   @Test
-  void testMutateTypeToArrayStandard() {
-    final JsonNode expectedWithoutType = Jsons.deserialize("{\"test\":\"abc\"}");
-    final JsonNode actualWithoutType = Jsons.clone(expectedWithoutType);
-    JsonSchemas.mutateTypeToArrayStandard(expectedWithoutType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithArrayType = Jsons.clone(expectedWithArrayType);
-    JsonSchemas.mutateTypeToArrayStandard(actualWithArrayType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithoutArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
-    JsonSchemas.mutateTypeToArrayStandard(actualWithStringType);
-    assertEquals(expectedWithoutArrayType, actualWithStringType);
-  }
-
-  @Test
   void testToBytes() {
     final String jsonString = "{\"test\":\"abc\",\"type\":[\"object\"]}";
     assertArrayEquals(jsonString.getBytes(Charsets.UTF_8), Jsons.toBytes(Jsons.deserialize(jsonString)));

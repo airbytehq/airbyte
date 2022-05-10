@@ -10,8 +10,9 @@ import tempfile
 import time
 
 import pytest
+from normalization.destination_type import DestinationType
 from normalization.transform_catalog.transform import extract_schema
-from normalization.transform_config.transform import DestinationType, TransformConfig
+from normalization.transform_config.transform import TransformConfig
 
 
 class TestTransformConfig:
@@ -300,6 +301,49 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
+    def test_transform_snowflake_oauth(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "auth_type": "OAuth2.0",
+                "client_id": "AIRBYTE_CLIENT_ID",
+                "access_token": "AIRBYTE_ACCESS_TOKEN",
+                "client_secret": "AIRBYTE_CLIENT_SECRET",
+                "refresh_token": "AIRBYTE_REFRESH_TOKEN",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "authenticator": "oauth",
+            "oauth_client_id": "AIRBYTE_CLIENT_ID",
+            "oauth_client_secret": "AIRBYTE_CLIENT_SECRET",
+            "token": "AIRBYTE_REFRESH_TOKEN",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
     def test_transform_mysql(self):
         input = {
             "type": "mysql5",
@@ -391,7 +435,7 @@ class TestTransformConfig:
             "threads": 8,
             "user": "a user",
         }
-        actual = TransformConfig().transform(DestinationType.postgres, input)
+        actual = TransformConfig().transform(DestinationType.POSTGRES, input)
 
         assert expected == actual
         assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
@@ -409,7 +453,7 @@ class TestTransformConfig:
 
     def test_parse(self):
         t = TransformConfig()
-        assert {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"} == t.parse(
+        assert {"integration_type": DestinationType.POSTGRES, "config": "config.json", "output_path": "out.yml"} == t.parse(
             ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
         )
 

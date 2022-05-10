@@ -9,6 +9,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -17,7 +18,6 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -89,7 +89,9 @@ public class JobCreationAndStatusUpdateActivityTest {
   private static final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
       .withStandardSyncSummary(
           new StandardSyncSummary()
-              .withStatus(ReplicationStatus.COMPLETED));
+              .withStatus(ReplicationStatus.COMPLETED))
+      .withNormalizationSummary(
+          new NormalizationSummary());
 
   private static final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
 
@@ -108,8 +110,6 @@ public class JobCreationAndStatusUpdateActivityTest {
           .thenReturn(JOB_ID);
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(Mockito.mock(StandardSync.class));
-      Mockito.when(mConfigRepository.getDatabase())
-          .thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
 
       final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
 
@@ -119,8 +119,6 @@ public class JobCreationAndStatusUpdateActivityTest {
     @Test
     @DisplayName("Test attempt creation")
     public void createAttempt() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       final Job mJob = Mockito.mock(Job.class);
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
@@ -169,8 +167,6 @@ public class JobCreationAndStatusUpdateActivityTest {
     @Test
     @DisplayName("Test attempt creation")
     public void createAttemptNumber() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       final Job mJob = Mockito.mock(Job.class);
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
@@ -223,8 +219,6 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobSuccess() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, standardSyncOutput));
 
       Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
@@ -245,8 +239,6 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
@@ -265,8 +257,6 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setAttemptFailure() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, standardSyncOutput, failureSummary));
 
       Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
@@ -288,8 +278,6 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobCancelled() throws IOException {
-      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
       Mockito.verify(mJobPersistence).cancelJob(JOB_ID);

@@ -29,13 +29,7 @@ const Overlay = styled.div`
   z-index: 10;
 `;
 
-const Modal: React.FC<IProps> = ({
-  children,
-  title,
-  onClose,
-  clear,
-  closeOnBackground,
-}) => {
+const Modal: React.FC<IProps> = ({ children, title, onClose, clear, closeOnBackground }) => {
   const handleUserKeyPress = useCallback((event, closeModal) => {
     const { keyCode } = event;
     if (keyCode === 27) {
@@ -44,16 +38,10 @@ const Modal: React.FC<IProps> = ({
   }, []);
 
   useEffect(() => {
-    onClose &&
-      window.addEventListener("keydown", (event) =>
-        handleUserKeyPress(event, onClose)
-      );
+    onClose && window.addEventListener("keydown", (event) => handleUserKeyPress(event, onClose));
 
     return () => {
-      onClose &&
-        window.removeEventListener("keydown", (event) =>
-          handleUserKeyPress(event, onClose)
-        );
+      onClose && window.removeEventListener("keydown", (event) => handleUserKeyPress(event, onClose));
     };
   }, [handleUserKeyPress, onClose]);
 

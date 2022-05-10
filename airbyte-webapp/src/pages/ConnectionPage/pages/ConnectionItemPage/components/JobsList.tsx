@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 
 import JobItem from "components/JobItem";
+
 import { JobListItem } from "core/domain/job/Job";
 
 type IProps = {
@@ -8,10 +9,7 @@ type IProps = {
 };
 
 const JobsList: React.FC<IProps> = ({ jobs }) => {
-  const sortJobs = useMemo(
-    () => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
-    [jobs]
-  );
+  const sortJobs = useMemo(() => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)), [jobs]);
 
   return (
     <div>

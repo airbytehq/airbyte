@@ -51,6 +51,7 @@ import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
@@ -312,13 +313,15 @@ class ConnectionsHandlerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testUpdateConnection(boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
+    void testUpdateConnection(final boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
       when(featureFlags.usesNewScheduler())
           .thenReturn(useNewScheduler);
 
       final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
       catalog.getStreams().get(0).getStream().setName("azkaban_users");
       catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
+
+      final UUID newSourceCatalogId = UUID.randomUUID();
 
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
@@ -334,7 +337,8 @@ class ConnectionsHandlerTest {
               .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
               .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
               .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit())
-              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()));
+              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()))
+          .sourceCatalogId(newSourceCatalogId);
 
       final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
       configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
@@ -351,7 +355,8 @@ class ConnectionsHandlerTest {
           .withStatus(StandardSync.Status.INACTIVE)
           .withCatalog(configuredCatalog)
           .withManual(true)
-          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
+          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
+          .withSourceCatalogId(newSourceCatalogId);
 
       when(configRepository.getStandardSync(standardSync.getConnectionId()))
           .thenReturn(standardSync)
@@ -417,8 +422,8 @@ class ConnectionsHandlerTest {
       final ConnectionReadList actualConnectionReadListWithDeleted = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody, true);
       final List<ConnectionRead> connections = actualConnectionReadListWithDeleted.getConnections();
       assertEquals(2, connections.size());
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), connections.get(0));
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSyncDeleted), connections.get(1));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSync), connections.get(0));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSyncDeleted), connections.get(1));
 
     }
 

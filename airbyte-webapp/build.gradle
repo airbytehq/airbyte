@@ -82,7 +82,7 @@ copyAssets.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 copyDocker.dependsOn(npm_run_build)
 
-Task dockerBuildTask = getDockerBuildTask("webapp",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("webapp", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyBuild)
 dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)

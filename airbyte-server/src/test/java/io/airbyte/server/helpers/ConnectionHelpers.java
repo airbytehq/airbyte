@@ -28,6 +28,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -197,6 +198,16 @@ public class ConnectionHelpers {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
         .stream(generateBasicApiStream())
         .config(generateBasicApiStreamConfig())));
+  }
+
+  public static AirbyteCatalog generateMultipleStreamsApiCatalog(final int streamsCount) {
+    final List<AirbyteStreamAndConfiguration> streamAndConfigurations = new ArrayList<>();
+    for (int i = 0; i < streamsCount; i++) {
+      streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
+          .stream(generateBasicApiStream())
+          .config(generateBasicApiStreamConfig()));
+    }
+    return new AirbyteCatalog().streams(streamAndConfigurations);
   }
 
   private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {

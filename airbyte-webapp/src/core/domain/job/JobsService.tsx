@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { JobDebugInfoDetails } from "core/domain/job/Job";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 type ListParams = {
   configId: string;
@@ -34,15 +34,10 @@ class JobsService extends AirbyteRequestService {
     return job;
   }
 
-  public async getDebugInfo(
-    jobId: string | number
-  ): Promise<JobDebugInfoDetails> {
-    const jobDebugInfo = await this.fetch<JobDebugInfoDetails>(
-      `${this.url}/get_debug_info`,
-      {
-        id: jobId,
-      }
-    );
+  public async getDebugInfo(jobId: string | number): Promise<JobDebugInfoDetails> {
+    const jobDebugInfo = await this.fetch<JobDebugInfoDetails>(`${this.url}/get_debug_info`, {
+      id: jobId,
+    });
 
     return jobDebugInfo;
   }

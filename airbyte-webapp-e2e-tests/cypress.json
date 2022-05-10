@@ -7,5 +7,9 @@
     "connection.spec.js",
     "destination.spec.js",
     "source.spec.js"
-  ]
+  ],
+  "retries": {
+    "runMode": 2,
+    "openMode": 0
+  }
 }

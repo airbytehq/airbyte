@@ -178,6 +178,7 @@ def test_get_object_strucutre(object, pathes):
     "schema, pathes",
     [
         ({"type": "object", "properties": {"a": {"type": "string"}}}, ["/a"]),
+        ({"properties": {"a": {"type": "string"}}}, ["/a"]),
         ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "number"}}}, ["/a", "/b"]),
         (
             {

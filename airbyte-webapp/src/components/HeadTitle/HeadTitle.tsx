@@ -32,9 +32,7 @@ const HeadTitle: React.FC<IProps> = ({ titles }) => {
   const intl = useIntl();
 
   const getTitle = (d: HeadTitleDefinition): string => {
-    return isStringTitle(d)
-      ? d.title
-      : intl.formatMessage({ id: d.id }, d.values);
+    return isStringTitle(d) ? d.title : intl.formatMessage({ id: d.id }, d.values);
   };
 
   const headTitle = titles.map(getTitle).join(` ${SEPARATOR} `);

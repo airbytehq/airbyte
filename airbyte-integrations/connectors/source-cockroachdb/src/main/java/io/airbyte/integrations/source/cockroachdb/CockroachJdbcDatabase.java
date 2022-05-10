@@ -54,21 +54,21 @@ public class CockroachJdbcDatabase
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return database.resultSetQuery(query, recordTransform);
+    return database.unsafeResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return database.query(statementCreator, recordTransform);
+    return database.unsafeQuery(statementCreator, recordTransform);
   }
 
   @Override
-  public Stream<JsonNode> query(final String sql, final String... params) throws SQLException {
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
     return bufferedResultSetQuery(connection -> {
       final PreparedStatement statement = connection.prepareStatement(sql);
       int i = 1;

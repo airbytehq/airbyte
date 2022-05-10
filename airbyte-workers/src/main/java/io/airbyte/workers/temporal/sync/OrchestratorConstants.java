@@ -28,6 +28,7 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_KUBE_SOCAT_IMAGE,
           EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY,
           EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET,
+          EnvConfigs.JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY,
           EnvConfigs.JOB_KUBE_NODE_SELECTORS,
           EnvConfigs.DOCKER_NETWORK,
           EnvConfigs.LOCAL_DOCKER_MOUNT,

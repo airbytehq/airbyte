@@ -1,10 +1,12 @@
-import React from "react";
 import { FieldArray, useField } from "formik";
+import React from "react";
 
 import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
-import ConfirmationControl from "./ConfirmationControl";
+
 import { FormBaseItem } from "core/form/types";
 import { isDefined } from "utils/common";
+
+import ConfirmationControl from "./ConfirmationControl";
 
 type IProps = {
   property: FormBaseItem;
@@ -14,13 +16,7 @@ type IProps = {
   removeUnfinishedFlow: (key: string) => void;
 };
 
-const Control: React.FC<IProps> = ({
-  property,
-  name,
-  addUnfinishedFlow,
-  removeUnfinishedFlow,
-  unfinishedFlows,
-}) => {
+const Control: React.FC<IProps> = ({ property, name, addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows }) => {
   const [field, meta, form] = useField(name);
 
   // TODO: think what to do with other cases
@@ -87,22 +83,12 @@ const Control: React.FC<IProps> = ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onChange={(selectedItem) =>
-          selectedItem && form.setValue(selectedItem.value)
-        }
+        onChange={(selectedItem) => selectedItem && form.setValue(selectedItem.value)}
         value={value}
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return (
-      <TextArea
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        value={value ?? ""}
-        rows={3}
-      />
-    );
+    return <TextArea {...field} placeholder={placeholder} autoComplete="off" value={value ?? ""} rows={3} />;
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
@@ -111,21 +97,9 @@ const Control: React.FC<IProps> = ({
       <ConfirmationControl
         component={
           property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <TextArea
-              {...field}
-              autoComplete="off"
-              placeholder={placeholder}
-              value={value ?? ""}
-              rows={3}
-            />
+            <TextArea {...field} autoComplete="off" placeholder={placeholder} value={value ?? ""} rows={3} />
           ) : (
-            <Input
-              {...field}
-              autoComplete="off"
-              placeholder={placeholder}
-              value={value ?? ""}
-              type="password"
-            />
+            <Input {...field} autoComplete="off" placeholder={placeholder} value={value ?? ""} type="password" />
           )
         }
         showButtons={isFormInEditMode}
@@ -137,10 +111,7 @@ const Control: React.FC<IProps> = ({
         }}
         onCancel={() => {
           removeUnfinishedFlow(name);
-          if (
-            unfinishedSecret &&
-            unfinishedSecret.hasOwnProperty("startValue")
-          ) {
+          if (unfinishedSecret && unfinishedSecret.hasOwnProperty("startValue")) {
             form.setValue(unfinishedSecret.startValue);
           }
         }}
@@ -149,15 +120,7 @@ const Control: React.FC<IProps> = ({
   } else {
     const inputType = property.type === "integer" ? "number" : "text";
 
-    return (
-      <Input
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        type={inputType}
-        value={value ?? ""}
-      />
-    );
+    return <Input {...field} placeholder={placeholder} autoComplete="off" type={inputType} value={value ?? ""} />;
   }
 };
 

@@ -31,10 +31,8 @@ export const Cell = styled.div<{
   flex: ${({ flex }) => flex || 1} 0 0;
   padding-right: 10px;
   word-break: break-word;
-  color: ${({ theme, light, lighter }) =>
-    light ? theme.greyColor40 : lighter ? theme.greyColor60 : "inherit"};
-  font-weight: ${({ light, lighter }) =>
-    light || lighter ? "normal" : "inherit"};
+  color: ${({ theme, light, lighter }) => (light ? theme.greyColor40 : lighter ? theme.greyColor60 : "inherit")};
+  font-weight: ${({ light, lighter }) => (light || lighter ? "normal" : "inherit")};
 
   overflow: ${({ ellipsis }) => (ellipsis ? "hidden" : "inherit")};
   text-overflow: ${({ ellipsis }) => (ellipsis ? "ellipsis" : "inherit")};

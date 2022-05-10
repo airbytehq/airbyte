@@ -39,27 +39,25 @@ export const ExitAnimation = keyframes`
   }
 `;
 
-const Line = styled.div<{ onRight?: boolean }>`
+const Line = styled.div<{ $onRight?: boolean }>`
   position: absolute;
   width: calc(50% - 275px);
   z-index: 1;
   top: 382px;
-  left: ${({ onRight }) => (onRight ? "calc(50% + 275px)" : 0)};
+  left: ${({ $onRight }) => ($onRight ? "calc(50% + 275px)" : 0)};
 `;
 const Path = styled.div<{ exit?: boolean }>`
   width: 100%;
   height: 2px;
   background: ${({ theme }) => theme.primaryColor};
-  animation: ${({ exit }) => (exit ? ExitRollAnimation : RollAnimation)} 0.6s
-    linear ${({ exit }) => (exit ? 0.8 : 0)}s;
+  animation: ${({ exit }) => (exit ? ExitRollAnimation : RollAnimation)} 0.6s linear ${({ exit }) => (exit ? 0.8 : 0)}s;
   animation-fill-mode: forwards;
 `;
 const Img = styled.img<{ exit?: boolean }>`
   position: absolute;
   top: -58px;
   left: -78px;
-  animation: ${({ exit }) => (exit ? ExitAnimation : EnterAnimation)} 0.8s
-    linear ${({ exit }) => (exit ? 0 : 0.6)}s;
+  animation: ${({ exit }) => (exit ? ExitAnimation : EnterAnimation)} 0.8s linear ${({ exit }) => (exit ? 0 : 0.6)}s;
   animation-fill-mode: both;
 `;
 
@@ -70,15 +68,9 @@ type LetterLineProps = {
 
 const LetterLine: React.FC<LetterLineProps> = ({ onRight, exit }) => {
   return (
-    <Line onRight={onRight}>
+    <Line $onRight={onRight}>
       <Path exit={exit} />
-      <Img
-        src="/newsletter.png"
-        alt="newsletter"
-        width={78}
-        height={68}
-        exit={exit}
-      />
+      <Img src="/newsletter.png" alt="newsletter" width={78} height={68} exit={exit} />
     </Line>
   );
 };

@@ -1,21 +1,23 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
+
+import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import TestingConnectionError from "./TestingConnectionError";
-import FetchingConnectorError from "./FetchingConnectorError";
 
 type IProps = {
-  formType: "source" | "destination" | "connection";
+  formType: "source" | "destination";
   isSubmitting: boolean;
+  errorMessage?: React.ReactNode;
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
-  errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
-  additionBottomControls?: React.ReactNode;
+  fetchingConnectorError?: Error | null;
+
+  isTestConnectionInProgress: boolean;
+  onCancelTesting?: () => void;
 };
 
 const ButtonContainer = styled.div`
@@ -25,36 +27,35 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
+const SubmitButton = styled(Button)`
+  margin-left: auto;
+`;
+
 const CreateControls: React.FC<IProps> = ({
+  isTestConnectionInProgress,
   isSubmitting,
   formType,
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
   isLoadSchema,
-  additionBottomControls,
+  onCancelTesting,
 }) => {
+  if (isSubmitting) {
+    return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
+  }
+
   if (hasSuccess) {
     return <TestingConnectionSuccess />;
   }
 
-  if (isSubmitting) {
-    return <TestingConnectionSpinner />;
-  }
-
   return (
     <ButtonContainer>
-      {errorMessage && !fetchingConnectorError && (
-        <TestingConnectionError errorMessage={errorMessage} />
-      )}
+      {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      {!errorMessage && !fetchingConnectorError && <div />}
-      <div>
-        {additionBottomControls || null}
-        <Button type="submit" disabled={isLoadSchema}>
-          <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-        </Button>
-      </div>
+      <SubmitButton type="submit" disabled={isLoadSchema}>
+        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
+      </SubmitButton>
     </ButtonContainer>
   );
 };

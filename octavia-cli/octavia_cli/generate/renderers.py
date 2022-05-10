@@ -90,6 +90,8 @@ class FieldToRender:
         return "REQUIRED" if self.required else "OPTIONAL"
 
     def _get_type_comment(self) -> str:
+        if isinstance(self.type, list):
+            return ", ".join(self.type)
         return self.type if self.type else None
 
     def _get_secret_comment(self) -> str:
@@ -241,7 +243,6 @@ class ConnectionRenderer(BaseRenderer):
     @staticmethod
     def catalog_to_yaml(catalog: dict) -> str:
         """Convert the source catalog to a YAML string.
-        Convert camel case to snake case.
 
         Args:
             catalog (dict): Source's catalog.

@@ -79,7 +79,10 @@ public class DestinationHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
+        JsonSecretsProcessor.builder()
+            .maskSecrets(true)
+            .copySecrets(true)
+            .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
@@ -276,7 +279,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
-    dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    dci.setConfiguration(secretsProcessor.prepareSecretsForOutput(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());

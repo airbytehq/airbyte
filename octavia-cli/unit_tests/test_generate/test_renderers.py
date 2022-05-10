@@ -80,12 +80,14 @@ class TestFieldToRender:
         field_to_render.required = False
         assert field_to_render._get_required_comment() == "OPTIONAL"
 
-    def test__get_type_comment(self):
+    @pytest.mark.parametrize(
+        "_type,expected_comment",
+        [("string", "string"), (["string", "null"], "string, null"), (None, None)],
+    )
+    def test__get_type_comment(self, _type, expected_comment):
         field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
-        field_to_render.type = "mytype"
-        assert field_to_render._get_type_comment() == "mytype"
-        field_to_render.type = None
-        assert field_to_render._get_type_comment() is None
+        field_to_render.type = _type
+        assert field_to_render._get_type_comment() == expected_comment
 
     def test__get_secret_comment(self):
         field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})

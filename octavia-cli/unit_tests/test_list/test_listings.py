@@ -83,7 +83,7 @@ class TestSourceConnectorsDefinitions:
         assert source_connectors_definition.api == source_definition_api.SourceDefinitionApi
         assert source_connectors_definition.fields_to_display == ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId"]
         assert source_connectors_definition.list_field_in_response == "source_definitions"
-        assert source_connectors_definition.list_function_name == "list_latest_source_definitions"
+        assert source_connectors_definition.list_function_name == "list_source_definitions"
 
 
 class TestDestinationConnectorsDefinitions:
@@ -98,7 +98,7 @@ class TestDestinationConnectorsDefinitions:
             "destinationDefinitionId",
         ]
         assert destination_connectors_definition.list_field_in_response == "destination_definitions"
-        assert destination_connectors_definition.list_function_name == "list_latest_destination_definitions"
+        assert destination_connectors_definition.list_function_name == "list_destination_definitions"
 
 
 class TestWorkspaceListing:

@@ -4,8 +4,11 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,9 +17,11 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,6 +119,103 @@ class SecretsRepositoryReaderTest {
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().collect(Collectors.toList())));
 
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReadingServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
+    final SecretsRepositoryReader secretsRepositoryReader =
+        spy(new SecretsRepositoryReader(configRepository, realSecretsHydrator));
+
+    final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+
+    final String jsonSecretPayload = MockData.MOCK_SERVICE_ACCOUNT_1;
+
+    final SecretCoordinate secretCoordinateHmac = new SecretCoordinate(
+        "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    final SecretCoordinate secretCoordinateJson = new SecretCoordinate(
+        "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_6b894c2b-71dc-4481-bd9f-572402643cf9", 1);
+
+    doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(Jsons.jsonNode(
+        Map.of("_secret", secretCoordinateHmac.getFullCoordinate()))).withJsonCredential(Jsons.jsonNode(
+            Map.of("_secret", secretCoordinateJson.getFullCoordinate())))
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+            .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
+
+    doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(secretCoordinateJson);
+
+    final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
+    final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
+        .withJsonCredential(Jsons.deserialize(jsonSecretPayload)).withHmacKey(HMAC_SECRET_PAYLOAD_1)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReadingServiceAccountWithJsonNull() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
+    final SecretsRepositoryReader secretsRepositoryReader =
+        spy(new SecretsRepositoryReader(configRepository, realSecretsHydrator));
+
+    final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+
+    final SecretCoordinate secretCoordinateHmac = new SecretCoordinate(
+        "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(Jsons.jsonNode(
+        Map.of("_secret", secretCoordinateHmac.getFullCoordinate())))
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+            .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
+
+    final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
+    final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReadingServiceAccountWithHmacNull() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
+    final SecretsRepositoryReader secretsRepositoryReader =
+        spy(new SecretsRepositoryReader(configRepository, realSecretsHydrator));
+
+    final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+
+    final String jsonSecretPayload = MockData.MOCK_SERVICE_ACCOUNT_1;
+
+    final SecretCoordinate secretCoordinateJson = new SecretCoordinate(
+        "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_6b894c2b-71dc-4481-bd9f-572402643cf9", 1);
+
+    doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withJsonCredential(Jsons.jsonNode(
+        Map.of("_secret", secretCoordinateJson.getFullCoordinate())))
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+            .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(secretCoordinateJson);
+
+    final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
+    final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
+        .withJsonCredential(Jsons.deserialize(jsonSecretPayload))
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
     assertEquals(expected, actual);
   }
 

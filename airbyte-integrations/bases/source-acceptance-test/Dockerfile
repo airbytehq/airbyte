@@ -1,4 +1,4 @@
-FROM python:3.7.11-alpine3.14 as base
+FROM python:3.9.11-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
@@ -33,7 +33,7 @@ COPY pytest.ini setup.py ./
 COPY source_acceptance_test ./source_acceptance_test
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.46
+LABEL io.airbyte.version=0.1.50
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin", "-r", "fEsx"]

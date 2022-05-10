@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;
@@ -33,6 +34,11 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
         + "  \"format_type\": \"Avro\",\n"
         + "  \"compression_codec\": { \"codec\": \"no compression\", \"compression_level\": 5, \"include_checksum\": true }\n"
         + "}");
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new GcsAvroTestDataComparator();
   }
 
   @Override

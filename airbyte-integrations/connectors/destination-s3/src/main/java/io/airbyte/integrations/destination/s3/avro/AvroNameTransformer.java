@@ -5,7 +5,15 @@
 package io.airbyte.integrations.destination.s3.avro;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import java.util.Arrays;
 
+/**
+ * <ul>
+ * <li>An Avro name starts with [A-Za-z_], followed by [A-Za-z0-9_].</li>
+ * <li>An Avro namespace is a dot-separated sequence of such names.</li>
+ * <li>Reference: https://avro.apache.org/docs/current/spec.html#names</li>
+ * </ul>
+ */
 public class AvroNameTransformer extends ExtendedNameTransformer {
 
   @Override
@@ -14,20 +22,29 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  public String getIdentifier(final String name) {
-    return replaceForbiddenCharacters(checkFirsCharInStreamName(convertStreamName(name)));
-  }
+  public String convertStreamName(final String input) {
+    if (input == null) {
+      return null;
+    } else if (input.isBlank()) {
+      return input;
+    }
 
-  private String checkFirsCharInStreamName(final String name) {
-    if (name.substring(0, 1).matches("[A-Za-z_]")) {
-      return name;
+    final String normalizedName = super.convertStreamName(input);
+    if (normalizedName.substring(0, 1).matches("[A-Za-z_]")) {
+      return normalizedName;
     } else {
-      return "_" + name;
+      return "_" + normalizedName;
     }
   }
 
-  private String replaceForbiddenCharacters(final String name) {
-    return name.replace("-", "_");
+  @Override
+  public String getNamespace(final String input) {
+    if (input == null) {
+      return null;
+    }
+
+    final String[] tokens = input.split("\\.");
+    return String.join(".", Arrays.stream(tokens).map(this::getIdentifier).toList());
   }
 
 }

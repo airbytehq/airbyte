@@ -5,13 +5,22 @@
 
 import json
 import logging
+import os
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
+import yaml
 from airbyte_cdk import AirbyteSpec, Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
+
+logger = logging.getLogger("airbyte")
+
+MODULE = sys.modules[__name__]
+MODULE_PATH = os.path.abspath(MODULE.__file__)
+SPEC_ROOT = os.path.dirname(MODULE_PATH)
 
 
 class TestAirbyteSpec:
@@ -71,3 +80,53 @@ def test_write_config(integration, mock_config):
     integration.write_config(mock_config, str(config_path))
     with open(config_path, "r") as actual:
         assert mock_config == json.loads(actual.read())
+
+
+class TestConnectorSpec:
+    CONNECTION_SPECIFICATION = {
+        "type": "object",
+        "required": ["api_token"],
+        "additionalProperties": False,
+        "properties": {"api_token": {"type": "string"}},
+    }
+
+    @pytest.fixture
+    def use_json_spec(self):
+        spec = {
+            "documentationUrl": "https://airbyte.com/#json",
+            "connectionSpecification": self.CONNECTION_SPECIFICATION,
+        }
+
+        json_path = os.path.join(SPEC_ROOT, "spec.json")
+        with open(json_path, "w") as f:
+            f.write(json.dumps(spec))
+        yield
+        os.remove(json_path)
+
+    @pytest.fixture
+    def use_yaml_spec(self):
+        spec = {"documentationUrl": "https://airbyte.com/#yaml", "connectionSpecification": self.CONNECTION_SPECIFICATION}
+
+        yaml_path = os.path.join(SPEC_ROOT, "spec.yaml")
+        with open(yaml_path, "w") as f:
+            f.write(yaml.dump(spec))
+        yield
+        os.remove(yaml_path)
+
+    def test_spec_from_json_file(self, integration, use_json_spec):
+        connector_spec = integration.spec(logger)
+        assert connector_spec.documentationUrl == "https://airbyte.com/#json"
+        assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
+
+    def test_spec_from_yaml_file(self, integration, use_yaml_spec):
+        connector_spec = integration.spec(logger)
+        assert connector_spec.documentationUrl == "https://airbyte.com/#yaml"
+        assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
+
+    def test_multiple_spec_files_raises_exception(self, integration, use_yaml_spec, use_json_spec):
+        with pytest.raises(RuntimeError, match="spec.yaml or spec.json"):
+            integration.spec(logger)
+
+    def test_no_spec_file_raises_exception(self, integration):
+        with pytest.raises(FileNotFoundError, match="Unable to find spec."):
+            integration.spec(logger)

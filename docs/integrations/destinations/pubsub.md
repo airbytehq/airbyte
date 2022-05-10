@@ -89,6 +89,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | February 21, 2022 | [\#9819](https://github.com/airbytehq/airbyte/pull/9819) | Upgrade version of google-cloud-pubsub |
 | 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.2 | December 29, 2021 | [\#9183](https://github.com/airbytehq/airbyte/pull/9183) | Update connector fields title/description |
 | 0.1.1 | August 13, 2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |

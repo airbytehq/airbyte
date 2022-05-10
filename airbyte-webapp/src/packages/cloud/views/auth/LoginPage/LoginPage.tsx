@@ -1,20 +1,16 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
-import {
-  BottomBlock,
-  FieldItem,
-  Form,
-} from "packages/cloud/views/auth/components/FormComponents";
-import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
+import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -68,11 +64,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -88,22 +80,14 @@ const LoginPage: React.FC = () => {
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
             </FieldItem>
             <BottomBlock>
               <>
-                <Link
-                  to={CloudRoutes.ResetPassword}
-                  $light
-                  data-testid="reset-password-link"
-                >
+                <Link to={CloudRoutes.ResetPassword} $light data-testid="reset-password-link">
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton type="submit" isLoading={isSubmitting}>

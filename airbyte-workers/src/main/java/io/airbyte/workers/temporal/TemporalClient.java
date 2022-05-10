@@ -252,15 +252,44 @@ public class TemporalClient {
   }
 
   public void deleteConnection(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+      connectionManagerWorkflow.deleteConnection();
+    } catch (final IllegalStateException e) {
+      log.info("Connection in an illegal state; Creating new workflow and sending delete signal");
 
-    connectionManagerWorkflow.deleteConnection();
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
+          TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
+
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(connectionId)
+          .jobId(null)
+          .attemptId(null)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(null)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
+
+      final BatchRequest signalRequest = client.newSignalWithStartRequest();
+      signalRequest.add(connectionManagerWorkflow::run, input);
+      signalRequest.add(connectionManagerWorkflow::deleteConnection);
+      client.signalWithStart(signalRequest);
+      log.info("New start request and delete signal submitted");
+    }
   }
 
   public void update(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+    final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
-    connectionManagerWorkflow.connectionUpdated();
+    if (!workflowReachable) {
+      // if a workflow is not reachable for update, create a new workflow
+      submitConnectionUpdaterAsync(connectionId);
+    } else {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+      connectionManagerWorkflow.connectionUpdated();
+    }
   }
 
   @Value
@@ -444,7 +473,7 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, name);
   }
 
-  private ConnectionManagerWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
+  ConnectionManagerWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
     final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
     if (!workflowReachable) {
@@ -505,7 +534,6 @@ public class TemporalClient {
     }
   }
 
-  @VisibleForTesting
   static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }

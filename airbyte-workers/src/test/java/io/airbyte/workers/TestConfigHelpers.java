@@ -37,6 +37,10 @@ public class TestConfigHelpers {
   private static final long LAST_SYNC_TIME = 1598565106;
 
   public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig() {
+    return createSyncConfig(false);
+  }
+
+  public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig(final Boolean multipleNamespaces) {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
@@ -90,9 +94,21 @@ public class TestConfigHelpers {
             .withGitRepoBranch("git url"))
         .withTombstone(false);
 
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
+    if (multipleNamespaces) {
+      final ConfiguredAirbyteStream streamOne = new ConfiguredAirbyteStream()
+          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, "namespace", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+      final ConfiguredAirbyteStream streamTwo = new ConfiguredAirbyteStream()
+          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, "namespace2", Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+
+      final List<ConfiguredAirbyteStream> streams = List.of(streamOne, streamTwo);
+      catalog.withStreams(streams);
+
+    } else {
+      final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
+          .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+      catalog.withStreams(Collections.singletonList(stream));
+    }
 
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)

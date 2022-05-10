@@ -20,6 +20,8 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       new CatalogMessageTestConfigPair("exchange_rate_catalog.json", "exchange_rate_messages.txt");
   public static final CatalogMessageTestConfigPair EDGE_CASE_CONFIG =
       new CatalogMessageTestConfigPair("edge_case_catalog.json", "edge_case_messages.txt");
+  public static final CatalogMessageTestConfigPair NAMESPACE_CONFIG =
+      new CatalogMessageTestConfigPair("namespace_catalog.json", "namespace_messages.txt");
 
   @Override
   public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {

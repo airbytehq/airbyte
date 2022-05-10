@@ -15,6 +15,7 @@ from plaid.api import plaid_api
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
 from plaid.model.accounts_balance_get_request_options import AccountsBalanceGetRequestOptions
 from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
 SPEC_ENV_TO_PLAID_ENV = {
     "production": plaid.Environment.Production,
@@ -31,6 +32,7 @@ class PlaidStream(Stream):
         api_client = plaid.ApiClient(plaid_config)
         self.client = plaid_api.PlaidApi(api_client)
         self.access_token = config["access_token"]
+        self.start_date = datetime.datetime.strptime(config.get("start_date"), "%Y-%m-%d").date() if config.get("start_date") else None
         self.min_last_updated_datetime = datetime.datetime.strptime(
             config.get(
                 "min_last_updated_datetime",
@@ -87,6 +89,14 @@ class IncrementalTransactionStream(PlaidStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return {"date": latest_record.get("date")}
 
+    def _get_transactions_response(self, start_date, end_date=datetime.datetime.utcnow().date(), offset=0):
+        options = TransactionsGetRequestOptions()
+        options.offset = offset
+
+        return self.client.transactions_get(
+            TransactionsGetRequest(access_token=self.access_token, start_date=start_date, end_date=end_date, options=options)
+        )
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -96,6 +106,8 @@ class IncrementalTransactionStream(PlaidStream):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         date = stream_state.get("date")
+        all_transactions = []
+
         if not date:
             date = datetime.date.fromtimestamp(0)
         else:
@@ -103,11 +115,18 @@ class IncrementalTransactionStream(PlaidStream):
         if date >= datetime.datetime.utcnow().date():
             return
 
-        transaction_response = self.client.transactions_get(
-            TransactionsGetRequest(access_token=self.access_token, start_date=date, end_date=datetime.datetime.utcnow().date())
-        )
+        if self.start_date:
+            date = max(self.start_date, date)
 
-        yield from map(lambda x: x.to_dict(), sorted(transaction_response["transactions"], key=lambda t: t["date"]))
+        response = self._get_transactions_response(date)
+        all_transactions.extend(response.transactions)
+        num_total_transactions = response.total_transactions
+
+        while len(all_transactions) < num_total_transactions:
+            response = self._get_transactions_response(date, offset=len(all_transactions))
+            all_transactions.extend(response.transactions)
+
+        yield from map(lambda x: x.to_dict(), sorted(all_transactions, key=lambda t: t["date"]))
 
 
 class SourcePlaid(AbstractSource):

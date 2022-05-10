@@ -20,3 +20,9 @@ export interface Workspace {
   displaySetupWizard: boolean;
   notifications: Notification[];
 }
+
+export interface WorkspaceState {
+  hasSources: boolean;
+  hasDestinations: boolean;
+  hasConnections: boolean;
+}

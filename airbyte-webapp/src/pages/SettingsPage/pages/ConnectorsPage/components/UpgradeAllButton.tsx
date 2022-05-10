@@ -1,8 +1,8 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { LoadingButton } from "components";
 
@@ -40,12 +40,7 @@ type UpdateAllButtonProps = {
   hasSuccess: boolean;
 };
 
-const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({
-  onUpdate,
-  isLoading,
-  hasError,
-  hasSuccess,
-}) => {
+const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading, hasError, hasSuccess }) => {
   return (
     <UpdateButtonContent>
       {hasError && (
@@ -53,11 +48,7 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({
           <FormattedMessage id="form.someError" />
         </ErrorBlock>
       )}
-      <UpdateButton
-        onClick={onUpdate}
-        isLoading={isLoading}
-        wasActive={hasSuccess}
-      >
+      <UpdateButton onClick={onUpdate} isLoading={isLoading} wasActive={hasSuccess}>
         {hasSuccess ? (
           <FormattedMessage id="admin.upgraded" />
         ) : (

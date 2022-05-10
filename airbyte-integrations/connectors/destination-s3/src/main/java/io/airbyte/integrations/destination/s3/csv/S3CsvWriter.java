@@ -10,7 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -59,7 +59,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
         objectKey);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize())
+    this.uploadManager = StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize())
         .numUploadThreads(uploadThreads)
         .queueCapacity(queueCapacity);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -76,8 +76,8 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     private final AmazonS3 s3Client;
     private final ConfiguredAirbyteStream configuredStream;
     private final Timestamp uploadTimestamp;
-    private int uploadThreads = S3StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
-    private int queueCapacity = S3StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
+    private int uploadThreads = StreamTransferManagerHelper.DEFAULT_UPLOAD_THREADS;
+    private int queueCapacity = StreamTransferManagerHelper.DEFAULT_QUEUE_CAPACITY;
     private boolean withHeader = true;
     private CSVFormat csvSettings = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL);
     private CsvSheetGenerator csvSheetGenerator;
@@ -170,7 +170,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData));
   }
 

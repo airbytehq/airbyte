@@ -3,6 +3,8 @@
 #
 
 import json
+import logging
+import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
@@ -16,6 +18,8 @@ from googleapiclient import discovery
 from .models.spreadsheet import RowData, Spreadsheet
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
+
+logger = logging.getLogger("airbyte")
 
 
 class Helpers(object):
@@ -134,7 +138,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-        print(f"available_sheets: {available_sheets}")
+        logger.info(f"Available sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:
@@ -192,3 +196,13 @@ class Helpers(object):
             if len(cell_values) > idx and cell_values[idx].strip() != "":
                 return True
         return False
+
+    @staticmethod
+    def get_spreadsheet_id(id_or_url: str) -> str:
+        if re.match(r"(http://)|(https://)", id_or_url):
+            # This is a URL
+            m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
+            if m.group(2):
+                return m.group(2)
+        else:
+            return id_or_url

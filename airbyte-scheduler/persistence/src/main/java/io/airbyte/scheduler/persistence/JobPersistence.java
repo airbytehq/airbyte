@@ -12,6 +12,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -145,7 +146,6 @@ public interface JobPersistence {
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
 
   /**
-   *
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
    * @return List of jobs that have attempts after the provided timestamp
@@ -161,7 +161,23 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
+  /**
+   * @param connectionId The ID of the connection
+   * @param configTypes The types of jobs
+   * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
+   * @return List of jobs that only include information regarding id, status, timestamps from a
+   *         specific connection that have attempts after the provided timestamp, sorted by jobs'
+   *         createAt in descending order
+   * @throws IOException
+   */
+  List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(UUID connectionId,
+                                                                          Set<JobConfig.ConfigType> configTypes,
+                                                                          Instant jobCreatedAtTimestamp)
+      throws IOException;
+
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
+
+  Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
 
@@ -219,5 +235,15 @@ public interface JobPersistence {
    * Purges job history while ensuring that the latest saved-state information is maintained.
    */
   void purgeJobHistory();
+
+  /**
+   * Check if the secret has been migrated to a new secret store from a plain text values
+   */
+  boolean isSecretMigrated() throws IOException;
+
+  /**
+   * Set that the secret migration has been performed.
+   */
+  void setSecretMigrationDone() throws IOException;
 
 }

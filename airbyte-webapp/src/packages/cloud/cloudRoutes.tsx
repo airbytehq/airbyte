@@ -2,38 +2,37 @@ import React, { Suspense, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import SourcesPage from "pages/SourcesPage";
-import DestinationPage from "pages/DestinationPage";
-import ConnectionPage from "pages/ConnectionPage";
-
 import LoadingPage from "components/LoadingPage";
-import MainView from "packages/cloud/views/layout/MainView";
-import { WorkspacesPage } from "packages/cloud/views/workspaces";
+
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
+import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { Auth } from "packages/cloud/views/auth";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import useRouter from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
-import {
-  useCurrentWorkspace,
-  WorkspaceServiceProvider,
-} from "services/workspaces/WorkspacesService";
-import OnboardingPage from "pages/OnboardingPage";
+import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
-import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
-import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
+import MainView from "packages/cloud/views/layout/MainView";
+import { WorkspacesPage } from "packages/cloud/views/workspaces";
+import ConnectionPage from "pages/ConnectionPage";
+import DestinationPage from "pages/DestinationPage";
+import OnboardingPage from "pages/OnboardingPage";
+import SourcesPage from "pages/SourcesPage";
+import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
+import { hasFromState } from "utils/stateUtils";
+import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+
+import { RoutePaths } from "../../pages/routePaths";
+import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import {
-  useAnalyticsIdentifyUser,
-  useAnalyticsRegisterValues,
-} from "hooks/services/Analytics/useAnalyticsService";
-import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
+import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import { storeUtmFromQuery } from "utils/utmStorage";
+import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 
 export const CloudRoutes = {
   Root: "/",
@@ -47,7 +46,6 @@ export const CloudRoutes = {
   Signup: "/signup",
   Login: "/login",
   ResetPassword: "/reset-password",
-  ConfirmVerifyEmail: "/confirm-verify-email",
 
   // Firebase action routes
   // These URLs come from Firebase emails, and all have the same
@@ -58,6 +56,7 @@ export const CloudRoutes = {
 
 const MainRoutes: React.FC = () => {
   const workspace = useCurrentWorkspace();
+  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
   const analyticsContext = useMemo(
     () => ({
@@ -68,25 +67,25 @@ const MainRoutes: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainNavigate = workspace.displaySetupWizard
-    ? RoutePaths.Onboarding
-    : RoutePaths.Connections;
+  const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
+
+  const features = useMemo(
+    () =>
+      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD &&
+      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_MAX_THRESHOLD
+        ? [{ id: FeatureItem.AllowCreateConnection }, { id: FeatureItem.AllowSync }]
+        : null,
+    [cloudWorkspace]
+  );
+
+  useFeatureRegisterValues(features);
 
   return (
     <Routes>
-      <Route
-        path={`${RoutePaths.Destination}/*`}
-        element={<DestinationPage />}
-      />
+      <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
       <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-      <Route
-        path={`${RoutePaths.Connections}/*`}
-        element={<ConnectionPage />}
-      />
-      <Route
-        path={`${RoutePaths.Settings}/*`}
-        element={<CloudSettingsPage />}
-      />
+      <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+      <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
       <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
       {workspace.displaySetupWizard && (
@@ -111,21 +110,13 @@ const MainViewRoutes = () => {
 
   return (
     <Routes>
-      {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map(
-        (r) => (
-          <Route
-            key={r}
-            path={`${r}/*`}
-            element={
-              <Navigate
-                // @ts-expect-error state is now unkown, needs proper typing
-                to={location.state?.from ?? `/${CloudRoutes.SelectWorkspace}`}
-                replace
-              />
-            }
-          />
-        )
-      )}
+      {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
+        <Route
+          key={r}
+          path={`${r}/*`}
+          element={hasFromState(location.state) ? <Navigate to={location.state.from} replace /> : <DefaultView />}
+        />
+      ))}
       <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
@@ -136,16 +127,13 @@ const MainViewRoutes = () => {
           </MainView>
         }
       />
-      <Route
-        path="*"
-        element={<Navigate to={CloudRoutes.SelectWorkspace} replace />}
-      />
+      <Route path="*" element={<DefaultView />} />
     </Routes>
   );
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, emailVerified } = useAuthService();
+  const { user, inited } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -166,6 +154,7 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId);
+  useTrackPageAnalytics();
 
   if (!inited) {
     return <LoadingPage />;
@@ -173,26 +162,15 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
-      <TrackPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
+        {/* Allow email verification no matter whether the user is logged in or not */}
+        <Routes>
+          <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+        </Routes>
+        {/* Show the login screen if the user is not logged in */}
         {!user && <Auth />}
-        {user && emailVerified && <MainViewRoutes />}
-        {user && !emailVerified && (
-          <Routes>
-            <Route
-              path={CloudRoutes.FirebaseAction}
-              element={<VerifyEmailAction />}
-            />
-            <Route
-              path={CloudRoutes.ConfirmVerifyEmail}
-              element={<ConfirmEmailPage />}
-            />
-            <Route
-              path="*"
-              element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />}
-            />
-          </Routes>
-        )}
+        {/* Allow all regular routes if the user is logged in */}
+        {user && <MainViewRoutes />}
       </Suspense>
     </WorkspaceServiceProvider>
   );

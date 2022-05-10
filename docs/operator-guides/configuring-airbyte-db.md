@@ -58,9 +58,11 @@ CONFIG_DATABASE_URL=jdbc:postgresql://<host>:<port>/<database>?<extra-parameters
 
 ## Initializing the database
 
-{% hint style="info" %}
+:::info
+
 This step is only required when you setup Airbyte with a custom database for the first time.
-{% endhint %}
+
+:::
 
 If you provide an empty database to Airbyte and start Airbyte up for the first time, the server will automatically create the relevant tables in your database, and copy the data. Please make sure:
 

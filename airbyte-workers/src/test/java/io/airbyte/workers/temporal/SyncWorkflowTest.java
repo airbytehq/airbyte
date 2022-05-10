@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
@@ -81,6 +82,7 @@ class SyncWorkflowTest {
   private OperatorDbtInput operatorDbtInput;
 
   private StandardSyncOutput replicationSuccessOutput;
+  private NormalizationSummary normalizationSummary;
 
   @BeforeEach
   public void setUp() {
@@ -94,6 +96,7 @@ class SyncWorkflowTest {
     sync = syncPair.getKey();
     syncInput = syncPair.getValue();
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
+    normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -127,13 +130,18 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         syncInput);
 
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
     final StandardSyncOutput actualOutput = execute();
-    assertEquals(replicationSuccessOutput, actualOutput);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, actualOutput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
+    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
   }
 
   @Test

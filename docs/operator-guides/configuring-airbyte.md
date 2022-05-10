@@ -96,13 +96,26 @@ The following variables are relevant to both Docker and Kubernetes.
 ### Kubernetes-Only
 #### Jobs
 1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
-2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
-3. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
-4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
-5. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
-6. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
-7. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
-8. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
+3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
+4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
+5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
+6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Define the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
+7. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
+8. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
+9. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
+10. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+
+#### Jobs specific
+
+A job specific variable overwrites the default sync job variable defined above.
+
+1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2` 
+3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+4. `SPEC_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+5. `CHECK_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 
 #### Worker
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.

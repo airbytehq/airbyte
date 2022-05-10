@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -14,6 +15,8 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -47,7 +50,8 @@ public class DatabricksDestination extends CopyDestination {
   @Override
   public void checkPersistence(final JsonNode config) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
-    S3Destination.attemptS3WriteAndDelete(databricksConfig.getS3DestinationConfig(), "");
+    final S3DestinationConfig s3Config = databricksConfig.getS3DestinationConfig();
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
   }
 
   @Override
@@ -73,11 +77,13 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   static JdbcDatabase getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    return Databases.createJdbcDatabase(
+    return new DefaultJdbcDatabase(DataSourceFactory.create(
         DatabricksConstants.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
-        getDatabricksConnectionString(databricksConfig),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS);
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        getDatabricksConnectionString(databricksConfig)
+      )
+    );
   }
 
 }
