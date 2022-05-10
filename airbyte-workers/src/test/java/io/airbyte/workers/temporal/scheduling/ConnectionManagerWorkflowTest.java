@@ -856,10 +856,9 @@ public class ConnectionManagerWorkflowTest {
 
     @Test
     @Timeout(value = 2,
-        unit = TimeUnit.SECONDS)
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that Source CHECK failures are recorded")
     public void testSourceCheckFailuresRecorded() throws InterruptedException {
-      // TODO: This fails because creating the failure doesn't work
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenReturn(new JobCreationOutput(JOB_ID));
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
@@ -891,7 +890,49 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
+    }
+
+    @Test
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that Destination CHECK failures are recorded")
+    public void testDestinationCheckFailuresRecorded() throws InterruptedException {
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
+          .thenReturn(new JobCreationOutput(JOB_ID));
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
+          .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
+      Mockito.when(mCheckConnectionActivity.check(Mockito.any()))
+          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("all good")) // First call (source) succeeds
+          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")); // Second call (destination) fails
+
+      testEnv.start();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
     }
 
     @RepeatedTest(10)
