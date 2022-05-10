@@ -76,11 +76,11 @@ public class FailureHelper {
       return null;
     }
 
-    if (sourceMessage != null && destinationMessage == null) {
+    if (destinationMessage == null) {
       return sourceFailure(sourceMessage, jobId, attempt);
     }
 
-    if (sourceMessage == null && destinationMessage != null) {
+    if (sourceMessage == null) {
       return destinationFailure(destinationMessage, jobId, attempt);
     }
 
@@ -190,17 +190,17 @@ public class FailureHelper {
    * that earlier failures come first.
    */
   public static List<FailureReason> orderedFailures(final Set<FailureReason> failures) {
-    final Comparator<FailureReason> compareByIsTrace = Comparator.comparing(f -> {
-      final Object metadata = f.getMetadata();
+    final Comparator<FailureReason> compareByIsTrace = Comparator.comparing(failureReason -> {
+      final Object metadata = failureReason.getMetadata();
       if (metadata != null) {
-        return f.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
+        return failureReason.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
       } else {
         return 1;
       }
     });
     final Comparator<FailureReason> compareByTimestamp = Comparator.comparing(FailureReason::getTimestamp);
     final Comparator<FailureReason> compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp);
-    return failures.stream().sorted(compareByTraceAndTimestamp).collect(Collectors.toList());
+    return failures.stream().sorted(compareByTraceAndTimestamp).toList();
   }
 
 }
