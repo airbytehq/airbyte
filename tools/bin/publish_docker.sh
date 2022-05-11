@@ -26,18 +26,21 @@ POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 for workdir in "${projectDir[@]}"
   do
     case $workdir in
-    "metrics/reporter")
-      artifactName="metrics-reporter"
-      ;;
-    "config/init")
-      artifactName="init"
-      ;;
-    "workers")
-      artifactName="worker"
-      ;;
-    *)
-      artifactName=${workdir%/*}
-      ;;
+      "metrics/reporter")
+        artifactName="metrics-reporter"
+        ;;
+
+      "config/init")
+        artifactName="init"
+        ;;
+
+      "workers")
+        artifactName="worker"
+        ;;
+
+      *)
+        artifactName=${workdir%/*}
+        ;;
     esac
 
     docker buildx create --use --name $artifactName &&      \
