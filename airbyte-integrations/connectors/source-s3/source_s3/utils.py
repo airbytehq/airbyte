@@ -51,4 +51,4 @@ def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: A
 
 
 def get_value_or_json_if_empty_string(options: str) -> str:
-    return options if options.strip() else "{}"
+    return options.strip() or "{}"
