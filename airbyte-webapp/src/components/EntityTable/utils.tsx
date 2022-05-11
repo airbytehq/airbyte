@@ -110,7 +110,9 @@ export const getConnectionSyncStatus = (
   status: ConnectionStatus,
   lastSyncJobStatus: Status | null
 ): ConnectionSyncStatus => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
+  if (status === ConnectionStatus.INACTIVE) {
+    return ConnectionSyncStatus.INACTIVE;
+  }
 
   switch (lastSyncJobStatus) {
     case Status.SUCCEEDED:
