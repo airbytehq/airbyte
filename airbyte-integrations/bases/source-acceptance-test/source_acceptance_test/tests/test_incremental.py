@@ -83,11 +83,19 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
     Checks if the record's cursor value is older or equal to the state cursor value.
 
     If the threshold_days option is set, the values will be converted to dates so that the time-based offset can be applied.
-    :raises: dateutil.parser._parser.ParserError: if threshold_days is passed with non-date cursor values.
+    :raises: pendulum.parsing.exceptions.ParserError: if threshold_days is passed with non-date cursor values.
     """
     if threshold_days:
-        record_date_value = record_value if isinstance(record_value, datetime) else pendulum.parse(record_value)
-        state_date_value = state_value if isinstance(state_value, datetime) else pendulum.parse(state_value)
+
+        def _parse_date_value(value) -> datetime:
+            if isinstance(value, datetime):
+                return value
+            if isinstance(value, (int, float)):
+                return pendulum.from_timestamp(value / 1000)
+            return pendulum.parse(value)
+
+        record_date_value = _parse_date_value(record_value)
+        state_date_value = _parse_date_value(state_value)
 
         return record_date_value >= (state_date_value - pendulum.duration(days=threshold_days))
 
