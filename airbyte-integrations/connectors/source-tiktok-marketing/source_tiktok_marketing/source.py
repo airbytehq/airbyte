@@ -76,6 +76,7 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
+
         credentials = config.get("credentials")
         if credentials:
             # used for new config format

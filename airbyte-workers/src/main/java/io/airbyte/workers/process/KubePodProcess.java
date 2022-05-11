@@ -438,11 +438,14 @@ public class KubePodProcess extends Process implements KubePod {
         envMap,
         args);
 
+    // Printing socat notice logs with socat -d -d
+    // To print info logs as well use socat -d -d -d
+    // more info: https://linux.die.net/man/1/socat
     final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
-        .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
+        .withCommand("sh", "-c", "socat -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
@@ -451,7 +454,7 @@ public class KubePodProcess extends Process implements KubePod {
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
@@ -460,7 +463,7 @@ public class KubePodProcess extends Process implements KubePod {
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)

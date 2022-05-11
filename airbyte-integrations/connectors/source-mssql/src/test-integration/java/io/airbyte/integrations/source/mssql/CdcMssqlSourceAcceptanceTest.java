@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.List;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -91,14 +92,15 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
-    database = Databases.createDatabase(
+
+    final DSLContext dslContext = DSLContextFactory.create(
         container.getUsername(),
         container.getPassword(),
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+        container.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d;",
+            config.get("host").asText(),
+            config.get("port").asInt()), null);
+    database = new Database(dslContext);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
