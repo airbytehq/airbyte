@@ -9,7 +9,7 @@
     "properties": {
       "host": {
         "description": "The hostname of the database.",
-        "title": "Host",
+        "title": "HostName",
         "type": "string",
         "order": 0
       },
@@ -111,6 +111,20 @@
         "default": "STANDARD",
         "enum": ["STANDARD", "CDC"],
         "order": 8
+      },
+      "is_snapshotDisabled": {
+        "title": "DisableSnapshot",
+        "type": "boolean",
+        "default": false,
+        "description": "if CDC enabled then true value would set snapshot.isolation.mode to read_committed otherwise, it would be snapshot",
+        "order": 9
+      },
+      "is_cdc_only": {
+        "title": "CDCOnly",
+        "type": "boolean",
+        "default": false,
+        "description": "if CDC enabled then true would set snapshot mode to schema_only otherwise, it would set to initial. Refer, https://debezium.io/documentation/reference/stable/connectors/sqlserver.html",
+        "order": 10
       }
     }
   }

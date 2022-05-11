@@ -89,7 +89,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             config.get("host").asText(),
             config.get("port").asInt())), null);
 
-    try (final Database database = new Database(dslContext)) {
+    try  {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));

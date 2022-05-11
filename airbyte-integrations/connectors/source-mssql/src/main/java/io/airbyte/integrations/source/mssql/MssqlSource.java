@@ -38,11 +38,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -317,26 +313,29 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get("database").asText());
-      LOGGER.info(String.format(
-          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson);
+    if(!config.hasNonNull("is_snapshotDisabled") ||
+            !config.get("is_snapshotDisabled").asBoolean()) {
+      final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+        final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
+        final PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, config.get("database").asText());
+        LOGGER.info(String.format(
+                "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+                config.get("database").asText(), sql));
+        return ps;
+      }, sourceOperations::rowToJson);
 
-    if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get("database").asText()));
-    }
-    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-      throw new RuntimeException(String.format(
-          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get("database").asText()));
+      if (queryResponse.size() < 1) {
+        throw new RuntimeException(String.format(
+                "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+                config.get("database").asText()));
+      }
+      if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
+        throw new RuntimeException(String.format(
+                "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+                        + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
+                config.get("database").asText()));
+      }
     }
   }
 
@@ -350,9 +349,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
+      Properties props=MssqlCdcProperties.getDebeziumProperties();
+      addCDCDetails(sourceConfig,props);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
-          MssqlCdcProperties.getDebeziumProperties(), catalog, true);
+              props, catalog, true);
       return handler.getIncrementalIterators(
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
@@ -406,6 +407,29 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     properties.set(CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  //validate snapshot isolation and cdc mode
+  private void addCDCDetails(final JsonNode cdcMethod,Properties props) {
+    if(cdcMethod.hasNonNull("is_snapshotDisabled") &&
+            cdcMethod.get("is_snapshotDisabled").asBoolean()) {
+      props.setProperty("snapshot.isolation.mode", "read_committed");
+    }
+    else{
+      // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
+      // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
+      // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows while
+      // we snapshot
+      props.setProperty("snapshot.isolation.mode", "snapshot");
+    }
+    if(cdcMethod.hasNonNull("is_cdc_only") &&
+            cdcMethod.get("is_cdc_only").asBoolean()){
+      props.setProperty("snapshot.mode", "schema_only");
+    }else{
+      // snapshot config
+      // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+      props.setProperty("snapshot.mode", "initial");
+    }
   }
 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
