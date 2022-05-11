@@ -93,7 +93,7 @@ class WeatherStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        return response.json()
+        return [response.json()]
 
 
 class Weather(WeatherStream):
@@ -231,4 +231,4 @@ class SourceWeather(AbstractSource):
         # #auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         # #return [Customers(authenticator=auth), Employees(authenticator=auth)]
 
-        return [Weather(**args)]
+        return [Weather()]
