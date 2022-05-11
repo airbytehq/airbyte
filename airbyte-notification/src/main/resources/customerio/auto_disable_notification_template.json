@@ -1,19 +1,20 @@
 {
   "transactional_message_id": "%s",
-  "from": "%s",
-  "subject": "Automatic Notification: Your Airbyte connection has been disabled",
   "to": "%s",
   "identifiers": {
     "email": "%s"
   },
   "message_data": {
-    "email_title": "Automatic Notification: Connection Disabled",
-    "email_body": "Your connection from <b>%s</b> to <b>%s</b> was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.<p>Please address the failing issues to ensure your syncs continue to run. The most recent attempted %s You can access its logs here: %s.<p>If you need help with resolving your connection, reach out to Support in-app or by emailing cloud-support@airbyte.io."
+    "source": "%s",
+    "destination": "%s",
+    "job_description": "%s",
+    "connection_id": "%s",
+    "workspace_id": "%s"
   },
 
   "disable_message_retention": false,
   "send_to_unsubscribed": true,
-  "tracked": true,
+  "tracked": false,
   "queue_draft": false,
   "disable_css_preprocessing": true
 }

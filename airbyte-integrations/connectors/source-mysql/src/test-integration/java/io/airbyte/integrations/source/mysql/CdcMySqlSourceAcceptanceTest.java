@@ -13,7 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -31,6 +32,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -130,15 +132,15 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
-        SQLDialect.MYSQL)) {
+            container.getDatabaseName()), SQLDialect.MYSQL);
+    try (final Database database = new Database(dslContext)) {
       database.query(
           ctx -> ctx
               .execute(query));

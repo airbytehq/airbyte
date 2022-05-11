@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y \
                           gnupg-agent \
                           software-properties-common
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-RUN add-apt-repository \
-       "deb [arch=${DOCKER_BUILD_ARCH}] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) \
-       stable"
+# arch var used to detect architecture of container. Architecture should be spcified to get proper binaries from repo.
+RUN arch=$(dpkg --print-architecture) && \
+       add-apt-repository \
+       "deb [arch=${arch}] https://download.docker.com/linux/debian \
+       $(lsb_release -cs) stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 # Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
@@ -23,10 +24,10 @@ RUN apt-get update && apt-get install -y docker-ce-cli jq
 # The following commands were taken from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-RUN apt-get update && apt-get install -y kubectl
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.37.0-alpha
+ARG VERSION=0.38.1-alpha
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}
