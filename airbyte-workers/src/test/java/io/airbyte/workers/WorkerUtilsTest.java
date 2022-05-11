@@ -4,20 +4,26 @@
 
 package io.airbyte.workers;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -114,6 +120,23 @@ class WorkerUtilsTest {
       verifyNoInteractions(forceShutdown);
     }
 
+  }
+
+  @Test
+  void testMapStreamNamesToSchemasWithNullNamespace() {
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
+    final StandardSyncInput syncInput = syncPair.getValue();
+    final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    assertNotNull(mapOutput.get("user_preferences"));
+  }
+
+  @Test
+  void testMapStreamNamesToSchemasWithMultipleNamespaces() {
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
+    final StandardSyncInput syncInput = syncPair.getValue();
+    final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    assertNotNull(mapOutput.get("namespaceuser_preferences"));
+    assertNotNull(mapOutput.get("namespace2user_preferences"));
   }
 
   /**

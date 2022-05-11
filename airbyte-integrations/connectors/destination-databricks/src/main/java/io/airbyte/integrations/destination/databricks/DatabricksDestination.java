@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -76,11 +77,13 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   static JdbcDatabase getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    return Databases.createJdbcDatabase(
+    return new DefaultJdbcDatabase(DataSourceFactory.create(
         DatabricksConstants.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
-        getDatabricksConnectionString(databricksConfig),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS);
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        getDatabricksConnectionString(databricksConfig)
+      )
+    );
   }
 
 }

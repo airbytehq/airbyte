@@ -13,25 +13,30 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVE
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
-import static io.airbyte.db.instance.jobs.jooq.Tables.*;
+import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +44,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class MetrisQueriesTest {
+public class MetricsQueriesTest {
 
   private static final String USER = "user";
   private static final String PASS = "hunter2";
@@ -51,12 +56,14 @@ public class MetrisQueriesTest {
 
   @BeforeAll
   static void setUpAll() throws IOException, SQLException {
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
+    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withUsername(USER)
         .withPassword(PASS);
     container.start();
 
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
+    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     configDb = databaseProviders.createNewConfigsDatabase();
     databaseProviders.createNewJobsDatabase();
 
@@ -332,7 +339,7 @@ public class MetrisQueriesTest {
     @Test
     @DisplayName("should return only connections per workspace")
     void shouldReturnNumConnectionsBasic() throws SQLException {
-      var workspaceId = UUID.randomUUID();
+      final var workspaceId = UUID.randomUUID();
       configDb.transaction(
           ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", false)
               .execute());
@@ -363,7 +370,7 @@ public class MetrisQueriesTest {
     @Test
     @DisplayName("should ignore deleted connections")
     void shouldIgnoreNonRunningConnections() throws SQLException {
-      var workspaceId = UUID.randomUUID();
+      final var workspaceId = UUID.randomUUID();
       configDb.transaction(
           ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", false)
               .execute());
@@ -396,7 +403,7 @@ public class MetrisQueriesTest {
     @Test
     @DisplayName("should ignore deleted connections")
     void shouldIgnoreDeletedWorkspaces() throws SQLException {
-      var workspaceId = UUID.randomUUID();
+      final var workspaceId = UUID.randomUUID();
       configDb.transaction(
           ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", true)
               .execute());

@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -40,13 +42,16 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("password", dbContainer.getPassword())
         .build());
 
-    database = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            configWithoutDbName.get("username").asText(),
+            configWithoutDbName.get("password").asText(),
+            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+            String.format("jdbc:sqlserver://%s:%d",
+                configWithoutDbName.get("host").asText(),
+                configWithoutDbName.get("port").asInt())
+        )
+    );
 
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 

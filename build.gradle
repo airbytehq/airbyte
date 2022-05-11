@@ -350,6 +350,9 @@ subprojects {
 
     if (pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
+        license {
+            header rootProject.file("LICENSE_SHORT")
+        }
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
             header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)

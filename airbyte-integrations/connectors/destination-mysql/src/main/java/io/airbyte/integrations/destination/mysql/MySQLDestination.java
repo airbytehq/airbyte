@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -34,7 +35,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
 
-  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       // zero dates by default cannot be parsed into java date objects (they will throw an error)
