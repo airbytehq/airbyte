@@ -250,7 +250,8 @@ public class TestJdbcUtils {
         .put("bit", JsonSchemaType.BOOLEAN)
         .put("boolean", JsonSchemaType.BOOLEAN)
         .put("smallint", JsonSchemaType.NUMBER)
-        .put("int", JsonSchemaType.NUMBER)
+            // Changed JsonSchemaType.NUMBER to JsonSchemaType.INTEGER
+        .put("int", JsonSchemaType.INTEGER)
         .put("bigint", JsonSchemaType.NUMBER)
         .put("float", JsonSchemaType.NUMBER)
         .put("double", JsonSchemaType.NUMBER)
