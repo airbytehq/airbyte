@@ -11,6 +11,15 @@ from airbyte_cdk.sources.cac.iterators.iterator import Iterator
 
 
 class DatetimeIterator(Iterator):
+    timedelta_regex = re.compile(
+        r"((?P<weeks>[\.\d]+?)w)?"
+        r"((?P<days>[\.\d]+?)d)?"
+        r"((?P<hours>[\.\d]+?)h)?"
+        r"((?P<minutes>[\.\d]+?)m)?"
+        r"((?P<seconds>[\.\d]+?)s)?"
+        r"((?P<microseconds>[\.\d]+?)ms)?"
+        r"((?P<milliseconds>[\.\d]+?)us)?$"
+    )
 
     # FIXME: start_time, end_time, and step should be datetime and timedelta?
     # FIXME: timezone should be configurable?
@@ -24,12 +33,10 @@ class DatetimeIterator(Iterator):
         self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
-        self._step = parse_timedelta(step)
+        self._step = self._parse_timedelta(step)
         self._vars = vars
         self._config = config
         self._cursor_value = cursor_value
-
-    # FIXME: this needs an update state method?
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
@@ -43,8 +50,7 @@ class DatetimeIterator(Iterator):
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
-            # FIXME should start_date and end_date labels be configurable?
-            dates.append({"start_date": start.timestamp(), "end_date": end_date.timestamp()})
+            dates.append({"start_date": start.strftime(self._datetime_format), "end_date": end_date.strftime(self._datetime_format)})
             start += step
         return dates
 
@@ -70,28 +76,17 @@ class DatetimeIterator(Iterator):
         except ValueError:
             return False
 
+    @classmethod
+    def _parse_timedelta(cls, time_str):
+        """
+        Parse a time string e.g. (2h13m) into a timedelta object.
+        Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
+        :param time_str: A string identifying a duration. (eg. 2h13m)
+        :return datetime.timedelta: A datetime.timedelta object
+        """
+        parts = cls.timedelta_regex.match(time_str)
 
-timedelta_regex = re.compile(
-    r"((?P<weeks>[\.\d]+?)w)?"
-    r"((?P<days>[\.\d]+?)d)?"
-    r"((?P<hours>[\.\d]+?)h)?"
-    r"((?P<minutes>[\.\d]+?)m)?"
-    r"((?P<seconds>[\.\d]+?)s)?"
-    r"((?P<microseconds>[\.\d]+?)ms)?"
-    r"((?P<milliseconds>[\.\d]+?)us)?$"
-)
+        assert parts is not None
 
-
-def parse_timedelta(time_str):
-    """
-    Parse a time string e.g. (2h13m) into a timedelta object.
-    Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
-    :param time_str: A string identifying a duration. (eg. 2h13m)
-    :return datetime.timedelta: A datetime.timedelta object
-    """
-    parts = timedelta_regex.match(time_str)
-
-    assert parts is not None
-
-    time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
-    return datetime.timedelta(**time_params)
+        time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
+        return datetime.timedelta(**time_params)
