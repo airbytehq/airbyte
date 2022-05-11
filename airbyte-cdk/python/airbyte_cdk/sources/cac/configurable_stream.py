@@ -27,8 +27,6 @@ class ConfigurableStream(Stream, IncrementalMixin):
         self._retriever._state.update_state(None, value, None, None)
 
     def __init__(self, name, primary_key, cursor_field, schema, retriever, vars: "Vars" = None, config: "Config" = None):
-        # print(f"creating a configurable stream with {name}")
-        # print(f"schema: {schema}")
         if vars is None:
             vars = dict()
         if config is None:
@@ -38,7 +36,6 @@ class ConfigurableStream(Stream, IncrementalMixin):
         self._cursor_field = cursor_field
         self._vars = vars
         self._schema_loader = schema  # LowCodeComponentFactory().create_component(schema, vars, config)
-        # print(f"stream.vars: {self._vars}")
         self._retriever: Retriever = retriever  # LowCodeComponentFactory().create_component(retriever, vars, config)
 
     def read_records(

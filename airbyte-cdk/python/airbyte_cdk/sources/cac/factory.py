@@ -23,22 +23,16 @@ class LowCodeComponentFactory:
         return self.build(class_name=class_name, options=options, parent_vars=vars, inner_vars=component_vars, config=config)
 
     def build(self, class_name: str, options: Options, parent_vars: Vars, inner_vars: Vars, config: Config):
-        # print(f"config_mapping: {config_mapping}")
         fqcn = class_name  # config_mapping["class_name"]
         split = fqcn.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
 
-        print(f"fqcn: {fqcn}")
-        print(f"module: {module}")
-        print(f"{class_name}")
         class_ = getattr(importlib.import_module(module), class_name)
         all_vars = self.merge_dicts(parent_vars, inner_vars)
 
         if "TokenAuthenticator" in class_name:
             print("creating auth")
-            # print(config_mapping)
-            # options = config_mapping["options"]
             interpolated_options = {k: self._interpolator.eval(v, all_vars, config) for k, v in options.items()}
             return class_(**interpolated_options)
 

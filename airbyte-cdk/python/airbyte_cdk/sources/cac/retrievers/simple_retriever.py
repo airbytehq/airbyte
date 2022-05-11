@@ -17,7 +17,6 @@ class SimpleRetriever(Retriever, HttpStream):
             vars = dict()
         if config is None:
             config = dict()
-        # print(f"retriever with config: {requester} and {extractor} and {vars} and {config}")
 
         # FIXME: we should probably share the factory?
         self._requester = requester  # LowCodeComponentFactory().create_component(requester, vars, config)

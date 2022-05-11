@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.core import Stream
 
 
 class ConfigurableSource(AbstractSource):
+    # FIXME: this whole class is yuck :(
     def __init__(self, path_to_spec):
         if not os.path.exists(path_to_spec):
             # Small hack until i figure out the docker issue
@@ -27,9 +28,6 @@ class ConfigurableSource(AbstractSource):
 
     def _load_config(self):
         # TODO is it better to do package loading?
-        print(f"path: {self._path_to_spec}")
-        print(f"path: {os.path}")
-        print(f"os.listdir: {os.listdir()}")
         with open(self._path_to_spec, "r") as f:
             return yaml.load(f.read(), Loader=yaml.SafeLoader)
 
@@ -45,21 +43,12 @@ class ConfigurableSource(AbstractSource):
         return connection_checker.check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        print(f"source_config: {self._source_config}")
-        print(f"config: {config}")
         streams_config = self._source_config["options"]["streams"]
 
         streams = [
             LowCodeComponentFactory().create_component(stream_config, self._vars, config) for stream_config in streams_config.values()
         ]
-        print(f"streams: {streams}")
         return streams
-
-    #   streams_config = self._options["streams"]
-
-    # for stream_name, stream_config in streams_config.items():
-    #     print(stream_config)
-    #     stream = LowCodeComponentFactory().build(stream_config, self._stream_config.get("vars", {}), config)
 
     def _merge_dicts(self, d1, d2):
         return {**d1, **d2}

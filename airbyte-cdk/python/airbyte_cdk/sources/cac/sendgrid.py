@@ -38,6 +38,7 @@ class SendgridSource(ConfigurableConnector):
         return CheckStream(self.streams(config)[0]).check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        authenticator = TokenAuthenticator(config["apikey"])
         streams = [
             ConfigurableStream(
                 name="segments",
@@ -49,7 +50,7 @@ class SendgridSource(ConfigurableConnector):
                         url_base="https://api.sendgrid.com/v3/",
                         path="marketing/segments",
                         method="GET",
-                        authenticator=TokenAuthenticator(config["apikey"]),
+                        authenticator=authenticator,
                         request_parameters={},
                     ),
                     extractor=SendGridExtractor("results"),
@@ -67,7 +68,7 @@ class SendgridSource(ConfigurableConnector):
                         url_base="https://api.sendgrid.com/v3/",
                         path="suppression/bounces",
                         method="GET",
-                        authenticator=TokenAuthenticator(config["apikey"]),
+                        authenticator=authenticator,
                         request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
                     ),
                     extractor=SendGridExtractor(None),
@@ -80,7 +81,7 @@ class SendgridSource(ConfigurableConnector):
                         None,
                         config,
                     ),
-                    state=DictState("created", "{{ last_record['created'] }}"),
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
                 ),
             ),
         ]

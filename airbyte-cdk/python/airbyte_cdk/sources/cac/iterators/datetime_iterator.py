@@ -19,15 +19,10 @@ class DatetimeIterator(Iterator):
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
         self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config))
-        print(f"start_timeHERE: {self._start_time}: {type(self._start_time)}")
         if not self._start_time:
-            print("start time was none!")
             self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config))
         self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config))
-        print(f"end_time1: {self._end_time}: {type(self._end_time)}")
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
-        print(f"end_time2: {self._end_time}: {type(self._end_time)}")
-        print(f"start_time: {self._start_time}: {type(self._start_time)}")
         self._start_time = min(self._start_time, self._end_time)
         self._step = parse_timedelta(step)
         self._vars = vars

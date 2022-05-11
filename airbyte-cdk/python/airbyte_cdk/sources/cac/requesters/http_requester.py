@@ -18,8 +18,6 @@ class HttpRequester(Requester):
         self._vars = vars
         self._config = config
         self._authenticator = authenticator  # LowCodeComponentFactory().create_component(authenticator, vars, config)
-        # print(f"authenticator: {self._authenticator.auth_method}")
-        # print(f"authenticator: {self._authenticator.auth_header}")
         self._url_base = url_base
         self._path = path
         self._method = method

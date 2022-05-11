@@ -142,9 +142,6 @@ class AbstractSource(Source, ABC):
             stream_instance.page_size = internal_config.page_size
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
-        print(f"configured_stream.sync_mode: {configured_stream.sync_mode}")
-        print(f"stream_instance.supports_incremental: {stream_instance.supports_incremental}")
-        print(f"use_incremental: {use_incremental}")
         if use_incremental:
             record_iterator = self._read_incremental(
                 logger,
