@@ -25,13 +25,21 @@ POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 # metrics-reporter are exception due to wrong artifact naming 
 for workdir in "${projectDir[@]}"
   do
-    if [ $workdir = "metrics/reporter" ]; then
-      artifactName="metrics-reporter" 
-    elif [ $workdir = "config/init" ]; then
+    case $workdir in
+    "metrics/reporter")
+      artifactName="metrics-reporter"
+      ;;
+    "config/init")
       artifactName="init"
-    else
+      ;;
+    "workers")
+      artifactName="worker"
+      ;;
+    *)
       artifactName=${workdir%/*}
-    fi
+      ;;
+    esac
+
     docker buildx create --use --name $artifactName &&      \
     docker buildx build -t "airbyte/$artifactName:$VERSION" \
       --platform linux/amd64,linux/arm64                    \
