@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
-import dateutil.parser
+import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test import BaseTest
@@ -78,16 +78,16 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         yield record_value, state_value, stream_name
 
 
-def compare_cursor_with_threshold(record_value, state_value, threshold_days) -> bool:
+def compare_cursor_with_threshold(record_value, state_value, threshold_days: int) -> bool:
     """
     Checks if the record's cursor value is older or equal to the state cursor value.
 
     If the threshold_days option is set, the values will be converted to dates so that the time-based offset can be applied.
-    :raises dateutil.parser._parser.ParserError: if threshold_days is passed with non-date cursor values.
+    :raises: dateutil.parser._parser.ParserError: if threshold_days is passed with non-date cursor values.
     """
     if threshold_days:
-        record_date_value = record_value if isinstance(record_value, datetime) else dateutil.parser.parse(record_value)
-        state_date_value = state_value if isinstance(state_value, datetime) else dateutil.parser.parse(state_value)
+        record_date_value = record_value if isinstance(record_value, datetime) else pendulum.parse(record_value)
+        state_date_value = state_value if isinstance(state_value, datetime) else pendulum.parse(state_value)
 
         return record_date_value >= (state_date_value - timedelta(days=threshold_days))
 
