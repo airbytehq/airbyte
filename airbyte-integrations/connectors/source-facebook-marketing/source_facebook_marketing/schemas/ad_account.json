@@ -127,20 +127,6 @@
     "funding_source": {
       "type": ["null", "number"]
     },
-    "funding_source_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "display_string": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
     "has_advertiser_opted_in_odax": {
       "type": ["null", "boolean"]
     },

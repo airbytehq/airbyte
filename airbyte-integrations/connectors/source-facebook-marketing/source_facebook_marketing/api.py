@@ -151,10 +151,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
-        response = super().call(method, path, params, headers, files, url_override, api_version)
-        self._update_insights_throttle_limit(response)
-        self._handle_call_rate_limit(response, params)
-        return response
+        try:
+            response = super().call(method, path, params, headers, files, url_override, api_version)
+            self._update_insights_throttle_limit(response)
+            self._handle_call_rate_limit(response, params)
+            return response
+        except Exception as err:
+            logger.error(f"Faced error in request {method} {path} {params} {headers}")
+            raise err
 
 
 class API:
