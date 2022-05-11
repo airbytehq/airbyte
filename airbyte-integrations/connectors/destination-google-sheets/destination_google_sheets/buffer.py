@@ -3,14 +3,14 @@
 #
 
 
-from typing import Any, List, Mapping
+from typing import Any, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 
 
 class WriteBufferMixin:
-    
+
     # Default instance of AirbyteLogger
     logger = AirbyteLogger()
     # interval after which the records_buffer should be cleaned up for selected stream
@@ -21,7 +21,7 @@ class WriteBufferMixin:
         self.records_buffer = {}
         # Placeholder for streams metadata
         self.stream_info = {}
-        
+
     @property
     def default_missing(self) -> str:
         """
@@ -40,7 +40,7 @@ class WriteBufferMixin:
         stream = configured_stream.stream
         self.records_buffer[stream.name] = []
         self.stream_info[stream.name] = {
-            "headers": sorted(list(stream.json_schema.get("properties").keys())), 
+            "headers": sorted(list(stream.json_schema.get("properties").keys())),
             "is_set": False,
         }
 
@@ -52,7 +52,7 @@ class WriteBufferMixin:
         2) coerces normalized record to str
         3) gets values as list of record values from record mapping.
         """
-        
+
         norm_record = self._normalize_record(stream_name, record)
         norm_values = list(map(str, norm_record.values()))
         self.records_buffer[stream_name].append(norm_values)

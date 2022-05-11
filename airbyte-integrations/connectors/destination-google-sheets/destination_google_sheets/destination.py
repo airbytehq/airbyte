@@ -14,6 +14,7 @@ from .helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalo
 from .spreadsheet import GoogleSheets
 from .writer import GoogleSheetsWriter
 
+
 class DestinationGoogleSheets(Destination):
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -48,17 +49,17 @@ class DestinationGoogleSheets(Destination):
         client = GoogleSheetsClient(config).authorize()
         spreadsheet = GoogleSheets(client, spreadsheet_id)
         writer = GoogleSheetsWriter(spreadsheet)
-        
+
         # get streams from catalog up to the limit
         configured_streams = get_streams_from_catalog(configured_catalog)
         # getting stream names explicitly
         configured_stream_names = [stream.stream.name for stream in configured_streams]
-        
+
         for configured_stream in configured_streams:
             writer.init_buffer_stream(configured_stream)
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
-        
+
         for message in input_messages:
             if message.type == Type.RECORD:
                 record = message.record

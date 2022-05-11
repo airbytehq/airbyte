@@ -51,9 +51,9 @@ def test_get_spreadsheet_id(config: dict = TEST_CONFIG):
     expected = "1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50"
     spreadsheet_id = get_spreadsheet_id(config.get("spreadsheet_id"))
     assert spreadsheet_id == expected
-    
+
+
 def test_get_streams_from_catalog():
     limit_count_streams = 2
     actual = get_streams_from_catalog(TEST_CATALOG, limit_count_streams)
     assert len(actual) == limit_count_streams
-    

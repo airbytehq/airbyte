@@ -38,7 +38,7 @@ class GoogleSheetsWriter(WriteBufferMixin):
         2) writes it to the target worksheet
         3) cleans-up the records_buffer belonging to input stream
         """
-        
+
         if len(self.records_buffer[stream_name]) == self.flush_interval:
             self.write_from_queue(stream_name)
             self.clear_buffer(stream_name)

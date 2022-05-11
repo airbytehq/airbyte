@@ -54,7 +54,7 @@ class GoogleSheets:
         Returns: Mapping with column name and it's index.
             {"id": 1, "name": 2, ..., "other": 99}
         """
-        header = stream[1] # get the first row
+        header = stream[1]  # get the first row
         col_index = {}
         for i, col in enumerate(header):
             col_index[col] = i + 1
@@ -65,13 +65,13 @@ class GoogleSheets:
         Finds the duplicated records inside of target worksheet.
         Returns: List of indexes of rows to remove from target worksheet.
             [1, 4, 5, ..., 99]
-        """        
+        """
         rows_unique_values, rows_to_delete = {}, []
         pk_col_index = self.index_cols(stream)[primary_key]
-        
+
         # get all values except 0, because it's a header value
-        pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  
-        
+        pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]
+
         for i, row_value in enumerate(pk_col_values, 2):
             if row_value not in rows_unique_values:
                 rows_unique_values[row_value] = None
@@ -80,13 +80,13 @@ class GoogleSheets:
 
         # reverse the order of the list
         rows_to_delete.reverse()
-        
+
         return rows_to_delete
 
     def remove_duplicates(self, stream: Worksheet, rows_list: list):
         """
         Removes duplicated rows, provided by `rows_list` as list of indexes.
-        
+
         We are working with delete operation in offline mode, to decrease the number of API calls.
         1) Unlink the spreadsheet (make it for offline use)
         2) Perform delete operation and update the actual row index

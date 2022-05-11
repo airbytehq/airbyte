@@ -56,9 +56,9 @@ def test_check():
         ('{"type": "LOG", "log": {"level": "INFO", "message": "No duplicated records found for stream: stream_1"}}', True),
     ],
     ids=[
-        "token needs refresh", 
-        "token refreshed", 
-        "writing stream", 
+        "token needs refresh",
+        "token refreshed",
+        "writing stream",
         "no dups found for stream",
     ],
 )

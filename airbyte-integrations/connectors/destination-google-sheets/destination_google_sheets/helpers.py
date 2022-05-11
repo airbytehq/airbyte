@@ -11,21 +11,24 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 
-
 STREAMS_COUNT_LIMIT = 200
 
 
 logger = AirbyteLogger()
+
 
 def get_spreadsheet_id(id_or_url: str) -> str:
     if re.match(r"(http://)|(https://)", id_or_url):
         m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
         if m.group(2):
             return m.group(2)
-        else: 
-            logger.error("The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details.")
+        else:
+            logger.error(
+                "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details."
+            )
     else:
         return id_or_url
+
 
 def get_streams_from_catalog(catalog: ConfiguredAirbyteCatalog, limit: int = STREAMS_COUNT_LIMIT):
     streams_count = len(catalog.streams)
@@ -71,5 +74,5 @@ class ConnectionTest:
         except WorksheetNotFound:
             result: bool = self.check_values(self.populate_test_wks(self.add_test_wks()))
 
-        self.remove_test_wks()          
+        self.remove_test_wks()
         return result
