@@ -132,6 +132,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
 
+      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+      // This catches cases where the temporal workflow was terminated and restarted while a job was
+      // actively running, leaving that job in an orphaned and non-terminal state.
+      ensureCleanJobState(connectionId);
+
       // workflow state is only ever set in test cases. for production cases, it will always be null.
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
@@ -439,7 +444,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return scheduleRetrieverOutput.getTimeToWait();
   }
 
-  private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
+  private void ensureCleanJobState(final UUID connectionId) {
     final int ensureCleanJobStateVersion =
         Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
 
@@ -449,28 +454,18 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     runMandatoryActivity(jobCreationAndStatusUpdateActivity::failNonTerminalJobs, new FailNonTerminalJobsInput(
-        connectionUpdaterInput.getConnectionId(),
+        connectionId,
         "Failing job in order to start from clean job state for new temporal workflow run."));
   }
 
   /**
    * Creates a new job if it is not present in the input. If the jobId is specified in the input of
-   * the connectionManagerWorkflow, we will return it. Otherwise we will ensure there are no other
-   * non-terminal jobs, and create a job and return its id.
+   * the connectionManagerWorkflow, we will return it. Otherwise we will  create a job and return its id.
    */
   private Long getOrCreateJobId(final ConnectionUpdaterInput connectionUpdaterInput) {
     if (connectionUpdaterInput.getJobId() != null) {
       return connectionUpdaterInput.getJobId();
     }
-
-    // Clean the job state by failing any jobs for this connection that are currently non-terminal.
-    // This catches cases where the temporal workflow was terminated and restarted while a job was
-    // actively running, leaving that jobs in an orphaned and non-terminal state.
-    // This logic is placed here instead of at the beginning of the temporal workflow in order to
-    // guarantee that we are always in a clean job state before attempting to create a new job. Without
-    // this here, we could end up in a state where we try to repeatedly create a job which fails due to
-    // there already being a running job for this connection.
-    ensureCleanJobState(connectionUpdaterInput);
 
     final JobCreationOutput jobCreationOutput =
         runMandatoryActivityWithOutput(
