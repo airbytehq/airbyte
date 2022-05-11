@@ -66,8 +66,8 @@ jobs:
 #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
 #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 #          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-#          # 80 gb disk
-#          ec2-image-id: ami-0d648081937c75a73
+#          # 100 gb disk
+#          ec2-image-id: ami-0f23be2f917510c26
 #  bump-build-test-connector:
 #    needs: start-bump-build-test-connector-runner
 #    runs-on: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
