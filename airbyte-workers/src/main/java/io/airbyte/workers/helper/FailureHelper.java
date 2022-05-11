@@ -40,6 +40,7 @@ public class FailureHelper {
         .withInternalMessage(m.getError().getInternalMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
+        .withFailureType(m.getError().getFailureType())
         .withMetadata(traceMessageMetadata(jobId, attemptNumber));
   }
 
