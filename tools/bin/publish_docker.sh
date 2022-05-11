@@ -27,6 +27,8 @@ for workdir in "${projectDir[@]}"
   do
     if [ $workdir = "metrics/reporter" ]; then
       artifactName="metrics-reporter" 
+    elif [ $workdir = "config/init" ]; then
+      artifactName="init"
     else
       artifactName=${workdir%/*}
     fi
