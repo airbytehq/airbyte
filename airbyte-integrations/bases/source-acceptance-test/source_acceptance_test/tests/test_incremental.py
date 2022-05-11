@@ -2,15 +2,17 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
+import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test import BaseTest
-from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filter_output, incremental_only_catalog
+from source_acceptance_test.config import IncrementalConfig
+from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
 
 
 @pytest.fixture(name="future_state_path")
@@ -76,9 +78,41 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         yield record_value, state_value, stream_name
 
 
+def compare_cursor_with_threshold(record_value, state_value, threshold_days: int) -> bool:
+    """
+    Checks if the record's cursor value is older or equal to the state cursor value.
+
+    If the threshold_days option is set, the values will be converted to dates so that the time-based offset can be applied.
+    :raises: pendulum.parsing.exceptions.ParserError: if threshold_days is passed with non-date cursor values.
+    """
+    if threshold_days:
+
+        def _parse_date_value(value) -> datetime:
+            if isinstance(value, datetime):
+                return value
+            if isinstance(value, (int, float)):
+                return pendulum.from_timestamp(value / 1000)
+            return pendulum.parse(value)
+
+        record_date_value = _parse_date_value(record_value)
+        state_date_value = _parse_date_value(state_value)
+
+        return record_date_value >= (state_date_value - pendulum.duration(days=threshold_days))
+
+    return record_value >= state_value
+
+
 @pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
-    def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
+    def test_two_sequential_reads(
+        self,
+        inputs: IncrementalConfig,
+        connector_config: SecretDict,
+        configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
+        cursor_paths: dict[str, list[str]],
+        docker_runner: ConnectorRunner,
+    ):
+        threshold_days = getattr(inputs, "threshold_days") or 0
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
 
         output = docker_runner.call_read(connector_config, configured_catalog_for_incremental)
@@ -98,8 +132,8 @@ class TestIncremental(BaseTest):
         records_2 = filter_output(output, type_=Type.RECORD)
 
         for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
-            assert (
-                record_value >= state_value
+            assert compare_cursor_with_threshold(
+                record_value, state_value, threshold_days
             ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
 
     def test_state_with_abnormally_large_values(self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner):
