@@ -514,11 +514,20 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  void testMigrationMetadata() throws IOException {
+  void testSecretMigrationMetadata() throws IOException {
     boolean isMigrated = jobPersistence.isSecretMigrated();
     assertFalse(isMigrated);
     jobPersistence.setSecretMigrationDone();
     isMigrated = jobPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
+  }
+
+  @Test
+  void testSchedulerMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSchedulerMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSchedulerMigrationDone();
+    isMigrated = jobPersistence.isSchedulerMigrated();
     assertTrue(isMigrated);
   }
 

@@ -233,6 +233,8 @@ public class ServerApp implements ServerRunnable {
     final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
+    migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -260,14 +262,23 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway);
   }
 
-  private static void migrateExistingConnection(final ConfigRepository configRepository, final EventRunner eventRunner)
+  private static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
+                                                                    final JobPersistence jobPersistence,
+                                                                    final EventRunner eventRunner)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    // Skip the migration if it was already performed, to save on resources/startup time
+    if (jobPersistence.isSchedulerMigrated()) {
+      LOGGER.info("Migration to temporal scheduler has already been performed");
+      return;
+    }
+
     LOGGER.info("Start migration to the new scheduler...");
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
             .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
     eventRunner.migrateSyncIfNeeded(connectionIds);
+    jobPersistence.setSchedulerMigrationDone();
     LOGGER.info("Done migrating to the new scheduler...");
   }
 
