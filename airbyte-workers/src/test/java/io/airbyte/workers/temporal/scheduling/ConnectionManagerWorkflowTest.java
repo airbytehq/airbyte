@@ -144,7 +144,7 @@ public class ConnectionManagerWorkflowTest {
                 new IntegrationLauncherConfig(),
                 new StandardSyncInput()));
 
-    Mockito.when(mCheckConnectionActivity.check(Mockito.any()))
+    Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
         .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("check worked"));
 
     Mockito.when(mAutoDisableConnectionActivity.autoDisableFailingConnection(Mockito.any()))
@@ -863,7 +863,7 @@ public class ConnectionManagerWorkflowTest {
           .thenReturn(new JobCreationOutput(JOB_ID));
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
           .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
-      Mockito.when(mCheckConnectionActivity.check(Mockito.any()))
+      Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
           .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope"));
 
       testEnv.start();
@@ -903,7 +903,7 @@ public class ConnectionManagerWorkflowTest {
           .thenReturn(new JobCreationOutput(JOB_ID));
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
           .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
-      Mockito.when(mCheckConnectionActivity.check(Mockito.any()))
+      Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
           .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("all good")) // First call (source) succeeds
           .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")); // Second call (destination) fails
 

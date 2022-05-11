@@ -29,6 +29,6 @@ public interface CheckConnectionActivity {
   }
 
   @ActivityMethod
-  StandardCheckConnectionOutput check(CheckConnectionInput input);
+  StandardCheckConnectionOutput run(CheckConnectionInput input);
 
 }

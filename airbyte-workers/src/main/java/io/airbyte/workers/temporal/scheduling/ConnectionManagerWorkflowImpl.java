@@ -14,6 +14,7 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
@@ -327,25 +328,31 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         .withConnectionConfiguration(jobInputs.getSyncInput().getSourceConfiguration());
     final CheckConnectionInput checkSourceInput =
         new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getSourceLauncherConfig(), sourceConfiguration);
-    final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::check, checkSourceInput);
-
-    if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
-      log.info("SOURCE CHECK: Failed");
-      return checkFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobInputs.getJobRunConfig(), sourceCheckResponse);
-    } else {
-      log.info("SOURCE CHECK: Successful");
+    final String launchSourceDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
+    if (launchSourceDockerImage != WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) {
+      final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+      if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
+        log.info("SOURCE CHECK: Failed");
+        return checkFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobInputs.getJobRunConfig(), sourceCheckResponse);
+      } else {
+        log.info("SOURCE CHECK: Successful");
+      }
     }
 
     final StandardCheckConnectionInput destinationConfiguration =
         new StandardCheckConnectionInput().withConnectionConfiguration(jobInputs.getSyncInput().getDestinationConfiguration());
     final CheckConnectionInput checkDestinationInput =
         new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getDestinationLauncherConfig(), destinationConfiguration);
-    final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::check, checkDestinationInput);
-    if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
-      log.info("DESTINATION CHECK: Failed");
-      return checkFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobInputs.getJobRunConfig(), destinationCheckResponse);
-    } else {
-      log.info("DESTINATION CHECK: Successful");
+    final String launchDestinationDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
+
+    if (launchDestinationDockerImage != WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) {
+      final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+      if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
+        log.info("DESTINATION CHECK: Failed");
+        return checkFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobInputs.getJobRunConfig(), destinationCheckResponse);
+      } else {
+        log.info("DESTINATION CHECK: Successful");
+      }
     }
 
     // return no failure response if the CHECKS succeed
