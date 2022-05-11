@@ -37,7 +37,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -324,9 +323,7 @@ public class BootloaderAppTest {
   }
 
   private void closeDataSource(final DataSource dataSource) throws IOException {
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
 }

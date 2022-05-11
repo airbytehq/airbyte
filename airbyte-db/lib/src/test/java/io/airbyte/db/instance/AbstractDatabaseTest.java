@@ -6,8 +6,8 @@ package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
-import java.io.Closeable;
 import java.io.IOException;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
@@ -50,9 +50,7 @@ public abstract class AbstractDatabaseTest {
   @AfterEach
   void tearDown() throws IOException {
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
   /**
