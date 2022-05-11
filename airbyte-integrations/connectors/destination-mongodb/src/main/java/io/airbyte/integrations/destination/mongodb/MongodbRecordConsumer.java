@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +117,8 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes()).toString();
+      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
+          Charset.defaultCharset())).toString();
       final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
       newDocument.put(AIRBYTE_DATA_HASH, newDocumentDataHashCode);

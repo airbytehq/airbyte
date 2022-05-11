@@ -6,6 +6,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.google.api.client.util.Preconditions;
 import java.util.Objects;
+import lombok.ToString;
 
 /**
  * A secret coordinate represents a specific secret at a specific version stored within a
@@ -25,6 +26,7 @@ import java.util.Objects;
  * This coordinate system was designed to work well with Google Secrets Manager but should work with
  * other secret storage backends as well.
  */
+@ToString
 public class SecretCoordinate {
 
   private final String coordinateBase;

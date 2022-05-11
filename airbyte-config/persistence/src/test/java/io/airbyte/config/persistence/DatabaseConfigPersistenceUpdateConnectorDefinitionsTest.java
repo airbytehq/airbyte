@@ -12,10 +12,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -23,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,17 +43,25 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
     configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+        new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
   @AfterAll
-  public static void tearDown() throws Exception {
-    database.close();
+  public static void tearDown() throws IOException {
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   @BeforeEach
