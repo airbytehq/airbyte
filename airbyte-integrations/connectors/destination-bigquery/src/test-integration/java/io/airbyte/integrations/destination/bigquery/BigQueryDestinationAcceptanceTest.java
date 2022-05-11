@@ -4,13 +4,12 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CREDENTIALS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
@@ -29,10 +28,9 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -210,7 +208,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CREDENTIALS, credentialsJson.get(CREDENTIALS))
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
@@ -219,14 +217,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   protected void setupBigQuery(final JsonNode credentialsJson) throws IOException {
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
-
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    final BigQuery bigquery = BigQueryCredentialsFactory.createCredentialsClient(credentialsJson);
 
     final DatasetInfo datasetInfo =
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();

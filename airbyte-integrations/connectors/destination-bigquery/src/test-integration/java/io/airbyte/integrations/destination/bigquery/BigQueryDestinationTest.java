@@ -33,6 +33,8 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -136,13 +138,7 @@ class BigQueryDestinationTest {
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(projectId)
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    bigquery = BigQueryCredentialsFactory.createCredentialsClient(credentialsJson, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
 
     final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
