@@ -5,6 +5,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,7 @@ public class AirbyteTraceMessageUtilityTest {
 
   @BeforeEach
   public void setUpOut() {
-    System.setOut(new PrintStream(outContent));
+    System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
@@ -30,19 +31,19 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testEmitSystemErrorTrace() {
     AirbyteTraceMessageUtility.emitSystemErrorTrace(Mockito.mock(RuntimeException.class), "this is a system error");
-    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString()));
+    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)));
   }
 
   @Test
   void testEmitConfigErrorTrace() {
     AirbyteTraceMessageUtility.emitConfigErrorTrace(Mockito.mock(RuntimeException.class), "this is a config error");
-    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString()));
+    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)));
   }
 
   @Test
   void testEmitErrorTrace() {
     AirbyteTraceMessageUtility.emitErrorTrace(Mockito.mock(RuntimeException.class), "this is an error", FailureType.SYSTEM_ERROR);
-    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString()));
+    assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)));
   }
 
   @AfterEach

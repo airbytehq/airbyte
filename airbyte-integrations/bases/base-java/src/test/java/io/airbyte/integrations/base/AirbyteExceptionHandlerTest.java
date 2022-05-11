@@ -9,6 +9,7 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import lombok.SneakyThrows;
 import org.junit.After;
 import org.junit.Before;
@@ -24,7 +25,7 @@ public class AirbyteExceptionHandlerTest {
 
   @Before
   public void setUpOut() {
-    System.setOut(new PrintStream(outContent));
+    System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
   @Test
@@ -51,7 +52,7 @@ public class AirbyteExceptionHandlerTest {
     revertOut();
 
     // now we turn the std out from the thread into json and check it's the expected TRACE message
-    JsonNode traceMsgJson = Jsons.deserialize(outContent.toString());
+    JsonNode traceMsgJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).debug(traceMsgJson.toString());
     Assertions.assertEquals("TRACE", traceMsgJson.get("type").asText());
     Assertions.assertEquals("ERROR", traceMsgJson.get("trace").get("type").asText());
