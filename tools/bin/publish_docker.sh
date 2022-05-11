@@ -37,7 +37,7 @@ for workdir in "${projectDir[@]}"
       --build-arg ALPINE_IMAGE=$ALPINE_IMAGE                \
       --build-arg POSTGRES_IMAGE=$POSTGRES_IMAGE            \
       --build-arg JDK_VERSION=$JDK_VERSION                  \
-      --push                                                \
+      #--push                                                \
       airbyte-$workdir/build/docker
     docker buildx rm $artifactName
 done

@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
                           gnupg-agent \
                           software-properties-common
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+# arch var used to detect architecture of container. Architecture should be spcified to get proper binaries from repo.
+RUN arch=$(dpkg --print-architecture) && \
        add-apt-repository \
        "deb [arch=${arch}] https://download.docker.com/linux/debian \
        $(lsb_release -cs) stable"

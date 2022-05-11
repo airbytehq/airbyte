@@ -28,6 +28,7 @@ VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
 
 # Container should be running before build starts
+# It generates binaries to build images for different CPU architecture
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 VERSION=$NEW_VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
