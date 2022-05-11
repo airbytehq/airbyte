@@ -1,4 +1,5 @@
 #
+
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
@@ -113,6 +114,15 @@ class Locations(HydroVuStream):
         should return "customers". Required.
         """
         return "locations/list"
+    
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        try:
+            r = next(self._pages)
+
+            return r
+        except StopIteration:
+            pass
 
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -128,18 +138,11 @@ class Locations(HydroVuStream):
         yield from (format_record(r) for r in response.json())
 
 
-#class Readings(HydroVuStream, IncrementalMixin):
 class Readings(HydroVuStream):
     primary_key = 'id'
-    #cursor_field = 'timestamp'
-    #cursor_field = {}
-    #cursor_field = "date"
-    #primary_key = "date"
     cursor_field = "latest_timestamp_for_each_location_param_id_combo"
 
-
     def __init__(self, auth, *args, **kw):
-    #def __init__(self, auth, stream_state: Mapping[str, Any], *args, **kw):
         super(Readings, self).__init__(*args, **kw)
 
         locations = Locations(authenticator=auth)
@@ -148,21 +151,9 @@ class Readings(HydroVuStream):
 
         self._pages = (location for location in sorted(location['id'] for location in records))
 
-        #if not self._cursor_value:
-        #    print ("NEW CURSOR VALUE")
-        
-        #self._cursor_value = {}
-
-        #start_date = "bbb"
-        start_date = "ddd"
-
-        self.start_date = start_date
         self._cursor_value = None
 
         self.location_and_param_id_latest_timestamps = {} 
-
-        print ("Finish Init")
-
 
 
     def path(
@@ -215,164 +206,37 @@ class Readings(HydroVuStream):
     
     @property
     def state(self) -> Mapping[str, Any]:
-        print ("2222222222222222222222%%%%%%%%%%")
-        print (self)
-        print ("2222222222222222222222%%%%%%%%%%")
-
 
         return self.location_and_param_id_latest_timestamps
-
-        '''
-        if self._cursor_value:
-            print ("CURSOR VALUE EXISTS")
-
-            print (self._cursor_value)
-            print ("55555555552222222222222222222222%%%%%%%%%%")
-
-            #return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
-            return {self.cursor_field: self._cursor_value}
-            #return
-
-        else:
-            print ("CURSOR VALUE DOES NOT EXISTS")
-            #return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
-            return {self.cursor_field: self.start_date}
-            #return
-    
-        '''
-
-
-
-
-
-        '''
-        for key, value in stream_state.items():
-            print (key)
-            print (value)
-
-            print ("33333333333##############")
-        '''
-
-        '''
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
-        else:
-            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
-        '''
-
 
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-       #self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
-       #self._cursor_value = "ccc"
 
-       print ("Setter")
        self._cursor_value = self.cursor_field
 
-       print ("self._cursor_value")
-       print (self._cursor_value)
-       print ("WWWWWWWWWWWWWWWWWWWWWW")
-       print ("self.cursor_field")
-       print (self.cursor_field)
-       print ("3333333333WWWWWWWWWWWWWWWWWWWWWW")
 
-    '''
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        #if current_stream_state is not None and "date" in current_stream_state:
-        if current_stream_state is not None and "a" in current_stream_state:
-            #current_parsed_date = datetime.strptime(current_stream_state["date"], "%Y-%m-%d")
-            #latest_record_date = datetime.strptime(latest_record["date"], "%Y-%m-%d")
-            #return {"date": max(current_parsed_date, latest_record_date).strftime("%Y-%m-%d")}
-            
-            print ("hi!!!!!!!!!!!")
-
-            return
-
-        else:
-            print ("2222hi!!!!!!!!!!!")
-            return
-            #return {"date": self.start_date.strftime("%Y-%m-%d")}
-    '''
-
-
-    #def update_state(state):
-    #def update_state(self, state):
+    # Original update state method but not currently used. Leave in here in case needed in future.
     def update_state(self):
         "sends an update of the state variable to stdout"
-        #output_message = {"type":"STATE","state":{"data":state}}
         output_message = {"type":"STATE","state":{"data":self.location_and_param_id_latest_timestamps}}
         
         print(json.dumps(output_message))
-        #print(output_message)
 
 
     def parse_response(self, 
         response: requests.Response, 
         stream_state: Mapping[str, Any],
-        #stream_state,
         **kwargs) -> Iterable[Mapping]:
-
-        
-        print ("self._cursor_value")
-        print (self._cursor_value)
-        print ("zzzzzzzzzzzzzzz")
 
 
         # parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
-
-
-
-
-        if stream_state is not None:
-
-            a = 1
-            print ("STREAM STATE EXISTS-------------------------------")
-            #print (stream_state.get["a"])
-
-            #stream_state['a'] = 1
-            #stream_state.cursor = 1
-            #print (stream_state['a'])
-            print (stream_state)
-
-            for key, value in stream_state.items():
-                print (key)
-                print (value)
-
-            print ("##############")
-
-        else:
-            #stream_state['a'] = 1
-            a = 1
-
-            print ("STREAM STATE DOES NOT EXISTS-------------------------------")
-            #print (stream_state['a'])
-            print (stream_state)
-             
 
         #self.update_state(stream_state)
 
         # Check to see if self.location_and_param_id_latest_timestamps is an empty dictionary
         if not bool(self.location_and_param_id_latest_timestamps):
-            print ("Empty dict")
-
             self.location_and_param_id_latest_timestamps = stream_state
-        else:
-
-            print ("Not Empty dict")
-
-
-        #print ("111111111RRRRRRRRRRRRRRR")
-        #print(self.location_and_param_id_latest_timestamps)
-
-        print ("RRRRRRRRRRRRRRR")
-        print ("self.location_and_param_id_latest_timestamps")
-        print (self.location_and_param_id_latest_timestamps)
-        print ("22222RRRRRRRRRRRRRRR")
-
-
 
         response_json = response.json() 
 
@@ -385,30 +249,8 @@ class Readings(HydroVuStream):
         parameters = r['parameters']
 
 
-
-        #self._cursor_value[str(locationId)] = {}
-
-        print ("AAAAAAAAAAAAA")
-        print (locationId)
-
-
-
-        
-
-
         if str(locationId) not in self.location_and_param_id_latest_timestamps.keys():
-            print ("NO LOCATION ID")
             self.location_and_param_id_latest_timestamps[str(locationId)] = {}
-
-        else:
-            print ("YES LOCATION ID")
-
-
-        #self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = timestamp
-
-
-
-
 
         for param in parameters:
 
@@ -420,9 +262,6 @@ class Readings(HydroVuStream):
 
             readings = param['readings']
 
-            print ("parameterId")
-            print (parameterId)
-
             previous_timestamp = 0
 
             for reading in readings:
@@ -431,24 +270,10 @@ class Readings(HydroVuStream):
 
                 try:
                     cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
-                    print ("cursor_timestamp exists")
                 except:
                     cursor_timestamp = 0
 
-                    print ("cursor_timestamp not exists")
-                
-
                 if timestamp > cursor_timestamp:
-                    print ("greater than cursor_timestamp")
-
-
-                
-
-                    print ("timestamp")
-                    print (timestamp)
-
-
-
 
                     value = reading['value']
 
@@ -464,89 +289,20 @@ class Readings(HydroVuStream):
                     # More efficient way to do this???
                     flat_readings_list.append(flat_reading)
 
-                    #if self._cursor_value:
-                    #    self._cursor_value[locationId][parameterId] = timestamp
-
-
-
                     # Check to ensure that cursor_value is set to the latest timestamp.
                     # The records thus far have been read in sequential order by increasing
                     # timestamps, but this will ensure the latest timestamp if they are read
                     # out of order from the API.
                     if timestamp > previous_timestamp:
-                        #self._cursor_value[str(locationId)][str(parameterId)] = timestamp
                         self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = timestamp
 
                     else:
-                        print ("WARNING TIMESTAMP IS NOT GREATER THAN PREVIOUS TIMESTAMP")   
-                        #self._cursor_value[str(locationId)][str(parameterId)] = previous_timestamp
                         self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = previous_timestamp
 
-
                     previous_timestamp = timestamp
-
-
-                    #self._cursor_value[str(locationId)] = timestamp
                 
-                else:
-                    print ("less than cursor_timestamp")
-
-
-        #self.update_state(stream_state)
-        
-        #self.update_state()
-
-
-        print ("nest dict")
-        print ("--------------------------------")
-        #for key, value in self._cursor_value.items():
-        for key, value in self.location_and_param_id_latest_timestamps.items():
-            print (str(key) + " " + str(value))
-        print ("--------------------------------")
-
-        '''
-        print ("--------------------------------")
-        for key, value in self._cursor_value.items():
-            print ("*************")
-            for key2, value2 in value.items():
-            
-               print (str(key) + " " + str(key2) + " "  + str(value2))
-        print ("--------------------------------")
-        '''
-
-
-        '''
-        print ("--------------------------------")
-        for key in self._cursor_value:
-            print (str(key))
-        print ("--------------------------------")
-        '''
-
-
 
         yield from flat_readings_list
-
-
-    '''
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-
-
-        #if current_stream_state is not None and "date" in current_stream_state:
-        if current_stream_state is not None:
-
-
-            current_parsed_date = datetime.strptime(current_stream_state["date"], "%Y-%m-%d")
-            latest_record_date = datetime.strptime(latest_record["date"], "%Y-%m-%d")
-            return {"date": max(current_parsed_date, latest_record_date).strftime("%Y-%m-%d")}
-        else:
-
-
-            return {"date": self.start_date.strftime("%Y-%m-%d")}
-    '''
-
-
 
 
 class myOauth2Authenticator(Oauth2Authenticator):
