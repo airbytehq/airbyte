@@ -40,6 +40,7 @@ class DatetimeIterator(Iterator):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
+
         cursor_value = self._interpolation.eval(self._cursor_value, self._vars, self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):

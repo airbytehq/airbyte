@@ -73,7 +73,8 @@ class SendgridSource(ConfigurableConnector):
                         method="GET",
                         authenticator=authenticator,
                         request_parameters_provider=InterpolatedRequestParameterProvider(
-                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"}, config=config
+                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}", "limit": 50},
+                            config=config,
                         ),
                     ),
                     extractor=SendGridExtractor(None),
