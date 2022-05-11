@@ -82,7 +82,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       return metaData;
     } catch (SQLException e) {
       String sqlState = null;
-      if (e.getSQLState() != null){
+      if (e.getSQLState() != null) {
         sqlState = e.getSQLState();
       } else {
         SQLException sqlException = (SQLException) e.getCause();

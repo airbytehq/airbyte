@@ -10,9 +10,9 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class MssqlErrorMessage implements ErrorMessage {
+public class MssqlErrorMessage extends ErrorMessage {
 
-  static {
+  {
     CONSTANTS.put("S0001", INCORRECT_USERNAME_OR_PASSWORD);
     CONSTANTS.put("08S01", INCORRECT_HOST_OR_PORT);
     CONSTANTS.put("S0001", INCORRECT_HOST_OR_PORT);
