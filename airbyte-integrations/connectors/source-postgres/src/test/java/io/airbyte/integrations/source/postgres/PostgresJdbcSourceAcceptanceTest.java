@@ -4,9 +4,14 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_SCHEMA_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -14,6 +19,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
@@ -91,4 +97,43 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    ((ObjectNode) config).put("password", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+      ((ObjectNode) config).put("username", "fake");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+      assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+      ((ObjectNode) config).put("host", "localhost2");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+      assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() throws Exception {
+      ((ObjectNode) config).put("port", "0000");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+      assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
+    }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
+    ((ObjectNode) config).put("database", "wrongdatabase");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
+  }
 }

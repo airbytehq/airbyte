@@ -81,8 +81,14 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       conn.close();
       return metaData;
     } catch (SQLException e) {
-      SQLException sqlException = (SQLException) e.getCause();
-      throw new ConnectionErrorException(sqlException.getSQLState(), e.getMessage());
+      String sqlState = null;
+      if (e.getSQLState() != null){
+        sqlState = e.getSQLState();
+      } else {
+        SQLException sqlException = (SQLException) e.getCause();
+        sqlState = sqlException.getSQLState();
+      }
+      throw new ConnectionErrorException(sqlState, e.getMessage());
     }
   }
 

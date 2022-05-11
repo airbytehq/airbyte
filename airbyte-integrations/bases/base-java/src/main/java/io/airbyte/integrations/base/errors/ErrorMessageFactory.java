@@ -10,6 +10,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.REDSHIFT;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.SNOWFLAKE;
 
 import io.airbyte.integrations.base.errors.messages.DefaultErrorMessage;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
@@ -19,6 +20,7 @@ import io.airbyte.integrations.base.errors.messages.MssqlErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MysqlErrorMessage;
 import io.airbyte.integrations.base.errors.messages.PostgresErrorMessage;
 import io.airbyte.integrations.base.errors.messages.RedshiftErrorMessage;
+import io.airbyte.integrations.base.errors.messages.SnowflakeErrorMessage;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class ErrorMessageFactory {
       MONGO, new MongoDbErrorMessage(),
       REDSHIFT, new RedshiftErrorMessage(),
       GCS, new GCSErrorMessage(),
+      SNOWFLAKE, new SnowflakeErrorMessage(),
       ConnectorType.DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorType type) {
