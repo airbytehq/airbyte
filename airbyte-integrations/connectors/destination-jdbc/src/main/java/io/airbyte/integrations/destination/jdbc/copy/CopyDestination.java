@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
@@ -12,6 +13,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import java.io.IOException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,12 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the warehouse with the provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final IOException e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 
