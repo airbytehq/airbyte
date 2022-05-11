@@ -166,9 +166,17 @@ class API:
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
+    
+    def check(self):
+        """Make a cheap call to a single AdAccount to make sure the API credentials are fine"""
+        try:
+            fb_business.Business(fbid=self._business_id, api=self.api).get_client_ad_accounts(params={"limit": 1})[0]
+        except FacebookRequestError as exc:
+            raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+
     @cached_property
     def accounts(self) -> List[AdAccount]:
         try:
-            return list(fb_business.Business(fbid=self._business_id, api=self.api).get_client_ad_accounts())
+            return list(fb_business.Business(fbid=self._business_id, api=self.api).get_client_ad_accounts(params={"limit": 5}))
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
