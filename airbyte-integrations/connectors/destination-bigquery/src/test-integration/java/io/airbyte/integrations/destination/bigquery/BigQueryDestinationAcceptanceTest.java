@@ -29,6 +29,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -217,7 +218,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   protected void setupBigQuery(final JsonNode credentialsJson) throws IOException {
-    final BigQuery bigquery = BigQueryCredentialsFactory.createCredentialsClient(credentialsJson);
+    bigquery = BigQueryCredentialsFactory.createCredentialsClient(credentialsJson, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
 
     final DatasetInfo datasetInfo =
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
