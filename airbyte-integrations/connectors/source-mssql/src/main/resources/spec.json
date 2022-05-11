@@ -9,7 +9,7 @@
     "properties": {
       "host": {
         "description": "The hostname of the database.",
-        "title": "HostName",
+        "title": "Host",
         "type": "string",
         "order": 0
       },
