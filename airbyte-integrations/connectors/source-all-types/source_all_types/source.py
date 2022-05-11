@@ -90,13 +90,25 @@ class SourceAllTypes(Source):
                 "type_big_integer": {"type": "string", "airbyte_type": "big_integer"},
                 "type_big_number": {"type": "string", "airbyte_type": "big_number"},
                 "type_binary": {"type": "string", "contentEncoding": "base64"},
-                "type_array_of_datetime_with_timezone": {
-                    "type": "array",
-                    "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                "type_object_of_datetime_with_timezone": {
+                    "type": "object",
+                    "properties": {
+                        "datetime_1": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_2": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_3": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_4": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_5": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_6": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_7": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                        "datetime_8": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                    },
                 },
-                "type_array_of_datetime_without_timezone": {
-                    "type": "array",
-                    "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+                "type_object_of_datetime_without_timezone": {
+                    "type": "object",
+                    "properties": {
+                        "datetime_1": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+                        "datetime_2": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+                    },
                 },
             },
         }
@@ -147,20 +159,20 @@ class SourceAllTypes(Source):
             "type_big_integer": "123141241234124123141241234124123141241234124123141241234124123141241234124",
             "type_big_number": "1000000000000000000000000000000000.1234",
             "type_binary": "kFB5dGhvbiBpcyBmdW6Q",
-            "type_array_of_datetime_with_timezone": [
-                "2022-11-22T01:23:45+0530",
-                "2022-11-22T01:23:45-0530",
-                "2022-11-22T01:23:45+05",
-                "2022-11-22T01:23:45-05",
-                "2022-11-22T01:23:45.9999999+0130",
-                "2022-11-22T01:23:45.9999999-0130",
-                "2022-11-22T01:23:45.9999999-01",
-                "2022-11-22T01:23:45.9999999+01",
-            ],
-            "type_array_of_datetime_without_timezone": [
-                "2022-11-22T01:23:45",
-                "2022-11-22T01:23:45.9999999",
-            ],
+            "type_object_of_datetime_with_timezone": {
+                "datetime_1": "2022-11-22T01:23:45+0530",
+                "datetime_2": "2022-11-22T01:23:45-0530",
+                "datetime_3": "2022-11-22T01:23:45+05",
+                "datetime_4": "2022-11-22T01:23:45-05",
+                "datetime_5": "2022-11-22T01:23:45.9999999+0130",
+                "datetime_6": "2022-11-22T01:23:45.9999999-0130",
+                "datetime_7": "2022-11-22T01:23:45.9999999-01",
+                "datetime_8": "2022-11-22T01:23:45.9999999+01",
+            },
+            "type_object_of_datetime_without_timezone": {
+                "datetime_1": "2022-11-22T01:23:45",
+                "datetime_2": "2022-11-22T01:23:45.9999999",
+            },
         }
 
         yield AirbyteMessage(
