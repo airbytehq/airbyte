@@ -16,7 +16,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_firebolt.destination import DestinationFirebolt, FireboltWriter, establish_connection
+from destination_firebolt.destination import DestinationFirebolt, establish_connection
 from pytest import fixture
 
 
@@ -31,7 +31,22 @@ def config(request):
     return args
 
 
-@fixture()
+@fixture
+def config_external_table():
+    args = {
+        "database": "my_database",
+        "username": "my_username",
+        "password": "my_password",
+        "engine": "my_engine",
+        "s3_bucket": "my_bucket",
+        "s3_region": "us-east-1",
+        "aws_key_id": "aws_key",
+        "aws_key_secret": "aws_secret",
+    }
+    return args
+
+
+@fixture
 def config_no_engine():
     args = {
         "database": "my_database",
@@ -50,7 +65,11 @@ def logger():
 def configured_stream1() -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="table1", json_schema={"type": "object", "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},}
+            name="table1",
+            json_schema={
+                "type": "object",
+                "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},
+            },
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
@@ -61,7 +80,11 @@ def configured_stream1() -> ConfiguredAirbyteStream:
 def configured_stream2() -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="table2", json_schema={"type": "object", "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},}
+            name="table2",
+            json_schema={
+                "type": "object",
+                "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},
+            },
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
@@ -73,7 +96,9 @@ def airbyte_message1():
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream="table1", data={"key1": "value1", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000,
+            stream="table1",
+            data={"key1": "value1", "key2": 2},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
@@ -83,7 +108,9 @@ def airbyte_message2():
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream="table2", data={"key1": "value2", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000,
+            stream="table2",
+            data={"key1": "value2", "key2": 3},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
@@ -104,18 +131,20 @@ def test_connection(mock_connection, config, config_no_engine, logger):
 
 
 @patch("destination_firebolt.destination.connect")
-def test_check(mock_connection, config, logger):
+def test_check(mock_connection, config, config_external_table, logger):
     destination = DestinationFirebolt()
     status = destination.check(logger, config)
+    assert status.status == Status.SUCCEEDED
+    status = destination.check(logger, config_external_table)
     assert status.status == Status.SUCCEEDED
     mock_connection().__enter__().cursor().__enter__().execute.side_effect = Exception("my exception")
     status = destination.check(logger, config)
     assert status.status == Status.FAILED
 
 
-@patch("destination_firebolt.destination.FireboltWriter")
+@patch("destination_firebolt.destination.FireboltSQLWriter")
 @patch("destination_firebolt.destination.establish_connection")
-def test_write_append(
+def test_sql_write_append(
     mock_connection, mock_writer, config, configured_stream1, configured_stream2, airbyte_message1, airbyte_message2, airbyte_state_message
 ):
     catalog = ConfiguredAirbyteCatalog(streams=[configured_stream1, configured_stream2])
@@ -130,10 +159,19 @@ def test_write_append(
     mock_writer.return_value.flush.assert_called_once()
 
 
-@patch("destination_firebolt.destination.FireboltWriter")
+@patch("destination_firebolt.destination.FireboltS3Writer")
+@patch("destination_firebolt.destination.FireboltSQLWriter")
 @patch("destination_firebolt.destination.establish_connection")
-def test_write_overwrite(
-    mock_connection, mock_writer, config, configured_stream1, configured_stream2, airbyte_message1, airbyte_message2, airbyte_state_message
+def test_sql_write_overwrite(
+    mock_connection,
+    mock_writer,
+    mock_s3_writer,
+    config,
+    configured_stream1,
+    configured_stream2,
+    airbyte_message1,
+    airbyte_message2,
+    airbyte_state_message,
 ):
     # Overwrite triggers a delete
     configured_stream1.destination_sync_mode = DestinationSyncMode.overwrite
@@ -142,71 +180,29 @@ def test_write_overwrite(
     destination = DestinationFirebolt()
     result = destination.write(config, catalog, [airbyte_message1, airbyte_state_message, airbyte_message2])
 
+    mock_s3_writer.assert_not_called()
     assert list(result) == [airbyte_state_message]
     mock_writer.return_value.delete_table.assert_called_once_with("table1")
     mock_writer.return_value.create_raw_table.mock_calls = [call(mock_connection, "table1"), call(mock_connection, "table2")]
 
 
-def test_writer_delete():
-    connection = MagicMock()
-    writer = FireboltWriter(connection)
+@patch("destination_firebolt.destination.FireboltS3Writer")
+@patch("destination_firebolt.destination.FireboltSQLWriter")
+@patch("destination_firebolt.destination.establish_connection", MagicMock())
+def test_s3_write(
+    mock_sql_writer,
+    mock_s3_writer,
+    config_external_table,
+    configured_stream1,
+    configured_stream2,
+    airbyte_message1,
+    airbyte_message2,
+    airbyte_state_message,
+):
+    catalog = ConfiguredAirbyteCatalog(streams=[configured_stream1, configured_stream2])
 
-    writer.delete_table("my_new_table")
-    connection.cursor.return_value.execute.assert_called_once_with("DROP TABLE IF EXISTS _airbyte_raw_my_new_table")
-
-
-def test_writer_no_flush():
-    connection = MagicMock()
-    writer = FireboltWriter(connection)
-
-    sample_data = [
-        ("t1", "id1", 111, '{"a": 1}'),
-        ("t1", "id2", 112, '{"b": 1}'),
-        ("t2", "id1", 113, '{"c": 1}'),
-        ("t1", "id1", 114, '{"d": 1}'),
-    ]
-    for table, id, time, data in sample_data:
-        writer.queue_write_data(table, id, time, data)
-    assert list(writer.buffer.keys()) == ["t1", "t2"]
-    assert writer.buffer["t1"] == [("id1", 111, '{"a": 1}'), ("id2", 112, '{"b": 1}'), ("id1", 114, '{"d": 1}')]
-    assert writer.buffer["t2"] == [("id1", 113, '{"c": 1}')]
-    # No write until we flush
-    connection.cursor.return_value.executemany.assert_not_called()
-
-    query1 = "INSERT INTO _airbyte_raw_t1 VALUES (?, ?, ?)"
-    query2 = "INSERT INTO _airbyte_raw_t2 VALUES (?, ?, ?)"
-    writer.flush()
-    assert connection.cursor.return_value.executemany.mock_calls == [
-        call(query1, parameters_seq=[("id1", 111, '{"a": 1}'), ("id2", 112, '{"b": 1}'), ("id1", 114, '{"d": 1}')]),
-        call(query2, parameters_seq=[("id1", 113, '{"c": 1}')]),
-    ]
-
-
-def test_writer_flush():
-    connection = MagicMock()
-    writer = FireboltWriter(connection)
-
-    writer.flush_interval = 3
-
-    sample_data = [
-        ("t1", "id1", 111, '{"a": 1}'),
-        ("t1", "id2", 112, '{"b": 1}'),
-        ("t2", "id1", 113, '{"c": 1}'),
-        ("t1", "id1", 114, '{"d": 1}'),
-    ]
-    for table, id, time, data in sample_data:
-        writer.queue_write_data(table, id, time, data)
-    assert list(writer.buffer.keys()) == ["t1"]
-    assert writer.buffer["t1"] == [("id1", 114, '{"d": 1}')]
-    assert "t2" not in writer.buffer.keys()
-
-    query1 = "INSERT INTO _airbyte_raw_t1 VALUES (?, ?, ?)"
-    query2 = "INSERT INTO _airbyte_raw_t2 VALUES (?, ?, ?)"
-    assert connection.cursor.return_value.executemany.mock_calls == [
-        call(query1, parameters_seq=[("id1", 111, '{"a": 1}'), ("id2", 112, '{"b": 1}')]),
-        call(query2, parameters_seq=[("id1", 113, '{"c": 1}')]),
-    ]
-
-    connection.cursor.return_value.executemany.reset_mock()
-    writer.flush()
-    assert connection.cursor.return_value.executemany.mock_calls == [call(query1, parameters_seq=[("id1", 114, '{"d": 1}')])]
+    destination = DestinationFirebolt()
+    result = destination.write(config_external_table, catalog, [airbyte_message1, airbyte_state_message, airbyte_message2])
+    assert list(result) == [airbyte_state_message]
+    mock_sql_writer.assert_not_called()
+    mock_s3_writer.assert_called_once()

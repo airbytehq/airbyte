@@ -4,7 +4,6 @@
 
 
 import json
-from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, Iterable, Mapping, Optional
 from uuid import uuid4
@@ -15,45 +14,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from firebolt.client import DEFAULT_API_URL
 from firebolt.db import Connection, connect
 
-
-class FireboltWriter:
-
-    buffer = defaultdict(list)
-    values = 0
-    flush_interval = 1000
-
-    def __init__(self, connection: Connection) -> None:
-        self.connection = connection
-
-    def delete_table(self, name: str) -> None:
-        cursor = self.connection.cursor()
-        cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{name}")
-
-    def create_raw_table(self, connection: Connection, name: str):
-        query = f"""
-        CREATE FACT TABLE IF NOT EXISTS _airbyte_raw_{name} (
-            _airbyte_ab_id TEXT,
-            _airbyte_emitted_at TIMESTAMP,
-            _airbyte_data TEXT
-        )
-        PRIMARY INDEX _airbyte_ab_id
-        """
-        cursor = connection.cursor()
-        cursor.execute(query)
-
-    def queue_write_data(self, table_name: str, id: str, time: int, record: str) -> None:
-        self.buffer[table_name].append((id, time, record))
-        self.values += 1
-        if self.values == self.flush_interval:
-            self.flush()
-
-    def flush(self) -> None:
-        cursor = self.connection.cursor()
-        # id, written_at, data
-        for table, data in self.buffer.items():
-            cursor.executemany(f"INSERT INTO _airbyte_raw_{table} VALUES (?, ?, ?)", parameters_seq=data)
-        self.buffer.clear()
-        self.values = 0
+from .writer import FireboltS3Writer, FireboltSQLWriter
 
 
 def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
@@ -117,12 +78,15 @@ class DestinationFirebolt(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
 
         with establish_connection(config) as connection:
-            writer = FireboltWriter(connection)
+            if config.get("s3_bucket"):
+                writer = FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"])
+            else:
+                writer = FireboltSQLWriter(connection)
 
             for configured_stream in configured_catalog.streams:
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                     writer.delete_table(configured_stream.stream.name)
-                writer.create_raw_table(connection, configured_stream.stream.name)
+                writer.create_raw_table(configured_stream.stream.name)
 
             for message in input_messages:
                 if message.type == Type.STATE:
@@ -151,6 +115,11 @@ class DestinationFirebolt(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
+            s3_bucket = config.get("s3_bucket")
+            aws_key_id = config.get("aws_key_id")
+            aws_key_secret = config.get("aws_key_secret")
+            if any([s3_bucket, aws_key_id, aws_key_secret]) and not all([s3_bucket, aws_key_id, aws_key_secret]):
+                raise Exception("If using External Table strategy please provide S3 bucket name, AWS Key and AWS Secret")
             with establish_connection(config, logger) as connection:
                 # We can only verify correctness of connection parameters on execution
                 with connection.cursor() as cursor:
