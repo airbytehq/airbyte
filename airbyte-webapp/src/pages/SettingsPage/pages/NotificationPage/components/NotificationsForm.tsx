@@ -44,6 +44,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           name="securityUpdates"
           checked={preferencesValues.securityUpdates}
           disabled={isLoading}
+          loading={isLoading}
           label={<FormattedMessage id="settings.securityUpdates" />}
           onChange={(event) => {
             onChange({
@@ -59,6 +60,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           name="newsletter"
           checked={preferencesValues.news}
           disabled={isLoading}
+          loading={isLoading}
           label={<FormattedMessage id="settings.newsletter" />}
           onChange={(event) => {
             onChange({

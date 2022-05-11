@@ -35,6 +35,9 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
   };
 
   if (!isManual) {
+    // Getting the loading state down here may be difficult.
+    // ConnectionsTable.tsx#28
+    // The data is invalidated, then re-loaded. There's no specific action flow for loading.
     return <Switch checked={enabled} onChange={OnToggleClick} disabled={!allowSync} />;
   }
 

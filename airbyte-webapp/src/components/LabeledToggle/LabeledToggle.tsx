@@ -3,11 +3,12 @@ import styled from "styled-components";
 
 import { CheckBox, Switch } from "components/base";
 
-type IProps = {
+interface LabeledToggleProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: React.ReactNode;
   label?: React.ReactNode;
   checkbox?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  loading?: boolean;
+}
 
 const ToggleContainer = styled.div`
   display: flex;
@@ -33,7 +34,7 @@ const AdditionMessage = styled.span`
   }
 `;
 
-const LabeledToggle: React.FC<IProps> = (props) => (
+const LabeledToggle: React.FC<LabeledToggleProps> = (props) => (
   <ToggleContainer>
     {props.checkbox ? (
       <CheckBox {...props} id={`toggle-${props.name}`} />
