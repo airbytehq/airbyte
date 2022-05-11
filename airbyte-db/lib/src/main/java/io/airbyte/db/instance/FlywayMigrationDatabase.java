@@ -8,6 +8,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import javax.sql.DataSource;
@@ -18,6 +19,8 @@ import org.jooq.impl.DSL;
 import org.jooq.meta.postgres.PostgresDatabase;
 import org.jooq.tools.StringUtils;
 import org.jooq.tools.jdbc.JDBCUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -33,9 +36,15 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlywayMigrationDatabase.class);
+
   private static final String DEFAULT_DOCKER_IMAGE = "postgres:13-alpine";
 
   private Connection connection;
+
+  private DataSource dataSource;
+
+  private DSLContext dslContext;
 
   protected abstract Database getAndInitializeDatabase(DSLContext dslContext) throws IOException;
 
@@ -75,9 +84,9 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
         .withPassword("jooq_generator");
     container.start();
 
-    final DataSource dataSource =
+    dataSource =
         DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     final Flyway flyway = FlywayFactory.create(dataSource, getInstalledBy(), getDbIdentifier(), getMigrationFileLocations());
     final Database database = getAndInitializeDatabase(dslContext);
     final DatabaseMigrator migrator = getDatabaseMigrator(database, flyway);
@@ -91,6 +100,14 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
   public void close() {
     JDBCUtils.safeClose(connection);
     connection = null;
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      try {
+        closeable.close();
+      } catch (final IOException e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
+    }
     super.close();
   }
 
