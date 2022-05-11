@@ -221,6 +221,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request | Subject                                                                                     |
 |:--------|:-----------| :--- |:--------------------------------------------------------------------------------------------|
+| 1.1.5   | 2022-05-11 | [12768](https://github.com/airbytehq/airbyte/pull/12768) | Clarify that the service account key json field is required on cloud. |
 | 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
 | 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
@@ -255,6 +256,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 1.1.5   | 2022-05-11 | [12768](https://github.com/airbytehq/airbyte/pull/12768) | Clarify that the service account key json field is required on cloud. |
 | 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
 | 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
