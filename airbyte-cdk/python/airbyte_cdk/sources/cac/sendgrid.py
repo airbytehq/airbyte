@@ -2,13 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import os
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
+from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
 from airbyte_cdk.sources.cac.configurable_stream import ConfigurableStream
 from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
@@ -35,30 +33,9 @@ class SendGridExtractor(Extractor):
             return decoded
 
 
-class SendgridSource(AbstractSource):
-    def _load_config(self):
-        # TODO is it better to do package loading?
-        print(f"path: {self._path_to_spec}")
-        print(f"path: {os.path}")
-        print(f"os.listdir: {os.listdir()}")
-        with open(self._path_to_spec, "r") as f:
-            return json.loads(f.read())
-
-    def get_spec_obj(self):
-        try:
-            with open("/airbyte/integration_code/source_sendgrid/spec.json", "r") as f:
-                return json.loads(f.read())
-        except FileNotFoundError:
-            with open("./source_sendgrid/spec.json", "r") as f:
-                return json.loads(f.read())
-
+class SendgridSource(ConfigurableConnector):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        try:
-            gen = self.streams(config)[0].read_records(sync_mode=SyncMode.full_refresh)
-            next(gen)
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Sendgrid API with the provided credentials - {error}"
+        return CheckStream(self.streams(config)[0]).check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams = [
@@ -109,8 +86,3 @@ class SendgridSource(AbstractSource):
         ]
 
         return streams
-
-
-def load_json(path):
-    with open(path, "r") as f:
-        return json.loads(f.read())
