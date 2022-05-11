@@ -63,3 +63,12 @@ def test_parameter_is_interpolated():
     request_params = provider.request_params(state, stream_slice, next_page_token)
 
     assert request_params[f"{state['date']} - {stream_slice['start_date']} - {next_page_token['offset']} - {config['option']}"] == "ABC"
+
+
+def test_none_value():
+    request_parameters = {"a_static_request_param": "{{ stream_state['date'] }}"}
+    provider = InterpolatedRequestParameterProvider(request_parameters, config)
+
+    request_params = provider.request_params({}, stream_slice, next_page_token)
+
+    assert len(request_params) == 0

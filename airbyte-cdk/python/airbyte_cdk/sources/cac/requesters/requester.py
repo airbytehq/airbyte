@@ -2,7 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, Optional
+
+import requests
 
 
 class Requester(ABC):
@@ -30,3 +32,13 @@ class Requester(ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         pass
+
+    @abstractmethod
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Override this method to define a pagination strategy.
+
+        The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
+
+        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
+        """

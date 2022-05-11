@@ -12,6 +12,8 @@ from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 from airbyte_cdk.sources.cac.iterators.only_once import OnlyOnceIterator
 from airbyte_cdk.sources.cac.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.cac.requesters.paginators.interpolated_paginator import InterpolatedPaginator
+from airbyte_cdk.sources.cac.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.cac.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
 from airbyte_cdk.sources.cac.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.cac.schema.json_schema import JsonSchema
@@ -52,9 +54,8 @@ class SendgridSource(ConfigurableConnector):
                         path="marketing/segments",
                         method="GET",
                         authenticator=authenticator,
-                        request_parameters_provider=InterpolatedRequestParameterProvider(
-                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"}, config=config
-                        ),
+                        request_parameters_provider=InterpolatedRequestParameterProvider(request_parameters={}, config=config),
+                        paginator=NoPagination(),
                     ),
                     extractor=SendGridExtractor("results"),
                     iterator=OnlyOnceIterator(),
@@ -73,9 +74,40 @@ class SendgridSource(ConfigurableConnector):
                         method="GET",
                         authenticator=authenticator,
                         request_parameters_provider=InterpolatedRequestParameterProvider(
+                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
+                            config=config,
+                        ),
+                        paginator=NoPagination(),
+                    ),
+                    extractor=SendGridExtractor(None),
+                    iterator=DatetimeIterator(
+                        {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
+                        {"value": "{{ today_utc() }}"},
+                        "1000d",
+                        "{{ stream_state['created'] }}",
+                        "%Y-%m-%d",
+                        None,
+                        config,
+                    ),
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                ),
+            ),
+            ConfigurableStream(
+                name="blocks",
+                primary_key="email",
+                cursor_field=["created"],
+                schema=JsonSchema("./source_sendgrid/schemas/blocks.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        url_base="https://api.sendgrid.com/v3/",
+                        path="suppression/blocks",
+                        method="GET",
+                        authenticator=authenticator,
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}", "limit": 50},
                             config=config,
                         ),
+                        paginator=InterpolatedPaginator({""}, config),
                     ),
                     extractor=SendGridExtractor(None),
                     iterator=DatetimeIterator(

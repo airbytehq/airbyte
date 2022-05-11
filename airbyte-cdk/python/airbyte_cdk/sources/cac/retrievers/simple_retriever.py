@@ -5,14 +5,16 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.iterators.iterator import Iterator
+from airbyte_cdk.sources.cac.requesters.requester import Requester
 from airbyte_cdk.sources.cac.retrievers.retriever import Retriever
 from airbyte_cdk.sources.cac.states.state import State
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
-    def __init__(self, requester, extractor, iterator, state, vars=None, config=None):
+    def __init__(self, requester: Requester, extractor: Extractor, iterator: Iterator, state: State, vars=None, config=None):
         if vars is None:
             vars = dict()
         if config is None:
@@ -30,9 +32,6 @@ class SimpleRetriever(Retriever, HttpStream):
     @property
     def url_base(self) -> str:
         return self._requester.get_url_base()
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -80,6 +79,16 @@ class SimpleRetriever(Retriever, HttpStream):
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         """
         return {}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Override this method to define a pagination strategy.
+
+        The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
+
+        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
+        """
+        return self._requester.next_page_token(response)
 
     def read_records(
         self,
