@@ -92,19 +92,11 @@ class SourceAllTypes(Source):
                 "type_binary": {"type": "string", "contentEncoding": "base64"},
                 "type_array_of_datetime_with_timezone": {
                     "type": "array",
-                    "items": {
-                        "type": "string",
-                        "format": "date-time",
-                        "airbyte_type": "timestamp_with_timezone"
-                    },
+                    "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
                 },
                 "type_array_of_datetime_without_timezone": {
                     "type": "array",
-                    "items": {
-                        "type": "string",
-                        "format": "date-time",
-                        "airbyte_type": "timestamp_without_timezone"
-                    },
+                    "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
                 },
             },
         }
