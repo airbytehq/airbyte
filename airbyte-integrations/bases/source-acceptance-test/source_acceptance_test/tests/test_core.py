@@ -13,7 +13,16 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Set
 import dpath.util
 import jsonschema
 import pytest
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    Status,
+    TraceType,
+    Type,
+)
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
@@ -400,6 +409,27 @@ class TestBasicRead(BaseTest):
             self._validate_expected_records(
                 records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
             )
+
+    def test_airbyte_trace_message_on_failure(self, connector_config, docker_runner: ConnectorRunner):
+        invalid_configured_catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name="__AIRBYTE__stream_that_does_not_exist",
+                        json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
+                        supported_sync_modes=["full_refresh"],
+                    ),
+                    sync_mode="full_refresh",
+                    destination_sync_mode="overwrite",
+                )
+            ]
+        )
+
+        output = docker_runner.call_read(connector_config, invalid_configured_catalog, raise_container_error=False)
+        trace_messages = filter_output(output, Type.TRACE)
+        error_trace_messages = list(filter(lambda m: m.trace.type == TraceType.ERROR, trace_messages))
+
+        assert len(error_trace_messages) >= 1, "Connector should emit at least one error trace message"
 
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
