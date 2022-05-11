@@ -18,7 +18,7 @@ dependencies {
 
     implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
 
-    testImplementation 'org.testcontainers:mongodb:1.15.3'
+    testImplementation libs.testcontainers.mongodb
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
