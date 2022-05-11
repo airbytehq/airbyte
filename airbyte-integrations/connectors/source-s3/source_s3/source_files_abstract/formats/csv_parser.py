@@ -11,7 +11,7 @@ import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
 from pyarrow import csv as pa_csv
-from source_s3.utils import run_in_external_process, get_value_or_json_if_empty_string
+from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
 
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
