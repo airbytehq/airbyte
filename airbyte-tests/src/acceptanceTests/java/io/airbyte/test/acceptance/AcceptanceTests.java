@@ -174,6 +174,7 @@ public class AcceptanceTests {
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
+  private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
       System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
 
@@ -1548,10 +1549,10 @@ public class AcceptanceTests {
         // used on a single node with docker driver
         dbConfig.put("host", "host.docker.internal");
       }
-    } else {
-      // Updated from localhost to host.docker.internal (appears to be needed on newer docker desktop
-      // versions + M1 macs)
+    } else if (IS_MAC) {
       dbConfig.put("host", "host.docker.internal");
+    } else {
+      dbConfig.put("host", "localhost");
     }
 
     if (hiddenPassword) {
