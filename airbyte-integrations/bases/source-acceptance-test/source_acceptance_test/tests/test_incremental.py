@@ -3,7 +3,7 @@
 #
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
@@ -89,7 +89,7 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
         record_date_value = record_value if isinstance(record_value, datetime) else pendulum.parse(record_value)
         state_date_value = state_value if isinstance(state_value, datetime) else pendulum.parse(state_value)
 
-        return record_date_value >= (state_date_value - timedelta(days=threshold_days))
+        return record_date_value >= (state_date_value - pendulum.duration(days=threshold_days))
 
     return record_value >= state_value
 
