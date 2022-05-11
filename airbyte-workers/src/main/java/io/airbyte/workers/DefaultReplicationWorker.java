@@ -115,7 +115,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final long startTime = System.currentTimeMillis();
     final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
-    final AtomicReference<FailureReason> traceMessageFailureRef = new AtomicReference<>();
 
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
@@ -240,9 +239,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
       final AirbyteTraceMessage sourceErrorTraceMessage = messageTracker.getFirstSourceErrorTraceMessage();
       final AirbyteTraceMessage destinationErrorTraceMessage = messageTracker.getFirstDestinationErrorTraceMessage();
-      traceMessageFailureRef
-          .set(FailureHelper.errorTraceMessageFailure(sourceErrorTraceMessage, destinationErrorTraceMessage, Long.valueOf(jobId), attempt));
-      final FailureReason traceMessageFailure = traceMessageFailureRef.get();
+      final FailureReason traceMessageFailure = FailureHelper.errorTraceMessageFailure(sourceErrorTraceMessage, destinationErrorTraceMessage, Long.valueOf(jobId), attempt);
 
       final List<FailureReason> failures = new ArrayList<>();
 

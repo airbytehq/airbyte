@@ -83,7 +83,7 @@ public class FailureHelper {
       return destinationFailure(destinationMessage, jobId, attempt);
     }
 
-    if (sourceMessage.getEmittedAt() < destinationMessage.getEmittedAt()) {
+    if (sourceMessage.getEmittedAt() <= destinationMessage.getEmittedAt()) {
       return sourceFailure(sourceMessage, jobId, attempt);
     } else {
       return destinationFailure(destinationMessage, jobId, attempt);

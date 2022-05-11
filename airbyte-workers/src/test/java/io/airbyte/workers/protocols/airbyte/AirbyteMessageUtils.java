@@ -64,13 +64,6 @@ public class AirbyteMessageUtils {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
   }
 
-  public static AirbyteTraceMessage createErrorTraceMessage(final String message) {
-    return new AirbyteTraceMessage()
-        .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
-        .withEmittedAt(Long.valueOf(121212))
-        .withError(new AirbyteErrorTraceMessage().withMessage(message));
-  }
-
   public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Long emittedAt) {
     return new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)

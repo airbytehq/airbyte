@@ -52,7 +52,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private boolean unreliableCommittedCounts;
 
-  private enum CONNECTOR_TYPES {
+  private enum ConnectorType {
     SOURCE,
     DESTINATION
   }
@@ -81,7 +81,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
     switch (message.getType()) {
-      case TRACE -> handleEmittedTrace(message.getTrace(), CONNECTOR_TYPES.SOURCE.toString());
+      case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
       case STATE -> handleSourceEmittedState(message.getState());
       default -> log.warn("Invalid message type for message: {}", message);
@@ -91,7 +91,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public void acceptFromDestination(final AirbyteMessage message) {
     switch (message.getType()) {
-      case TRACE -> handleEmittedTrace(message.getTrace(), CONNECTOR_TYPES.DESTINATION.toString());
+      case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
       default -> log.warn("Invalid message type for message: {}", message);
     }
@@ -161,18 +161,17 @@ public class AirbyteMessageTracker implements MessageTracker {
    * When a connector emits a trace message, check the type and call the correct function. If it is an
    * error trace message, add it to the list of errorTraceMessages for the connector type
    */
-  private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final String connectorType) {
-    log.info(String.valueOf(traceMessage));
+  private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final Enum connectorType) {
     switch (traceMessage.getType()) {
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
   }
 
-  private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final String connectorType) {
-    if (connectorType.equals(CONNECTOR_TYPES.DESTINATION.toString())) {
+  private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final Enum connectorType) {
+    if (connectorType.equals(ConnectorType.DESTINATION)) {
       destinationErrorTraceMessages.add(errorTraceMessage);
-    } else if (connectorType.equals(CONNECTOR_TYPES.SOURCE.toString())) {
+    } else if (connectorType.equals(ConnectorType.SOURCE)) {
       sourceErrorTraceMessages.add(errorTraceMessage);
     }
   }
