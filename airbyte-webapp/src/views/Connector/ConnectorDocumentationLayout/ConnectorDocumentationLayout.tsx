@@ -80,7 +80,7 @@ export const ConnectorDocumentationLayout = ({ children }: { children: JSX.Eleme
         </ReflexSplitter>
       )}
       {documentationPanelOpen && (
-        <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={10}>
+        <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
             <DocumentationPanel />
           </RightPanelContainer>
