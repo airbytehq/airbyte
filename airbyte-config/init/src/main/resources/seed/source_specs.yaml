@@ -2688,7 +2688,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.36"
+- dockerImage: "airbyte/source-google-ads:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -7314,6 +7314,15 @@
                   \ your data is particularly wide."
                 default: 2
                 type: "integer"
+          - title: "Avro"
+            description: "This connector utilises <a href=\"https://fastavro.readthedocs.io/en/latest/\"\
+              \ target=\"_blank\">fastavro</a> for Avro parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "avro"
+                type: "string"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\

@@ -25,11 +25,12 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Databases;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
@@ -289,15 +290,17 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
-
-    final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
-        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
-        streamingQueryConfigProvider,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
-        sourceOperations);
+    final JdbcDatabase database = new StreamingJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            driverClass,
+            jdbcConfig.get("jdbc_url").asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+        ),
+        sourceOperations,
+        streamingQueryConfigProvider
+    );
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
