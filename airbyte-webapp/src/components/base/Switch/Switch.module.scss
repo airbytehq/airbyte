@@ -1,5 +1,4 @@
 .loading {
-  border: 1em red dashed;
 }
 
 .switch {
@@ -19,11 +18,28 @@
     opacity: 0;
     width: 0;
     height: 0;
+
+    &:checked + .slider {
+      background: #615eff; // theme.primaryColor, TODO: Make SASS or CSS Variable
+
+      &:before {
+        transform: translateX(18px);
+      }
+
+      &.small:before {
+        transform: translateX(10px);
+      }
+    }
+
+    &:disabled + .slider {
+      opacity: 0.5;
+      cursor: auto;
+    }
   }
 
   .slider {
-    position: absolute;
     cursor: pointer;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -31,6 +47,11 @@
     background: #e8e8ed; // theme.greyColor20, TODO: Make SASS or CSS Variable
     transition: 0.3s;
     border-radius: 19px;
+
+    &.small:before {
+      height: 16px;
+      width: 16px;
+    }
 
     &:before {
       position: absolute;
@@ -45,25 +66,13 @@
       border-radius: 50%;
     }
 
-    &.checked {
-      background: #615eff; // theme.primaryColor, TODO: Make SASS or CSS Variable
-
-      &:before {
-        transform: translateX(18px);
+    &.loading {
+      &.checked {
+        background: url("./ProgressReverse.svg");
       }
-
-      &.small {
-        &:before {
-          transform: translateX(10px);
-          height: 16px;
-          width: 16px;
-        }
+      &.unchecked {
+        background: url("./Progress.svg");
       }
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: auto;
     }
   }
 }

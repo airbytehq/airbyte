@@ -10,7 +10,9 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...props }) => {
   const isChecked = checked || !!value;
   const labelStyle = `${styles.switch} ${small ? styles.small : ""} ${loading ? styles.loading : ""}`;
-  const spanStyle = `${styles.slider} ${small ? styles.small : ""} ${isChecked ? styles.checked : ""}`;
+  const spanStyle = `${styles.slider} ${small ? styles.small : ""} ${loading ? styles.loading : ""} ${
+    isChecked ? styles.checked : styles.unchecked
+  }`;
   return (
     <label onClick={(event: React.SyntheticEvent) => event.stopPropagation()} className={labelStyle}>
       <input className={styles.switchInput} type="checkbox" {...props} value={value} checked={isChecked} />
