@@ -121,41 +121,6 @@
          "array"
        ]
      },
-     "failed_delivery_checks": {
-       "items": {
-         "properties": {
-           "check_name": {
-             "type": [
-               "string",
-               "null"
-             ]
-           },
-           "description": {
-             "type": [
-               "string",
-               "null"
-             ]
-           },
-           "extra_info": {
-             "type": [
-               "object",
-               "null"
-             ]
-           },
-           "summary": {
-             "type": [
-               "string",
-               "null"
-             ]
-           }
-         },
-         "type": "object"
-       },
-       "type": [
-         "null",
-         "array"
-       ]
-     },
     "fb_entity": {
       "type": ["null", "number"]
     },

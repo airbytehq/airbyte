@@ -1,0 +1,30 @@
+{
+  "properties": {
+    "check_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "extra_info": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "summary": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "type": "object"
+}
