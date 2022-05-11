@@ -4,7 +4,6 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.ActorType;
 import java.io.IOException;
@@ -21,9 +20,7 @@ class V0_35_26_001__PersistDiscoveredCatalogTest extends AbstractConfigsDatabase
 
   @Test
   public void test() throws SQLException, IOException {
-
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = getDslContext();
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);
     V0_35_26_001__PersistDiscoveredCatalog.migrate(context);
     assertCanInsertData(context);

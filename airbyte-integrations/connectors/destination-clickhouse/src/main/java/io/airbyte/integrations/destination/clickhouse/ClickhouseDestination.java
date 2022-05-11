@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -25,7 +26,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestination.class);
 
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");

@@ -10,7 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -21,13 +22,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
+import org.jooq.DSLContext;
 
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -102,13 +99,13 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private static Database getDatabase(final JsonNode config) {
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+            config.get("port").asInt()), null);
+    return new Database(dslContext);
   }
 }

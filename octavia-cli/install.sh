@@ -3,7 +3,7 @@
 # This install scripts currently only works for ZSH and Bash profiles.
 # It creates an octavia alias in your profile bound to a docker run command and your current user.
 
-VERSION=0.37.0-alpha
+VERSION=0.38.1-alpha
 OCTAVIA_ENV_FILE=${HOME}/.octavia
 
 detect_profile() {

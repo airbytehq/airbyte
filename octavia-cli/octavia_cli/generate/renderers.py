@@ -7,6 +7,7 @@ import os
 from typing import Any, Callable, List
 
 import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
 from octavia_cli.apply import resources
 
@@ -241,16 +242,16 @@ class ConnectionRenderer(BaseRenderer):
         self.destination = destination
 
     @staticmethod
-    def catalog_to_yaml(catalog: dict) -> str:
+    def catalog_to_yaml(catalog: AirbyteCatalog) -> str:
         """Convert the source catalog to a YAML string.
 
         Args:
-            catalog (dict): Source's catalog.
+            catalog (AirbyteCatalog): Source's catalog.
 
         Returns:
             str: Catalog rendered as yaml.
         """
-        return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
+        return yaml.dump(catalog.to_dict(), Dumper=CatalogDumper, default_flow_style=False)
 
     def _render(self) -> str:
         yaml_catalog = self.catalog_to_yaml(self.source.catalog)

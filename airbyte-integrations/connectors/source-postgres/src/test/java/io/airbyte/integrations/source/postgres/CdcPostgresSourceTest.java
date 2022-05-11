@@ -21,8 +21,11 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.PgLsn;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
@@ -33,6 +36,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +53,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private String dbName;
   private Database database;
+  private DSLContext dslContext;
   private PostgresSource source;
   private JsonNode config;
 
@@ -56,7 +61,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    dslContext.close();
     container.close();
   }
 
@@ -76,7 +81,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     config = getConfig(dbName);
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database = getDatabaseFromConfig(config);
+    dslContext = getDslContext(config);
+    database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -106,16 +112,19 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
   }
 
-  private Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.POSTGRES);
   }
 
   @Test
@@ -161,14 +170,18 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())
+        )
+    );
+
     return PostgresCdcTargetPosition.targetPosition(database);
   }
 

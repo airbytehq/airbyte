@@ -12,7 +12,8 @@ public enum ConnectionErrorType {
   INCORRECT_HOST_OR_PORT("Incorrect host or port"),
   INCORRECT_USERNAME_OR_HOST("Incorrect username or host"),
   INCORRECT_DB_NAME("Incorrect data base name"),
-  INCORRECT_SCHEMA_NAME("Incorrect schema name");
+  INCORRECT_SCHEMA_NAME("Incorrect schema name"),
+  INCORRECT_ACCESS_PERMISSION("Insufficient privilege");
 
   private final String value;
 

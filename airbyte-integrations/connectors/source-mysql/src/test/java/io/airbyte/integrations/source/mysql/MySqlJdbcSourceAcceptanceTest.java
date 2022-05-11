@@ -17,7 +17,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -25,6 +26,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.concurrent.Callable;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -40,6 +42,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected static MySQLContainer<?> container;
 
   protected Database database;
+  protected DSLContext dslContext;
 
   @BeforeAll
   static void init() throws Exception {
@@ -63,28 +66,26 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("password", TEST_PASSWORD.call())
         .build());
 
-    database = Databases.createDatabase(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
-            config.get("port").asText()),
-        MySqlSource.DRIVER_CLASS,
-
-        SQLDialect.MYSQL);
+            config.get("port").asText()), SQLDialect.MYSQL);
+    database = new Database(dslContext);
 
     database.query(ctx -> {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       return null;
     });
-    database.close();
 
     super.setup();
   }
 
   @AfterEach
   void tearDownMySql() throws Exception {
-    database.close();
+    dslContext.close();
     super.tearDown();
   }
 

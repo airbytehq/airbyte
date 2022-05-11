@@ -24,5 +24,5 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse-strict-encrypt')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation "org.testcontainers:clickhouse:1.16.0"
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

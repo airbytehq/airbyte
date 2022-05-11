@@ -14,9 +14,9 @@ dependencies {
     implementation project(':airbyte-scheduler:persistence')
 
     implementation 'io.temporal:temporal-sdk:1.8.1'
-    implementation "org.flywaydb:flyway-core:7.14.0"
+    implementation libs.flyway.core
 
-    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation libs.testcontainers.postgresql
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
 }
 

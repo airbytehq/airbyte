@@ -11,6 +11,7 @@ import io.airbyte.db.instance.BaseDatabaseInstance;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
 import java.util.function.Function;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +31,12 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
   };
 
   @VisibleForTesting
-  public JobsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
+  public JobsDatabaseInstance(final DSLContext dslContext, final String schema) {
+    super(dslContext, DATABASE_LOGGING_NAME, schema, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
   }
 
-  public JobsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
-    this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
+  public JobsDatabaseInstance(final DSLContext dslContext) throws IOException {
+    this(dslContext, MoreResources.readResource(SCHEMA_PATH));
   }
 
 }
