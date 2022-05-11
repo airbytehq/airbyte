@@ -7144,7 +7144,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.11"
+- dockerImage: "airbyte/source-s3:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -7314,6 +7314,15 @@
                   \ your data is particularly wide."
                 default: 2
                 type: "integer"
+          - title: "Avro"
+            description: "This connector utilises <a href=\"https://fastavro.readthedocs.io/en/latest/\"\
+              \ target=\"_blank\">fastavro</a> for Avro parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "avro"
+                type: "string"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
