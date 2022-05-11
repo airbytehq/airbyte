@@ -4,37 +4,30 @@
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
+from airbyte_cdk.sources.cac.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 
 
 class HttpRequester(Requester):
-    def __init__(self, url_base, path, method, request_parameters, authenticator, vars=None, config=None):
-        # print("creating HttpRequester")
+    def __init__(
+        self, url_base, path, method, request_parameters_provider: RequestParameterProvider, authenticator, vars=None, config=None
+    ):
         if vars is None:
             vars = dict()
         if config is None:
             config = dict()
         self._vars = vars
         self._config = config
-        self._authenticator = authenticator  # LowCodeComponentFactory().create_component(authenticator, vars, config)
+        self._authenticator = authenticator
         self._url_base = url_base
         self._path = path
         self._method = method
-        self._interpolation = JinjaInterpolation()
-        self._request_parameters = request_parameters
+        self._request_parameters_provider = request_parameters_provider
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-
-        return {
-            self._interpolation.eval(name, self._vars, self._config, **kwargs): self._interpolation.eval(
-                value, self._vars, self._config, **kwargs
-            )
-            for name, value in self._request_parameters.items()
-        }
+        return self._request_parameters_provider.request_params(stream_state, stream_slice, next_page_token)
 
     def get_authenticator(self):
         return self._authenticator

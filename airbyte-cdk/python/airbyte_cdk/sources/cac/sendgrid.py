@@ -12,6 +12,7 @@ from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 from airbyte_cdk.sources.cac.iterators.only_once import OnlyOnceIterator
 from airbyte_cdk.sources.cac.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.cac.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
 from airbyte_cdk.sources.cac.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.cac.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.cac.states.dict_state import DictState
@@ -51,7 +52,9 @@ class SendgridSource(ConfigurableConnector):
                         path="marketing/segments",
                         method="GET",
                         authenticator=authenticator,
-                        request_parameters={},
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"}, config=config
+                        ),
                     ),
                     extractor=SendGridExtractor("results"),
                     iterator=OnlyOnceIterator(),
@@ -69,7 +72,9 @@ class SendgridSource(ConfigurableConnector):
                         path="suppression/bounces",
                         method="GET",
                         authenticator=authenticator,
-                        request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"}, config=config
+                        ),
                     ),
                     extractor=SendGridExtractor(None),
                     iterator=DatetimeIterator(
