@@ -36,10 +36,10 @@ type FormikConnectionFormValues = {
 type ConnectionFormValues = ValuesProps;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
-  [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
-  [SyncMode.FullRefresh, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Append],
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
+  [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
+  [SyncMode.Incremental, DestinationSyncMode.Append],
+  [SyncMode.FullRefresh, DestinationSyncMode.Append],
 ];
 
 const DEFAULT_SCHEDULE: ScheduleProperties = {
