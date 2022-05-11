@@ -2,9 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, MutableMapping, Optional
-
-import requests
+from typing import Any, Mapping, MutableMapping
 
 
 class Requester(ABC):
@@ -22,10 +20,6 @@ class Requester(ABC):
 
     @abstractmethod
     def get_method(self):
-        pass
-
-    @abstractmethod
-    def get_last_response(self) -> Optional[requests.Response]:
         pass
 
     @abstractmethod
