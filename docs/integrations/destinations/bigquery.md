@@ -132,11 +132,23 @@ Then, add the service account as a Member in your Google Cloud Project with the 
 
 At this point you should have a service account with the "BigQuery User" project-level permission.
 
-#### Service account key
+#### Service account key json (required for cloud, optional for open source)
 
 Service Account Keys are used to authenticate as Google Service Accounts. For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to provide its Service Account Keys. See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys.
 
 Follow the [Creating and Managing Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create a key. Airbyte currently supports JSON Keys only, so make sure you create your key in that format. As soon as you created the key, make sure to download it, as that is the only time Google will allow you to see its contents. Once you've successfully configured BigQuery as a destination in Airbyte, delete this key from your computer.
+
+This parameter is **REQUIRED** when you set up the connector on cloud. It is only optional if you deploy Airbyte in your own infra. When the service account key json is not provided, the connector will search for it in the following order:
+
+- Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+- Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
+- Google App Engine built-in credentials
+- Google Cloud Shell built-in credentials
+- Google Compute Engine built-in credentials
+
+See the [Authenticating as a service account](https://cloud.google.com/docs/authentication/production#automatically) for details.
+
+----
 
 You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
 
@@ -185,7 +197,7 @@ This is the recommended configuration for uploading data to BigQuery. It works b
     * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
 * **HMAC Key Access ID**
     * See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    * We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+    * The BigQuery service account (see the doc [above](#service-account)) should have the following permissions for the bucket:
       ```
       storage.multipartUploads.abort
       storage.multipartUploads.create
@@ -194,7 +206,7 @@ This is the recommended configuration for uploading data to BigQuery. It works b
       storage.objects.get
       storage.objects.list
       ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+      You can set those by going to the permissions tab in the GCS bucket and adding the service account email or user and adding the aforementioned permissions.
 * **Secret Access Key**
     * Corresponding key to the above access ID.
 * Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
