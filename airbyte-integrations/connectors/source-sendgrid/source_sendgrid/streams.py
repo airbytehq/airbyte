@@ -2,7 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from abc import ABC, abstractmethod
+from asyncio.log import logger
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -195,6 +197,26 @@ class Templates(SendgridStreamMetadataPagination):
     def initial_path() -> str:
         return "templates"
 
+class Messages(SendgridStream, SendgridStreamIncrementalMixin):
+    """
+    https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages
+    """
+    data_field = "messages"
+    cursor_field = "last_event_time"
+    primary_key = "msg_id"
+    
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        date_start = datetime.datetime.fromtimestamp(self._start_time).strftime(time_filter_template)
+        date_end = datetime.datetime.fromtimestamp(pendulum.now().int_timestamp).strftime(time_filter_template)
+        queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
+        print(f"INFO:-{queryapi}")
+        params["query"] = queryapi
+        return params
+
+    def path(self, **kwargs) -> str:
+        return "messages"
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     primary_key = "email"

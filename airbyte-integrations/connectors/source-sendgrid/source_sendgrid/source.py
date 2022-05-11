@@ -25,6 +25,7 @@ from .streams import (
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
+    Messages,
 )
 
 
@@ -49,6 +50,7 @@ class SourceSendgrid(AbstractSource):
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
+            Messages(authenticator=authenticator, start_time=config["start_time"]),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
