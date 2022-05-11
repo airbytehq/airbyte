@@ -25,11 +25,7 @@ public final class AirbyteTraceMessageUtility {
   }
 
   public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
-    AirbyteMessage emitMsg = makeAirbyteMessage(
-        makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
-            .withError(makeAirbyteErrorTraceMessage(e, displayMessage, failureType))
-    );
-    emitMessage(emitMsg);
+    emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
 
   //todo: handle the other types of trace message we'll expect in the future, see io.airbyte.protocol.models.AirbyteTraceMessage
@@ -44,7 +40,19 @@ public final class AirbyteTraceMessageUtility {
     outputRecordCollector.accept(message);
   }
 
-  private static AirbyteMessage makeAirbyteMessage(AirbyteTraceMessage airbyteTraceMessage) {
+  private static AirbyteMessage makeErrorTraceAirbyteMessage(
+      final Throwable e, final String displayMessage, final FailureType failureType) {
+
+    return makeAirbyteMessageFromTraceMessage(
+        makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
+            .withError(new AirbyteErrorTraceMessage()
+                .withFailureType(failureType)
+                .withMessage(displayMessage)
+                .withInternalMessage(e.toString())
+                .withStackTrace(Arrays.toString(e.getStackTrace()))));
+  }
+
+  private static AirbyteMessage makeAirbyteMessageFromTraceMessage(AirbyteTraceMessage airbyteTraceMessage) {
     return new AirbyteMessage().withType(Type.TRACE).withTrace(airbyteTraceMessage);
   }
 
@@ -52,12 +60,4 @@ public final class AirbyteTraceMessageUtility {
     return new AirbyteTraceMessage().withType(traceMessageType).withEmittedAt((double) System.currentTimeMillis());
   }
 
-  private static AirbyteErrorTraceMessage makeAirbyteErrorTraceMessage(
-      final Throwable e, final String displayMessage, final FailureType failureType) {
-    return new AirbyteErrorTraceMessage()
-        .withFailureType(failureType)
-        .withMessage(displayMessage)
-        .withInternalMessage(e.toString())
-        .withStackTrace(Arrays.toString(e.getStackTrace()));
-  }
 }
