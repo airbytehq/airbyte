@@ -13,7 +13,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Databases;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
@@ -81,7 +80,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   @Override
   protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
-    return Databases.createMongoDatabase(dbConfig.get("connectionString").asText(),
+    return new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get("database").asText());
   }
 
@@ -131,7 +130,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return tableInfos;
   }
 
-  private Set<String> getAuthorizedCollections(MongoDatabase database) {
+  private Set<String> getAuthorizedCollections(final MongoDatabase database) {
     /*
      * db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true }) the command
      * returns only those collections for which the user has privileges. For example, if a user has find
@@ -139,7 +138,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * find or any other action, on the database resource, the command lists all collections in the
      * database.
      */
-    Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+    final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
         .append("authorizedCollections", true)
         .append("nameOnly", true))
         .append("filter", "{ 'type': 'collection' }");

@@ -34,7 +34,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
-    # responses, caching plaing crucial role for performance here.
+    # responses, caching playing crucial role for performance here.
     @lru_cache()
     def get_json_schema(self) -> Dict[str, Any]:
         """

@@ -28,7 +28,9 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_protobuf_msg.json"
       # expect_records:
       #   path: "integration_tests/expected_records_msg.txt"
-  # TODO incremental test is disabled because records output from the report streams can be up to 14 days older than the input state
+  # These tests are disabled because of the issues https://github.com/airbytehq/airbyte/issues/12665
+  # and https://github.com/airbytehq/airbyte/issues/12467. Instead, custom integration tests are implemented.
+  # As soon as the above issues are resolved, standard SATs can be enabled and custom tests removed.
   #  incremental:
   #    - config_path: "secrets/config.json"
   #      configured_catalog_path: "integration_tests/configured_catalog.json"

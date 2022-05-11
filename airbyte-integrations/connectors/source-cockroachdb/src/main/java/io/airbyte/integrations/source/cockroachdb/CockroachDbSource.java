@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -37,7 +39,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
-  static final String DRIVER_CLASS = "org.postgresql.Driver";
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -116,13 +118,16 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
-        sourceOperations);
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            driverClass,
+            jdbcConfig.get("jdbc_url").asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
+        ),
+        sourceOperations
+    );
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
