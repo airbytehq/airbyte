@@ -106,7 +106,9 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.NUMBER;
-      case INTEGER -> JsonSchemaType.NUMBER;
+     // case INTEGER -> JsonSchemaType.NUMBER;
+      //SWE 265 Pull Request 1
+      case INTEGER -> JsonSchemaType.INTEGER;
       case BIGINT -> JsonSchemaType.NUMBER;
       case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
       case REAL -> JsonSchemaType.NUMBER;

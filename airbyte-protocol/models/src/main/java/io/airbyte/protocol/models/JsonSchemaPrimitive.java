@@ -11,6 +11,8 @@ public enum JsonSchemaPrimitive {
   OBJECT,
   ARRAY,
   BOOLEAN,
+  //SWE 265 Pull Request 1
+  INTEGER,
   NULL;
 
 }

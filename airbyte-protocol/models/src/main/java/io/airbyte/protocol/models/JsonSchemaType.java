@@ -27,6 +27,8 @@ public class JsonSchemaType {
   public static final JsonSchemaType OBJECT = JsonSchemaType.builder(JsonSchemaPrimitive.OBJECT).build();
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
   public static final JsonSchemaType NULL = JsonSchemaType.builder(JsonSchemaPrimitive.NULL).build();
+  //SWE 265 Pull Request 1
+  public static final JsonSchemaType INTEGER = JsonSchemaType.builder(JsonSchemaPrimitive.INTEGER).build();
   public static final JsonSchemaType STRING_BASE_64 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
 
   private final Map<String, String> jsonSchemaTypeMap;
