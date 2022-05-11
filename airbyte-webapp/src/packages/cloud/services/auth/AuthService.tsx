@@ -43,6 +43,7 @@ interface AuthContextApi {
   isLoading: boolean;
   loggedOut: boolean;
   login: AuthLogin;
+  signInWithEmailLink: (email: string) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
@@ -129,6 +130,13 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async verifyEmail(code: string): Promise<void> {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
+      },
+      async signInWithEmailLink(email: string): Promise<void> {
+        const auth = await authService.signInWithEmailLink(email);
+
+        if (auth.user) {
+          await onAfterAuth(auth.user);
+        }
       },
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);

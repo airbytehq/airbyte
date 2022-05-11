@@ -7,7 +7,7 @@ import { LoadingPage } from "components";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
+import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
 import FormContent from "./components/FormContent";
 import News from "./components/News";
@@ -51,7 +51,7 @@ const Auth: React.FC = () => {
               <Route path={CloudRoutes.Login} element={<LoginPage />} />
               <Route path={CloudRoutes.Signup} element={<SignupPage />} />
               <Route path={CloudRoutes.ResetPassword} element={<ResetPasswordPage />} />
-              <Route path={CloudRoutes.FirebaseAction} element={<ResetPasswordAction />} />
+              <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
                 element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${location.pathname}`}`} />}

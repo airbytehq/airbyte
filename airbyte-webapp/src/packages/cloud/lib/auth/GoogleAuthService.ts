@@ -4,6 +4,7 @@ import {
   UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   sendPasswordResetEmail,
   confirmPasswordReset,
   updateProfile,
@@ -38,6 +39,8 @@ interface AuthService {
   sendEmailVerifiedLink(): Promise<void>;
 
   updateEmail(email: string, password: string): Promise<void>;
+
+  signInWithEmailLink(email: string): Promise<UserCredential>;
 }
 
 export class GoogleAuthService implements AuthService {
@@ -151,6 +154,28 @@ export class GoogleAuthService implements AuthService {
 
   async confirmEmailVerify(code: string): Promise<void> {
     return applyActionCode(this.auth, code);
+  }
+
+  async signInWithEmailLink(email: string): Promise<UserCredential> {
+    try {
+      return await signInWithEmailLink(this.auth, email);
+    } catch (e) {
+      switch (e?.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new Error("The email provided does not match the email address sent to this invite.");
+        case AuthErrorCodes.INVALID_OOB_CODE:
+          // Maybe they already activated the link?
+          throw new Error("This invite link is no longer valid.");
+        case AuthErrorCodes.EXPIRED_OOB_CODE:
+          // TODO - Resend invitation
+          throw new Error("This invite link has expired.");
+
+        default:
+          break;
+      }
+
+      throw e;
+    }
   }
 
   signOut(): Promise<void> {
