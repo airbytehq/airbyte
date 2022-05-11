@@ -38,6 +38,7 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.ResetInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -48,7 +49,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -228,7 +228,7 @@ class TemporalClientTest {
 
       final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
 
-      verify(mConnectionManagerWorkflow).resetConnection(new HashSet<>());
+      verify(mConnectionManagerWorkflow).resetConnection(ResetInput.getDefault());
 
       assertEquals(manualSyncSubmissionResult.getJobId().get(), jobId3);
     }

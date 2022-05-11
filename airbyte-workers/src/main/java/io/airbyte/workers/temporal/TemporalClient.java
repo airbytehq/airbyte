@@ -24,6 +24,7 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.ResetInput;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
@@ -404,7 +405,7 @@ public class TemporalClient {
 
     final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
 
-    connectionManagerWorkflow.resetConnection(new HashSet<>());
+    connectionManagerWorkflow.resetConnection(ResetInput.getDefault());
 
     do {
       try {

@@ -12,6 +12,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.ResetInput;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
@@ -49,7 +50,6 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
@@ -546,7 +546,7 @@ public class ConnectionManagerWorkflowTest {
 
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofMinutes(5L));
-      workflow.resetConnection(new HashSet<>());
+      workflow.resetConnection(ResetInput.getDefault());
       testEnv.sleep(Duration.ofMinutes(15L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
@@ -584,7 +584,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
-      workflow.resetConnection(new HashSet<>());
+      workflow.resetConnection(ResetInput.getDefault());
       testEnv.sleep(Duration.ofMinutes(15L));
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
@@ -1226,7 +1226,7 @@ public class ConnectionManagerWorkflowTest {
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofSeconds(30L));
       testEnv.sleep(Duration.ofMinutes(5L));
-      workflow.resetConnection(new HashSet<>());
+      workflow.resetConnection(ResetInput.getDefault());
       testEnv.sleep(Duration.ofMinutes(15L));
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
@@ -1417,7 +1417,7 @@ public class ConnectionManagerWorkflowTest {
 
     startWorkflowAndWaitUntilReady(workflow, input);
     testEnv.sleep(Duration.ofMinutes(5L));
-    workflow.resetConnection(new HashSet<>());
+    workflow.resetConnection(ResetInput.getDefault());
     testEnv.sleep(SleepingSyncWorkflow.RUN_TIME.plusMinutes(2));
 
     final Queue<ChangedStateEvent> events = testStateListener.events(testId);
@@ -1448,7 +1448,7 @@ public class ConnectionManagerWorkflowTest {
 
     startWorkflowAndWaitUntilReady(workflow, input);
     testEnv.sleep(Duration.ofMinutes(5L));
-    workflow.resetConnection(new HashSet<>());
+    workflow.resetConnection(ResetInput.getDefault());
     testEnv.sleep(SleepingSyncWorkflow.RUN_TIME.plusMinutes(2));
 
     final WorkflowState state = workflow.getState();
