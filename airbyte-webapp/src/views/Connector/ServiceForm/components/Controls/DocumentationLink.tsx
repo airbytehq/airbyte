@@ -2,13 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
-
-interface DocumentationLinkProps {
-  selectedService: SourceDefinition | DestinationDefinition;
-  documentationUrl: string;
-}
 
 const SideViewButton = styled.button`
   cursor: pointer;
@@ -25,7 +19,7 @@ const SideViewButton = styled.button`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-export const DocumentationLink: React.FC<DocumentationLinkProps> = () => {
+export const DocumentationLink: React.FC = () => {
   const { documentationPanelOpen, setDocumentationPanelOpen } = useDocumentationPanelContext();
 
   return (
