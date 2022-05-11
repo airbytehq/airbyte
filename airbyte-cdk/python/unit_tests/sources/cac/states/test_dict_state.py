@@ -12,8 +12,7 @@ value = "{{ last_record['updated_at'] }}"
 def test_empty_state_is_none():
     state = DictState(name, value, str, vars, config)
     initial_state = state.get_state()
-    # FIXME: Is this the right init or should it be NONE or an empty dict?
-    expected_state = {"date": None}
+    expected_state = {}
     assert expected_state == initial_state
 
 

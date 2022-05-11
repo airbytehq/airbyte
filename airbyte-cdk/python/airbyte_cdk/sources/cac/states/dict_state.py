@@ -19,19 +19,18 @@ class DictState(State):
         self._context = dict()
         self._vars = vars
         self._config = config
-        self._state = self._compute_state(None)
 
     def update_state(self, stream_slice, stream_state, last_response, last_record):
-        prev_state = self._context["stream_state"]
+        prev_state = self.get_state()
         self._context.update(
             {"stream_slice": stream_slice, "stream_state": stream_state, "last_response": last_response, "last_record": last_record}
         )
 
-        self._state = self._compute_state(prev_state)
-        self._context["stream_state"] = self._state
+        # self._state = self._compute_state(prev_state)
+        self._context["stream_state"] = self._compute_state(prev_state)
 
     def get_state(self):
-        return self._state
+        return self._context.get("stream_state", {})
 
     def _compute_state(self, prev_state):
         # FIXME: date needs to be properly formatted!
@@ -42,7 +41,7 @@ class DictState(State):
         else:
             val = None
 
-        if val is None and prev_state:
+        if val is None:
             return prev_state
 
         if prev_state:
