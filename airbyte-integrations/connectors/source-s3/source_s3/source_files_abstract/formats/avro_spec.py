@@ -1,14 +1,17 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from pydantic import BaseModel, Field
 
 
 class AvroFormat(BaseModel):
+    'This connector utilises <a href="https://fastavro.readthedocs.io/en/latest/" target="_blank">fastavro</a> for Avro parsing.'
+
     class Config:
-        title = "avro"
+        title = "Avro"
 
     filetype: str = Field(
-        Config.title,
+        "avro",
         const=True,
     )

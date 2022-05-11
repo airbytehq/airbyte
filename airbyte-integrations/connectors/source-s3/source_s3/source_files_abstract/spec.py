@@ -10,9 +10,9 @@ from typing import Any, Dict, Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
+from .formats.avro_spec import AvroFormat
 from .formats.csv_spec import CsvFormat
 from .formats.parquet_spec import ParquetFormat
-from .formats.avro_spec import AvroFormat
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
 
@@ -60,7 +60,7 @@ class SourceFilesAbstractSpec(BaseModel):
         order=10,
     )
 
-    format: Union[CsvFormat, ParquetFormat] = Field(
+    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(
         default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 
@@ -75,9 +75,6 @@ class SourceFilesAbstractSpec(BaseModel):
         examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
         order=30,
     )
-
-
-    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(default=CsvFormat.Config.title)
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:

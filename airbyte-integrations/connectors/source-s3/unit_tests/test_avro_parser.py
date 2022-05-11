@@ -1,11 +1,14 @@
-import io
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import os
-from avro import datafile, io, schema
 import random
-from random import randrange
 import string
+from random import randrange
 from typing import Any, Mapping
 
+from avro import datafile, io, schema
 from source_s3.source_files_abstract.formats.avro_parser import AvroParser
 
 from .abstract_test_parser import AbstractTestParser
@@ -42,10 +45,7 @@ nested_records_schema_str = """{
     ]
 }"""
 
-nested_schema_output = {
-        "lastname": "string",
-        "address": "string"   
-}
+nested_schema_output = {"lastname": "string", "address": "string"}
 
 master_schema = {
     "name": "string",
@@ -67,7 +67,7 @@ class TestAvroParser(AbstractTestParser):
         :param num_rows: number of rows to be generated
         :return: string with path to the file created
         """
-        filename = os.path.join(out_file + "." + cls.filetype)
+        filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
         parsed_schema = schema.parse(schema_str)
         rec_writer = io.DatumWriter(parsed_schema)
         file_writer = datafile.DataFileWriter(open(filename, "wb"), rec_writer, parsed_schema)

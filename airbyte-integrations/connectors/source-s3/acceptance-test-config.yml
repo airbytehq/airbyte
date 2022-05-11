@@ -46,7 +46,7 @@ tests:
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
-        path: "integration_tests/expected_records.txt"
+        path: "integration_tests/expected_records_avro.txt"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -99,7 +99,7 @@ tests:
     # for Avro format
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
