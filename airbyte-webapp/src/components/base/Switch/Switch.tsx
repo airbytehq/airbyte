@@ -7,7 +7,7 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   loading?: boolean;
 }
 
-const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...props }) => {
+export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...props }) => {
   const isChecked = checked || !!value;
   const labelStyle = `${styles.switch} ${small ? styles.small : ""} ${loading ? styles.loading : ""}`;
   const spanStyle = `${styles.slider} ${small ? styles.small : ""} ${loading ? styles.loading : ""} ${
@@ -20,5 +20,3 @@ const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...prop
     </label>
   );
 };
-
-export default Switch;

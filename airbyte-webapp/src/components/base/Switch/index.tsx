@@ -1,4 +1,1 @@
-import Switch from "./Switch";
-
-export default Switch;
-export { Switch };
+export { Switch } from "./Switch";
