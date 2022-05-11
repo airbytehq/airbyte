@@ -1,0 +1,125 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "coord": {
+        "type": "object",
+        "properties": {
+          "lon": {
+            "type": ["null", "number"]
+          },
+          "lat": {
+            "type": ["null", "number"]
+          }
+        }
+      },
+      "weather": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "main": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "base": {
+        "type": "string"
+      },
+      "main": {
+        "type": "object",
+        "properties": {
+          "temp": {
+            "type": ["null", "number"]
+          },
+          "feels_like": {
+            "type": ["null", "number"]
+          },
+          "temp_min": {
+            "type": ["null", "number"]
+          },
+          "temp_max": {
+            "type": ["null", "number"]
+          },
+          "pressure": {
+            "type": ["null", "integer"]
+          },
+          "humidity": {
+            "type": ["null", "integer"]
+          },
+          "sea_level": {
+            "type": ["null", "integer"]
+          },
+          "grnd_level": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "visibility": {
+        "type": ["null", "integer"]
+      },
+      "wind": {
+        "type": "object",
+        "properties": {
+          "speed": {
+            "type": ["null", "number"]
+          },
+          "deg": {
+            "type": ["null", "integer"]
+          },
+          "gust": {
+            "type": ["null", "number"]
+          }
+        }
+      },
+      "clouds": {
+        "type": "object",
+        "properties": {
+          "all": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "dt": {
+        "type": ["null", "integer"]
+      },
+      "sys": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string"
+          },
+          "sunrise": {
+            "type": ["null", "integer"]
+          },
+          "sunset": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "timezone": {
+        "type": ["null", "integer"]
+      },
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "name": {
+        "type": "string"
+      },
+      "cod": {
+        "type": ["null", "integer"]
+      }
+    }
+  }

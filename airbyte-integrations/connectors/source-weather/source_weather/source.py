@@ -58,7 +58,8 @@ class WeatherStream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    #url_base = "https://example-api.com/v1/"
+    url_base = "https://api.openweathermap.org/data/2.5/weather"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -84,30 +85,19 @@ class WeatherStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        
+        return {"lat": 37.39, "lon": 122.08, "appid": "a5a217e3eb8037a89090e18674634b71"}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        if "lat" not in config or "lon" not in config or "apikey" in config:
-            log("Input config must contain the properties 'api_key' and 'lat' and 'lon'")
-            sys.exit(1)
-
-        # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-        response = requests.get('https://api.openweathermap.org/data/2.5/weather', params=config)
-        if response.status_code != 200:
-            # In a real scenario we'd handle this error better :)
-            log("Failure occurred when calling Polygon.io API")
-            sys.exit(1)
-        else:
-            results = response.json()
-        for result in results:
-            yield result
+        return response.json()
 
 
-class Customers(WeatherStream):
+class Weather(WeatherStream):
+      
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
@@ -122,7 +112,7 @@ class Customers(WeatherStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
+        return "weather"
 
 
 # Basic incremental stream
@@ -223,11 +213,22 @@ class SourceWeather(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
+        # auth = auth = TokenAuthenticator(
+        #     token=self._convert_auth_to_token(config["api_key"], auth_method="Basic")  # Oauth2Authenticator is also available if you need oauth support
+        # args = {
+            
+        #     "api_key": config["appid"],
+        # }
 
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        #return [Weather(**args)]
+
+        # """
+        # TODO: Replace the streams below with your own streams.
+
+        # :param config: A Mapping of the user input configuration as defined in the connector spec.
+        # """
+        # # TODO remove the authenticator if not required.
+        # #auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        # #return [Customers(authenticator=auth), Employees(authenticator=auth)]
+
+        return [Weather(**args)]
