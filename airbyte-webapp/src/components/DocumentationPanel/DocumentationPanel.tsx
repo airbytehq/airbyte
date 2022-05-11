@@ -2,6 +2,7 @@ import type { Url } from "url";
 
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
 import { ReflexElement } from "react-reflex";
@@ -33,27 +34,25 @@ export const DocumentationPanel: React.FC = () => {
 
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
-  const sanitizeLinks = (url: Url, element: Element) => {
-    // Relative URLs pointing to another place within the documentation.
-    if (url.path?.startsWith("../../")) {
-      if (element.tagName === "img") {
-        // In images replace relative URLs with links to our bundled assets
-        return url.path.replace("../../", `${config.integrationUrl}/`);
-      } else {
-        // In links replace with a link to the external documentation instead
-        // The external path is the markdown URL without the "../../" prefix and the .md extension
-        const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
-        return `${config.ui.docsLink}/${docPath}`;
+  // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
+  const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
+    const sanitizeLinks = (url: Url, element: Element) => {
+      // Relative URLs pointing to another place within the documentation.
+      if (url.path?.startsWith("../../")) {
+        if (element.tagName === "img") {
+          // In images replace relative URLs with links to our bundled assets
+          return url.path.replace("../../", `${config.integrationUrl}/`);
+        } else {
+          // In links replace with a link to the external documentation instead
+          // The external path is the markdown URL without the "../../" prefix and the .md extension
+          const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
+          return `${config.ui.docsLink}/${docPath}`;
+        }
       }
-    }
-    return url.href;
-  };
-
-  const urlReplacerPlugin: PluggableList = [
-    [urls, sanitizeLinks],
-    // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
-    [rehypeSlug],
-  ];
+      return url.href;
+    };
+    return [[urls, sanitizeLinks], [rehypeSlug]];
+  }, [config.integrationUrl, config.ui.docsLink]);
 
   return isLoading ? (
     <LoadingPage />
