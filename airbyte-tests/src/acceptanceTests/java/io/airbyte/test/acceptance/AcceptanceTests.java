@@ -1549,7 +1549,8 @@ public class AcceptanceTests {
         dbConfig.put("host", "host.docker.internal");
       }
     } else {
-      dbConfig.put("host", "localhost");
+      // Updated from localhost to host.docker.internal (appears to be needed on newer docker desktop versions + M1 macs)
+      dbConfig.put("host", "host.docker.internal");
     }
 
     if (hiddenPassword) {
