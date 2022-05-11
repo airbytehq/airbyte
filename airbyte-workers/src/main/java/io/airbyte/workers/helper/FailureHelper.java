@@ -36,11 +36,18 @@ public class FailureHelper {
   }
 
   public static FailureReason genericFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    FailureType failureType;
+    try {
+      final String traceMessageError = m.getError().getFailureType().toString().toUpperCase();
+      failureType = FailureReason.FailureType.valueOf(traceMessageError);
+    } catch (final Exception e) {
+      failureType = FailureType.SYSTEM_ERROR;
+    }
     return new FailureReason()
         .withInternalMessage(m.getError().getInternalMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
-        .withFailureType(m.getError().getFailureType())
+        .withFailureType(failureType)
         .withMetadata(traceMessageMetadata(jobId, attemptNumber));
   }
 
@@ -67,7 +74,7 @@ public class FailureHelper {
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage(m.getError().getMessage());
   }
-  
+
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.REPLICATION)

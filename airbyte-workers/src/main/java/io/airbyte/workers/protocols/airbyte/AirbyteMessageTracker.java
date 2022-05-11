@@ -233,7 +233,6 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   }
 
-
   @Override
   public Optional<State> getSourceOutputState() {
     return Optional.ofNullable(sourceOutputState.get());

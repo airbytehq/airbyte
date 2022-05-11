@@ -321,7 +321,6 @@ class AirbyteMessageTrackerTest {
     assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
   }
 
-
   private AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)

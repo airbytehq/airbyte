@@ -109,4 +109,5 @@ public interface MessageTracker {
   AirbyteTraceMessage getFirstSourceErrorTraceMessage();
 
   FailureReason errorTraceMessageFailure(Long jobId, Integer attempt);
+
 }

@@ -7,7 +7,9 @@ package io.airbyte.workers.helper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import java.util.List;
@@ -43,8 +45,25 @@ public class FailureHelperTest {
           .withAdditionalProperty("attempt", 1));
 
   @Test
+  public void testGenericFailureFromTrace() throws Exception {
+    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Long.valueOf(123),
+        AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR);
+    final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
+    assertEquals(FailureType.CONFIG_ERROR, failureReason.getFailureType());
+  }
+
+  @Test
+  public void testGenericFailureFromTraceNoFailureType() throws Exception {
+    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Long.valueOf(123));
+    final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
+    assertEquals(failureReason.getFailureType(), FailureType.SYSTEM_ERROR);
+  }
+
+  @Test
   public void testOrderedFailures() throws Exception {
-    final List<FailureReason> failureReasonList = FailureHelper.orderedFailures(Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON));
+    final List<FailureReason> failureReasonList =
+        FailureHelper.orderedFailures(Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON));
     assertEquals(failureReasonList.get(0), TRACE_FAILURE_REASON);
   }
+
 }
