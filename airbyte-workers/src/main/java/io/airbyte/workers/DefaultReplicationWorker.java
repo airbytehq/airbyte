@@ -237,9 +237,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
       final FailureReason sourceFailure = replicationRunnableFailureRef.get();
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
-      final AirbyteTraceMessage sourceErrorTraceMessage = messageTracker.getFirstSourceErrorTraceMessage();
-      final AirbyteTraceMessage destinationErrorTraceMessage = messageTracker.getFirstDestinationErrorTraceMessage();
-      final FailureReason traceMessageFailure = FailureHelper.errorTraceMessageFailure(sourceErrorTraceMessage, destinationErrorTraceMessage, Long.valueOf(jobId), attempt);
+      final FailureReason traceMessageFailure = messageTracker.errorTraceMessageFailure(Long.valueOf(jobId), attempt);
 
       final List<FailureReason> failures = new ArrayList<>();
 

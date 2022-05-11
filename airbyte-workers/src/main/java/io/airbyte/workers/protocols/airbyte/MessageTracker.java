@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
@@ -107,4 +108,5 @@ public interface MessageTracker {
 
   AirbyteTraceMessage getFirstSourceErrorTraceMessage();
 
+  FailureReason errorTraceMessageFailure(Long jobId, Integer attempt);
 }

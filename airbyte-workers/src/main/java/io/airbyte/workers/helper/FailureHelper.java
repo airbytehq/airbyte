@@ -66,31 +66,7 @@ public class FailureHelper {
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage(m.getError().getMessage());
   }
-
-  public static FailureReason errorTraceMessageFailure(final AirbyteTraceMessage sourceMessage,
-                                                       final AirbyteTraceMessage destinationMessage,
-                                                       final Long jobId,
-                                                       final Integer attempt) {
-    if (sourceMessage == null && destinationMessage == null) {
-      return null;
-    }
-
-    if (destinationMessage == null) {
-      return sourceFailure(sourceMessage, jobId, attempt);
-    }
-
-    if (sourceMessage == null) {
-      return destinationFailure(destinationMessage, jobId, attempt);
-    }
-
-    if (sourceMessage.getEmittedAt() <= destinationMessage.getEmittedAt()) {
-      return sourceFailure(sourceMessage, jobId, attempt);
-    } else {
-      return destinationFailure(destinationMessage, jobId, attempt);
-    }
-
-  }
-
+  
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.REPLICATION)

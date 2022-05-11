@@ -9,12 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
 import java.util.Map;
@@ -288,6 +290,37 @@ class AirbyteMessageTrackerTest {
     assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), null);
     assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), null);
   }
+
+  @Test
+  public void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
+    final AirbyteMessage sourceMessage1 = createTraceMessage("source trace 1", Long.valueOf(123));
+    final AirbyteMessage sourceMessage2 = createTraceMessage("source trace 2", Long.valueOf(124));
+    final AirbyteMessage destMessage1 = createTraceMessage("dest trace 1", Long.valueOf(125));
+    final AirbyteMessage destMessage2 = createTraceMessage("dest trace 2", Long.valueOf(126));
+    messageTracker.acceptFromSource(sourceMessage1);
+    messageTracker.acceptFromSource(sourceMessage2);
+    messageTracker.acceptFromDestination(destMessage1);
+    messageTracker.acceptFromDestination(destMessage2);
+
+    final FailureReason failureReason = FailureHelper.sourceFailure(sourceMessage1.getTrace(), Long.valueOf(123), 1);
+    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1),
+        failureReason);
+  }
+
+  @Test
+  public void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
+    final AirbyteMessage destMessage = createTraceMessage("dest trace 1", Long.valueOf(125));
+    messageTracker.acceptFromDestination(destMessage);
+
+    final FailureReason failureReason = FailureHelper.destinationFailure(destMessage.getTrace(), Long.valueOf(123), 1);
+    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), failureReason);
+  }
+
+  @Test
+  public void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
+    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
+  }
+
 
   private AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
     return new AirbyteMessage()

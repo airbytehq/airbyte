@@ -11,11 +11,13 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -205,6 +207,32 @@ public class AirbyteMessageTracker implements MessageTracker {
       return null;
     }
   }
+
+  @Override
+  public FailureReason errorTraceMessageFailure(final Long jobId, final Integer attempt) {
+    final AirbyteTraceMessage sourceMessage = getFirstSourceErrorTraceMessage();
+    final AirbyteTraceMessage destinationMessage = getFirstDestinationErrorTraceMessage();
+
+    if (sourceMessage == null && destinationMessage == null) {
+      return null;
+    }
+
+    if (destinationMessage == null) {
+      return FailureHelper.sourceFailure(sourceMessage, jobId, attempt);
+    }
+
+    if (sourceMessage == null) {
+      return FailureHelper.destinationFailure(destinationMessage, jobId, attempt);
+    }
+
+    if (sourceMessage.getEmittedAt() <= destinationMessage.getEmittedAt()) {
+      return FailureHelper.sourceFailure(sourceMessage, jobId, attempt);
+    } else {
+      return FailureHelper.destinationFailure(destinationMessage, jobId, attempt);
+    }
+
+  }
+
 
   @Override
   public Optional<State> getSourceOutputState() {
