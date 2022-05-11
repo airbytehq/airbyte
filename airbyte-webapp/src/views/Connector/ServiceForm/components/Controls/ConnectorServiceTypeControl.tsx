@@ -283,9 +283,7 @@ const ConnectorServiceTypeControl: React.FC<{
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && documentationUrl && (
-        <DocumentationLink selectedService={selectedService} documentationUrl={documentationUrl} />
-      )}
+      {selectedService && documentationUrl && <DocumentationLink />}
       {selectedService &&
         (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
           <WarningMessage stage={selectedService.releaseStage} />
