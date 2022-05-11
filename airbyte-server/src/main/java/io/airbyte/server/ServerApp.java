@@ -233,6 +233,8 @@ public class ServerApp implements ServerRunnable {
     final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
+    // It is important that the migration to the temporal scheduler is performed before the server accepts any requests.
+    // This is why this migration is performed here instead of in the bootloader - so that the server blocks on this.
     migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
 
     LOGGER.info("Starting server...");
