@@ -192,18 +192,22 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-const useInitialSchema = (schema: SyncSchema, supportedDestinationSyncModes: DestinationSyncMode[]): SyncSchema =>
-  useMemo<SyncSchema>(
-    () => ({
-      streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-        const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-        const nodeStream = verifyConfigCursorField(verifySupportedSyncModes(nodeWithId));
+export const calculateInitialCatalog = (
+  schema: SyncSchema,
+  supportedDestinationSyncModes: DestinationSyncMode[],
+  isEditMode?: boolean
+): SyncSchema => ({
+  streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+    const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+    const nodeStream = verifySupportedSyncModes(nodeWithId);
 
-        return getOptimalSyncMode(nodeStream, supportedDestinationSyncModes);
-      }),
-    }),
-    [schema.streams, supportedDestinationSyncModes]
-  );
+    if (isEditMode) {
+      return nodeStream;
+    }
+
+    return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
+  }),
+});
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] => operations.filter(isDbtTransformation);
 
@@ -224,7 +228,10 @@ const useInitialValues = (
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
-  const initialSchema = useInitialSchema(connection.syncCatalog, destDefinition.supportedDestinationSyncModes);
+  const initialSchema = useMemo(
+    () => calculateInitialCatalog(connection.syncCatalog, destDefinition.supportedDestinationSyncModes, isEditMode),
+    [connection.syncCatalog, destDefinition, isEditMode]
+  );
 
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
