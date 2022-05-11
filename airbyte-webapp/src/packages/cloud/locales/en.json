@@ -16,6 +16,7 @@
   "login.yourPassword.placeholder": "Your password",
   "login.forgotPassword": "Forgot your password",
   "login.backLogin": "Back to Log in",
+  "login.createPassword": "Create a password",
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your 14-day free trial",

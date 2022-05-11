@@ -45,6 +45,7 @@ interface AuthContextApi {
   login: AuthLogin;
   signInWithEmailLink: (email: string) => Promise<void>;
   signUp: AuthSignUp;
+  setPassword: (password: string) => Promise<void>;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
   requirePasswordReset: AuthRequirePasswordReset;
@@ -121,6 +122,14 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.reauthenticate(email, currentPassword);
         return authService.updatePassword(newPassword);
       },
+      async setPassword(password: string): Promise<void> {
+        const currentAuthUser = authService.getCurrentUser();
+
+        if (currentAuthUser && !state.currentUser) {
+          await authService.updatePassword(password);
+          await onAfterAuth(currentAuthUser);
+        }
+      },
       async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);
       },
@@ -132,11 +141,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         emailVerified(true);
       },
       async signInWithEmailLink(email: string): Promise<void> {
-        const auth = await authService.signInWithEmailLink(email);
-
-        if (auth.user) {
-          await onAfterAuth(auth.user);
-        }
+        await authService.signInWithEmailLink(email);
       },
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
