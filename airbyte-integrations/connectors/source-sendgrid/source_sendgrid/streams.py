@@ -5,11 +5,13 @@
 import datetime
 from abc import ABC, abstractmethod
 from asyncio.log import logger
+from cgi import parse_multipart
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from pytest import param
 
 
 class SendgridStream(HttpStream, ABC):
@@ -208,12 +210,12 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        date_start = datetime.datetime.fromtimestamp(self._start_time).strftime(time_filter_template)
-        date_end = datetime.datetime.fromtimestamp(pendulum.now().int_timestamp).strftime(time_filter_template)
-        queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
-        print(f"INFO:-{queryapi}")
-        params["query"] = queryapi
-        return params
+        date_start = datetime.datetime.fromtimestamp(params["start_time"]).strftime(time_filter_template)
+        date_end = datetime.datetime.fromtimestamp(params["end_time"]).strftime(time_filter_template)
+        queryapi = f"last_event_time BETWEEN TIMESTAMP "+{date_start}+" AND TIMESTAMP "{date_end}"'
+        params_messages = {}
+        params_messages["query"] = queryapi
+        return params_messages
 
     def path(self, **kwargs) -> str:
         return "messages"
