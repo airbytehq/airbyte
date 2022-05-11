@@ -17,7 +17,9 @@ export const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSche
     stream: { supportedSyncModes },
   } = streamNode;
 
-  if (supportedSyncModes?.length) return streamNode;
+  if (supportedSyncModes?.length) {
+    return streamNode;
+  }
   return { ...streamNode, stream: { ...streamNode.stream, supportedSyncModes: [SyncMode.FullRefresh] } };
 };
 
