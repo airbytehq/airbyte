@@ -64,10 +64,14 @@ class SendgridSource(ConfigurableConnector):
 
         next_page_url_from_token_partial = partial(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
 
-        simple_retriever = partial(SimpleRetriever, config=config)
+        simple_retriever = create_partial.create(SimpleRetriever, state=NoState(), iterator=OnlyOnceIterator(), config=config)
         request_parameters_provider = partial(InterpolatedRequestParameterProvider, config=config)
         configurable_stream = partial(ConfigurableStream, config=config)
-        new_configurable_stream = create_partial.create(ConfigurableStream, config=config)
+        new_configurable_stream = create_partial.create(
+            ConfigurableStream,
+            schema=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
+            config=config,
+        )
         http_requester = partial(
             HttpRequester, url_base="https://api.sendgrid.com/v3/", config=config, http_method=HttpMethod.GET, authenticator=authenticator
         )
@@ -77,10 +81,7 @@ class SendgridSource(ConfigurableConnector):
             new_configurable_stream(
                 primary_key="id",
                 cursor_field=[],
-                schema=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
                 retriever=simple_retriever(
-                    state=NoState(),
-                    iterator=OnlyOnceIterator(),
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/lists"),
                         request_parameters_provider=request_parameters_provider(),
@@ -90,21 +91,20 @@ class SendgridSource(ConfigurableConnector):
                 ),
                 kwargs={"name": "lists"},
             ),
-            configurable_stream(
+            new_configurable_stream(
                 name="campaigns",
                 primary_key="id",
                 cursor_field=[],
-                schema=JsonSchema("./source_sendgrid/schemas/campaigns.json"),
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/campaigns"),
                         request_parameters_provider=request_parameters_provider(),  # No request parameters...
                     ),
                     extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
-                    iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=metadata_paginator,
                 ),
+                kwargs={"name": "campaigns"},
             ),
             configurable_stream(
                 name="contacts",
@@ -255,7 +255,7 @@ class SendgridSource(ConfigurableConnector):
                     paginator=metadata_paginator,
                 ),
             ),
-            configurable_stream(
+            new_configurable_stream(
                 name="bounces",
                 primary_key="email",
                 cursor_field=["created"],  # This stream has a cursor field
