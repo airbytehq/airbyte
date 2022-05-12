@@ -192,6 +192,35 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
+          <Section title={null}>
+            <Field name="name">
+              {({ field, meta }: FieldProps<string>) => (
+                <FlexRow>
+                  <LeftFieldCol>
+                    <ConnectorLabel
+                      nextLine
+                      error={!!meta.error && meta.touched}
+                      label={formatMessage({
+                        id: "form.connectionName",
+                      })}
+                      message={formatMessage({
+                        id: "form.connectionName.message",
+                      })}
+                    />
+                  </LeftFieldCol>
+                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                    <Input
+                      {...field}
+                      error={!!meta.error}
+                      placeholder={formatMessage({
+                        id: "form.connectionName.placeholder",
+                      })}
+                    />
+                  </RightFieldCol>
+                </FlexRow>
+              )}
+            </Field>
+          </Section>
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
               {({ field, meta }: FieldProps<ConnectionSchedule>) => (
