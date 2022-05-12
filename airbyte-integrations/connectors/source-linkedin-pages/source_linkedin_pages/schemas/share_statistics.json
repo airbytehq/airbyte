@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "paging": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "links": {
+          "type": "array",
+          "items": {}
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "totalShareStatistics": {
+              "type": "object",
+              "properties": {
+                "uniqueImpressionsCount": {
+                  "type": "integer"
+                },
+                "shareCount": {
+                  "type": "integer"
+                },
+                "shareMentionsCount": {
+                  "type": "integer"
+                },
+                "engagement": {
+                  "type": "number"
+                },
+                "clickCount": {
+                  "type": "integer"
+                },
+                "likeCount": {
+                  "type": "integer"
+                },
+                "impressionCount": {
+                  "type": "integer"
+                },
+                "commentMentionsCount": {
+                  "type": "integer"
+                },
+                "commentCount": {
+                  "type": "integer"
+                }
+              }
+            },
+            "organizationalEntity": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

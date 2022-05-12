@@ -1,0 +1,109 @@
+{
+  "type": "object",
+  "properties": {
+    "paging": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "links": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "href": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "activity": {
+              "type": "string"
+            },
+            "edited": {
+              "type": "boolean"
+            },
+            "resharedShare": {
+              "type": "string"
+            },
+            "created": {
+              "type": "object",
+              "properties": {
+                "actor": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "integer"
+                }
+              }
+            },
+            "lastModified": {
+              "type": "object",
+              "properties": {
+                "actor": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "integer"
+                }
+              }
+            },
+            "text": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                }
+              }
+            },
+            "id": {
+              "type": "string"
+            },
+            "originalShare": {
+              "type": "string"
+            },
+            "distribution": {
+              "type": "object",
+              "properties": {
+                "linkedInDistributionTarget": {
+                  "type": "object",
+                  "properties": {
+                    "visibleToGuest": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "follower_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "organization_lookup",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "page_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "share_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "shares",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "total_follower_count",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    },
+    {
+      "stream": {
+        "name": "ugc_posts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      }
+    }
+  ]
+}
