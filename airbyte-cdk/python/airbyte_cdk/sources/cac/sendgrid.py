@@ -47,7 +47,7 @@ class SendgridSource(ConfigurableConnector):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # Define some shared constants
         authenticator = TokenAuthenticator(config["apikey"])
-        limit = 5
+        limit = 50
         kwargs = {
             "url_base": "https://api.sendgrid.com/v3/",
             "http_method": HttpMethod.GET,  # This is a typed enum
