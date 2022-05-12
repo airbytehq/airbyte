@@ -207,71 +207,73 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 ### bigquery
 
-| Version | Date       | Pull Request | Subject                                                                                     |
-|:--------|:-----------| :--- |:--------------------------------------------------------------------------------------------|
-| 1.1.5   | 2022-05-03 | [12431](https://github.com/airbytehq/airbyte/pull/12431/) | Added support of OAuth 2.0 as auth method                                                   |
-| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
-| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
-| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
-| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                               |
-| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                             |
-| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec                                                                                |
-| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance                                                                   |
-| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation                                                              |
-| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                       |
-| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM                                             |
-| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
-| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer.                                   |
-| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry.                                                                      |
-| 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                             |
-| 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                   |
-| 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                  |
-| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user                     |
-| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging                                         |
-| 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
-| 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations                                                                    |
-| 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables                                                         |
-| 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                       |
-| 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                          |
-| 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size    |
-| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                |
-| 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                           |
-| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                    |
-| 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                               |
-| 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                 |
+| Version | Date       | Pull Request                                               | Subject                                                                                         |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.6   | 2022-05-03 | [12431](https://github.com/airbytehq/airbyte/pull/12431/) | Added support of OAuth 2.0 as auth method
+| 1.1.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                               |
+| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
+| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                       |
+| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477)   | Dataset location is a required field                                                            |
+| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068)   | Fixed bug with GCS bucket conditional binding                                                   |
+| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776)   | Use serialized buffering strategy to reduce memory consumption.                                 |
+| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620)   | Updated spec                                                                                    |
+| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350)   | Improve check performance                                                                       |
+| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238)   | Updated spec and documentation                                                                  |
+| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793)   | Fix namespace with invalid characters                                                           |
+| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755)   | Make sure to kill children threads and stop JVM                                                 |
+| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                    |
+| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                       |
+| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                          |
+| 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                 |
+| 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                       |
+| 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                      |
+| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user                         |
+| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging                                             |
+| 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files     |
+| 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations                                                                        |
+| 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables                                                             |
+| 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                           |
+| 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                              |
+| 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size        |
+| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                    |
+| 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                               |
+| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                        |
+| 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                                   |
+| 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                     |
 
 ### bigquery-denormalized
 
-| Version | Date       | Pull Request                                               | Subject |
-|:--------|:-----------|:-----------------------------------------------------------| :--- |
-| 1.1.5   | 2022-05-03 | [12431](https://github.com/airbytehq/airbyte/pull/12431/) | Added support of OAuth 2.0 as auth method                                                   |
-| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
-| 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
-| 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
-| 0.3.1   | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
-| 0.3.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
-| 0.2.15  | 2022-04-05 | [11166](https://github.com/airbytehq/airbyte/pull/11166) | Fixed handling of anyOf and allOf fields |
-| 0.2.14  | 2022-04-02 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
-| 0.2.13  | 2022-04-01 | [11636](https://github.com/airbytehq/airbyte/pull/11636) | Added new unit tests |
-| 0.2.12  | 2022-03-28 | [11454](https://github.com/airbytehq/airbyte/pull/11454) | Integration test enhancement for picking test-data and schemas |
-| 0.2.11  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
-| 0.2.10  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM |
-| 0.2.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.2.7   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
-| 0.2.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
-| 0.2.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields |
-| 0.2.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | BigQuery/BiqQuery denorm Destinations : Support dataset-id prefixed by project-id |
-| 0.2.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data |
-| 0.2.2   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
-| 0.2.1   | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574)   | Added namespace to Avro and Parquet record types |
-| 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788)   |  BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files |
-| 0.1.11  | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations |
-| 0.1.10  | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804)   |  handle null values in fields described by a $ref definition |
-| 0.1.9   | 2021-11-08 | [\#7736](https://github.com/airbytehq/airbyte/issues/7736) | Fixed the handling of ObjectNodes with $ref definition key |
-| 0.1.8   | 2021-10-27 | [\#7413](https://github.com/airbytehq/airbyte/issues/7413) | Fixed DATETIME conversion for BigQuery |
-| 0.1.7   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
-| 0.1.6   | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145)   | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
-| 0.1.5   | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881)   | BigQuery Denormalized NPE fix |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                 |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.6   | 2022-05-03 | [12431](https://github.com/airbytehq/airbyte/pull/12431/) | Added support of OAuth 2.0 as auth method                                                   |
+| 0.3.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                       |
+| 0.3.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                         |
+| 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                                               |
+| 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477)   | Dataset location is a required field                                                                                    |
+| 0.3.1   | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978)   | Fixed emittedAt timestamp.                                                                                              |
+| 0.3.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776)   | Use serialized buffering strategy to reduce memory consumption.                                                         |
+| 0.2.15  | 2022-04-05 | [11166](https://github.com/airbytehq/airbyte/pull/11166)   | Fixed handling of anyOf and allOf fields                                                                                |
+| 0.2.14  | 2022-04-02 | [11620](https://github.com/airbytehq/airbyte/pull/11620)   | Updated spec                                                                                                            |
+| 0.2.13  | 2022-04-01 | [11636](https://github.com/airbytehq/airbyte/pull/11636)   | Added new unit tests                                                                                                    |
+| 0.2.12  | 2022-03-28 | [11454](https://github.com/airbytehq/airbyte/pull/11454)   | Integration test enhancement for picking test-data and schemas                                                          |
+| 0.2.11  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793)   | Fix namespace with invalid characters                                                                                   |
+| 0.2.10  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755)   | Make sure to kill children threads and stop JVM                                                                         |
+| 0.2.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                            |
+| 0.2.7   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                                               |
+| 0.2.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                                                  |
+| 0.2.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                                         |
+| 0.2.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | BigQuery/BiqQuery denorm Destinations : Support dataset-id prefixed by project-id                                       |
+| 0.2.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                                              |
+| 0.2.2   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging                                                                     |
+| 0.2.1   | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574)   | Added namespace to Avro and Parquet record types                                                                        |
+| 0.2.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/pull/8788)   | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files                             |
+| 0.1.11  | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations                                                                                                |
+| 0.1.10  | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804)   | handle null values in fields described by a $ref definition                                                             |
+| 0.1.9   | 2021-11-08 | [\#7736](https://github.com/airbytehq/airbyte/issues/7736) | Fixed the handling of ObjectNodes with $ref definition key                                                              |
+| 0.1.8   | 2021-10-27 | [\#7413](https://github.com/airbytehq/airbyte/issues/7413) | Fixed DATETIME conversion for BigQuery                                                                                  |
+| 0.1.7   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables                                                                                     |
+| 0.1.6   | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145)   | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key                        |
+| 0.1.5   | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881)   | BigQuery Denormalized NPE fix                                                                                           |
 | 0.1.4   | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813)   | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
 | 0.1.3   | 2021-08-07 | [\#5261](https://github.com/airbytehq/airbyte/pull/5261)   | 🐛 Destination BigQuery\(Denormalized\): Fix processing arrays of records |
 | 0.1.2   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json |

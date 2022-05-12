@@ -112,6 +112,38 @@ Note: Each time you make a change to your implementation you need to re-build th
 
 The nice thing about this approach is that you are running your destination exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
+#### Handling Exceptions
+
+In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../../understanding-airbyte/airbyte-specification.md#The Airbyte Protocol) implements AirbyteTraceMessage.
+
+We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
+
+Airbyte provides a static utility class, `io.airbyte.integrations.base.AirbyteTraceMessageUtility`, to give you a clear and straight-forward way to emit these AirbyteTraceMessages. Example usage:
+```java
+try {
+  // some connector code responsible for doing X
+} 
+catch (ExceptionIndicatingIncorrectCredentials credErr) {
+  AirbyteTraceMessageUtility.emitConfigErrorTrace(
+    credErr, "Connector failed due to incorrect credentials while doing X. Please check your connection is using valid credentials.")
+  throw credErr
+} 
+catch (ExceptionIndicatingKnownErrorY knownErr) {
+  AirbyteTraceMessageUtility.emitSystemErrorTrace(
+    knownErr, "Connector failed because of reason Y while doing X. Please check/do/make ... to resolve this.")
+  throw knownErr
+} 
+catch (Exception e) {
+  AirbyteTraceMessageUtility.emitSystemErrorTrace(
+    e, "Connector failed while doing X. Possible reasons for this could be ...")
+  throw e 
+}
+```
+
+Note the two different error trace methods.
+- Where possible `emitConfigErrorTrace` should be used when we are certain the issue arises from a problem with the user's input configuration, e.g. invalid credentials.
+- For everything else or if unsure, use `emitSystemErrorTrace`.
+
 ### Step 3: Implement `spec`
 
 Each destination contains a specification written in JsonSchema that describes its inputs. Defining the specification is a good place to start when developing your destination. Check out the documentation [here](https://json-schema.org/) to learn the syntax. Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.

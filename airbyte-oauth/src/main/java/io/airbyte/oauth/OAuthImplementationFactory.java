@@ -8,7 +8,36 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.flows.*;
+import io.airbyte.oauth.flows.AmazonAdsOAuthFlow;
+import io.airbyte.oauth.flows.AsanaOAuthFlow;
+import io.airbyte.oauth.flows.DestinationSnowflakeOAuthFlow;
+import io.airbyte.oauth.flows.DriftOAuthFlow;
+import io.airbyte.oauth.flows.GithubOAuthFlow;
+import io.airbyte.oauth.flows.HarvestOAuthFlow;
+import io.airbyte.oauth.flows.HubspotOAuthFlow;
+import io.airbyte.oauth.flows.IntercomOAuthFlow;
+import io.airbyte.oauth.flows.LeverOAuthFlow;
+import io.airbyte.oauth.flows.LinkedinAdsOAuthFlow;
+import io.airbyte.oauth.flows.MailchimpOAuthFlow;
+import io.airbyte.oauth.flows.MicrosoftTeamsOAuthFlow;
+import io.airbyte.oauth.flows.MondayOAuthFlow;
+import io.airbyte.oauth.flows.PipeDriveOAuthFlow;
+import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
+import io.airbyte.oauth.flows.RetentlyOAuthFlow;
+import io.airbyte.oauth.flows.SalesforceOAuthFlow;
+import io.airbyte.oauth.flows.ShopifyOAuthFlow;
+import io.airbyte.oauth.flows.SlackOAuthFlow;
+import io.airbyte.oauth.flows.SmartsheetsOAuthFlow;
+import io.airbyte.oauth.flows.SnapchatMarketingOAuthFlow;
+import io.airbyte.oauth.flows.SourceSnowflakeOAuthFlow;
+import io.airbyte.oauth.flows.SquareOAuthFlow;
+import io.airbyte.oauth.flows.StravaOAuthFlow;
+import io.airbyte.oauth.flows.SurveymonkeyOAuthFlow;
+import io.airbyte.oauth.flows.TikTokMarketingOAuthFlow;
+import io.airbyte.oauth.flows.TrelloOAuthFlow;
+import io.airbyte.oauth.flows.ZendeskChatOAuthFlow;
+import io.airbyte.oauth.flows.ZendeskSunshineOAuthFlow;
+import io.airbyte.oauth.flows.ZendeskSupportOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
@@ -66,6 +95,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-bigquery", new GoogleBigQueryOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-bigquery-denormalized", new GoogleBigQueryOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
