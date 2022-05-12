@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from functools import partial
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.cac import create_partial
@@ -35,23 +34,34 @@ class SendgridSource(ConfigurableConnector):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # Define some shared constants
-        authenticator = TokenAuthenticator(config["apikey"])
         limit = 50
 
+        # Pagination
         metadata_paginator = NextPageUrlPaginator(
             interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
         )
+
+        # Request parameters
         offset_request_parameters = {"offset": "{{ next_page_token['offset'] }}", "limit": limit}
+
         offset_pagination_request_parameters = InterpolatedRequestParameterProvider(
             request_parameters=offset_request_parameters,
             config=config,
         )
         cursor_request_parameters = {
             "start_time": "{{ stream_state['created'] }}",
-            # We can define specific functions callable from the interpolation
             "end_time": "{{ utc_now() }}",
         }
+        cursor_request_parameter_provider = create_partial.create(
+            InterpolatedRequestParameterProvider, request_parameters=cursor_request_parameters, config=config
+        )
+        cursor_offset_parameters = {**offset_request_parameters, **cursor_request_parameters}
+        cursor_offset_request_parameter_provider = create_partial.create(
+            InterpolatedRequestParameterProvider, request_parameters=cursor_offset_parameters, config=config
+        )
+        request_parameters_provider = create_partial.create(InterpolatedRequestParameterProvider, config=config)
 
+        # Iterators
         datetime_iterator = DatetimeIterator(
             InterpolatedString("{{ stream_state['created'] }}", "{{ config['start_time'] }}"),
             InterpolatedString("{{ today_utc() }}"),
@@ -60,22 +70,30 @@ class SendgridSource(ConfigurableConnector):
             datetime_format="%Y-%m-%d",
             config=config,
         )
+
+        # State
         cursor_state = DictState("created", "{{ last_record['created'] }}", state_type=int)
 
-        next_page_url_from_token_partial = partial(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
+        # Next page url
+        next_page_url_from_token_partial = create_partial.create(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
 
         simple_retriever = create_partial.create(
             SimpleRetriever, state=NoState(), iterator=OnlyOnceIterator(), paginator=NoPagination(), config=config
         )
-        request_parameters_provider = partial(InterpolatedRequestParameterProvider, config=config)
+
         configurable_stream = create_partial.create(
             ConfigurableStream,
             schema=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
             cursor_field=[],
             config=config,
         )
-        http_requester = partial(
-            HttpRequester, url_base="https://api.sendgrid.com/v3/", config=config, http_method=HttpMethod.GET, authenticator=authenticator
+        http_requester = create_partial.create(
+            HttpRequester,
+            url_base="https://api.sendgrid.com/v3/",
+            config=config,
+            http_method=HttpMethod.GET,
+            authenticator=TokenAuthenticator(config["apikey"]),
+            request_parameters_provider=request_parameters_provider(),
         )
 
         # Define the streams
@@ -86,7 +104,6 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/lists"),
-                        request_parameters_provider=request_parameters_provider(),
                     ),
                     paginator=metadata_paginator,
                     extractor=JqExtractor(".result[]"),
@@ -98,9 +115,8 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/campaigns"),
-                        request_parameters_provider=request_parameters_provider(),  # No request parameters...
                     ),
-                    extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".result[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -110,9 +126,8 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="marketing/contacts",
-                        request_parameters_provider=request_parameters_provider(),  # No request parameters...
                     ),
-                    extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".result[]"),
                 ),
             ),
             configurable_stream(
@@ -121,9 +136,9 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/automations"),
-                        request_parameters_provider=request_parameters_provider(),  # No request parameters...
+                        request_parameters_provider=request_parameters_provider(),
                     ),
-                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".results[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -133,9 +148,8 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="marketing/segments",
-                        request_parameters_provider=request_parameters_provider(),  # No request parameters...
                     ),
-                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".results[]"),
                 ),
             ),
             configurable_stream(
@@ -144,10 +158,8 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/singlesends"),
-                        # FIXME: would be nice to share the path across streams...
-                        request_parameters_provider=request_parameters_provider(),  # No request parameters...
                     ),
-                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".results[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -183,9 +195,8 @@ class SendgridSource(ConfigurableConnector):
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="asm/groups",
-                        request_parameters_provider=request_parameters_provider(),
                     ),
-                    extractor=JqExtractor(transform=".[]"),  # Could also the custom extractor above
+                    extractor=JqExtractor(transform=".[]"),
                 ),
             ),
             configurable_stream(
@@ -209,9 +220,7 @@ class SendgridSource(ConfigurableConnector):
                     iterator=datetime_iterator,
                     requester=http_requester(
                         path="suppression/blocks",
-                        request_parameters_provider=request_parameters_provider(
-                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
-                        ),
+                        request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
@@ -226,9 +235,7 @@ class SendgridSource(ConfigurableConnector):
                     iterator=datetime_iterator,
                     requester=http_requester(
                         path="suppression/bounces",
-                        request_parameters_provider=request_parameters_provider(
-                            request_parameters=cursor_request_parameters,
-                        ),
+                        request_parameters_provider=cursor_request_parameter_provider,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                 ),
@@ -242,10 +249,7 @@ class SendgridSource(ConfigurableConnector):
                     iterator=datetime_iterator,
                     requester=http_requester(
                         path="suppression/invalid_emails",
-                        request_parameters_provider=request_parameters_provider(
-                            # extract value from stream_state similar to how we're usually doing
-                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
-                        ),
+                        request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
@@ -260,10 +264,7 @@ class SendgridSource(ConfigurableConnector):
                     iterator=datetime_iterator,
                     requester=http_requester(
                         path="suppression/spam_reports",
-                        request_parameters_provider=request_parameters_provider(
-                            # extract value from stream_state similar to how we're usually doing
-                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
-                        ),
+                        request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
