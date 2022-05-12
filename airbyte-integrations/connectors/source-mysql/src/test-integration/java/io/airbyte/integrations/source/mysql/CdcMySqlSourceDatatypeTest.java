@@ -31,6 +31,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private MySQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected JsonNode getConfig() {
@@ -39,6 +40,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -61,7 +63,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("replication_method", MySqlSource.ReplicationMethod.CDC)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),

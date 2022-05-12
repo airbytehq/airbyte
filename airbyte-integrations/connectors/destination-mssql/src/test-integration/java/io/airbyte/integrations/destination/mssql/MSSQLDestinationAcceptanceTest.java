@@ -30,6 +30,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -116,14 +117,17 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     db.start();
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format("jdbc:sqlserver://%s:%d",
             config.get("host").asText(),
             config.get("port").asInt()), null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
@@ -134,8 +138,8 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
@@ -150,7 +154,9 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @Override
   protected TestDataComparator getTestDataComparator() {

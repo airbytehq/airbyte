@@ -25,6 +25,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
+  private DSLContext dslContext;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
@@ -91,12 +92,13 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     db.stop();
     db.close();
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),

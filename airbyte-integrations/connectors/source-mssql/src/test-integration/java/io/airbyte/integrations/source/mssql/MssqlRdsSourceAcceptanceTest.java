@@ -22,13 +22,14 @@ import org.jooq.DSLContext;
 public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private JsonNode baseConfig;
+  private DSLContext dslContext;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     baseConfig = getStaticConfig();
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
-    final Database database = getDatabase();
+    dslContext = getDslContext(baseConfig);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
@@ -47,14 +48,14 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
-  private Database getDatabase() {
+  private DSLContext getDslContext(final JsonNode baseConfig) {
     String additionalParameter = "";
     final JsonNode sslMethod = baseConfig.get("ssl_method");
     switch (sslMethod.get("ssl_method").asText()) {
       case "unencrypted" -> additionalParameter = "encrypt=false;";
       case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
     }
-    final DSLContext dslContext = DSLContextFactory.create(
+    return DSLContextFactory.create(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
@@ -62,17 +63,21 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
             baseConfig.get("host").asText(),
             baseConfig.get("port").asInt(),
             additionalParameter), null);
+  }
+
+  private Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String database = config.get("database").asText();
-    getDatabase().query(ctx -> {
+    getDatabase(dslContext).query(ctx -> {
       ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
       ctx.fetch(String.format("DROP DATABASE %s;", database));
       return null;
     });
+    dslContext.close();
   }
 
 }
