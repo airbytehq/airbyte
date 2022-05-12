@@ -62,20 +62,20 @@ class SendgridSource(ConfigurableConnector):
         # Define the streams
         streams = [
             ConfigurableStream(
-                name="segments",
+                name="lists",
                 primary_key="id",
                 cursor_field=[],
-                schema=JsonSchema("./source_sendgrid/schemas/segments.json"),
+                schema=JsonSchema("./source_sendgrid/schemas/lists.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
-                        path="marketing/segments",
-                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
-                    ),
-                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
-                    iterator=OnlyOnceIterator(),
                     state=NoState(),
-                    paginator=NoPagination(),
+                    iterator=OnlyOnceIterator(),
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/lists"),
+                        request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
+                        kwargs=kwargs,
+                    ),
+                    paginator=metadata_paginator,
+                    extractor=JqExtractor(".result[]"),
                 ),
             ),
             ConfigurableStream(
@@ -93,6 +93,40 @@ class SendgridSource(ConfigurableConnector):
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
+                name="contacts",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/contacts.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path="marketing/contacts",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=NoPagination(),
+                ),
+            ),
+            ConfigurableStream(
+                name="segments",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/segments.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path="marketing/segments",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=NoPagination(),
                 ),
             ),
             ConfigurableStream(
@@ -145,23 +179,6 @@ class SendgridSource(ConfigurableConnector):
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=OffsetPagination(limit),
-                ),
-            ),
-            ConfigurableStream(
-                name="lists",
-                primary_key="id",
-                cursor_field=[],
-                schema=JsonSchema("./source_sendgrid/schemas/lists.json"),
-                retriever=SimpleRetriever(
-                    state=NoState(),
-                    iterator=OnlyOnceIterator(),
-                    requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/lists"),
-                        request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
-                        kwargs=kwargs,
-                    ),
-                    paginator=metadata_paginator,
-                    extractor=JqExtractor(".result[]"),
                 ),
             ),
         ]
