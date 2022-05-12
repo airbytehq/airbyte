@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -177,7 +178,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
-    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
+    assertDoesNotThrow(() -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
 }
