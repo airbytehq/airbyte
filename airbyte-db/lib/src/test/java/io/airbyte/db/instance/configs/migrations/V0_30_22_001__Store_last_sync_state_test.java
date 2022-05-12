@@ -47,7 +47,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.impl.SQLDataType;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -84,17 +84,13 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   private static final StandardSyncState STD_CONNECTION_STATE_3 = getStandardSyncState(CONNECTION_3_ID, CONNECTION_3_STATE);
   private static final Set<StandardSyncState> STD_CONNECTION_STATES = Set.of(STD_CONNECTION_STATE_2, STD_CONNECTION_STATE_3);
 
-  private static Database jobDatabase;
+  private Database jobDatabase;
 
-  @BeforeAll
+  @BeforeEach
   @Timeout(value = 2,
            unit = TimeUnit.MINUTES)
-  public static void setupJobDatabase() throws Exception {
-    jobDatabase = new JobsDatabaseInstance(
-        container.getUsername(),
-        container.getPassword(),
-        container.getJdbcUrl())
-            .getAndInitialize();
+  public void setupJobDatabase() throws Exception {
+    jobDatabase = new JobsDatabaseInstance(dslContext).getAndInitialize();
   }
 
   @Test
@@ -166,7 +162,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
      */
     final OffsetDateTime timestamp = timestampWithFullPrecision.withNano(1000 * (timestampWithFullPrecision.getNano() / 1000));
 
-    database.query(ctx -> {
+    jobDatabase.query(ctx -> {
       V0_30_22_001__Store_last_sync_state.copyData(ctx, STD_CONNECTION_STATES, timestamp);
       checkSyncStates(ctx, STD_CONNECTION_STATES, timestamp);
 
@@ -185,7 +181,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Test
   @Order(40)
   public void testMigration() throws Exception {
-    database.query(ctx -> ctx.deleteFrom(TABLE_AIRBYTE_CONFIGS)
+    jobDatabase.query(ctx -> ctx.deleteFrom(TABLE_AIRBYTE_CONFIGS)
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
@@ -201,7 +197,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
       @Override
       public Connection getConnection() {
         try {
-          return database.getDataSource().getConnection();
+          return dataSource.getConnection();
         } catch (final SQLException e) {
           throw new RuntimeException(e);
         }
@@ -209,7 +205,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
     };
     migration.migrate(context);
-    database.query(ctx -> {
+    jobDatabase.query(ctx -> {
       checkSyncStates(ctx, STD_CONNECTION_STATES, null);
       return null;
     });

@@ -7,7 +7,9 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
@@ -17,6 +19,8 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -42,7 +46,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -52,6 +56,26 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -122,14 +146,17 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickhouseDestination.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.has("password") ? config.get("password").asText() : null,
+            ClickhouseDestination.DRIVER_CLASS,
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())
+        )
+    );
   }
 
   @Override
@@ -182,6 +209,11 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
   }
 
 }
