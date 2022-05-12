@@ -4,6 +4,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
 import { ReflexElement } from "react-reflex";
 import rehypeSlug from "rehype-slug";
@@ -21,6 +22,7 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 export const DocumentationContainer = styled.div`
   padding: 0px 0px 20px;
   background-color: #ffffff;
+  height: 100vh;
 `;
 
 export const DocumentationContent = styled(Markdown)`
@@ -33,7 +35,7 @@ export const DocumentationPanel: React.FC = () => {
   const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
 
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
-
+  const { formatMessage } = useIntl();
   // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
   const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
     const sanitizeLinks = (url: Url, element: Element) => {
@@ -75,7 +77,7 @@ export const DocumentationPanel: React.FC = () => {
       {!docs.includes("<!DOCTYPE html>") ? (
         <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
-        <DocumentationContent content={"No Setup Guide found for this connector."} />
+        <DocumentationContent content={formatMessage({ id: "connector.setupGuide.notFound" })} />
       )}
     </DocumentationContainer>
   ) : (
