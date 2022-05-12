@@ -21,7 +21,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
@@ -390,7 +390,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.58
+  dockerImageTag: 0.1.59
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -779,7 +779,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file

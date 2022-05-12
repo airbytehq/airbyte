@@ -1,5 +1,6 @@
 ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS sync-attempt
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+FROM ${JDK_IMAGE} AS sync-attempt
 
 ARG DOCKER_BUILD_ARCH=amd64
 
@@ -27,7 +28,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] htt
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.38.1-alpha
+ARG VERSION=0.38.2-alpha
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}
