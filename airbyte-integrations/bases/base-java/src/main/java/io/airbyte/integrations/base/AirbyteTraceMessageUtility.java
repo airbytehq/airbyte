@@ -28,10 +28,12 @@ public final class AirbyteTraceMessageUtility {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
 
-  //todo: handle the other types of trace message we'll expect in the future, see io.airbyte.protocol.models.AirbyteTraceMessage
-  // & the tech spec: https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
-  //public void emitNotificationTrace() {}
-  //public void emitMetricTrace() {}
+  // todo: handle the other types of trace message we'll expect in the future, see
+  // io.airbyte.protocol.models.AirbyteTraceMessage
+  // & the tech spec:
+  // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
+  // public void emitNotificationTrace() {}
+  // public void emitMetricTrace() {}
 
   private static void emitMessage(AirbyteMessage message) {
     // Not sure why defaultOutputRecordCollector is under Destination specifically,
@@ -41,7 +43,9 @@ public final class AirbyteTraceMessageUtility {
   }
 
   private static AirbyteMessage makeErrorTraceAirbyteMessage(
-      final Throwable e, final String displayMessage, final FailureType failureType) {
+                                                             final Throwable e,
+                                                             final String displayMessage,
+                                                             final FailureType failureType) {
 
     return makeAirbyteMessageFromTraceMessage(
         makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)

@@ -1,12 +1,15 @@
-package io.airbyte.integrations.base;
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
+package io.airbyte.integrations.base;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -35,15 +38,17 @@ public class AirbyteExceptionHandlerTest {
     doNothing().when(airbyteExceptionHandler).terminate();
 
     // have to spawn a new thread to test the uncaught exception handling,
-    //  because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
+    // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
     Thread thread = new Thread() {
+
       @SneakyThrows
       public void run() {
         setUpOut();
         final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
-        doThrow(new RuntimeException("error")).when(runner).run(new String[]{"write"});
-        runner.run(new String[]{"write"});
+        doThrow(new RuntimeException("error")).when(runner).run(new String[] {"write"});
+        runner.run(new String[] {"write"});
       }
+
     };
     thread.setUncaughtExceptionHandler(airbyteExceptionHandler);
     thread.start();

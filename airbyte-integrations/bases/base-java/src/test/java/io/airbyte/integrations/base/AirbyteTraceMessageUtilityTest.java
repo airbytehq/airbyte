@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +27,8 @@ public class AirbyteTraceMessageUtilityTest {
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
-    //todo: this check could be better by actually trying to convert the JsonNode to an AirbyteTraceMessage instance
+    // todo: this check could be better by actually trying to convert the JsonNode to an
+    // AirbyteTraceMessage instance
     Assertions.assertEquals("TRACE", jsonNode.get("type").asText());
     Assertions.assertNotNull(jsonNode.get("trace"));
   }
