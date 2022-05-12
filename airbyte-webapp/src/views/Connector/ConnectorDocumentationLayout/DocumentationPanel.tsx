@@ -75,7 +75,7 @@ export const DocumentationPanel: React.FC = () => {
       {!docs.includes("<!DOCTYPE html>") ? (
         <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
-        <DocumentationContent content={"Oops!  We do not yet have a Setup Guide for this connector."} />
+        <DocumentationContent content={"No Setup Guide found for this connector."} />
       )}
     </DocumentationContainer>
   ) : (
