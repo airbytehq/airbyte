@@ -15,7 +15,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import java.io.IOException;
 import java.sql.JDBCType;
 import java.util.List;
 import javax.sql.DataSource;
@@ -101,7 +100,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   }
 
   @AfterAll
-  public static void cleanUp() throws IOException {
+  public static void cleanUp() throws Exception {
     DataSourceFactory.close(dataSource);
     container.close();
   }

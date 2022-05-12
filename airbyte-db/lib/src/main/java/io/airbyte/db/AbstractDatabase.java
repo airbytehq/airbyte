@@ -6,6 +6,13 @@ package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * A wrapper around the instantiated {@link javax.sql.DataSource}.
+ *
+ * Note that this class does not implement {@link AutoCloseable}/{@link java.io.Closeable}, as it is
+ * not the responsibility of this class to close the provided {@link javax.sql.DataSource}. This is
+ * to avoid accidentally closing a shared resource.
+ */
 public abstract class AbstractDatabase {
 
   private JsonNode sourceConfig;

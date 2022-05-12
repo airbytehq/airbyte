@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstoreSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -72,7 +71,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     } finally {
       try {
         DataSourceFactory.close(dataSource);
-      } catch (final IOException e) {
+      } catch (final Exception e) {
         LOGGER.warn("Unable to close data source.", e);
       }
     }

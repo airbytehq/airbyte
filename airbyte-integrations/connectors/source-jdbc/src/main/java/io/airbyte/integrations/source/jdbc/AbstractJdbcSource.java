@@ -38,7 +38,6 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -323,7 +322,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public void close() {
     try {
       DataSourceFactory.close(dataSource);
-    } catch (final IOException e) {
+    } catch (final Exception e) {
       LOGGER.warn("Unable to close data source.", e);
     } finally {
       dataSource = null;

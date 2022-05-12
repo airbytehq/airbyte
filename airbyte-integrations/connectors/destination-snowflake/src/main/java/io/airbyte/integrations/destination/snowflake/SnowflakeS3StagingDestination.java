@@ -24,8 +24,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -76,7 +74,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     } finally {
       try {
         DataSourceFactory.close(dataSource);
-      } catch (final IOException e) {
+      } catch (final Exception e) {
         LOGGER.warn("Unable to close data source.", e);
       }
     }

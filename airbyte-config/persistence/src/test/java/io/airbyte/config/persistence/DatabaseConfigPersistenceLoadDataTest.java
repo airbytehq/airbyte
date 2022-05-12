@@ -29,7 +29,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -68,7 +67,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   }
 
   @AfterAll
-  public static void tearDown() throws IOException {
+  public static void tearDown() throws Exception {
     dslContext.close();
     DataSourceFactory.close(dataSource);
   }

@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +86,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     } finally {
       try {
         DataSourceFactory.close(dataSource);
-      } catch (final IOException e) {
+      } catch (final Exception e) {
         LOGGER.warn("Unable to close data source.", e);
       }
     }

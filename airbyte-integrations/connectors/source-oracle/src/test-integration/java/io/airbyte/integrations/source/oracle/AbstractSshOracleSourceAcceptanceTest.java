@@ -78,8 +78,6 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
     }
   }
 
-  ;
-
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     sshBastionContainer.stopAndCloseContainers(db);

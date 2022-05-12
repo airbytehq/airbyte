@@ -59,7 +59,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() throws Exception {
     dslContext.close();
     DataSourceFactory.close(dataSource);
   }

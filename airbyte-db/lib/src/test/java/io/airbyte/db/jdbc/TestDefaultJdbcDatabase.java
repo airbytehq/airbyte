@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -69,7 +68,7 @@ public class TestDefaultJdbcDatabase {
   }
 
   @AfterEach
-  void close() throws IOException {
+  void close() throws Exception {
     DataSourceFactory.close(dataSource);
   }
 

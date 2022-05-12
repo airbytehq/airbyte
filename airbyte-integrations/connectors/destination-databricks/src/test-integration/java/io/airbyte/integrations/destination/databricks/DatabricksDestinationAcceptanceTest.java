@@ -78,9 +78,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    try (final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT)) {
+    try (final DSLContext dslContext = getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       return database.query(ctx -> ctx.select(asterisk())
           .from(String.format("%s.%s", schemaName, tableName))
@@ -136,9 +134,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
-    try (final DSLContext dslContext = DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT)) {
+    try (final DSLContext dslContext = getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
       // Databricks, and it incorrectly quotes the schema name
@@ -146,5 +142,11 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     } catch (final Exception e) {
       throw new SQLException(e);
     }
+  }
+
+  private static DSLContext getDslContext(final DatabricksDestinationConfig databricksConfig) {
+    return DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
   }
 }

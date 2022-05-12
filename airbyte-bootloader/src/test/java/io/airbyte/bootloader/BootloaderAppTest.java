@@ -37,7 +37,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,7 +75,7 @@ public class BootloaderAppTest {
   }
 
   @AfterEach
-  void cleanup() throws IOException {
+  void cleanup() throws Exception {
     closeDataSource(configsDataSource);
     closeDataSource(jobsDataSource);
     container.stop();
@@ -322,7 +321,7 @@ public class BootloaderAppTest {
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
   }
 
-  private void closeDataSource(final DataSource dataSource) throws IOException {
+  private void closeDataSource(final DataSource dataSource) throws Exception {
     DataSourceFactory.close(dataSource);
   }
 

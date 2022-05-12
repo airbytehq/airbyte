@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import java.io.IOException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +75,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     } finally {
       try {
         DataSourceFactory.close(dataSource);
-      } catch (final IOException e) {
+      } catch (final Exception e) {
         LOGGER.warn("Unable to close data source.", e);
       }
     }

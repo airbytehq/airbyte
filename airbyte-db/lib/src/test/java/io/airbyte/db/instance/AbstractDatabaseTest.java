@@ -48,7 +48,7 @@ public abstract class AbstractDatabaseTest {
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() throws Exception {
     dslContext.close();
     DataSourceFactory.close(dataSource);
   }

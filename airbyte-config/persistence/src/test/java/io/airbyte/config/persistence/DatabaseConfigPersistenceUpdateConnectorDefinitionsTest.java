@@ -57,7 +57,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   }
 
   @AfterAll
-  public static void tearDown() throws IOException {
+  public static void tearDown() throws Exception {
     dslContext.close();
     DataSourceFactory.close(dataSource);
   }

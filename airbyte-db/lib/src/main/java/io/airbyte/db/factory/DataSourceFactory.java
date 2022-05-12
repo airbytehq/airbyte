@@ -8,7 +8,6 @@ import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -154,11 +153,11 @@ public class DataSourceFactory {
    * {@link Closeable}.
    *
    * @param dataSource The {@link DataSource} to close.
-   * @throws IOException if unable to close the data source.
+   * @throws Exception if unable to close the data source.
    */
-  public static void close(final DataSource dataSource) throws IOException {
+  public static void close(final DataSource dataSource) throws Exception {
     if (dataSource != null) {
-      if (dataSource instanceof Closeable closeable) {
+      if (dataSource instanceof AutoCloseable closeable) {
         closeable.close();
       }
     }
