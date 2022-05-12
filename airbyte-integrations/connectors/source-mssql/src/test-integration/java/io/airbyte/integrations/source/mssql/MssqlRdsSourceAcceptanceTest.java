@@ -22,23 +22,22 @@ import org.jooq.DSLContext;
 public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private JsonNode baseConfig;
-  private DSLContext dslContext;
-
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     baseConfig = getStaticConfig();
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-    dslContext = getDslContext(baseConfig);
-    final Database database = getDatabase(dslContext);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-      ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
-      ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
-      return null;
-    });
+    try (final DSLContext dslContext = getDslContext(baseConfig)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+        ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
+        ctx.fetch(String.format("USE %s;", dbName));
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+        return null;
+      });
+    }
 
     config = Jsons.clone(baseConfig);
     ((ObjectNode) config).put("database", dbName);
@@ -72,12 +71,13 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String database = config.get("database").asText();
-    getDatabase(dslContext).query(ctx -> {
-      ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
-      ctx.fetch(String.format("DROP DATABASE %s;", database));
-      return null;
-    });
-    dslContext.close();
+    try (final DSLContext dslContext = getDslContext(baseConfig)) {
+      getDatabase(dslContext).query(ctx -> {
+        ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
+        ctx.fetch(String.format("DROP DATABASE %s;", database));
+        return null;
+      });
+    }
   }
 
 }
