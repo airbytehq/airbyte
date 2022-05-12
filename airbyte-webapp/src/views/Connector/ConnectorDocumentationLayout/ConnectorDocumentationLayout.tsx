@@ -31,7 +31,6 @@ interface PanelContainerProps {
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
   const width = dimensions?.width || 0;
-  console.log(width);
   return (
     <>
       {width < 450 && (
@@ -63,14 +62,12 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 //NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
 export const ConnectorDocumentationLayout = ({ children }: { children: JSX.Element }) => {
-  const leftPanel = children;
-
   const { documentationPanelOpen } = useDocumentationPanelContext();
 
   return (
     <ReflexContainer orientation="vertical" windowResizeAware>
       <ReflexElement className={`left-pane ${styles.leftPanelClass}`} propagateDimensions minSize={150}>
-        <LeftPanelContainer>{leftPanel}</LeftPanelContainer>
+        <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>

@@ -24,7 +24,7 @@ export const DocumentationLink: React.FC = () => {
 
   return (
     <SideViewButton type="button" onClick={() => setDocumentationPanelOpen(!documentationPanelOpen)}>
-      <FormattedMessage id="form.setupGuide" />
+      <FormattedMessage id="connector.setupGuide" />
     </SideViewButton>
   );
 };
