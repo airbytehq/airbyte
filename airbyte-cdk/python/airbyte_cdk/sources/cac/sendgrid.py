@@ -58,8 +58,23 @@ class SendgridSource(ConfigurableConnector):
             interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
             kwargs=kwargs,
         )
+        offset_request_parameters = {"offset": "{{ next_page_token['offset'] }}", "limit": limit}
         offset_pagination_request_parameters = InterpolatedRequestParameterProvider(
-            request_parameters={"offset": "{{ next_page_token['offset'] }}", "limit": limit},
+            request_parameters=offset_request_parameters,
+            config=config,
+        )
+        cursor_request_parameters = {
+            "start_time": "{{ stream_state['created'] }}",
+            # We can define specific functions callable from the interpolation
+            "end_time": "{{ utc_now() }}",
+        }
+
+        datetime_iterator = DatetimeIterator(
+            InterpolatedString("{{ stream_state['created'] }}", "{{ config['start_time'] }}"),
+            InterpolatedString("{{ today_utc() }}"),
+            step="1000d",
+            cursor_value=InterpolatedString("{{ stream_state['created'] }}"),
+            datetime_format="%Y-%m-%d",
             config=config,
         )
 
@@ -207,6 +222,23 @@ class SendgridSource(ConfigurableConnector):
                 ),
             ),
             ConfigurableStream(
+                name="suppression_groups",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/suppression_groups.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path="asm/groups",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=NoPagination(),
+                ),
+            ),
+            ConfigurableStream(
                 name="suppression_group_members",
                 primary_key="group_id",
                 cursor_field=[],
@@ -224,35 +256,87 @@ class SendgridSource(ConfigurableConnector):
                 ),
             ),
             ConfigurableStream(
+                name="blocks",
+                primary_key="email",
+                cursor_field=["created"],  # This stream has a cursor field
+                schema=JsonSchema("./source_sendgrid/schemas/blocks.json"),
+                retriever=SimpleRetriever(
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    iterator=datetime_iterator,
+                    requester=HttpRequester(
+                        path="suppression/blocks",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            # extract value from stream_state similar to how we're usually doing
+                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
+                            config=config,
+                        ),
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(transform=".[]"),
+                    paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
                 name="bounces",
                 primary_key="email",
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/bounces.json"),
                 retriever=SimpleRetriever(
                     state=DictState("created", "{{ last_record['created'] }}", state_type=int),
-                    iterator=DatetimeIterator(
-                        InterpolatedString("{{ stream_state['created'] }}", "{{ config['start_time'] }}"),
-                        InterpolatedString("{{ today_utc() }}"),
-                        step="1000d",
-                        cursor_value=InterpolatedString("{{ stream_state['created'] }}"),
-                        datetime_format="%Y-%m-%d",
-                        config=config,
-                    ),
+                    iterator=datetime_iterator,
                     requester=HttpRequester(
                         path="suppression/bounces",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             # extract value from stream_state similar to how we're usually doing
-                            request_parameters={
-                                "start_time": "{{ stream_state['created'] }}",
-                                # We can define specific functions callable from the interpolation
-                                "end_time": "{{ utc_now() }}",
-                            },
+                            request_parameters=cursor_request_parameters,
                             config=config,
                         ),
                         kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=NoPagination(),
+                ),
+            ),
+            ConfigurableStream(
+                name="invalid_emails",
+                primary_key="email",
+                cursor_field=["created"],  # This stream has a cursor field
+                schema=JsonSchema("./source_sendgrid/schemas/invalid_emails.json"),
+                retriever=SimpleRetriever(
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    iterator=datetime_iterator,
+                    requester=HttpRequester(
+                        path="suppression/invalid_emails",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            # extract value from stream_state similar to how we're usually doing
+                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
+                            config=config,
+                        ),
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(transform=".[]"),
+                    paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
+                name="spam_reports",
+                primary_key="email",
+                cursor_field=["created"],  # This stream has a cursor field
+                schema=JsonSchema("./source_sendgrid/schemas/spam_reports.json"),
+                retriever=SimpleRetriever(
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    iterator=datetime_iterator,
+                    requester=HttpRequester(
+                        path="suppression/spam_reports",
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            # extract value from stream_state similar to how we're usually doing
+                            request_parameters={**offset_request_parameters, **cursor_request_parameters},
+                            config=config,
+                        ),
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(transform=".[]"),
+                    paginator=metadata_paginator,
                 ),
             ),
         ]
