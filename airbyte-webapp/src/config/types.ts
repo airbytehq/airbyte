@@ -30,7 +30,7 @@ export type Config = {
   isDemo: boolean;
   version?: string;
   integrationUrl: string;
-  launchdarkly?: string;
+  launchDarkly?: string;
 };
 
 export type DeepPartial<T> = {

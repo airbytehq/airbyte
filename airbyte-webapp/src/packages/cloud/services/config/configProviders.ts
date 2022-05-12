@@ -36,7 +36,7 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
       authEmulatorHost: window.FIREBASE_AUTH_EMULATOR_HOST,
     },
     cloudApiUrl: window.CLOUD_API_URL,
-    launchdarkly: window.LAUNCHDARKLY_KEY,
+    launchDarkly: window.LAUNCHDARKLY_KEY,
   };
 };
 
@@ -55,7 +55,7 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
     intercom: {
       appId: process.env.REACT_APP_INTERCOM_APP_ID,
     },
-    launchdarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
+    launchDarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
   };
 };
 
