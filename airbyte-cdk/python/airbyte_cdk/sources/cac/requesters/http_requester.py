@@ -16,7 +16,7 @@ class HttpMethod(Enum):
 class HttpRequester(Requester):
     def __init__(
         self,
-        url_base: str = None,
+        url_base: [str, InterpolatedString] = None,
         path: [str, InterpolatedString] = None,
         http_method: HttpMethod = None,
         request_parameters_provider: RequestParameterProvider = None,
@@ -26,9 +26,11 @@ class HttpRequester(Requester):
     ):
         self._vars = vars
         self._authenticator = authenticator or kwargs.get("authenticator")
+        if type(url_base) == str:
+            url_base = InterpolatedString(url_base)
         self._url_base = url_base or kwargs.get("url_base")
         if type(path) == str:
-            path = InterpolatedString(path, path)
+            path = InterpolatedString(path)
         self._path: InterpolatedString = path or kwargs.get("path")
         self._method = http_method or kwargs.get("http_method")
         self._request_parameters_provider = request_parameters_provider or kwargs.get("request_parameters_provider")

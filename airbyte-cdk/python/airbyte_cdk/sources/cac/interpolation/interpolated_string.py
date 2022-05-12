@@ -7,7 +7,7 @@ from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 class InterpolatedString:
     def __init__(self, string, default=None):
         self._string = string
-        self._default = default
+        self._default = default or string
         self._interpolation = JinjaInterpolation()
 
     def eval(self, vars, config, **kwargs):

@@ -54,6 +54,10 @@ class SendgridSource(ConfigurableConnector):
             "authenticator": authenticator,
             "config": config,
         }
+        metadata_paginator = NextPageUrlPaginator(
+            interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
+            kwargs=kwargs,
+        )
 
         # Define the streams
         streams = [
@@ -72,6 +76,23 @@ class SendgridSource(ConfigurableConnector):
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=NoPagination(),
+                ),
+            ),
+            ConfigurableStream(
+                name="campaigns",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/campaigns.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/campaigns"),
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=metadata_paginator,
                 ),
             ),
             ConfigurableStream(
@@ -139,12 +160,7 @@ class SendgridSource(ConfigurableConnector):
                         request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
                         kwargs=kwargs,
                     ),
-                    paginator=NextPageUrlPaginator(
-                        interpolated_paginator=InterpolatedPaginator(
-                            {"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config
-                        ),
-                        kwargs=kwargs,
-                    ),
+                    paginator=metadata_paginator,
                     extractor=JqExtractor(".result[]"),
                 ),
             ),
