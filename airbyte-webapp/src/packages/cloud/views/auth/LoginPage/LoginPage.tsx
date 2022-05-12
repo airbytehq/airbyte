@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
         validationSchema={LoginPageValidationSchema}
         onSubmit={async (values, { setFieldError }) => {
           return login(values)
-            .then((_) => replace(query.from ?? "/"))
+            .then(() => replace(query.from ?? "/"))
             .catch((err) => {
               if (err instanceof FieldError) {
                 setFieldError(err.field, err.message);
