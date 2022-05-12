@@ -91,7 +91,7 @@ const OnboardingPage: React.FC = () => {
         ) : null}
         <Content
           big={currentStep === StepType.SET_UP_CONNECTION}
-          medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
+          medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAL}
         >
           <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
           <StepsCounter steps={steps} currentStep={currentStep} />
@@ -113,14 +113,14 @@ const OnboardingPage: React.FC = () => {
               />
             )}
             {currentStep === StepType.SET_UP_CONNECTION && (
-              <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAl)} />
+              <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAL)} />
             )}
-            {currentStep === StepType.FINAl && <FinalStep />}
+            {currentStep === StepType.FINAL && <FinalStep />}
           </Suspense>
 
           <Footer>
             <Button secondary onClick={() => handleFinishOnboarding()}>
-              {currentStep === StepType.FINAl ? (
+              {currentStep === StepType.FINAL ? (
                 <FormattedMessage id="onboarding.closeOnboarding" />
               ) : (
                 <FormattedMessage id="onboarding.skipOnboarding" />

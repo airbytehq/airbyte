@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
 // @ts-expect-error Default value provided at implementation
-export const DocumenationPanelContext = createContext<ReturnType<typeof useDocumentationPanelState>>();
+const DocumentationPanelContext = createContext<ReturnType<typeof useDocumentationPanelState>>();
 
 export const useDocumentationPanelState = () => {
   const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
@@ -15,12 +15,12 @@ export const useDocumentationPanelState = () => {
   };
 };
 
-export const useDocumentationPanelContext = () => useContext(DocumenationPanelContext);
+export const useDocumentationPanelContext = () => useContext(DocumentationPanelContext);
 
 export const DocumentationPanelProvider: React.FC = ({ children }) => {
   return (
-    <DocumenationPanelContext.Provider value={useDocumentationPanelState()}>
+    <DocumentationPanelContext.Provider value={useDocumentationPanelState()}>
       {children}
-    </DocumenationPanelContext.Provider>
+    </DocumentationPanelContext.Provider>
   );
 };
