@@ -107,10 +107,18 @@ def connection_state_path(octavia_test_project_directory):
     silent_remove(state_path)
 
 
+@pytest.fixture(scope="session")
+def connection_with_normalization_state_path(octavia_test_project_directory):
+    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/state.yaml"
+    silent_remove(state_path)
+    yield state_path
+    silent_remove(state_path)
+
+
 def updated_connection_configuration_and_path(octavia_test_project_directory, source, destination, with_normalization=False):
     if with_normalization:
-        path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration_with_normalization.yaml"
-        edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration_with_normalization.yaml"
+        path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/configuration.yaml"
+        edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/updated_configuration.yaml"
     else:
         path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration.yaml"
         edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration.yaml"
@@ -133,7 +141,9 @@ def connection(api_client, workspace_id, octavia_test_project_directory, source,
 
 
 @pytest.fixture(scope="session")
-def connection_with_normalization(api_client, workspace_id, octavia_test_project_directory, source, destination, connection_state_path):
+def connection_with_normalization(
+    api_client, workspace_id, octavia_test_project_directory, source, destination, connection_with_normalization_state_path
+):
     configuration, configuration_path = updated_connection_configuration_and_path(
         octavia_test_project_directory, source, destination, with_normalization=True
     )
