@@ -118,6 +118,7 @@
     - [Mongo DB](integrations/sources/mongodb-v2.md)
     - [My Hours](integrations/sources/my-hours.md)
     - [MySQL](integrations/sources/mysql.md)
+    - [Netsuite](integrations/sources/netsuite.md)
     - [Notion](integrations/sources/notion.md)
     - [Okta](integrations/sources/okta.md)
     - [OneSignal](integrations/sources/onesignal.md)
