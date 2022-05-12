@@ -8,6 +8,7 @@ import { useConfig } from "config";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { User } from "packages/cloud/lib/domain/users";
+import { rejectAfter } from "utils/promises";
 
 import { useAuthService } from "../../auth/AuthService";
 
@@ -18,15 +19,6 @@ import { useAuthService } from "../../auth/AuthService";
 const INITIALIZATION_TIMEOUT = 1500;
 
 type LDInitState = "initializing" | "failed" | "initialized";
-
-/**
- * Returns a promise that rejects after `delay` milliseconds with the given reason.
- */
-function rejectAfter(delay: number, reason: string) {
-  return new Promise((_, reject) => {
-    window.setTimeout(() => reject(reason), delay);
-  });
-}
 
 function mapUserToLDUser(user: User | null): LDClient.LDUser {
   return user
@@ -111,7 +103,7 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
 };
 
 export const LDExperimentServiceProvider: React.FC = ({ children }) => {
-  const { launchdarkly: launchdarklyKey } = useConfig();
+  const { launchDarkly: launchdarklyKey } = useConfig();
 
   return !launchdarklyKey ? (
     <>{children}</>
