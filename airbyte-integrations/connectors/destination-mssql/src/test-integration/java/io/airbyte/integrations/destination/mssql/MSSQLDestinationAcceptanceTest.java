@@ -99,16 +99,17 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
-    return new Database(dslContext).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(this::getJsonFromRecord)
-                  .collect(Collectors.toList());
-            });
+    try (final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null)) {
+      return getDatabase(dslContext).query(
+          ctx -> {
+            ctx.fetch(String.format("USE %s;", config.get("database")));
+            return ctx
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(this::getJsonFromRecord)
+                .collect(Collectors.toList());
+          });
+    }
   }
 
   @BeforeAll
