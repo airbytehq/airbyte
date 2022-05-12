@@ -30,7 +30,6 @@ class SendGridExtractor(Extractor):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         decoded = response.json()
-        print(f"decoded: {decoded}")
         if self.data_field:
             return decoded.get(self.data_field, [])
         else:
@@ -39,15 +38,23 @@ class SendGridExtractor(Extractor):
 
 
 class SendgridSource(ConfigurableConnector):
+    """
+    This is a sample low-code connector.
+    It still uses the existing spec.yaml file
+    """
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # Define some shared constants
         authenticator = TokenAuthenticator(config["apikey"])
         limit = 50
         kwargs = {
             "url_base": "https://api.sendgrid.com/v3/",
-            "http_method": HttpMethod.GET,
+            "http_method": HttpMethod.GET,  # This is a typed enum
             "authenticator": authenticator,
             "config": config,
         }
+
+        # Define the streams
         streams = [
             ConfigurableStream(
                 name="segments",
@@ -57,10 +64,10 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
                         path="marketing/segments",
-                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),
-                        kwargs=kwargs,
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
-                    extractor=JqExtractor(transform=".results[]"),
+                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=NoPagination(),
@@ -69,19 +76,25 @@ class SendgridSource(ConfigurableConnector):
             ConfigurableStream(
                 name="bounces",
                 primary_key="email",
-                cursor_field=["created"],
+                cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/bounces.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
                         path="suppression/bounces",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
-                            request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
+                            # extract value from stream_state similar to how we're usually doing
+                            request_parameters={
+                                "start_time": "{{ stream_state['created'] }}",
+                                # We can define specific functions callable from the interpolation
+                                "end_time": "{{ utc_now() }}",
+                            },
                             config=config,
                         ),
                         kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     iterator=DatetimeIterator(
+                        # TODO: create typed objects instead of manipulating Mappings
                         {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
                         {"value": "{{ today_utc() }}"},
                         step="1000d",
@@ -91,8 +104,10 @@ class SendgridSource(ConfigurableConnector):
                     ),
                     state=DictState("created", "{{ last_record['created'] }}", state_type=int),
                     paginator=NextPageUrlPaginator(
-                        "https://api.sendgrid.com/v3/",
-                        InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
+                        interpolated_paginator=InterpolatedPaginator(
+                            {"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config
+                        ),
+                        kwargs=kwargs,
                     ),
                 ),
             ),

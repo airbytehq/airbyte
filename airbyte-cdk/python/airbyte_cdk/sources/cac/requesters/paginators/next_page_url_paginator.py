@@ -9,9 +9,11 @@ from airbyte_cdk.sources.cac.requesters.paginators.paginator import Paginator
 
 
 class NextPageUrlPaginator(Paginator):
-    def __init__(self, url_base: str, interpolated_paginator: InterpolatedPaginator):
-        self._url_base = url_base
-        self._interpolated_paginator = interpolated_paginator
+    def __init__(self, url_base: str = None, interpolated_paginator: InterpolatedPaginator = None, kwargs=None):
+        if kwargs is None:
+            kwargs = dict()
+        self._url_base = url_base or kwargs.get("url_base")
+        self._interpolated_paginator = interpolated_paginator or kwargs.get("interpolated_paginator")
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         next_page_token = self._interpolated_paginator.next_page_token(response, last_records)
