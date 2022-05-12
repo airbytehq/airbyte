@@ -29,7 +29,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._extractor = extractor  # LowCodeComponentFactory().create_component(extractor, vars, config)
         super().__init__(self._requester.get_authenticator())
         self._iterator: Iterator = iterator  # LowCodeComponentFactory().create_component(iterator, vars, config)
-        self._state: State = state  # LowCodeComponentFactory().create_component(state, vars, config)
+        self._state: State = state.copy()  # LowCodeComponentFactory().create_component(state, vars, config)
         self._last_response = None
         self._last_records = None
 

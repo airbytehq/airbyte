@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from functools import partial
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
@@ -23,19 +24,6 @@ from airbyte_cdk.sources.cac.states.dict_state import DictState
 from airbyte_cdk.sources.cac.states.no_state import NoState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-"""
-class SendGridExtractor(Extractor):
-    def __init__(self, data_field: Optional[str]):
-        self.data_field = data_field
-
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        decoded = response.json()
-        if self.data_field:
-            return decoded.get(self.data_field, [])
-        else:
-            return decoded
-"""
 
 
 class SendgridSource(ConfigurableConnector):
@@ -77,6 +65,9 @@ class SendgridSource(ConfigurableConnector):
             datetime_format="%Y-%m-%d",
             config=config,
         )
+        cursor_state = DictState("created", "{{ last_record['created'] }}", state_type=int)
+
+        next_page_url_from_token_partial = partial(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
 
         # Define the streams
         streams = [
@@ -89,7 +80,7 @@ class SendgridSource(ConfigurableConnector):
                     state=NoState(),
                     iterator=OnlyOnceIterator(),
                     requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/lists"),
+                        path=next_page_url_from_token_partial(default="marketing/lists"),
                         request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
                         kwargs=kwargs,
                     ),
@@ -104,7 +95,7 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/campaigns.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/campaigns"),
+                        path=next_page_url_from_token_partial(default="marketing/campaigns"),
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
                         kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
@@ -138,7 +129,7 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/stats_automations.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/stats/automations"),
+                        path=next_page_url_from_token_partial(default="marketing/stats/automations"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
                         kwargs=kwargs,  # url_base can be passed directly or through kwargs
@@ -173,7 +164,7 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/single_sends.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/stats/singlesends"),
+                        path=next_page_url_from_token_partial(default="marketing/stats/singlesends"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
                         kwargs=kwargs,  # url_base can be passed directly or through kwargs
@@ -191,7 +182,7 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/templates.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "templates"),
+                        path=next_page_url_from_token_partial(default="templates"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"generations": "legacy,dynamic"}, kwargs=kwargs
@@ -261,7 +252,7 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/blocks.json"),
                 retriever=SimpleRetriever(
-                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    state=cursor_state,
                     iterator=datetime_iterator,
                     requester=HttpRequester(
                         path="suppression/blocks",
@@ -282,7 +273,7 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/bounces.json"),
                 retriever=SimpleRetriever(
-                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    state=cursor_state,
                     iterator=datetime_iterator,
                     requester=HttpRequester(
                         path="suppression/bounces",
@@ -303,7 +294,7 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/invalid_emails.json"),
                 retriever=SimpleRetriever(
-                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    state=cursor_state,
                     iterator=datetime_iterator,
                     requester=HttpRequester(
                         path="suppression/invalid_emails",
@@ -324,7 +315,7 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/spam_reports.json"),
                 retriever=SimpleRetriever(
-                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    state=cursor_state,
                     iterator=datetime_iterator,
                     requester=HttpRequester(
                         path="suppression/spam_reports",
