@@ -1,7 +1,7 @@
 import { DocumentationPanelProvider } from "./ConnectorDocumentationContext";
 import { ConnectorDocumentationLayout } from "./ConnectorDocumentationLayout";
 
-export const ConnectorDocumentationWrapper = ({ children }: { children: React.ReactNode | React.ReactNode[] }) => {
+export const ConnectorDocumentationWrapper: React.FC = ({ children }) => {
   return (
     <DocumentationPanelProvider>
       <ConnectorDocumentationLayout>{children}</ConnectorDocumentationLayout>

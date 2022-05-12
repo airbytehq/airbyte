@@ -22,7 +22,6 @@ const GrabberHandle = styled(FontAwesomeIcon)`
 `;
 
 interface PanelContainerProps {
-  children: React.ReactNode | React.ReactNode[];
   dimensions?: {
     width: number;
     height: number;
@@ -61,7 +60,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 };
 //NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const ConnectorDocumentationLayout = ({ children }: { children: React.ReactNode | React.ReactNode[] }) => {
+export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
 
   return (
