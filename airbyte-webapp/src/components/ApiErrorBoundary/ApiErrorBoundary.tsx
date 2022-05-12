@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-// import { Button } from "components/base";
+import { Button } from "components/base/Button";
 
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
@@ -66,13 +66,13 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
         <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
           {this.props.onReset && (
             <RetryContainer>
-              <button
+              <Button
                 onClick={() => {
                   this.setState({ wasReset: true, errorId: undefined }, () => onReset?.());
                 }}
               >
-                Retry
-              </button>
+                <FormattedMessage id="errorView.retry" />
+              </Button>
             </RetryContainer>
           )}
         </ErrorOccurredView>
@@ -82,7 +82,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
     return !errorId ? (
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
     ) : (
-      <ErrorOccurredView message="Unknown error occurred" />
+      <ErrorOccurredView message={<FormattedMessage id="errorView.unknownError" />} />
     );
   }
 }
