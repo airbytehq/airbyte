@@ -11,8 +11,6 @@ from airbyte_cdk.sources.cac.extractors.jq import JqExtractor
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 from airbyte_cdk.sources.cac.iterators.only_once import OnlyOnceIterator
 from airbyte_cdk.sources.cac.requesters.http_requester import HttpMethod, HttpRequester
-from airbyte_cdk.sources.cac.requesters.paginators.interpolated_paginator import InterpolatedPaginator
-from airbyte_cdk.sources.cac.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.cac.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.cac.requesters.paginators.offset_pagination import OffsetPagination
 from airbyte_cdk.sources.cac.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
@@ -79,6 +77,16 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=["created"],  # This stream has a cursor field
                 schema=JsonSchema("./source_sendgrid/schemas/bounces.json"),
                 retriever=SimpleRetriever(
+                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
+                    iterator=DatetimeIterator(
+                        # TODO: create typed objects instead of manipulating Mappings
+                        {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
+                        {"value": "{{ today_utc() }}"},
+                        step="1000d",
+                        cursor_value="{{ stream_state['created'] }}",
+                        datetime_format="%Y-%m-%d",
+                        config=config,
+                    ),
                     requester=HttpRequester(
                         path="suppression/bounces",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
@@ -93,22 +101,7 @@ class SendgridSource(ConfigurableConnector):
                         kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
-                    iterator=DatetimeIterator(
-                        # TODO: create typed objects instead of manipulating Mappings
-                        {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
-                        {"value": "{{ today_utc() }}"},
-                        step="1000d",
-                        cursor_value="{{ stream_state['created'] }}",
-                        datetime_format="%Y-%m-%d",
-                        config=config,
-                    ),
-                    state=DictState("created", "{{ last_record['created'] }}", state_type=int),
-                    paginator=NextPageUrlPaginator(
-                        interpolated_paginator=InterpolatedPaginator(
-                            {"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config
-                        ),
-                        kwargs=kwargs,
-                    ),
+                    paginator=NoPagination(),
                 ),
             ),
             ConfigurableStream(
@@ -135,5 +128,6 @@ class SendgridSource(ConfigurableConnector):
 
         return streams
 
+    # Define how to check the connection
     def connection_checker(self):
         return CheckStream(self)
