@@ -120,7 +120,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                      |
 |:---------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| `0.1.38` | 2022-05-12 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Documentation updates                                                                        |
+| `0.1.38` | 2022-05-12 | [12807](https://github.com/airbytehq/airbyte/pull/12807) | Documentation updates                                                                        |
 | `0.1.37` | 2022-05-06 | [12651](https://github.com/airbytehq/airbyte/pull/12651) | Improve integration and unit tests                                                           |
 | `0.1.36` | 2022-04-19 | [12158](https://github.com/airbytehq/airbyte/pull/12158) | Fix `*_labels` streams data type                                                             |
 | `0.1.35` | 2022-04-18 | [9310](https://github.com/airbytehq/airbyte/pull/9310)   | Add new fields to reports                                                                    |
