@@ -127,15 +127,14 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void executeQuery(final String query) {
-    try {
-      final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
           "root",
           "test",
           db.getDriverClassName(),
           String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.DEFAULT);
+              db.getDatabaseName()), SQLDialect.DEFAULT)) {
       new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));
