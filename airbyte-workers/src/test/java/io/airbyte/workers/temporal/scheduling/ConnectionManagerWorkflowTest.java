@@ -428,6 +428,7 @@ public class ConnectionManagerWorkflowTest {
           .build();
 
       startWorkflowAndWaitUntilReady(workflow, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity, Mockito.times(1)).failNonTerminalJobs(Mockito.any());
     }
