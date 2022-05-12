@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from copy import deepcopy
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -10,7 +11,10 @@ from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.connection_schedule import ConnectionSchedule
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.operation_create import OperationCreate
+from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
 from octavia_cli.apply import resources, yaml_loaders
 
 
@@ -96,7 +100,6 @@ class TestBaseResource:
         mocker.patch.object(resources.BaseResource, "__abstractmethods__", set())
         mocker.patch.object(resources.BaseResource, "create_function_name", "create_resource")
         mocker.patch.object(resources.BaseResource, "resource_id_field", "resource_id")
-        mocker.patch.object(resources.BaseResource, "ResourceIdRequestBody")
         mocker.patch.object(resources.BaseResource, "update_function_name", "update_resource")
         mocker.patch.object(resources.BaseResource, "get_function_name", "get_resource")
         mocker.patch.object(resources.BaseResource, "resource_type", "universal_resource")
@@ -171,20 +174,6 @@ class TestBaseResource:
             assert state == resources.ResourceState.from_file.return_value
         else:
             assert state is None
-
-    @pytest.mark.parametrize(
-        "resource_id",
-        [None, "foo"],
-    )
-    def test_resource_id_request_body(self, mocker, resource_id, resource):
-        mocker.patch.object(resources.BaseResource, "resource_id", resource_id)
-        if resource_id is None:
-            with pytest.raises(resources.NonExistingResourceError):
-                resource.resource_id_request_body
-                resource.ResourceIdRequestBody.assert_not_called()
-        else:
-            assert resource.resource_id_request_body == resource.ResourceIdRequestBody.return_value
-            resource.ResourceIdRequestBody.assert_called_with(resource_id)
 
     @pytest.mark.parametrize(
         "was_created",
@@ -397,6 +386,14 @@ class TestConnection:
         }
 
     @pytest.fixture
+    def connection_configuration_with_normalization(self, connection_configuration):
+        connection_configuration_with_normalization = deepcopy(connection_configuration)
+        connection_configuration_with_normalization["configuration"]["operations"] = [
+            {"name": "Normalization", "operator_configuration": {"normalization": {"option": "basic"}, "operator_type": "normalization"}}
+        ]
+        return connection_configuration_with_normalization
+
+    @pytest.fixture
     def legacy_connection_configurations(self):
         return [
             {
@@ -484,45 +481,131 @@ class TestConnection:
         mocker.patch.object(resources.Connection, "resource_id", "foo")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         mocker.patch.object(connection, "state", state)
-        assert connection.api == resources.connection_api.ConnectionApi
-        assert connection.create_function_name == "create_connection"
+        assert connection.api == resources.web_backend_api.WebBackendApi
+        assert connection.create_function_name == "web_backend_create_connection"
+        assert connection.update_function_name == "web_backend_update_connection"
         assert connection.resource_id_field == "connection_id"
-        assert connection.update_function_name == "update_connection"
         assert connection.resource_type == "connection"
         assert connection.APPLY_PRIORITY == 1
 
-        assert connection.create_payload == resources.ConnectionCreate(
+        assert connection.update_payload == resources.WebBackendConnectionUpdate(
+            connection_id=connection.resource_id, **connection.configuration
+        )
+        if state is None:
+            assert connection.get_payload is None
+        else:
+            assert connection.get_payload == resources.WebBackendConnectionRequestBody(
+                connection_id=state.resource_id, with_refreshed_catalog=False
+            )
+
+    def test_create_payload_no_normalization(self, mocker, mock_api_client, connection_configuration):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        assert connection.create_payload == resources.WebBackendConnectionCreate(
             name=connection.resource_name,
             source_id=connection.source_id,
             destination_id=connection.destination_id,
             **connection.configuration,
         )
-        assert connection.update_payload == resources.ConnectionUpdate(connection_id=connection.resource_id, **connection.configuration)
-        if state is None:
-            assert connection.get_payload is None
-        else:
-            assert connection.get_payload == resources.ConnectionIdRequestBody(state.resource_id)
+        assert "operations" not in connection.create_payload
 
-    def test_get_remote_comparable_configuration(self, mocker, mock_api_client, connection_configuration):
+    def test_create_payload_with_normalization(self, mocker, mock_api_client, connection_configuration_with_normalization):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_normalization, "bar.yaml")
+        assert connection.create_payload == resources.WebBackendConnectionCreate(
+            name=connection.resource_name,
+            source_id=connection.source_id,
+            destination_id=connection.destination_id,
+            **connection.configuration,
+        )
+        assert isinstance(connection.create_payload["operations"][0], OperationCreate)
+
+    def test_update_payload_no_normalization(self, mocker, mock_api_client, connection_configuration):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        assert connection.update_payload == resources.WebBackendConnectionUpdate(
+            connection_id=connection.resource_id,
+            **connection.configuration,
+        )
+        assert "operations" not in connection.update_payload
+
+    def test_update_payload_with_normalization(self, mocker, mock_api_client, connection_configuration_with_normalization):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_normalization, "bar.yaml")
+        assert connection.update_payload == resources.WebBackendConnectionUpdate(
+            connection_id=connection.resource_id,
+            **connection.configuration,
+        )
+        assert isinstance(connection.update_payload["operations"][0], WebBackendOperationCreateOrUpdate)
+
+    @pytest.mark.parametrize(
+        "remote_resource",
+        [
+            {
+                "name": "foo",
+                "source_id": "bar",
+                "destination_id": "fooo",
+                "connection_id": "baar",
+                "operation_ids": "foooo",
+                "foo": "bar",
+            },
+            {
+                "name": "foo",
+                "source_id": "bar",
+                "destination_id": "fooo",
+                "connection_id": "baar",
+                "operation_ids": "foooo",
+                "foo": "bar",
+                "operations": [],
+            },
+            {
+                "name": "foo",
+                "source_id": "bar",
+                "destination_id": "fooo",
+                "connection_id": "baar",
+                "operation_ids": "foooo",
+                "foo": "bar",
+                "operations": [
+                    {"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"normalization": "foo", "dbt": None}}
+                ],
+            },
+            {
+                "name": "foo",
+                "source_id": "bar",
+                "destination_id": "fooo",
+                "connection_id": "baar",
+                "operation_ids": "foooo",
+                "foo": "bar",
+                "operations": [
+                    {"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"normalization": None, "dbt": "foo"}}
+                ],
+            },
+        ],
+    )
+    def test_get_remote_comparable_configuration(self, mocker, mock_api_client, connection_configuration, remote_resource):
         mocker.patch.object(
             resources.Connection,
             "remote_resource",
-            mocker.Mock(
-                to_dict=mocker.Mock(
-                    return_value={
-                        "name": "foo",
-                        "source_id": "bar",
-                        "destination_id": "fooo",
-                        "connection_id": "baar",
-                        "operation_ids": "foooo",
-                        "foo": "bar",
-                    }
-                )
-            ),
+            mocker.Mock(to_dict=mocker.Mock(return_value=remote_resource)),
         )
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
-        assert resource._get_remote_comparable_configuration() == {"foo": "bar"}
+        comparable = resource._get_remote_comparable_configuration()
         resource.remote_resource.to_dict.assert_called_once()
+
+        assert isinstance(comparable, dict)
+        assert all([k not in comparable for k in resource.remote_root_level_keys_to_filter_out_for_comparison])
+        if "operations" in remote_resource and "operations" in comparable:
+            assert all([k not in comparable["operations"][0] for k in resource.remote_operation_level_keys_to_filter_out])
+            if remote_resource["operations"][0]["operator_configuration"].get("normalization") is not None:
+                assert "dbt" not in remote_resource["operations"][0]["operator_configuration"]
+            if remote_resource["operations"][0]["operator_configuration"].get("dbt") is not None:
+                assert "normalization" not in remote_resource["operations"][0]["operator_configuration"]
+        if "operations" in remote_resource and len(remote_resource["operations"]) == 0:
+            assert "operations" not in comparable
 
     def test_create(self, mocker, mock_api_client, connection_configuration):
         mocker.patch.object(resources.Connection, "_create_or_update")
@@ -560,6 +643,46 @@ class TestConnection:
             "status",
             "resource_requirements",
         ]
+
+    def test__deserialize_operations(self, mock_api_client, connection_configuration):
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        operations = [
+            {
+                "operator_configuration": {"operator_type": "normalization", "normalization": {"option": "basic"}},
+                "name": "operation-with-normalization",
+            },
+            {
+                "operator_configuration": {
+                    "operator_type": "dbt",
+                    "dbt": {
+                        "dbt_arguments": "run",
+                        "docker_image": "fishtownanalytics/dbt:0.19.1",
+                        "git_repo_branch": "my-branch-name",
+                        "git_repo_url": "https://github.com/airbytehq/airbyte",
+                    },
+                },
+                "name": "operation-with-custom_dbt",
+            },
+        ]
+        deserialized_operations = resource._deserialize_operations(operations, OperationCreate)
+        assert len(deserialized_operations) == 2
+        assert all([isinstance(o, OperationCreate) for o in deserialized_operations])
+        assert "normalization" in deserialized_operations[0]["operator_configuration"] and deserialized_operations[0][
+            "operator_configuration"
+        ]["operator_type"] == OperatorType("normalization")
+        assert "dbt" in deserialized_operations[1]["operator_configuration"]
+        assert deserialized_operations[1]["operator_configuration"]["operator_type"] == OperatorType("dbt")
+
+        with pytest.raises(ValueError):
+            resource._deserialize_operations(
+                [
+                    {
+                        "operator_configuration": {"operator_type": "not-supported", "normalization": {"option": "basic"}},
+                        "name": "operation-not-supported",
+                    },
+                ],
+                OperationCreate,
+            )
 
     def test__create_configured_catalog(self, mock_api_client, connection_configuration):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")

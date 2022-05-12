@@ -58,8 +58,15 @@ def destination(ctx: click.Context, definition_id: str, resource_name: str):
     required=True,
     help="Path to the YAML fine defining your destination configuration.",
 )
+@click.option(
+    "--normalization",
+    is_flag=True,
+    default=False,
+    type=bool,
+    help="Flag to enable Airbyte normalization on the connection.",
+)
 @click.pass_context
-def connection(ctx: click.Context, connection_name: str, source_path: str, destination_path: str):
+def connection(ctx: click.Context, connection_name: str, source_path: str, destination_path: str, normalization: bool):
     source = resources.factory(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], source_path)
     if not source.was_created:
         raise resources.NonExistingResourceError(
@@ -72,7 +79,7 @@ def connection(ctx: click.Context, connection_name: str, source_path: str, desti
             f"The destination defined at {destination_path} does not exists. Please run octavia apply before creating this connection."
         )
 
-    connection_renderer = ConnectionRenderer(connection_name, source, destination)
+    connection_renderer = ConnectionRenderer(connection_name, source, destination, normalization)
     output_path = connection_renderer.write_yaml(project_path=".")
     message = f"✅ - Created the connection template for {connection_name} in {output_path}."
     click.echo(click.style(message, fg="green"))

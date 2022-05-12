@@ -74,10 +74,12 @@ def tmp_destination_path(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "source_created,destination_created",
-    [(True, True), (False, True), (True, False), (False, False)],
+    "source_created,destination_created,enable_normalization",
+    [(True, True, True), (False, True, True), (True, False, False), (False, False, False)],
 )
-def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destination_path, source_created, destination_created):
+def test_generate_connection(
+    mocker, context_object, tmp_source_path, tmp_destination_path, source_created, destination_created, enable_normalization
+):
     runner = CliRunner()
     mock_source = mocker.Mock(was_created=source_created)
     mock_destination = mocker.Mock(was_created=destination_created)
@@ -89,9 +91,10 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
     mocker.patch.object(commands, "ConnectionRenderer", mocker.Mock())
     mock_renderer = commands.ConnectionRenderer.return_value
     mock_renderer.write_yaml.return_value = "expected_output_path"
-    result = runner.invoke(
-        commands.connection, ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path], obj=context_object
-    )
+    cli_input = ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path]
+    if enable_normalization:
+        cli_input.append("--normalization")
+    result = runner.invoke(commands.connection, cli_input, obj=context_object)
     if source_created and destination_created:
         assert result.exit_code == 0
         assert result.output == "✅ - Created the connection template for my_new_connection in expected_output_path.\n"
@@ -101,7 +104,7 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
                 mocker.call(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], tmp_destination_path),
             ]
         )
-        commands.ConnectionRenderer.assert_called_with("my_new_connection", mock_source, mock_destination)
+        commands.ConnectionRenderer.assert_called_with("my_new_connection", mock_source, mock_destination, enable_normalization)
         mock_renderer.write_yaml.assert_called_with(project_path=".")
     elif not source_created:
         assert (

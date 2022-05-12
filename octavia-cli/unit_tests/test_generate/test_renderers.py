@@ -267,12 +267,17 @@ class TestConnectionRenderer:
     def mock_destination(self, mocker):
         return mocker.Mock()
 
-    def test_init(self, mock_source, mock_destination):
+    @pytest.fixture
+    def mock_enable_normalization(self, mocker):
+        return mocker.Mock()
+
+    def test_init(self, mock_source, mock_destination, mock_enable_normalization):
         assert renderers.ConnectionRenderer.TEMPLATE == renderers.JINJA_ENV.get_template("connection.yaml.j2")
-        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination, mock_enable_normalization)
         assert connection_renderer.resource_name == "my_resource_name"
         assert connection_renderer.source == mock_source
         assert connection_renderer.destination == mock_destination
+        assert connection_renderer.enable_normalization == mock_enable_normalization
 
     def test_catalog_to_yaml(self, mocker):
         stream = AirbyteStream(
@@ -285,12 +290,12 @@ class TestConnectionRenderer:
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
         assert yaml_catalog == yaml.dump(catalog.to_dict(), Dumper=yaml_dumpers.CatalogDumper, default_flow_style=False)
 
-    def test_write_yaml(self, mocker, mock_source, mock_destination):
+    def test_write_yaml(self, mocker, mock_source, mock_destination, mock_enable_normalization):
         mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")
         mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
         mocker.patch.object(renderers.ConnectionRenderer, "TEMPLATE")
 
-        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination, mock_enable_normalization)
         with patch("builtins.open", mock_open()) as mock_file:
             output_path = connection_renderer.write_yaml(".")
         connection_renderer._get_output_path.assert_called_with(".", renderers.ConnectionDefinition.type)
@@ -303,13 +308,14 @@ class TestConnectionRenderer:
                 "source_id": mock_source.resource_id,
                 "destination_id": mock_destination.resource_id,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "enable_normalization": mock_enable_normalization,
             }
         )
 
     def test__render(self, mocker):
         mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
         mocker.patch.object(renderers.ConnectionRenderer, "TEMPLATE")
-        connection_renderer = renderers.ConnectionRenderer("my_connection_name", mocker.Mock(), mocker.Mock())
+        connection_renderer = renderers.ConnectionRenderer("my_connection_name", mocker.Mock(), mocker.Mock(), mocker.Mock())
         rendered = connection_renderer._render()
         connection_renderer.catalog_to_yaml.assert_called_with(connection_renderer.source.catalog)
         connection_renderer.TEMPLATE.render.assert_called_with(
@@ -318,6 +324,7 @@ class TestConnectionRenderer:
                 "source_id": connection_renderer.source.resource_id,
                 "destination_id": connection_renderer.destination.resource_id,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "enable_normalization": connection_renderer.enable_normalization,
             }
         )
         assert rendered == connection_renderer.TEMPLATE.render.return_value
