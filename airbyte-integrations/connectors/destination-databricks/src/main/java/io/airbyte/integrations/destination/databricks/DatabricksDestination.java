@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -81,7 +82,7 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
-    return String.format("jdbc:spark://%s:%s/default;transportMode=http;ssl=1;httpPath=%s;UserAgentEntry=Airbyte",
+    return String.format(DatabaseDriver.DATABRICKS.getUrlFormatString(),
         databricksConfig.getDatabricksServerHostname(),
         databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
