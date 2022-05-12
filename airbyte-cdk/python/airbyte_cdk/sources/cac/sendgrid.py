@@ -2,16 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
 from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
 from airbyte_cdk.sources.cac.configurable_stream import ConfigurableStream
-from airbyte_cdk.sources.cac.extractors.extractor import Extractor
+from airbyte_cdk.sources.cac.extractors.jq import JqExtractor
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 from airbyte_cdk.sources.cac.iterators.only_once import OnlyOnceIterator
-from airbyte_cdk.sources.cac.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.cac.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.cac.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.cac.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.cac.requesters.paginators.no_pagination import NoPagination
@@ -21,11 +20,10 @@ from airbyte_cdk.sources.cac.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.cac.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.cac.states.dict_state import DictState
 from airbyte_cdk.sources.cac.states.no_state import NoState
-from airbyte_cdk.sources.cac.types import Record
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-
+"""
 class SendGridExtractor(Extractor):
     def __init__(self, data_field: Optional[str]):
         self.data_field = data_field
@@ -37,6 +35,7 @@ class SendGridExtractor(Extractor):
             return decoded.get(self.data_field, [])
         else:
             return decoded
+"""
 
 
 class SendgridSource(ConfigurableConnector):
@@ -46,6 +45,12 @@ class SendgridSource(ConfigurableConnector):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["apikey"])
         limit = 50
+        kwargs = {
+            "url_base": "https://api.sendgrid.com/v3/",
+            "http_method": HttpMethod.GET,
+            "authenticator": authenticator,
+            "config": config,
+        }
         streams = [
             ConfigurableStream(
                 name="segments",
@@ -54,13 +59,11 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/segments.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        url_base="https://api.sendgrid.com/v3/",
                         path="marketing/segments",
-                        method="GET",
-                        authenticator=authenticator,
                         request_parameters_provider=InterpolatedRequestParameterProvider(request_parameters={}, config=config),
+                        kwargs=kwargs,
                     ),
-                    extractor=SendGridExtractor("results"),
+                    extractor=JqExtractor(transform=".results[]"),
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=NoPagination(),
@@ -75,22 +78,21 @@ class SendgridSource(ConfigurableConnector):
                     requester=HttpRequester(
                         url_base="https://api.sendgrid.com/v3/",
                         path="suppression/bounces",
-                        method="GET",
-                        authenticator=authenticator,
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
                             config=config,
                         ),
+                        kwargs=kwargs,
                     ),
-                    extractor=SendGridExtractor(None),
+                    extractor=JqExtractor(transform=".[]"),
                     iterator=DatetimeIterator(
                         {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
                         {"value": "{{ today_utc() }}"},
-                        "1000d",
-                        "{{ stream_state['created'] }}",
-                        "%Y-%m-%d",
-                        None,
-                        config,
+                        step="1000d",
+                        cursor_value="{{ stream_state['created'] }}",
+                        datetime_format="%Y-%m-%d",
+                        vars=None,
+                        config=config,
                     ),
                     state=DictState("created", "{{ last_record['created'] }}", state_type=int),
                     paginator=NextPageUrlPaginator(
@@ -106,19 +108,17 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/suppression_group_members.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        url_base="https://api.sendgrid.com/v3/",
                         path="asm/suppressions",
-                        method="GET",
-                        authenticator=authenticator,
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"offset": "{{ next_page_token['offset'] }}", "limit": limit},
                             config=config,
                         ),
+                        kwargs=kwargs,
                     ),
-                    extractor=SendGridExtractor(None),
+                    extractor=JqExtractor(transform=".[]"),
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
-                    paginator=OffsetPagination(limit, "offset"),
+                    paginator=OffsetPagination(limit),
                 ),
             ),
         ]

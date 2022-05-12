@@ -1,34 +1,34 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from enum import Enum
 from typing import Any, Mapping, MutableMapping
 
 from airbyte_cdk.sources.cac.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 
 
+class HttpMethod(Enum):
+    GET = "GET"
+
+
 class HttpRequester(Requester):
     def __init__(
         self,
-        url_base,
-        path,
-        method,
-        request_parameters_provider: RequestParameterProvider,
-        authenticator,
-        vars=None,
-        config=None,
+        url_base: str = None,
+        path: str = None,
+        http_method: HttpMethod = None,
+        request_parameters_provider: RequestParameterProvider = None,
+        authenticator=None,
+        kwargs=None,
     ):
-        if vars is None:
-            vars = dict()
-        if config is None:
-            config = dict()
         self._vars = vars
-        self._config = config
-        self._authenticator = authenticator
-        self._url_base = url_base
-        self._path = path
-        self._method = method
-        self._request_parameters_provider = request_parameters_provider
+        self._authenticator = authenticator or kwargs.get("authenticator")
+        self._url_base = url_base or kwargs.get("url_base")
+        self._path = path or kwargs.get("path")
+        self._method = http_method or kwargs.get("http_method")
+        self._request_parameters_provider = request_parameters_provider or kwargs.get("request_parameters_provider")
+        print(f"authenticator: {self._authenticator}")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

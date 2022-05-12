@@ -5,11 +5,12 @@ from typing import List
 
 import pyjq
 import requests
+from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.types import Record
 
 
-class JqExtractor:
+class JqExtractor(Extractor):
     def __init__(self, transform, vars=None, config=None):
         if vars is None:
             vars = dict()

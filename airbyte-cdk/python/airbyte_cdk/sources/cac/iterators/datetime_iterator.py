@@ -23,7 +23,11 @@ class DatetimeIterator(Iterator):
 
     # FIXME: start_time, end_time, and step should be datetime and timedelta?
     # FIXME: timezone should be configurable?
-    def __init__(self, start_time, end_time, step, cursor_value, datetime_format, vars, config):
+    def __init__(self, start_time, end_time, step, cursor_value, datetime_format, vars=None, config=None):
+        if vars is None:
+            vars = dict()
+        if config is None:
+            config = dict()
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
