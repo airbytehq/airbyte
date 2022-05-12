@@ -329,7 +329,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final CheckConnectionInput checkSourceInput =
         new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getSourceLauncherConfig(), sourceConfiguration);
     final String launchSourceDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
-    if (launchSourceDockerImage != WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) {
+
+    if (launchSourceDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)) {
+      log.info("SOURCE CHECK: Skipped");
+    } else {
+      log.info("SOURCE CHECK: Starting");
       final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
       if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
         log.info("SOURCE CHECK: Failed");
@@ -337,8 +341,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else {
         log.info("SOURCE CHECK: Successful");
       }
-    } else {
-      log.info("SOURCE CHECK: Skipped");
     }
 
     final StandardCheckConnectionInput destinationConfiguration =
@@ -347,7 +349,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getDestinationLauncherConfig(), destinationConfiguration);
     final String launchDestinationDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
 
-    if (launchDestinationDockerImage != WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) {
+    if (launchDestinationDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)) {
+      log.info("DESTINATION CHECK: Skipped");
+    } else {
+      log.info("DESTINATION CHECK: Starting");
       final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
       if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
         log.info("DESTINATION CHECK: Failed");
@@ -355,8 +360,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else {
         log.info("DESTINATION CHECK: Successful");
       }
-    } else {
-      log.info("DESTINATION CHECK: Skipped");
     }
 
     // return no failure response if the CHECKS succeed
