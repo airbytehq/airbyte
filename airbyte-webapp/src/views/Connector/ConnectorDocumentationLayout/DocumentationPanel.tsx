@@ -72,7 +72,11 @@ export const DocumentationPanel: React.FC = () => {
           </Button>
         }
       />
-      <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
+      {!docs.includes("<!DOCTYPE html>") ? (
+        <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
+      ) : (
+        <DocumentationContent content={"Oops!  We do not yet have a Setup Guide for this connector."} />
+      )}
     </DocumentationContainer>
   ) : (
     <ReflexElement className="right-pane" maxSize={1000}>
