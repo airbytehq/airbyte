@@ -211,7 +211,7 @@ class Templates(SendgridStreamMetadataPagination):
     def initial_path() -> str:
         return "templates"
 
-class Messages(SendgridStream, SendgridStreamIncrementalMixin):
+class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     """
     https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages
     """
@@ -224,8 +224,8 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
         date_start = datetime.datetime.fromtimestamp(params["start_time"]).strftime(time_filter_template)
         date_end = datetime.datetime.fromtimestamp(params["end_time"]).strftime(time_filter_template)
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
-        params_messages = {'query': urllib.parse.quote(queryapi)}
-        payload_str = "&".join("%s=%s" % (k,v) for k,v in params_messages.items())
+        params['query'] = urllib.parse.quote(queryapi)
+        payload_str = "&".join("%s=%s" % (k,v) for k,v in params.items() if k not in ['start_time', 'end_time'])
         return payload_str
 
     def path(self, **kwargs) -> str:
