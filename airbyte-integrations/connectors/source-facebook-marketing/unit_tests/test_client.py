@@ -125,7 +125,7 @@ class TestBackoff:
         ],
         ids=["server_error", "connection_reset_error", "temporary_oauth_error"],
     )
-    def test_common_error_retry(self, error_response, requests_mock, api, account_id):
+    def test_common_error_retry(self, mocker, error_response, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
         account_data = {"id": 1, "updated_time": "2020-09-25T00:00:00Z", "name": "Some name"}
         responses = [
@@ -135,6 +135,7 @@ class TestBackoff:
                 "status_code": 200,
             },
         ]
+        mocker.patch.object(AdAccount, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/", responses)

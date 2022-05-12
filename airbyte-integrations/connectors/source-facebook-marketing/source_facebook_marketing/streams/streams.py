@@ -5,7 +5,7 @@
 import base64
 import logging
 from itertools import chain
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -165,12 +165,46 @@ class Videos(FBMarketingIncrementalStream):
 class AdAccount(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
+    # this marks the current stream as incremental, we don't actually use a cursor though
+    cursor_field = "none"
+
     use_batch = True
     enable_deleted = False
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """Update stream state from latest record"""
+        current_ids = [acc["id"] for acc in self._api.accounts]
+        state_value = (current_stream_state or {}).get("account_ids") or []
+        all_ids = current_ids
+        all_ids.extend(state_value)
+
+        return {
+            "account_ids": set(all_ids),
+        }
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
         return self._api.accounts
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        account_ids_already_read = (stream_state or {}).get("account_ids") or []
+        records_iter = [item for item in self.list_objects(params={}) if item["id"] not in account_ids_already_read]
+        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
+        if self.use_batch:
+            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
+
+        for record in loaded_records_iter:
+            if isinstance(record, AbstractObject):
+                yield record.export_all_data()  # convert FB object to dict
+            else:
+                yield record  # execute_in_batch will emmit dicts
 
 
 class Images(FBMarketingReversedIncrementalStream):
