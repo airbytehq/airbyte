@@ -16,25 +16,25 @@ class HttpMethod(Enum):
 class HttpRequester(Requester):
     def __init__(
         self,
-        url_base: [str, InterpolatedString] = None,
-        path: [str, InterpolatedString] = None,
-        http_method: HttpMethod = None,
-        request_parameters_provider: RequestParameterProvider = None,
-        authenticator=None,
-        config=None,
-        kwargs=None,
+        *,
+        url_base: [str, InterpolatedString],
+        path: [str, InterpolatedString],
+        http_method: HttpMethod,
+        request_parameters_provider: RequestParameterProvider,
+        authenticator,
+        config,
     ):
         self._vars = vars
-        self._authenticator = authenticator or kwargs.get("authenticator")
+        self._authenticator = authenticator
         if type(url_base) == str:
             url_base = InterpolatedString(url_base)
-        self._url_base = url_base or kwargs.get("url_base")
+        self._url_base = url_base
         if type(path) == str:
             path = InterpolatedString(path)
-        self._path: InterpolatedString = path or kwargs.get("path")
-        self._method = http_method or kwargs.get("http_method")
-        self._request_parameters_provider = request_parameters_provider or kwargs.get("request_parameters_provider")
-        self._config = config or kwargs.get("config")
+        self._path: InterpolatedString = path
+        self._method = http_method
+        self._request_parameters_provider = request_parameters_provider
+        self._config = config
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -45,7 +45,7 @@ class HttpRequester(Requester):
         return self._authenticator
 
     def get_url_base(self):
-        return self._url_base
+        return self._url_base.eval(self._vars, self._config)
 
     def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}

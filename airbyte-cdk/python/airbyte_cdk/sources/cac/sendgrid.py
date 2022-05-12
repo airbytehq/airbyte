@@ -69,6 +69,10 @@ class SendgridSource(ConfigurableConnector):
 
         next_page_url_from_token_partial = partial(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
 
+        http_requester = partial(
+            HttpRequester, url_base="https://api.sendgrid.com/v3/", config=config, http_method=HttpMethod.GET, authenticator=authenticator
+        )
+
         # Define the streams
         streams = [
             ConfigurableStream(
@@ -79,10 +83,9 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=NoState(),
                     iterator=OnlyOnceIterator(),
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/lists"),
                         request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
-                        kwargs=kwargs,
                     ),
                     paginator=metadata_paginator,
                     extractor=JqExtractor(".result[]"),
@@ -94,10 +97,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/campaigns.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/campaigns"),
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -111,10 +113,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/contacts.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="marketing/contacts",
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".result[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -128,11 +129,10 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/stats_automations.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/automations"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -146,10 +146,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/segments.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="marketing/segments",
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -163,11 +162,10 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/single_sends.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/singlesends"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -181,13 +179,12 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/templates.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path=next_page_url_from_token_partial(default="templates"),
                         # FIXME: would be nice to share the path across streams...
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"generations": "legacy,dynamic"}, kwargs=kwargs
                         ),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".templates[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -201,10 +198,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/global_suppressions.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="suppression/unsubscribes",
                         request_parameters_provider=offset_pagination_request_parameters,
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     iterator=OnlyOnceIterator(),
@@ -218,10 +214,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/suppression_groups.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="asm/groups",
                         request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
-                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
                     ),
                     extractor=JqExtractor(transform=".[]"),  # Could also the custom extractor above
                     iterator=OnlyOnceIterator(),
@@ -235,10 +230,9 @@ class SendgridSource(ConfigurableConnector):
                 cursor_field=[],
                 schema=JsonSchema("./source_sendgrid/schemas/suppression_group_members.json"),
                 retriever=SimpleRetriever(
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="asm/suppressions",
                         request_parameters_provider=offset_pagination_request_parameters,
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     iterator=OnlyOnceIterator(),
@@ -254,14 +248,13 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=cursor_state,
                     iterator=datetime_iterator,
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="suppression/blocks",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             # extract value from stream_state similar to how we're usually doing
                             request_parameters={**offset_request_parameters, **cursor_request_parameters},
                             config=config,
                         ),
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
@@ -275,14 +268,13 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=cursor_state,
                     iterator=datetime_iterator,
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="suppression/bounces",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             # extract value from stream_state similar to how we're usually doing
                             request_parameters=cursor_request_parameters,
                             config=config,
                         ),
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=NoPagination(),
@@ -296,14 +288,13 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=cursor_state,
                     iterator=datetime_iterator,
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="suppression/invalid_emails",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             # extract value from stream_state similar to how we're usually doing
                             request_parameters={**offset_request_parameters, **cursor_request_parameters},
                             config=config,
                         ),
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
@@ -317,14 +308,13 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=cursor_state,
                     iterator=datetime_iterator,
-                    requester=HttpRequester(
+                    requester=http_requester(
                         path="suppression/spam_reports",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             # extract value from stream_state similar to how we're usually doing
                             request_parameters={**offset_request_parameters, **cursor_request_parameters},
                             config=config,
                         ),
-                        kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=metadata_paginator,
