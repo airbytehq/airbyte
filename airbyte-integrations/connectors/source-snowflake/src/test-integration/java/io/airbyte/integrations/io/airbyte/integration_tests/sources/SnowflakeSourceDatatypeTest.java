@@ -77,7 +77,6 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
-    database = getDatabase();
     database.query(ctx -> ctx.fetch(dropSchemaQuery));
     dslContext.close();
   }
