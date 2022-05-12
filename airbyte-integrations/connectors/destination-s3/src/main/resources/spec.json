@@ -84,7 +84,7 @@
       "format": {
         "title": "Output Format *",
         "type": "object",
-        "description": "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#output-schema\">here</a>) for more details",
+        "description": "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
         "oneOf": [
           {
             "title": "Avro: Apache Avro",
