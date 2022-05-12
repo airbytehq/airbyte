@@ -51,7 +51,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
+        .put(BigQueryConsts.CREDENTIALS, bigqueryConfigFromSecretFile.get(BigQueryConsts.CREDENTIALS))
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BigQueryConsts.LOADING_METHOD, loadingMethod)

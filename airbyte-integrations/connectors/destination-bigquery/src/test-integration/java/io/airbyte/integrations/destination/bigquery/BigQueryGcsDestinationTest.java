@@ -8,21 +8,19 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,13 +55,7 @@ class BigQueryGcsDestinationTest extends BigQueryDestinationTest {
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(projectId)
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    bigquery = BigQueryCredentialsFactory.createCredentialsClient(credentialsJson, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
 
     final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
@@ -98,7 +90,7 @@ class BigQueryGcsDestinationTest extends BigQueryDestinationTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
+        .put(BigQueryConsts.CREDENTIALS, credentialsJson.get(BigQueryConsts.CREDENTIALS))
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
         .put(BigQueryConsts.LOADING_METHOD, loadingMethod)

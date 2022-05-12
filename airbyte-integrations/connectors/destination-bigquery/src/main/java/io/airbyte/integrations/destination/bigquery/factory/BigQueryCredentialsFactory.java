@@ -19,25 +19,19 @@ public class BigQueryCredentialsFactory {
   private BigQueryCredentialsFactory() {
   }
 
-  private static Map<GoogleCredentialType, Object> GOOGLE_INITIALIZED_CREDENTIALS_MAP = new ConcurrentHashMap<>();
-
   public static <T> T createCredentialsClient(JsonNode config) {
     if (config == null) {
       throw new IllegalArgumentException("Config cannot be null");
     }
     GoogleCredentialType googleCredentialType = determineAuthMethod(config).apply(config);
-    return (T) GOOGLE_INITIALIZED_CREDENTIALS_MAP
-        .computeIfAbsent(googleCredentialType,
-            value -> googleCredentialType.getCredentialFunction().apply(config));
+    return (T) googleCredentialType.getCredentialFunction().apply(config);
   }
 
   public static <T> T createCredentialsClient(JsonNode config, GoogleCredentialType googleCredentialType) {
     if (config == null) {
       throw new IllegalArgumentException("Config cannot be null");
     }
-    return (T) GOOGLE_INITIALIZED_CREDENTIALS_MAP
-        .computeIfAbsent(googleCredentialType,
-            value -> googleCredentialType.getCredentialFunction().apply(config));
+    return (T) googleCredentialType.getCredentialFunction().apply(config);
   }
 
   public static Function<JsonNode, GoogleCredentialType> determineAuthMethod(JsonNode config) {

@@ -22,8 +22,7 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "service_account",
-                "order": 0
+                "const": "service_account"
               },
               "credentials_json": {
                 "type": "string",
@@ -40,8 +39,7 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "oauth2.0",
-                "order": 0
+                "const": "oauth2.0"
               },
               "access_token": {
                 "type": "string",
