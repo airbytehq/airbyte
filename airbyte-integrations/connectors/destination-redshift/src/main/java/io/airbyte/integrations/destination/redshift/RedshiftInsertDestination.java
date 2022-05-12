@@ -13,12 +13,13 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
-  private static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
   private static final String USERNAME = "username";
   private static final String PASSWORD = "password";
   private static final String SCHEMA = "schema";
