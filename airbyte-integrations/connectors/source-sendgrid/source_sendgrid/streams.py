@@ -21,16 +21,16 @@ class SendgridStream(HttpStream, ABC):
     limit = 50
     data_field = None
     
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """This method is called if we run into the rate limit.
-        Sendgrid puts the retry time in the `X-RateLimit-Reset` response header so we
-        we return that value. If the response is anything other than a 429 (e.g: 5XX)
-        fall back on default retry behavior.
-        Rate Limits Docs: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits"""
+    # def backoff_time(self, response: requests.Response) -> Optional[float]:
+    #     """This method is called if we run into the rate limit.
+    #     Sendgrid puts the retry time in the `X-RateLimit-Reset` response header so we
+    #     we return that value. If the response is anything other than a 429 (e.g: 5XX)
+    #     fall back on default retry behavior.
+    #     Rate Limits Docs: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits"""
 
-        backoff_time = response.headers.get("X-RateLimit-Reset")
-        if backoff_time is not None:
-          return float(backoff_time)
+    #     backoff_time = response.headers.get("X-RateLimit-Reset")
+    #     if backoff_time is not None:
+    #       return float(backoff_time)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
@@ -217,6 +217,7 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     """
     data_field = "messages"
     cursor_field = "last_event_time"
+    limit = 1000
     
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
