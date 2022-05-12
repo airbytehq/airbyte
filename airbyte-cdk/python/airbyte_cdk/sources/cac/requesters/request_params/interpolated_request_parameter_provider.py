@@ -9,7 +9,9 @@ from airbyte_cdk.sources.cac.requesters.request_params.request_parameters_provid
 
 
 class InterpolatedRequestParameterProvider(RequestParameterProvider):
-    def __init__(self, request_parameters: Mapping[str, str], config):
+    def __init__(self, request_parameters: Mapping[str, str] = None, config=None, kwargs=None):
+        kwargs = kwargs or dict()
+        request_parameters = request_parameters or kwargs.get("request_parameters", dict())
         self._interpolation = InterpolatedMapping(request_parameters, JinjaInterpolation())
         self._config = config
         self._vars = dict()

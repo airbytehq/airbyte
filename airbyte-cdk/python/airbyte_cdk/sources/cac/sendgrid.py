@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
 from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
@@ -39,9 +39,6 @@ class SendGridExtractor(Extractor):
 
 
 class SendgridSource(ConfigurableConnector):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return CheckStream(self.streams(config)[0]).check_connection(logger, config)
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["apikey"])
         limit = 50
@@ -60,7 +57,7 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
                         path="marketing/segments",
-                        request_parameters_provider=InterpolatedRequestParameterProvider(request_parameters={}, config=config),
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),
                         kwargs=kwargs,
                     ),
                     extractor=JqExtractor(transform=".results[]"),
@@ -76,7 +73,6 @@ class SendgridSource(ConfigurableConnector):
                 schema=JsonSchema("./source_sendgrid/schemas/bounces.json"),
                 retriever=SimpleRetriever(
                     requester=HttpRequester(
-                        url_base="https://api.sendgrid.com/v3/",
                         path="suppression/bounces",
                         request_parameters_provider=InterpolatedRequestParameterProvider(
                             request_parameters={"start_time": "{{ stream_state['created'] }}", "end_time": "{{ utc_now() }}"},
@@ -91,7 +87,6 @@ class SendgridSource(ConfigurableConnector):
                         step="1000d",
                         cursor_value="{{ stream_state['created'] }}",
                         datetime_format="%Y-%m-%d",
-                        vars=None,
                         config=config,
                     ),
                     state=DictState("created", "{{ last_record['created'] }}", state_type=int),
@@ -124,3 +119,6 @@ class SendgridSource(ConfigurableConnector):
         ]
 
         return streams
+
+    def connection_checker(self):
+        return CheckStream(self)

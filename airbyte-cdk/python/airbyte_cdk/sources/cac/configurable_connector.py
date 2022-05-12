@@ -2,12 +2,20 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import json
-from abc import ABC
+from abc import ABC, abstractmethod
+from typing import Tuple
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
 
 
 class ConfigurableConnector(AbstractSource, ABC):
+    @abstractmethod
+    def connection_checker(self):
+        pass
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        return self.connection_checker().check_connection(logger, config)
+
     def _load_config(self):
         # TODO is it better to do package loading?
         with open(self._path_to_spec, "r") as f:
