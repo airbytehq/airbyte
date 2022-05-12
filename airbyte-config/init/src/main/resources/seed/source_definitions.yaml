@@ -249,7 +249,7 @@
   sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerRepository: airbyte/source-facebook-pages
   dockerImageTag: 0.1.6
-  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   icon: facebook.svg
   sourceType: api
   releaseStage: alpha
@@ -390,7 +390,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.58
+  dockerImageTag: 0.1.59
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -407,7 +407,7 @@
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
   dockerImageTag: 0.1.9
-  documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
   releaseStage: beta
@@ -463,7 +463,7 @@
   sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/source-lemlist
+  documentationUrl: https://docs.airbyte.io/integrations/sources/lemlist
   sourceType: api
   releaseStage: alpha
 - name: Lever Hiring
@@ -598,7 +598,7 @@
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
   dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
+  documentationUrl: https://docs.airbyte.io/integrations/sources/onesignal
   icon: onesignal.svg
   sourceType: api
   releaseStage: alpha
@@ -955,7 +955,7 @@
   name: YouTube Analytics
   dockerRepository: airbyte/source-youtube-analytics
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/source-youtube-analytics
+  documentationUrl: https://docs.airbyte.io/integrations/sources/youtube-analytics
   icon: youtube.svg
   sourceType: api
   releaseStage: alpha

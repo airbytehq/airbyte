@@ -15,7 +15,7 @@
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
   dockerRepository: airbyte/destination-amazon-sqs
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazon-sqs
   icon: amazonsqs.svg
   releaseStage: alpha
 - name: AWS Datalake
@@ -27,7 +27,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.1.4
+  dockerImageTag: 1.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -40,7 +40,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -218,7 +218,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.32
+  dockerImageTag: 0.3.33
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:
@@ -257,7 +257,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.25
+  dockerImageTag: 0.4.26
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:
