@@ -28,7 +28,6 @@ class HttpRequester(Requester):
         self._path = path or kwargs.get("path")
         self._method = http_method or kwargs.get("http_method")
         self._request_parameters_provider = request_parameters_provider or kwargs.get("request_parameters_provider")
-        print(f"authenticator: {self._authenticator}")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

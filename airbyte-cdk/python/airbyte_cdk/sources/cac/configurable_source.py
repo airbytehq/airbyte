@@ -32,14 +32,11 @@ class ConfigurableSource(AbstractSource):
             return yaml.load(f.read(), Loader=yaml.SafeLoader)
 
     def get_spec_obj(self):
-        print(f"_config: {self._config}")
         return self._config["spec"]
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        print("entering check_connection")
         connection_check_config = self._source_config["options"]["check"]
         connection_checker: ConnectionChecker = self._factory.create_component(connection_check_config, self._all_vars, config)
-        print("about to call connection_checker")
         return connection_checker.check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

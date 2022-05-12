@@ -54,7 +54,6 @@ def test_stream_slices_1_day(mock_datetime_now):
     step = "1d"
     iterator = DatetimeIterator(start_date, end_date, step, cursor_value, datetime_format, vars, config)
     stream_slices = iterator.stream_slices(SyncMode.incremental, stream_state)
-    print(f"slice_slices: {stream_slices}")
 
     assert expected_slices == stream_slices
 

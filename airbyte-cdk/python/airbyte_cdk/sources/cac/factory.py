@@ -32,7 +32,6 @@ class LowCodeComponentFactory:
         all_vars = self.merge_dicts(parent_vars, inner_vars)
 
         if "TokenAuthenticator" in class_name:
-            print("creating auth")
             interpolated_options = {k: self._interpolator.eval(v, all_vars, config) for k, v in options.items()}
             return class_(**interpolated_options)
 

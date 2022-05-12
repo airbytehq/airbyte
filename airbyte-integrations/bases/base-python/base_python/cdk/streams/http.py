@@ -200,7 +200,6 @@ class HttpStream(Stream, ABC):
                 params=self.request_params(**args),
                 json=self.request_body_json(**args),
             )
-            print(f"rq:{request}")
 
             response = self._send_request(request)
             yield from self.parse_response(response, **args)
