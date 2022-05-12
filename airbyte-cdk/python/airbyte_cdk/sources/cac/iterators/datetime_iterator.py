@@ -31,29 +31,23 @@ class DatetimeIterator(Iterator):
         step,
         cursor_value: InterpolatedString,
         datetime_format,
-        vars=None,
-        config=None,
+        config,
     ):
-        if vars is None:
-            vars = dict()
-        if config is None:
-            config = dict()
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
-        self._start_time = self.parse_date(start_time.eval(vars, config))
-        self._end_time = self.parse_date(end_time.eval(vars, config))
+        self._start_time = self.parse_date(start_time.eval(config))
+        self._end_time = self.parse_date(end_time.eval(config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
         self._step = self._parse_timedelta(step)
-        self._vars = vars
         self._config = config
         self._cursor_value = cursor_value
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
 
-        cursor_value = self._cursor_value.eval(self._vars, self._config, **{"stream_state": stream_state})
+        cursor_value = self._cursor_value.eval(self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date

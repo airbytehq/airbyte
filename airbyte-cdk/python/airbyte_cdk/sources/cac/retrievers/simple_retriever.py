@@ -15,21 +15,14 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
-    def __init__(
-        self, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State, vars=None, config=None
-    ):
-        if vars is None:
-            vars = dict()
-        if config is None:
-            config = dict()
-
+    def __init__(self, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State, config):
         # FIXME: we should probably share the factory?
         self._paginator = paginator
-        self._requester = requester  # LowCodeComponentFactory().create_component(requester, vars, config)
-        self._extractor = extractor  # LowCodeComponentFactory().create_component(extractor, vars, config)
+        self._requester = requester
+        self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
-        self._iterator: Iterator = iterator  # LowCodeComponentFactory().create_component(iterator, vars, config)
-        self._state: State = state.copy()  # LowCodeComponentFactory().create_component(state, vars, config)
+        self._iterator: Iterator = iterator
+        self._state: State = state.copy()
         self._last_response = None
         self._last_records = None
 

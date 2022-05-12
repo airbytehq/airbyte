@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.cac.retrievers.retriever import Retriever
 
 if TYPE_CHECKING:
-    from airbyte_cdk.sources.cac.types import Vars, Config
+    from airbyte_cdk.sources.cac.types import Config
 
 from airbyte_cdk.sources.streams.core import IncrementalMixin, Stream
 
@@ -26,17 +26,13 @@ class ConfigurableStream(Stream, IncrementalMixin):
         # FIXME: Do we still need this?
         self._retriever._state.update_state(None, value, None, None)
 
-    def __init__(self, name, primary_key, cursor_field, schema, retriever, vars: "Vars" = None, config: "Config" = None):
-        if vars is None:
-            vars = dict()
-        if config is None:
-            config = dict()
+    def __init__(self, name, primary_key, cursor_field, schema, retriever, config: "Config"):
         self._name = name
         self._primary_key = primary_key
         self._cursor_field = cursor_field
-        self._vars = vars
-        self._schema_loader = schema  # LowCodeComponentFactory().create_component(schema, vars, config)
-        self._retriever: Retriever = retriever  # LowCodeComponentFactory().create_component(retriever, vars, config)
+        self._schema_loader = schema
+        self._retriever: Retriever = retriever
+        self._config = config
 
     def read_records(
         self,

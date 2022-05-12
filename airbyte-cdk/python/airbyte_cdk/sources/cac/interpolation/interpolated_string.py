@@ -10,5 +10,5 @@ class InterpolatedString:
         self._default = default or string
         self._interpolation = JinjaInterpolation()
 
-    def eval(self, vars, config, **kwargs):
-        return self._interpolation.eval(self._string, vars, config, self._default, **kwargs)
+    def eval(self, config, **kwargs):
+        return self._interpolation.eval(self._string, config, self._default, **kwargs)

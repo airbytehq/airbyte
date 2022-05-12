@@ -24,7 +24,6 @@ class HttpRequester(Requester):
         authenticator,
         config,
     ):
-        self._vars = vars
         self._authenticator = authenticator
         if type(url_base) == str:
             url_base = InterpolatedString(url_base)
@@ -45,11 +44,11 @@ class HttpRequester(Requester):
         return self._authenticator
 
     def get_url_base(self):
-        return self._url_base.eval(self._vars, self._config)
+        return self._url_base.eval(self._config)
 
     def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return self._path.eval(dict(), self._config, **kwargs)
+        return self._path.eval(self._config, **kwargs)
 
     def get_method(self):
         return self._method

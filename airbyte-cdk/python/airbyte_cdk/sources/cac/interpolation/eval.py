@@ -19,7 +19,7 @@ class JinjaInterpolation(Interpolation):
             "%Y-%m-%d"
         )  # FIXME hardcoded format
 
-    def eval(self, input_str: str, vars, config, default=None, **kwargs):
+    def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"vars": vars, "config": config, **kwargs}
         try:
             if isinstance(input_str, str):
