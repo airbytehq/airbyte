@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -65,9 +66,10 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s",
+        String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
-            config.get("port").asText()), SQLDialect.MYSQL);
+            config.get("port").asText(),
+            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {
