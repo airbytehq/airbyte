@@ -46,7 +46,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
 };
 
 const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
-  const width = dimensions?.width || 0;
+  const width = dimensions?.width ?? 0;
   return (
     <>
       {width < 350 ? (
