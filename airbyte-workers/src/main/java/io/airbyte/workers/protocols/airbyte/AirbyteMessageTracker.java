@@ -163,14 +163,14 @@ public class AirbyteMessageTracker implements MessageTracker {
    * When a connector emits a trace message, check the type and call the correct function. If it is an
    * error trace message, add it to the list of errorTraceMessages for the connector type
    */
-  private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final Enum connectorType) {
+  private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
   }
 
-  private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final Enum connectorType) {
+  private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final ConnectorType connectorType) {
     if (connectorType.equals(ConnectorType.DESTINATION)) {
       destinationErrorTraceMessages.add(errorTraceMessage);
     } else if (connectorType.equals(ConnectorType.SOURCE)) {

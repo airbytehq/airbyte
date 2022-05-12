@@ -58,6 +58,19 @@ public class AirbyteMessageUtils {
     return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH);
   }
 
+  public static AirbyteMessage createRecordMessage(final String streamName, final int recordData) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)));
+  }
+
+  public static AirbyteMessage createStateMessage(final int stateData) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.STATE)
+        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(stateData)));
+  }
+
+
   public static AirbyteMessage createStateMessage(final String key, final String value) {
     return new AirbyteMessage()
         .withType(Type.STATE)
@@ -79,5 +92,15 @@ public class AirbyteMessageUtils {
         .withEmittedAt(emittedAt)
         .withError(new AirbyteErrorTraceMessage().withMessage(message).withFailureType(failureType));
   }
+
+  public static AirbyteMessage createTraceMessage(final String message, final Long emittedAt) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.TRACE)
+        .withTrace(new AirbyteTraceMessage()
+            .withType(AirbyteTraceMessage.Type.ERROR)
+            .withEmittedAt(emittedAt)
+            .withError(new AirbyteErrorTraceMessage().withMessage(message)));
+  }
+
 
 }
