@@ -38,9 +38,11 @@ public class DatabricksDestination extends CopyDestination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
+    final DataSource dataSource = getDataSource(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
-        getDatabase(getDataSource(config)),
+        dataSource,
+        getDatabase(dataSource),
         getSqlOperations(),
         getNameTransformer(),
         databricksConfig,

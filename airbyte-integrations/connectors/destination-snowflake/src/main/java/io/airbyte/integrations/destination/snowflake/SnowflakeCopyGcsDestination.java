@@ -24,9 +24,11 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    final DataSource dataSource = getDataSource(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
-        getDatabase(getDataSource(config)),
+        dataSource,
+        getDatabase(dataSource),
         getSqlOperations(),
         getNameTransformer(),
         GcsConfig.getGcsConfig(config),

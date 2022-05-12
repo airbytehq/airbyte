@@ -19,6 +19,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.client.json.Json;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -289,11 +290,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     });
   }
 
-  @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
-
+  protected void initializeDataSource(final JsonNode config) {
     if (dataSource == null) {
+      final JsonNode jdbcConfig = toDatabaseConfig(config);
       dataSource = DataSourceFactory.create(
           jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
           jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
@@ -302,6 +301,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
           JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
       );
     }
+  }
+
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    initializeDataSource(config);
 
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
