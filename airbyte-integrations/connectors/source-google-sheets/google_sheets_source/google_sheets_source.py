@@ -146,7 +146,6 @@ class GoogleSheetsSource(Source):
                     client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
                 )
 
-                row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
 
@@ -157,9 +156,15 @@ class GoogleSheetsSource(Source):
                 if len(row_values) == 0:
                     break
 
+                row_id = row_cursor
                 for row in row_values:
                     if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
-                        yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
+                        yield AirbyteMessage(
+                            type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row_id, row, column_index_to_name)
+                        )
+                    row_id += 1
+
+                row_cursor += ROW_BATCH_SIZE + 1
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
 
     @staticmethod
