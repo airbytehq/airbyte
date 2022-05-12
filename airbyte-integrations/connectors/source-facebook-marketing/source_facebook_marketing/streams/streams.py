@@ -165,7 +165,7 @@ class Videos(FBMarketingIncrementalStream):
 class AdAccount(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
-    use_batch = False
+    use_batch = True
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
