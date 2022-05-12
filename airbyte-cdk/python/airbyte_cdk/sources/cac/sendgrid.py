@@ -58,6 +58,10 @@ class SendgridSource(ConfigurableConnector):
             interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
             kwargs=kwargs,
         )
+        offset_pagination_request_parameters = InterpolatedRequestParameterProvider(
+            request_parameters={"offset": "{{ next_page_token['offset'] }}", "limit": limit},
+            config=config,
+        )
 
         # Define the streams
         streams = [
@@ -148,6 +152,78 @@ class SendgridSource(ConfigurableConnector):
                 ),
             ),
             ConfigurableStream(
+                name="single_sends",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/single_sends.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/stats/singlesends"),
+                        # FIXME: would be nice to share the path across streams...
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
+                name="templates",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/templates.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "templates"),
+                        # FIXME: would be nice to share the path across streams...
+                        request_parameters_provider=InterpolatedRequestParameterProvider(
+                            request_parameters={"generations": "legacy,dynamic"}, kwargs=kwargs
+                        ),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".templates[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
+                name="global_suppressions",
+                primary_key="email",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/global_suppressions.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path="suppression/unsubscribes",
+                        request_parameters_provider=offset_pagination_request_parameters,
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(transform=".[]"),
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=OffsetPagination(limit),
+                ),
+            ),
+            ConfigurableStream(
+                name="suppression_group_members",
+                primary_key="group_id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/suppression_group_members.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path="asm/suppressions",
+                        request_parameters_provider=offset_pagination_request_parameters,
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(transform=".[]"),
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=OffsetPagination(limit),
+                ),
+            ),
+            ConfigurableStream(
                 name="bounces",
                 primary_key="email",
                 cursor_field=["created"],  # This stream has a cursor field
@@ -177,26 +253,6 @@ class SendgridSource(ConfigurableConnector):
                     ),
                     extractor=JqExtractor(transform=".[]"),
                     paginator=NoPagination(),
-                ),
-            ),
-            ConfigurableStream(
-                name="suppression_group_members",
-                primary_key="group_id",
-                cursor_field=[],
-                schema=JsonSchema("./source_sendgrid/schemas/suppression_group_members.json"),
-                retriever=SimpleRetriever(
-                    requester=HttpRequester(
-                        path="asm/suppressions",
-                        request_parameters_provider=InterpolatedRequestParameterProvider(
-                            request_parameters={"offset": "{{ next_page_token['offset'] }}", "limit": limit},
-                            config=config,
-                        ),
-                        kwargs=kwargs,
-                    ),
-                    extractor=JqExtractor(transform=".[]"),
-                    iterator=OnlyOnceIterator(),
-                    state=NoState(),
-                    paginator=OffsetPagination(limit),
                 ),
             ),
         ]
