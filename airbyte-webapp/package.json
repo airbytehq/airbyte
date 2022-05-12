@@ -50,6 +50,7 @@
     "rehype-urls": "^1.1.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
+    "rxjs": "^7.5.5",
     "sanitize-html": "^2.7.0",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",

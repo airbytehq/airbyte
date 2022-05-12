@@ -1,5 +1,8 @@
+/**
+ * When adding a new feature flag in LaunchDarkly to consume in code you'll need to make
+ * sure to update the typing here.
+ */
+
 export interface Experiments {
-  "login.page": boolean;
-  "login.title2": string;
-  "another.test": number;
+  "connector.orderOverwrite": Record<string, number>;
 }

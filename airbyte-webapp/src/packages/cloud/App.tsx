@@ -22,7 +22,6 @@ import { StoreProvider } from "views/common/StoreProvider";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
-import { LDExperimentationServiceProvider } from "./services/thirdParty/launchdarkly";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -54,10 +53,7 @@ const Services: React.FC = ({ children }) => (
             <FeatureService>
               <AppServicesProvider>
                 <AuthenticationProvider>
-                  <IntercomProvider>
-                    <LDExperimentationServiceProvider>{children}</LDExperimentationServiceProvider>
-                    {/* {children} */}
-                  </IntercomProvider>
+                  <IntercomProvider>{children}</IntercomProvider>
                 </AuthenticationProvider>
               </AppServicesProvider>
             </FeatureService>

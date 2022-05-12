@@ -1,21 +1,22 @@
 import type { Experiments } from "./experiments";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
+import { useObservable } from "react-use";
+import { EMPTY, Observable } from "rxjs";
 
 const experimentContext = createContext<ExperimentService | null>(null);
 
 export interface ExperimentService {
   getExperiment<K extends keyof Experiments>(key: K, defaultValue: Experiments[K]): Experiments[K];
+  getExperimentChanges$<K extends keyof Experiments>(key: K): Observable<Experiments[K]>;
 }
 
 export function useExperiment<K extends keyof Experiments>(key: K, defaultValue: Experiments[K]): Experiments[K] {
   const experimentService = useContext(experimentContext);
-  if (!experimentService) {
-    // If we're not having an experiment service provided, we'll always return the default value.
-    // This is an expected state runnning in OSS or if the experimentation service failed to initialize.
-    return defaultValue;
-  }
-  return experimentService.getExperiment(key, defaultValue);
+  const onChanges$ = useMemo(() => experimentService?.getExperimentChanges$(key) ?? EMPTY, [experimentService, key]);
+  const value = useObservable(onChanges$, experimentService?.getExperiment(key, defaultValue) ?? defaultValue);
+  console.log(`useExperiment(${key}): ${JSON.stringify(value)}`);
+  return value;
 }
 
 export const ExperimentProvider = experimentContext.Provider;

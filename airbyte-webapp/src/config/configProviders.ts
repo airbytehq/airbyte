@@ -27,7 +27,6 @@ const envConfigProvider: ConfigProvider = async () => {
     segment: {
       token: process.env.REACT_APP_SEGMENT_TOKEN,
     },
-    launchdarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
   };
 };
 

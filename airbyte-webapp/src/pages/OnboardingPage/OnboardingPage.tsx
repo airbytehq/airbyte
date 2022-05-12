@@ -8,7 +8,6 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useExperiment } from "hooks/services/Experiment";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
@@ -54,7 +53,6 @@ const ScreenContent = styled.div`
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
-  const loginExperiment = useExperiment("login.title2", "default value in code");
   const { push } = useRouterHook();
 
   useEffectOnce(() => {
@@ -94,7 +92,6 @@ const OnboardingPage: React.FC = () => {
         medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
       >
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-        <div style={{ background: "hotpink", marginBottom: "50px", padding: "10px" }}>{String(loginExperiment)}</div>
         <StepsCounter steps={steps} currentStep={currentStep} />
         <Suspense fallback={<LoadingPage />}>
           {currentStep === StepType.INSTRUCTION && (

@@ -1,11 +1,13 @@
 import * as LDClient from "launchdarkly-js-client-sdk";
 import { useEffect, useRef, useState } from "react";
+import { finalize, Subject } from "rxjs";
 
 import { LoadingPage } from "components";
 
 import { useConfig } from "config";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
-import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
+import type { Experiments } from "hooks/services/Experiment/experiments";
+import { User } from "packages/cloud/lib/domain/users";
 
 import { useAuthService } from "../../auth/AuthService";
 
@@ -26,14 +28,27 @@ function rejectAfter(delay: number, reason: string) {
   });
 }
 
+function mapUserToLDUser(user: User | null): LDClient.LDUser {
+  return user
+    ? {
+        key: user.userId,
+        email: user.email,
+        name: user.name,
+        custom: { intercomHash: user.intercomHash },
+        anonymous: false,
+      }
+    : {
+        anonymous: true,
+      };
+}
+
 const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKey }) => {
   const ldClient = useRef<LDClient.LDClient>();
   const [state, setState] = useState<LDInitState>("initializing");
   const { user } = useAuthService();
-  const workspaceId = useCurrentWorkspaceId();
 
   if (!ldClient.current) {
-    ldClient.current = LDClient.initialize(apiKey, { anonymous: true });
+    ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user));
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
@@ -53,19 +68,8 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
   }
 
   useEffect(() => {
-    console.log("User information changed", user, workspaceId);
-    if (user) {
-      ldClient.current?.identify({
-        key: user.userId,
-        email: user.email,
-        name: user.name,
-        custom: { intercomHash: user.intercomHash },
-        anonymous: false,
-      });
-    } else {
-      ldClient.current?.identify({ anonymous: true });
-    }
-  }, [user, workspaceId]);
+    ldClient.current?.identify(mapUserToLDUser(user));
+  }, [user]);
 
   if (state === "initializing") {
     return <LoadingPage />;
@@ -75,15 +79,28 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
     return <>{children}</>;
   }
 
-  const getExperiment: ExperimentService["getExperiment"] = (key, defaultValue) => {
-    return ldClient.current?.variation(key, defaultValue);
+  const experimentService: ExperimentService = {
+    getExperiment(key, defaultValue) {
+      return ldClient.current?.variation(key, defaultValue);
+    },
+    getExperimentChanges$<K extends keyof Experiments>(key: K) {
+      const subject = new Subject<Experiments[K]>();
+      const onNewExperimentValue = (newValue: Experiments[K]) => {
+        subject.next(newValue);
+      };
+      ldClient.current?.on(`change:${key}`, onNewExperimentValue);
+      return subject.pipe(
+        finalize(() => {
+          ldClient.current?.off(`change:${key}`, onNewExperimentValue);
+        })
+      );
+    },
   };
 
-  return <ExperimentProvider value={{ getExperiment }}>{children}</ExperimentProvider>;
+  return <ExperimentProvider value={experimentService}>{children}</ExperimentProvider>;
 };
 
 export const LDExperimentServiceProvider: React.FC = ({ children }) => {
-  console.log("LDExperimentServiceProvider");
   const { launchdarkly: launchdarklyKey } = useConfig();
 
   return !launchdarklyKey ? (

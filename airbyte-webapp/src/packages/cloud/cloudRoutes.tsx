@@ -29,6 +29,7 @@ import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
@@ -162,18 +163,18 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
-      {/* <LDExperimentServiceProvider> */}
-      <Suspense fallback={<LoadingPage />}>
-        {/* Allow email verification no matter whether the user is logged in or not */}
-        <Routes>
-          <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
-        </Routes>
-        {/* Show the login screen if the user is not logged in */}
-        {!user && <Auth />}
-        {/* Allow all regular routes if the user is logged in */}
-        {user && <MainViewRoutes />}
-      </Suspense>
-      {/* </LDExperimentServiceProvider> */}
+      <LDExperimentServiceProvider>
+        <Suspense fallback={<LoadingPage />}>
+          {/* Allow email verification no matter whether the user is logged in or not */}
+          <Routes>
+            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+          </Routes>
+          {/* Show the login screen if the user is not logged in */}
+          {!user && <Auth />}
+          {/* Allow all regular routes if the user is logged in */}
+          {user && <MainViewRoutes />}
+        </Suspense>
+      </LDExperimentServiceProvider>
     </WorkspaceServiceProvider>
   );
 };
