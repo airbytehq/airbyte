@@ -79,7 +79,7 @@ class DestinationFirebolt(Destination):
 
         with establish_connection(config) as connection:
             if config.get("s3_bucket"):
-                writer = FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"])
+                writer = FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"])
             else:
                 writer = FireboltSQLWriter(connection)
 

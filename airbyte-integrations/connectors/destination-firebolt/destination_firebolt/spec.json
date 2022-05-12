@@ -44,6 +44,27 @@
         "type": "string",
         "title": "Engine",
         "description": "Engine name or url to connect to."
+      },
+      "s3_bucket": {
+        "type": "string",
+        "title": "S3 bucket name",
+        "description": "The name of S3 bucket if using the External Table strategy."
+      },
+      "s3_region": {
+        "type": "string",
+        "title": "S3 region name",
+        "description": "Region name of the S3 bucket.",
+        "examples": ["us-east-1"]
+      },
+      "aws_key_id": {
+        "type": "string",
+        "title": "AWS Key ID",
+        "description": "AWS access key granting read and write access to S3."
+      },
+      "aws_key_secret": {
+        "type": "string",
+        "title": "AWS Key Secret",
+        "description": "Corresponding secret part of the AWS Key"
       }
     }
   }

@@ -18,7 +18,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     SyncMode,
 )
 from destination_firebolt.destination import DestinationFirebolt, establish_connection
-from pytest import fixture
+from pytest import fixture, mark
 
 
 @fixture(scope="module")
@@ -29,17 +29,24 @@ def test_table_name() -> str:
 
 
 @fixture(scope="module")
-def config() -> Dict[str, str]:
-    with open("secrets/config.json",) as f:
+def config_sql() -> Dict[str, str]:
+    with open("secrets/config_sql.json",) as f:
         yield load(f)
 
 
-@fixture(scope="module", autouse=True)
-def cleanup(config: Dict[str, str], test_table_name: str):
+@fixture(scope="module")
+def config_s3() -> Dict[str, str]:
+    with open("secrets/config_s3.json",) as f:
+        yield load(f)
+
+
+@fixture
+def cleanup(config_sql: Dict[str, str], test_table_name: str):
     yield
-    # with establish_connection(config, MagicMock()) as connection:
-    #     with connection.cursor() as cursor:
-    #         cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{test_table_name}")
+    with establish_connection(config_sql, MagicMock()) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{test_table_name}")
+            cursor.execute(f"DROP TABLE IF EXISTS ex_airbyte_raw_{test_table_name}")
 
 
 @fixture
@@ -67,6 +74,12 @@ def invalid_config() -> Dict[str, str]:
         yield load(f)
 
 
+@fixture(scope="module")
+def invalid_config_s3() -> Dict[str, str]:
+    with open("integration_tests/invalid_config_s3.json",) as f:
+        yield load(f)
+
+
 @fixture
 def airbyte_message1(test_table_name: str):
     return AirbyteMessage(
@@ -87,32 +100,40 @@ def airbyte_message2(test_table_name: str):
     )
 
 
-def test_check_fails(invalid_config: Dict[str, str]):
+@mark.parametrize("config", ["invalid_config", "invalid_config_s3"])
+def test_check_fails(config, request):
+    invalid_config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
     status = destination.check(logger=MagicMock(), config=invalid_config)
     assert status.status == Status.FAILED
 
 
-def test_check_succeeds(config: Dict[str, str]):
+@mark.parametrize("config", ["config_sql", "config_s3"])
+def test_check_succeeds(config, request):
+    config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.SUCCEEDED
 
 
+@mark.parametrize("config", ["config_sql", "config_s3"])
 def test_write(
     config: Dict[str, str],
     configured_catalogue: ConfiguredAirbyteCatalog,
     airbyte_message1: AirbyteMessage,
     airbyte_message2: AirbyteMessage,
     test_table_name: str,
+    cleanup,
+    request
 ):
+    config_values = request.getfixturevalue(config)
     destination = DestinationFirebolt()
-    generator = destination.write(config, configured_catalogue, [airbyte_message1, airbyte_message2])
+    generator = destination.write(config_values, configured_catalogue, [airbyte_message1, airbyte_message2])
     result = list(generator)
     assert len(result) == 0
-    with establish_connection(config, MagicMock()) as connection:
+    with establish_connection(config_values, MagicMock()) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name}")
+            cursor.execute(f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data")
             result = cursor.fetchall()
     assert len(result) == 2
     assert result[0][2] == dumps(airbyte_message1.record.data)
