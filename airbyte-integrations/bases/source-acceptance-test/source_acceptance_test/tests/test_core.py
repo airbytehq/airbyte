@@ -41,6 +41,7 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner):
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
+
     spec_cache: ConnectorSpecification = None
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
@@ -441,16 +442,8 @@ class TestBasicRead(BaseTest):
 
             if missing_expected:
                 msg = f"Stream {stream_name}: All expected records must be produced"
-                random_missing_record = next(iter(missing_expected))
                 detailed_logger.info(msg)
-                detailed_logger.info("HELLO")
-                detailed_logger.info("Missing:")
                 detailed_logger.log_json_list(missing_expected)
-                detailed_logger.info("actual:")
-                detailed_logger.log_json_list(actual)
-                detailed_logger.info(f"random_missing: {random_missing_record}")
-                detailed_logger.info(f"random missing is in actual: {random_missing_record in actual}")
-                detailed_logger.info("DONE")
                 pytest.fail(msg)
 
             if not extra_records:
