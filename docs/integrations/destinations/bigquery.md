@@ -244,7 +244,9 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
-| 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528/) | Update Dataset location field description                                                   |
+| 1.1.5   | 2022-05-03 | [12431](https://github.com/airbytehq/airbyte/pull/12431/) | Added support of OAuth 2.0 as auth method                                                   |
+| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
+| 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
 | 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
 | 0.3.1   | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
 | 0.3.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
