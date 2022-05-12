@@ -413,6 +413,25 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
     }
 
+    @Test
+    @DisplayName("Test that fresh workflow cleans the job state")
+    public void testStartFromCleanJobState() throws InterruptedException {
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(null)
+          .attemptId(null)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(null)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity, Mockito.times(1)).failNonTerminalJobs(Mockito.any());
+    }
+
   }
 
   @Nested

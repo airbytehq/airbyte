@@ -135,7 +135,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
       // This catches cases where the temporal workflow was terminated and restarted while a job was
       // actively running, leaving that job in an orphaned and non-terminal state.
-      ensureCleanJobState(connectionId);
+      ensureCleanJobState(connectionUpdaterInput);
 
       // workflow state is only ever set in test cases. for production cases, it will always be null.
       if (connectionUpdaterInput.getWorkflowState() != null) {
@@ -444,12 +444,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return scheduleRetrieverOutput.getTimeToWait();
   }
 
-  private void ensureCleanJobState(final UUID connectionId) {
+  private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
     final int ensureCleanJobStateVersion =
         Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
 
     // For backwards compatibility and determinism, skip if workflow existed before this change
     if (ensureCleanJobStateVersion < ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION) {
+      return;
+    }
+
+    if (connectionUpdaterInput.getJobId() != null) {
+      log.info("This workflow is already attached to a job, so no need to clean job state.");
       return;
     }
 
@@ -460,7 +465,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   /**
    * Creates a new job if it is not present in the input. If the jobId is specified in the input of
-   * the connectionManagerWorkflow, we will return it. Otherwise we will  create a job and return its id.
+   * the connectionManagerWorkflow, we will return it. Otherwise we will create a job and return its
+   * id.
    */
   private Long getOrCreateJobId(final ConnectionUpdaterInput connectionUpdaterInput) {
     if (connectionUpdaterInput.getJobId() != null) {
