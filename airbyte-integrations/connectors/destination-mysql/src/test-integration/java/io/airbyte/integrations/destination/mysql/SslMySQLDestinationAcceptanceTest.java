@@ -85,6 +85,16 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   protected void setup(final TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
+
+    dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        db.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()), SQLDialect.DEFAULT);
+
     setLocalInFileToTrue();
     revokeAllPermissions();
     grantCorrectPermissions();
@@ -98,14 +108,6 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    dslContext = DSLContextFactory.create(
-        db.getUsername(),
-        db.getPassword(),
-        db.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()), SQLDialect.DEFAULT);
     return new Database(dslContext).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
