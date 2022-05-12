@@ -30,7 +30,7 @@ interface PanelContainerProps {
 }
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
-  const width = dimensions?.width || 0;
+  const width = dimensions?.width ?? 0;
   return (
     <>
       {width < 450 && (
