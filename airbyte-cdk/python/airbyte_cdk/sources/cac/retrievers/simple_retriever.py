@@ -40,7 +40,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return self._requester.get_path()
+        return self._requester.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def parse_response(
         self,

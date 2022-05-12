@@ -8,9 +8,12 @@ from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
 from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
 from airbyte_cdk.sources.cac.configurable_stream import ConfigurableStream
 from airbyte_cdk.sources.cac.extractors.jq import JqExtractor
+from airbyte_cdk.sources.cac.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 from airbyte_cdk.sources.cac.iterators.only_once import OnlyOnceIterator
 from airbyte_cdk.sources.cac.requesters.http_requester import HttpMethod, HttpRequester
+from airbyte_cdk.sources.cac.requesters.paginators.interpolated_paginator import InterpolatedPaginator
+from airbyte_cdk.sources.cac.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.cac.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.cac.requesters.paginators.offset_pagination import OffsetPagination
 from airbyte_cdk.sources.cac.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
@@ -44,7 +47,7 @@ class SendgridSource(ConfigurableConnector):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # Define some shared constants
         authenticator = TokenAuthenticator(config["apikey"])
-        limit = 50
+        limit = 5
         kwargs = {
             "url_base": "https://api.sendgrid.com/v3/",
             "http_method": HttpMethod.GET,  # This is a typed enum
@@ -79,11 +82,10 @@ class SendgridSource(ConfigurableConnector):
                 retriever=SimpleRetriever(
                     state=DictState("created", "{{ last_record['created'] }}", state_type=int),
                     iterator=DatetimeIterator(
-                        # TODO: create typed objects instead of manipulating Mappings
-                        {"value": "{{ stream_state['created'] }}", "default": "{{ config['start_time'] }}"},
-                        {"value": "{{ today_utc() }}"},
+                        InterpolatedString("{{ stream_state['created'] }}", "{{ config['start_time'] }}"),
+                        InterpolatedString("{{ today_utc() }}"),
                         step="1000d",
-                        cursor_value="{{ stream_state['created'] }}",
+                        cursor_value=InterpolatedString("{{ stream_state['created'] }}"),
                         datetime_format="%Y-%m-%d",
                         config=config,
                     ),
@@ -122,6 +124,28 @@ class SendgridSource(ConfigurableConnector):
                     iterator=OnlyOnceIterator(),
                     state=NoState(),
                     paginator=OffsetPagination(limit),
+                ),
+            ),
+            ConfigurableStream(
+                name="lists",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/lists.json"),
+                retriever=SimpleRetriever(
+                    state=NoState(),
+                    iterator=OnlyOnceIterator(),
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/lists"),
+                        request_parameters_provider=InterpolatedRequestParameterProvider({}, config),
+                        kwargs=kwargs,
+                    ),
+                    paginator=NextPageUrlPaginator(
+                        interpolated_paginator=InterpolatedPaginator(
+                            {"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config
+                        ),
+                        kwargs=kwargs,
+                    ),
+                    extractor=JqExtractor(".result[]"),
                 ),
             ),
         ]

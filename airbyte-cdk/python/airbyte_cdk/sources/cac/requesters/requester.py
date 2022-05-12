@@ -15,7 +15,7 @@ class Requester(ABC):
         pass
 
     @abstractmethod
-    def get_path(self):
+    def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         pass
 
     @abstractmethod

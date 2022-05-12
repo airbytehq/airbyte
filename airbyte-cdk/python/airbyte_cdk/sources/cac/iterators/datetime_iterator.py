@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
+from airbyte_cdk.sources.cac.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.cac.iterators.iterator import Iterator
 
 
@@ -23,7 +24,16 @@ class DatetimeIterator(Iterator):
 
     # FIXME: start_time, end_time, and step should be datetime and timedelta?
     # FIXME: timezone should be configurable?
-    def __init__(self, start_time, end_time, step, cursor_value, datetime_format, vars=None, config=None):
+    def __init__(
+        self,
+        start_time: InterpolatedString,
+        end_time: InterpolatedString,
+        step,
+        cursor_value: InterpolatedString,
+        datetime_format,
+        vars=None,
+        config=None,
+    ):
         if vars is None:
             vars = dict()
         if config is None:
@@ -31,10 +41,8 @@ class DatetimeIterator(Iterator):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
-        self._start_time = self.parse_date(self._interpolation.eval(start_time["value"], vars, config))
-        if not self._start_time:
-            self._start_time = self.parse_date(self._interpolation.eval(start_time["default"], vars, config))
-        self._end_time = self.parse_date(self._interpolation.eval(end_time["value"], vars, config))
+        self._start_time = self.parse_date(start_time.eval(vars, config))
+        self._end_time = self.parse_date(end_time.eval(vars, config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
         self._step = self._parse_timedelta(step)
@@ -45,7 +53,7 @@ class DatetimeIterator(Iterator):
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
 
-        cursor_value = self._interpolation.eval(self._cursor_value, self._vars, self._config, **{"stream_state": stream_state})
+        cursor_value = self._cursor_value.eval(self._vars, self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date

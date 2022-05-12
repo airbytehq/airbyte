@@ -7,22 +7,28 @@ import unittest
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.cac.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01"}
-start_date = {
-    "value": "{{ stream_state['date'] }}",
-    "default": "{{ config['start_date'] }}",
-}
-end_date_now = {
-    "value": "{{ today_utc() }}",
-}
-end_date = {
-    "value": "2021-01-10",
-}
-cursor_value = "{{ stream_state['date'] }}"
+# start_date = {
+#    "value": "{{ stream_state['date'] }}",
+#    "default": "{{ config['start_date'] }}",
+# }
+start_date = InterpolatedString("{{ stream_state['date'] }}", "{{ config['start_date'] }}")
+# end_date_now = {
+#    "value": "{{ today_utc() }}",
+# }
+end_date_now = InterpolatedString(
+    "{{ today_utc() }}",
+)
+# end_date = {
+#    "value": "2021-01-10",
+# }
+end_date = InterpolatedString("2021-01-10")
+cursor_value = InterpolatedString("{{ stream_state['date'] }}")
 vars = {}
 timezone = datetime.timezone.utc
 
@@ -120,9 +126,9 @@ def test_init_from_config(mock_datetime_now):
 
 def test_end_date_past_now(mock_datetime_now):
     step = "1d"
-    invalid_end_date = {
-        "value": f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}",
-    }
+    invalid_end_date = InterpolatedString(
+        f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}",
+    )
     iterator = DatetimeIterator(start_date, invalid_end_date, step, cursor_value, datetime_format, vars, config)
 
     assert iterator._end_time != invalid_end_date
@@ -131,9 +137,7 @@ def test_end_date_past_now(mock_datetime_now):
 
 def test_start_date_after_end_date():
     step = "1d"
-    invalid_start_date = {
-        "value": "2021-01-11",
-    }
+    invalid_start_date = InterpolatedString("2021-01-11")
     iterator = DatetimeIterator(invalid_start_date, end_date, step, cursor_value, datetime_format, vars, config)
 
     assert iterator._start_time != invalid_start_date

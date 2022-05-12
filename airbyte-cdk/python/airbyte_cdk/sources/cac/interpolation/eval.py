@@ -20,12 +20,23 @@ class JinjaInterpolation(Interpolation):
         )  # FIXME hardcoded format
 
     def eval(self, input_str: str, vars, config, default=None, **kwargs):
+        context = {"vars": vars, "config": config, **kwargs}
         try:
-            context = {"vars": vars, "config": config, **kwargs}
             if isinstance(input_str, str):
-                return self._environment.from_string(input_str).render(context)
+                result = self._eval(input_str, context)
+                if result:
+                    return result
             else:
                 return input_str
         except UndefinedError:
             # TODO: log warning
-            return default
+            pass
+        return self._eval(default, context)
+
+    def _eval(self, s: str, context):
+        try:
+            return self._environment.from_string(s).render(context)
+        except TypeError:
+            # TODO log warning!
+            # Type error if not a template node!
+            return s
