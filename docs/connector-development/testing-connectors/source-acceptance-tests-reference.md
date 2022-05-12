@@ -193,6 +193,21 @@ This test verifies that all streams in the input catalog which support increment
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
 | `threshold_days`          | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
 
+### TestReadSequentialSlices
+
+This test verifies that all streams in the input catalog which support incremental syncs perform the sync correctly. It does this in two phases. The first operation uses the configured catalog and config provided to this test as input to make a request to the partner API and assemble the complete set of records. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. This set of messages is partitioned into batches of a `STATE` message followed by zero or more `RECORD` messages. For each of these message batches, the `STATE` message is used as input for a subsequent read operation. This test verifies that all of the `RECORDS` retrieved have a cursor value greater or equal to the cusor from the current `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
+
+| Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
+|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config_path`                | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
+| `configured_catalog_path`    | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
+| `cursor_paths`               | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
+| `timeout_seconds`            | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
+| `threshold_days`             | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
+| `skip_new_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                 |
+
+**Note that this test samples a fraction of stream slices across an incremental sync to reduce test duration and avoid spamming partner APIs**
+
 ### TestStateWithAbnormallyLargeValues
 
 This test verifies that sync produces no records when run with the STATE with abnormally large values

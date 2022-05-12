@@ -110,6 +110,9 @@ class IncrementalConfig(BaseConfig):
         default=0,
         ge=0,
     )
+    skip_new_incremental_tests: Optional[bool] = Field(
+        description="Determines whether to skip more robust testing for incremental syncs", default=False
+    )
 
 
 class TestConfig(BaseConfig):
