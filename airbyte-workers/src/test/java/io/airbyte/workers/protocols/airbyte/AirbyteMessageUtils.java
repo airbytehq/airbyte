@@ -70,7 +70,6 @@ public class AirbyteMessageUtils {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(stateData)));
   }
 
-
   public static AirbyteMessage createStateMessage(final String key, final String value) {
     return new AirbyteMessage()
         .withType(Type.STATE)
@@ -101,6 +100,5 @@ public class AirbyteMessageUtils {
             .withEmittedAt(emittedAt)
             .withError(new AirbyteErrorTraceMessage().withMessage(message)));
   }
-
 
 }

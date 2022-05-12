@@ -316,4 +316,5 @@ class AirbyteMessageTrackerTest {
   public void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
     assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
   }
+
 }
