@@ -62,6 +62,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
     try {
+      // Fail non-terminal jobs first to prevent this activity from repeatedly trying to create a new job
+      // and failing, potentially resulting in the workflow ending up in a quarantined state.
+      // Another non-terminal job is not expected to exist at this point in the normal case, but this
+      // could happen in special edge cases for example when migrating to this from the old scheduler.
+      failNonTerminalJobs(input.getConnectionId());
+
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       if (input.isReset()) {
 
@@ -265,9 +271,13 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   @Override
-  public void failNonTerminalJobs(final FailNonTerminalJobsInput input) {
+  public void ensureCleanJobState(final EnsureCleanJobStateInput input) {
+    failNonTerminalJobs(input.getConnectionId());
+  }
+
+  private void failNonTerminalJobs(final UUID connectionId) {
     try {
-      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(input.getConnectionId(), Job.REPLICATION_TYPES,
+      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(connectionId, Job.REPLICATION_TYPES,
           io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
       for (final Job job : jobs) {
         final long jobId = job.getId();
@@ -288,7 +298,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         }
 
         final Job failedJob = jobPersistence.getJob(jobId);
-        jobNotifier.failJob(input.getReason(), failedJob);
+        jobNotifier.failJob("Failing job in order to start from clean job state for new temporal workflow run.", failedJob);
         trackCompletion(failedJob, JobStatus.FAILED);
       }
     } catch (final IOException e) {

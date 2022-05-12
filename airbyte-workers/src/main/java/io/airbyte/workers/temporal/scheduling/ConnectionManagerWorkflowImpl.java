@@ -29,7 +29,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.FailNonTerminalJobsInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
@@ -458,9 +458,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return;
     }
 
-    runMandatoryActivity(jobCreationAndStatusUpdateActivity::failNonTerminalJobs, new FailNonTerminalJobsInput(
-        connectionId,
-        "Failing job in order to start from clean job state for new temporal workflow run."));
+    runMandatoryActivity(jobCreationAndStatusUpdateActivity::ensureCleanJobState, new EnsureCleanJobStateInput(connectionId));
   }
 
   /**

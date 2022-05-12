@@ -38,7 +38,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.FailNonTerminalJobsInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
@@ -306,7 +306,7 @@ public class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    public void failNonTerminalJobs() throws IOException {
+    public void ensureCleanJobState() throws IOException {
       final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
       final int runningAttemptNumber = 1;
       final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
@@ -320,7 +320,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(runningJob.getId())).thenReturn(runningJob);
       Mockito.when(mJobPersistence.getJob(pendingJob.getId())).thenReturn(pendingJob);
 
-      jobCreationAndStatusUpdateActivity.failNonTerminalJobs(new FailNonTerminalJobsInput(CONNECTION_ID, "testing"));
+      jobCreationAndStatusUpdateActivity.ensureCleanJobState(new EnsureCleanJobStateInput(CONNECTION_ID));
 
       Mockito.verify(mJobPersistence).failJob(runningJob.getId());
       Mockito.verify(mJobPersistence).failJob(pendingJob.getId());

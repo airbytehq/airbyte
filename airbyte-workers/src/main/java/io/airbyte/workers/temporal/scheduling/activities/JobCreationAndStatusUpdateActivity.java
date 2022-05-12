@@ -225,14 +225,13 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class FailNonTerminalJobsInput {
+  class EnsureCleanJobStateInput {
 
     private UUID connectionId;
-    private String reason;
 
   }
 
   @ActivityMethod
-  void failNonTerminalJobs(FailNonTerminalJobsInput input);
+  void ensureCleanJobState(EnsureCleanJobStateInput input);
 
 }
