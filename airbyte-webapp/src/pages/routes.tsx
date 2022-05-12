@@ -1,7 +1,10 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
+import { useQueryErrorResetBoundary } from "react-query";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
+
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 import { useConfig } from "config";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
@@ -55,21 +58,24 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
+  const { reset } = useQueryErrorResetBoundary();
   return (
     <MainView>
-      <Routes>
-        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
-        <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
-        <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-        {workspace.displaySetupWizard ? (
-          <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
-        ) : null}
-        <Route
-          path="*"
-          element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
-        />
-      </Routes>
+      <ApiErrorBoundary onReset={reset}>
+        <Routes>
+          <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+          <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+          {workspace.displaySetupWizard ? (
+            <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
+          ) : null}
+          <Route
+            path="*"
+            element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
+          />
+        </Routes>
+      </ApiErrorBoundary>
     </MainView>
   );
 };

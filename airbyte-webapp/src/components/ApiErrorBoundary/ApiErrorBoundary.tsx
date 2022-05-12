@@ -1,12 +1,25 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
+
+// import { Button } from "components/base";
 
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-type BoundaryState = { errorId?: string; message?: string };
+const RetryContainer = styled.div`
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+`;
+
+interface ApiErrorBoundaryState {
+  errorId?: string;
+  message?: string;
+  wasReset?: boolean;
+}
 
 enum ErrorId {
   VersionMismatch = "version.mismatch",
@@ -14,13 +27,14 @@ enum ErrorId {
   UnknownError = "unknown",
 }
 
-class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
-  constructor(props: Record<string, unknown>) {
-    super(props);
-    this.state = {};
-  }
+interface ApiErrorBoundaryProps {
+  onReset?: () => void;
+}
 
-  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): BoundaryState {
+class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBoundaryState> {
+  state: ApiErrorBoundaryState = {};
+
+  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
@@ -30,28 +44,43 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     const is502 = error.status === 502;
 
     if (isNetworkBoundaryMessage || is502) {
-      return { errorId: ErrorId.ServerUnavailable };
+      return { errorId: ErrorId.ServerUnavailable, wasReset: false };
     }
 
-    return { errorId: ErrorId.UnknownError };
+    return { errorId: ErrorId.UnknownError, wasReset: false };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   componentDidCatch(): void {}
 
   render(): React.ReactNode {
-    if (this.state.errorId === ErrorId.VersionMismatch) {
-      return <ErrorOccurredView message={this.state.message} />;
+    const { errorId, wasReset, message } = this.state;
+    const { onReset, children } = this.props;
+
+    if (errorId === ErrorId.VersionMismatch) {
+      return <ErrorOccurredView message={message} />;
     }
 
-    if (this.state.errorId === ErrorId.ServerUnavailable) {
-      return <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} />;
+    if (errorId === ErrorId.ServerUnavailable && !wasReset) {
+      return (
+        <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
+          {this.props.onReset && (
+            <RetryContainer>
+              <button
+                onClick={() => {
+                  this.setState({ wasReset: true, errorId: undefined }, () => onReset?.());
+                }}
+              >
+                Retry
+              </button>
+            </RetryContainer>
+          )}
+        </ErrorOccurredView>
+      );
     }
 
-    return !this.state.errorId ? (
-      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        {this.props.children}
-      </ResourceNotFoundErrorBoundary>
+    return !errorId ? (
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
     ) : (
       <ErrorOccurredView message="Unknown error occurred" />
     );

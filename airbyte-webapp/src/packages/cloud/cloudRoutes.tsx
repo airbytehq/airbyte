@@ -1,7 +1,9 @@
 import React, { Suspense, useMemo } from "react";
+import { useQueryErrorResetBoundary } from "react-query";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -55,6 +57,7 @@ export const CloudRoutes = {
 } as const;
 
 const MainRoutes: React.FC = () => {
+  const { reset } = useQueryErrorResetBoundary();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
@@ -81,25 +84,27 @@ const MainRoutes: React.FC = () => {
   useFeatureRegisterValues(features);
 
   return (
-    <Routes>
-      <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
-      <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-      <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
-      <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
-      <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
+    <ApiErrorBoundary onReset={reset}>
+      <Routes>
+        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+        <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+        <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
+        <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-      {workspace.displaySetupWizard && (
-        <Route
-          path={RoutePaths.Onboarding}
-          element={
-            <OnboardingServiceProvider>
-              <OnboardingPage />
-            </OnboardingServiceProvider>
-          }
-        />
-      )}
-      <Route path="*" element={<Navigate to={mainNavigate} replace />} />
-    </Routes>
+        {workspace.displaySetupWizard && (
+          <Route
+            path={RoutePaths.Onboarding}
+            element={
+              <OnboardingServiceProvider>
+                <OnboardingPage />
+              </OnboardingServiceProvider>
+            }
+          />
+        )}
+        <Route path="*" element={<Navigate to={mainNavigate} replace />} />
+      </Routes>
+    </ApiErrorBoundary>
   );
 };
 
