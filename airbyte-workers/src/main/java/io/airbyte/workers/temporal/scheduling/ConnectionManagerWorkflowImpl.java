@@ -337,6 +337,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else {
         log.info("SOURCE CHECK: Successful");
       }
+    } else {
+      log.info("SOURCE CHECK: Skipped");
     }
 
     final StandardCheckConnectionInput destinationConfiguration =
@@ -353,6 +355,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else {
         log.info("DESTINATION CHECK: Successful");
       }
+    } else {
+      log.info("DESTINATION CHECK: Skipped");
     }
 
     // return no failure response if the CHECKS succeed
