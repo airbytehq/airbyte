@@ -9,7 +9,6 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...props }) => {
-  small = true;
   const labelStyle = classnames(styles.switch, {
     [styles.small]: small,
     [styles.loading]: loading,
