@@ -208,9 +208,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       })}
                     />
                   </LeftFieldCol>
-                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                  <RightFieldCol>
                     <Input
                       {...field}
+                      disabled={mode === "readonly"}
                       error={!!meta.error}
                       placeholder={formatMessage({
                         id: "form.connectionName.placeholder",
