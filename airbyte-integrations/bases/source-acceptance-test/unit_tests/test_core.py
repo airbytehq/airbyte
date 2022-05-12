@@ -157,7 +157,7 @@ def test_read(schema, record, should_fail):
 
 
 @pytest.mark.parametrize(
-    "output, ensure_trace_message_on_failure, should_fail",
+    "output, expect_trace_message_on_failure, should_fail",
     [
         (
             [
@@ -231,9 +231,9 @@ def test_read(schema, record, should_fail):
         ([], False, False),
     ],
 )
-def test_airbyte_trace_message_on_failure(output, ensure_trace_message_on_failure, should_fail):
+def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
     t = _TestBasicRead()
-    input_config = BasicReadTestConfig(ensure_trace_message_on_failure=ensure_trace_message_on_failure)
+    input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = output
 

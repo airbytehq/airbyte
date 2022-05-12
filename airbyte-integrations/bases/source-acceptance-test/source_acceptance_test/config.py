@@ -79,7 +79,7 @@ class BasicReadTestConfig(BaseConfig):
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
     )
-    ensure_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
+    expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
 
 
