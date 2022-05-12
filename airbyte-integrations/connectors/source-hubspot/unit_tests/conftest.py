@@ -37,6 +37,15 @@ def config_fixture():
     return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"}}
 
 
+@pytest.fixture(name="config_pro")
+def config_pro_fixture():
+    return {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"},
+        "subscription_type": "pro",
+    }
+
+
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
     return {"credentials_title": "API Key Credentials", "api_key": "wrong_key"}

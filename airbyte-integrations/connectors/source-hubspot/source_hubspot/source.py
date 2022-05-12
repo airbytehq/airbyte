@@ -78,6 +78,7 @@ class SourceHubspot(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+
         streams = [
             Campaigns(**common_params),
             Companies(**common_params),
@@ -93,19 +94,24 @@ class SourceHubspot(AbstractSource):
             EngagementsMeetings(**common_params),
             EngagementsNotes(**common_params),
             EngagementsTasks(**common_params),
-            FeedbackSubmissions(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
             LineItems(**common_params),
-            MarketingEmails(**common_params),
             Owners(**common_params),
             Products(**common_params),
             PropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
             TicketPipelines(**common_params),
-            Workflows(**common_params),
         ]
+
+        if config.get("subscription_type", "starter") == "pro":
+            pro_streams = [
+                FeedbackSubmissions(**common_params),
+                MarketingEmails(**common_params),
+                Workflows(**common_params),
+            ]
+            streams.extend(pro_streams)
 
         credentials_title = credentials.get("credentials_title")
         if credentials_title == "API Key Credentials":

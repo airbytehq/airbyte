@@ -8,6 +8,15 @@ connectionSpecification:
     - credentials
   additionalProperties: true
   properties:
+    subscription_type:
+      type: string
+      title: Your HubSpot account subscription type
+      description: >-
+        Some streams are only available to certain subscription packages, we use this information to select which streams to pull data from.
+      enum:
+        - starter
+        - pro
+      default: starter
     start_date:
       type: string
       title: Start Date
