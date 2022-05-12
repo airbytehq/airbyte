@@ -1,13 +1,13 @@
+@use "../../../scss/colors";
+
 .switch {
   position: relative;
   display: inline-block;
   width: 42px;
-  min-width: 42px;
   height: 24px;
 
   &.small {
     width: 28px;
-    min-width: 28px;
     height: 18px;
   }
 
@@ -17,7 +17,7 @@
     height: 0;
 
     &:checked + .slider {
-      background: #615eff; // theme.primaryColor, TODO: Make SASS or CSS Variable
+      background: colors.$primaryColor;
 
       &:before {
         transform: translateX(18px);
@@ -26,6 +26,14 @@
       &.small:before {
         transform: translateX(10px);
       }
+
+      &.loading {
+        background: url("../../../../public/images/ProgressReverse.svg");
+      }
+    }
+
+    &:not(:checked) + .slider.loading {
+      background: url("../../../../public/images/Progress.svg");
     }
 
     &:disabled + .slider {
@@ -41,7 +49,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: #e8e8ed; // theme.greyColor20, TODO: Make SASS or CSS Variable
+    background: colors.$greyColor20;
     transition: 0.3s;
     border-radius: 19px;
 
@@ -58,18 +66,9 @@
       width: 22px;
       left: 1px;
       top: 1px;
-      background: #ffffff; // theme.whiteColor, TODO: Make SASS or CSS Variable
+      background: colors.$whiteColor;
       transition: 0.3s;
       border-radius: 50%;
-    }
-
-    &.loading {
-      &.checked {
-        background: url("./ProgressReverse.svg");
-      }
-      &.unchecked {
-        background: url("./Progress.svg");
-      }
     }
   }
 }

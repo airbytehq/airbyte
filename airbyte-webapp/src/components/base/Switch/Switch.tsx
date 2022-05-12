@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import React from "react";
 
 import styles from "./Switch.module.scss";
@@ -8,14 +9,18 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, ...props }) => {
-  const isChecked = checked || !!value;
-  const labelStyle = `${styles.switch} ${small ? styles.small : ""} ${loading ? styles.loading : ""}`;
-  const spanStyle = `${styles.slider} ${small ? styles.small : ""} ${loading ? styles.loading : ""} ${
-    isChecked ? styles.checked : styles.unchecked
-  }`;
+  small = true;
+  const labelStyle = classnames(styles.switch, {
+    [styles.small]: small,
+    [styles.loading]: loading,
+  });
+  const spanStyle = classnames(styles.slider, {
+    [styles.small]: small,
+    [styles.loading]: loading,
+  });
   return (
     <label onClick={(event: React.SyntheticEvent) => event.stopPropagation()} className={labelStyle}>
-      <input className={styles.switchInput} type="checkbox" {...props} value={value} checked={isChecked} />
+      <input {...props} className={styles.switchInput} type="checkbox" value={value} checked={checked || !!value} />
       <span className={spanStyle} />
     </label>
   );
