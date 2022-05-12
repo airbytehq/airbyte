@@ -204,13 +204,13 @@ public class S3DestinationConfig {
     return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
         bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
         && Objects.equals(credentialConfig, that.credentialConfig)
-        && Objects.equals(partSize, that.partSize)
+//        && Objects.equals(partSize, that.partSize)
         && Objects.equals(formatConfig, that.formatConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, partSize, formatConfig);
+    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, /*partSize,*/ formatConfig);
   }
 
   public static class Builder {
