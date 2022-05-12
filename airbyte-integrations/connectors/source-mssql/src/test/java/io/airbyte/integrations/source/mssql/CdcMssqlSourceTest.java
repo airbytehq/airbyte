@@ -63,6 +63,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private JsonNode config;
   private DSLContext dslContext;
   private DataSource dataSource;
+  private DataSource testDataSource;
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -95,7 +96,15 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         container.getUsername(),
         container.getPassword(),
         DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format("jdbc:sqlserver://%s:%d",
+            container.getHost(),
+            container.getFirstMappedPort()));
+
+    testDataSource = DataSourceFactory.create(
+        TEST_USER_NAME,
+        TEST_USER_PASSWORD,
+        DRIVER_CLASS,
+        String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
             container.getFirstMappedPort()));
 
@@ -103,7 +112,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
     database = new Database(dslContext);
 
-    testJdbcDatabase = new DefaultJdbcDatabase(dataSource);
+    testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -208,6 +217,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     try {
       dslContext.close();
       DataSourceFactory.close(dataSource);
+      DataSourceFactory.close(testDataSource);
       container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
