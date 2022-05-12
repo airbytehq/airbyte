@@ -35,13 +35,25 @@ public class FailureHelper {
         .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
   }
 
+  // Generate a FailureReason from an AirbyteTraceMessage.
+  // The FailureReason.failureType enum value is taken from the
+  // AirbyteErrorTraceMessage.failureType enum value, so the same enum value
+  // must exist on both Enums in order to be applied correctly to the FailureReason
   public static FailureReason genericFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     FailureType failureType;
-    try {
-      final String traceMessageError = m.getError().getFailureType().toString().toUpperCase();
-      failureType = FailureReason.FailureType.valueOf(traceMessageError);
-    } catch (final Exception e) {
+    if (m.getError().getFailureType() == null) {
+      // default to system_error when no failure type is set
       failureType = FailureType.SYSTEM_ERROR;
+    } else {
+      try {
+        final String traceMessageError = m.getError().getFailureType().toString();
+        failureType = FailureReason.FailureType.fromValue(traceMessageError);
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info("throwing exception");
+        // the trace message error does not exist as a FailureReason failure type,
+        // so set the failure type to null
+        failureType = FailureType.SYSTEM_ERROR;
+      }
     }
     return new FailureReason()
         .withInternalMessage(m.getError().getInternalMessage())
