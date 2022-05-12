@@ -20,7 +20,8 @@ class JinjaInterpolation(Interpolation):
         )  # FIXME hardcoded format
 
     def eval(self, input_str: str, config, default=None, **kwargs):
-        context = {"vars": vars, "config": config, **kwargs}
+        context = {"config": config, **kwargs}
+        print(f"interpolating {input_str} with {context}")
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

@@ -5,6 +5,7 @@
 from functools import partial
 from typing import Any, List, Mapping
 
+from airbyte_cdk.sources.cac import create_partial
 from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
 from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
 from airbyte_cdk.sources.cac.configurable_stream import ConfigurableStream
@@ -66,18 +67,17 @@ class SendgridSource(ConfigurableConnector):
         simple_retriever = partial(SimpleRetriever, config=config)
         request_parameters_provider = partial(InterpolatedRequestParameterProvider, config=config)
         configurable_stream = partial(ConfigurableStream, config=config)
-
+        new_configurable_stream = create_partial.create(ConfigurableStream, config=config)
         http_requester = partial(
             HttpRequester, url_base="https://api.sendgrid.com/v3/", config=config, http_method=HttpMethod.GET, authenticator=authenticator
         )
 
         # Define the streams
         streams = [
-            configurable_stream(
-                name="lists",
+            new_configurable_stream(
                 primary_key="id",
                 cursor_field=[],
-                schema=JsonSchema("./source_sendgrid/schemas/lists.json"),
+                schema=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
                 retriever=simple_retriever(
                     state=NoState(),
                     iterator=OnlyOnceIterator(),
@@ -88,6 +88,7 @@ class SendgridSource(ConfigurableConnector):
                     paginator=metadata_paginator,
                     extractor=JqExtractor(".result[]"),
                 ),
+                kwargs={"name": "lists"},
             ),
             configurable_stream(
                 name="campaigns",

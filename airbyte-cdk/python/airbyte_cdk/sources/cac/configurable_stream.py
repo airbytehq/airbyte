@@ -16,6 +16,29 @@ from airbyte_cdk.sources.streams.core import IncrementalMixin, Stream
 
 
 class ConfigurableStream(Stream, IncrementalMixin):
+    @classmethod
+    def create(cls, /, *args, **keywords):
+        func = ConfigurableStream
+
+        def newfunc(*fargs, **fkeywords):
+            newkeywords = {**keywords, **fkeywords}
+            print(newkeywords)
+            return func(*args, *fargs, **newkeywords)
+
+        newfunc.func = func
+        newfunc.args = args
+        newfunc.kwargs = keywords
+
+        return newfunc
+
+    def __init__(self, name, primary_key, cursor_field, schema, retriever, config: "Config"):
+        self._name = name
+        self._primary_key = primary_key
+        self._cursor_field = cursor_field
+        self._schema_loader = schema
+        self._retriever: Retriever = retriever
+        self._config = config
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._retriever._state.get_state()
@@ -25,14 +48,6 @@ class ConfigurableStream(Stream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         # FIXME: Do we still need this?
         self._retriever._state.update_state(None, value, None, None)
-
-    def __init__(self, name, primary_key, cursor_field, schema, retriever, config: "Config"):
-        self._name = name
-        self._primary_key = primary_key
-        self._cursor_field = cursor_field
-        self._schema_loader = schema
-        self._retriever: Retriever = retriever
-        self._config = config
 
     def read_records(
         self,
