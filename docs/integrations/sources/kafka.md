@@ -13,7 +13,7 @@ To use the Kafka source connector, you'll need:
 
 ## Step 2: Setup the Kafka source in Airbyte
 
-You'll need the following information to configure the Postgres destination:
+You'll need the following information to configure the Kafka source:
 
 * **Group ID** - The Group ID is how you distinguish different consumer groups. (e.g. group.id)
 * **Protocol** - The Protocol used to communicate with brokers.
