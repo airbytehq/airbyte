@@ -413,7 +413,9 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
     }
 
-    @Test
+    @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that fresh workflow cleans the job state")
     public void testStartFromCleanJobState() throws InterruptedException {
       final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
