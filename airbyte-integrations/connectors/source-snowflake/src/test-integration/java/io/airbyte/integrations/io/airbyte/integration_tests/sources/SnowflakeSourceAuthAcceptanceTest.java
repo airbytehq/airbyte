@@ -20,6 +20,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   protected DataSource createDataSource() {
     final HikariDataSource dataSource = new HikariDataSource();
     final Properties properties = new Properties();
+    final JsonNode config = getStaticConfig();
 
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
