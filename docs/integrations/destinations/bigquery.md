@@ -207,22 +207,22 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 ### bigquery
 
-| Version | Date       | Pull Request | Subject                                                                                         |
-|:--------|:-----------| :--- |:------------------------------------------------------------------------------------------------|
-| 1.1.5   | 2022-05-12 | [TODO](TODO)                                               | Updated to latest base-java to emit AirbyteTraceMessage on error.                               |
-| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
-| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                       |
-| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                            |
-| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                                   |
-| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                                 |
-| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec                                                                                    |
-| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance                                                                       |
-| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation                                                                  |
-| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                           |
-| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM                                                 |
-| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                    |
-| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer.                                       |
-| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry.                                                                          |
+| Version | Date       | Pull Request                                               | Subject                                                                                         |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                               |
+| 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
+| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                       |
+| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477)   | Dataset location is a required field                                                            |
+| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068)   | Fixed bug with GCS bucket conditional binding                                                   |
+| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776)   | Use serialized buffering strategy to reduce memory consumption.                                 |
+| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620)   | Updated spec                                                                                    |
+| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350)   | Improve check performance                                                                       |
+| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238)   | Updated spec and documentation                                                                  |
+| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793)   | Fix namespace with invalid characters                                                           |
+| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755)   | Make sure to kill children threads and stop JVM                                                 |
+| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                    |
+| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                       |
+| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                          |
 | 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                 |
 | 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                       |
 | 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                      |
@@ -244,7 +244,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.5   | 2022-05-12 | [TODO](TODO)                                               | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                       |
+| 0.3.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                       |
 | 0.3.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                         |
 | 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                                               |
 | 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477)   | Dataset location is a required field                                                                                    |
