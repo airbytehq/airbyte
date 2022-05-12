@@ -3,6 +3,7 @@
 #
 
 import datetime
+import urllib
 from abc import ABC, abstractmethod
 from asyncio.log import logger
 from cgi import parse_multipart
@@ -19,7 +20,7 @@ class SendgridStream(HttpStream, ABC):
     primary_key = "id"
     limit = 50
     data_field = None
-
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
@@ -205,17 +206,16 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
     """
     data_field = "messages"
     cursor_field = "last_event_time"
-    primary_key = "msg_id"
     
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
         params = super().request_params(next_page_token=next_page_token, **kwargs)
         date_start = datetime.datetime.fromtimestamp(params["start_time"]).strftime(time_filter_template)
         date_end = datetime.datetime.fromtimestamp(params["end_time"]).strftime(time_filter_template)
-        queryapi = f"last_event_time BETWEEN TIMESTAMP "+{date_start}+" AND TIMESTAMP "{date_end}"'
-        params_messages = {}
-        params_messages["query"] = queryapi
-        return params_messages
+        queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
+        params_messages = {'query': urllib.parse.quote(queryapi)}
+        payload_str = "&".join("%s=%s" % (k,v) for k,v in params_messages.items())
+        return payload_str
 
     def path(self, **kwargs) -> str:
         return "messages"
