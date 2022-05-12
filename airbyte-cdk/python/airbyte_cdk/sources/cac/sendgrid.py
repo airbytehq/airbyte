@@ -113,6 +113,24 @@ class SendgridSource(ConfigurableConnector):
                 ),
             ),
             ConfigurableStream(
+                name="stats_automations",
+                primary_key="id",
+                cursor_field=[],
+                schema=JsonSchema("./source_sendgrid/schemas/stats_automations.json"),
+                retriever=SimpleRetriever(
+                    requester=HttpRequester(
+                        path=InterpolatedString("{{ next_page_token['next_page_url'] }}", "marketing/stats/automations"),
+                        # FIXME: would be nice to share the path across streams...
+                        request_parameters_provider=InterpolatedRequestParameterProvider(kwargs=kwargs),  # No request parameters...
+                        kwargs=kwargs,  # url_base can be passed directly or through kwargs
+                    ),
+                    extractor=JqExtractor(transform=".results[]"),  # Could also the custom extractor above
+                    iterator=OnlyOnceIterator(),
+                    state=NoState(),
+                    paginator=metadata_paginator,
+                ),
+            ),
+            ConfigurableStream(
                 name="segments",
                 primary_key="id",
                 cursor_field=[],
