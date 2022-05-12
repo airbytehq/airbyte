@@ -410,7 +410,11 @@ class TestBasicRead(BaseTest):
                 records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
             )
 
-    def test_airbyte_trace_message_on_failure(self, connector_config, docker_runner: ConnectorRunner):
+    def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
+        if not inputs.ensure_trace_message_on_failure:
+            pytest.skip("Skipping `test_airbyte_trace_message_on_failure` because `inputs.ensure_trace_message_on_failure=False`")
+            return
+
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(

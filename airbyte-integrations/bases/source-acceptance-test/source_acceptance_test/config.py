@@ -65,7 +65,7 @@ class ExpectedRecordsConfig(BaseModel):
     @validator("extra_records", always=True)
     def validate_extra_records(cls, extra_records, values):
         if "extra_fields" in values and values["extra_fields"] and extra_records:
-            raise ValueError("extra_records must by off if extra_fields enabled")
+            raise ValueError("extra_records must be off if extra_fields enabled")
         return extra_records
 
 
@@ -79,6 +79,7 @@ class BasicReadTestConfig(BaseConfig):
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
     )
+    ensure_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
 
 
