@@ -34,7 +34,6 @@ def create(func, /, *args, **keywords):
         newkeywords.update(interpolated_keywords)
         if config is not None:
             newkeywords["config"] = config
-        print(f"ABOUT TO CREATE: {func}")
         ret = func(*args, *fargs, **{**newkeywords, **kwargs})
         return ret
 

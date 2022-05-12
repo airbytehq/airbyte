@@ -22,7 +22,6 @@ class ConfigurableStream(Stream, IncrementalMixin):
 
         def newfunc(*fargs, **fkeywords):
             newkeywords = {**keywords, **fkeywords}
-            print(newkeywords)
             return func(*args, *fargs, **newkeywords)
 
         newfunc.func = func
