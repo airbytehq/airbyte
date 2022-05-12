@@ -14,14 +14,11 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
-# from .utils import get_parent_stream_values, transform_data
+# from .utils import transform_data
 
 
 class LinkedinPagesStream(HttpStream):
     url_base = "https://api.linkedin.com/v2/"
-    primary_key = None
-
-    # Set this as a noop.
     primary_key = None
 
     def __init__(self, config: Dict):
@@ -49,6 +46,7 @@ class LinkedinPagesStream(HttpStream):
         stream_slice: Mapping[str, Any] = None
     ) -> Iterable[Mapping]:
         return [response.json()]
+        # yield from transform_data(response.json().get("elements"))
 
 
 class OrganizationLookup(LinkedinPagesStream):
