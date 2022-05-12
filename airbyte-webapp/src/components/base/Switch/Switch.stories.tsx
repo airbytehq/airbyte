@@ -10,7 +10,9 @@ export default {
 
 const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
 
-export const StatusIcon = Template.bind({});
-StatusIcon.args = {
+export const SwitchControl = Template.bind({});
+SwitchControl.args = {
   checked: false,
+  small: false,
+  loading: false,
 };
