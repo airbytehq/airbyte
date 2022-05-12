@@ -23,10 +23,9 @@ class JinjaInterpolation(Interpolation):
         try:
             context = {"vars": vars, "config": config, **kwargs}
             if isinstance(input_str, str):
-                ret = self._environment.from_string(input_str).render(context)
+                return self._environment.from_string(input_str).render(context)
             else:
-                ret = None
-            return ret
+                return input_str
         except UndefinedError:
             # TODO: log warning
             return default

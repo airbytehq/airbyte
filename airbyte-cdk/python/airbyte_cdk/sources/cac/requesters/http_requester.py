@@ -1,10 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping
 
-import requests
-from airbyte_cdk.sources.cac.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.cac.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 
@@ -16,7 +14,6 @@ class HttpRequester(Requester):
         path,
         method,
         request_parameters_provider: RequestParameterProvider,
-        paginator: Paginator,
         authenticator,
         vars=None,
         config=None,
@@ -32,7 +29,6 @@ class HttpRequester(Requester):
         self._path = path
         self._method = method
         self._request_parameters_provider = request_parameters_provider
-        self._paginator = paginator
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -50,6 +46,3 @@ class HttpRequester(Requester):
 
     def get_method(self):
         return self._method
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return self._paginator.next_page_token(response=response)

@@ -7,6 +7,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.cac.extractors.extractor import Extractor
 from airbyte_cdk.sources.cac.iterators.iterator import Iterator
+from airbyte_cdk.sources.cac.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.cac.requesters.requester import Requester
 from airbyte_cdk.sources.cac.retrievers.retriever import Retriever
 from airbyte_cdk.sources.cac.states.state import State
@@ -14,20 +15,23 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
-    def __init__(self, requester: Requester, extractor: Extractor, iterator: Iterator, state: State, vars=None, config=None):
+    def __init__(
+        self, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State, vars=None, config=None
+    ):
         if vars is None:
             vars = dict()
         if config is None:
             config = dict()
 
         # FIXME: we should probably share the factory?
+        self._paginator = paginator
         self._requester = requester  # LowCodeComponentFactory().create_component(requester, vars, config)
         self._extractor = extractor  # LowCodeComponentFactory().create_component(extractor, vars, config)
         super().__init__(self._requester.get_authenticator())
         self._iterator: Iterator = iterator  # LowCodeComponentFactory().create_component(iterator, vars, config)
         self._state: State = state  # LowCodeComponentFactory().create_component(state, vars, config)
         self._last_response = None
-        self._last_record = None
+        self._last_records = None
 
     @property
     def url_base(self) -> str:
@@ -49,6 +53,7 @@ class SimpleRetriever(Retriever, HttpStream):
         # FIXME: I think we want the decoded version here
         self._last_response = response
         records = self._extractor.extract_records(response)
+        self._last_records = records
         return records
 
     @property
@@ -88,7 +93,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self._requester.next_page_token(response)
+        return self._paginator.next_page_token(response, self._last_records)
 
     def read_records(
         self,

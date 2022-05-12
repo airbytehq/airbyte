@@ -18,5 +18,5 @@ class InterpolatedRequestParameterProvider(RequestParameterProvider):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-
+        print(f"kwwargs: {kwargs}")
         return self._interpolation.eval(self._vars, self._config, **kwargs)

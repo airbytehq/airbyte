@@ -12,10 +12,12 @@ class InterpolatedMapping:
         self._interpolation = interpolation
 
     def eval(self, vars, config, **kwargs):
+        print(f"interpolate: {self._mapping}")
         interpolated_values = {
             self._interpolation.eval(name, vars, config, **kwargs): self._interpolation.eval(value, vars, config, **kwargs)
             for name, value in self._mapping.items()
         }
+        print(f"result: {interpolated_values}")
 
         non_null_values = {k: v for k, v in interpolated_values.items() if v}
         return non_null_values
