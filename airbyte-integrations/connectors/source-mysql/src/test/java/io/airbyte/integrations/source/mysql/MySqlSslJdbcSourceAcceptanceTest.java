@@ -33,10 +33,9 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format("jdbc:mysql://%s:%s/%s?%s",
+        String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText(),
             String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
     database = new Database(dslContext);
 
