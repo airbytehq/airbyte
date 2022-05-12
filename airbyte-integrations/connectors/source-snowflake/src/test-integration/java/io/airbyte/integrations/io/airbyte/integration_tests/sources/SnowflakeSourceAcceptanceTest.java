@@ -123,10 +123,13 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String
-        .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
-    database.execute(dropSchemaQuery);
-    DataSourceFactory.close(dataSource);
+    try {
+      final String dropSchemaQuery = String
+          .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+      database.execute(dropSchemaQuery);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   protected DataSource createDataSource() {
