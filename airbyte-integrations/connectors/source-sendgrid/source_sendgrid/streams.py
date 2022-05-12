@@ -215,6 +215,7 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
         params_messages = {'query': urllib.parse.quote(queryapi)}
         payload_str = "&".join("%s=%s" % (k,v) for k,v in params_messages.items())
+        
         return payload_str
 
     def path(self, **kwargs) -> str:
