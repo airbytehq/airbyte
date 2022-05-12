@@ -38,16 +38,10 @@ const CreateSourcePage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />{" "}
       <ConnectorDocumentationWrapper>
-        <>
-          <PageTitle withLine title={<FormattedMessage id="sources.newSourceTitle" />} />
-          <FormPageContent>
-            <SourceForm
-              onSubmit={onSubmitSourceStep}
-              sourceDefinitions={sourceDefinitions}
-              hasSuccess={successRequest}
-            />
-          </FormPageContent>
-        </>
+        <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
+        <FormPageContent>
+          <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
+        </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>
   );

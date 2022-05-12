@@ -41,16 +41,14 @@ export const CreateDestinationPage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
       <ConnectorDocumentationWrapper>
-        <>
-          <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
-          <FormPageContent>
-            <DestinationForm
-              onSubmit={onSubmitDestinationForm}
-              destinationDefinitions={destinationDefinitions}
-              hasSuccess={successRequest}
-            />
-          </FormPageContent>
-        </>
+        <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
+        <FormPageContent>
+          <DestinationForm
+            onSubmit={onSubmitDestinationForm}
+            destinationDefinitions={destinationDefinitions}
+            hasSuccess={successRequest}
+          />
+        </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>
   );

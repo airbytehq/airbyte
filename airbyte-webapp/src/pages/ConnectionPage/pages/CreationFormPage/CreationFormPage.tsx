@@ -220,29 +220,26 @@ export const CreationFormPage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectorDocumentationWrapper>
-        <>
-          <PageTitle
-            withLine
-            title={<FormattedMessage id={titleId} />}
-            middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
-          />
-          <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
-            {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
-              <ConnectionBlock
-                itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
-                itemTo={
-                  destination
-                    ? {
-                        name: destination.name,
-                        icon: destinationDefinition?.icon,
-                      }
-                    : undefined
-                }
-              />
-            )}
-            {renderStep()}
-          </FormPageContent>
-        </>
+        <PageTitle
+          title={<FormattedMessage id={titleId} />}
+          middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
+        />
+        <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
+          {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
+            <ConnectionBlock
+              itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
+              itemTo={
+                destination
+                  ? {
+                      name: destination.name,
+                      icon: destinationDefinition?.icon,
+                    }
+                  : undefined
+              }
+            />
+          )}
+          {renderStep()}
+        </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>
   );
