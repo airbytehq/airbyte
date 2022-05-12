@@ -21,6 +21,17 @@ class SendgridStream(HttpStream, ABC):
     limit = 50
     data_field = None
     
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """This method is called if we run into the rate limit.
+        Sendgrid puts the retry time in the `X-RateLimit-Reset` response header so we
+        we return that value. If the response is anything other than a 429 (e.g: 5XX)
+        fall back on default retry behavior.
+        Rate Limits Docs: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits"""
+
+        backoff_time = response.headers.get("X-RateLimit-Reset")
+        if backoff_time is not None:
+          return float(backoff_time)
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
@@ -215,7 +226,6 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
         params_messages = {'query': urllib.parse.quote(queryapi)}
         payload_str = "&".join("%s=%s" % (k,v) for k,v in params_messages.items())
-        
         return payload_str
 
     def path(self, **kwargs) -> str:
