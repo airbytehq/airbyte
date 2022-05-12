@@ -49,7 +49,6 @@ public class FailureHelper {
         final String traceMessageError = m.getError().getFailureType().toString();
         failureType = FailureReason.FailureType.fromValue(traceMessageError);
       } catch (final IllegalArgumentException e) {
-        LOGGER.info("throwing exception");
         // the trace message error does not exist as a FailureReason failure type,
         // so set the failure type to null
         failureType = FailureType.SYSTEM_ERROR;
