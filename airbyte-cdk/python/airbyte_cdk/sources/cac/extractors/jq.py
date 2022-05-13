@@ -11,18 +11,18 @@ from airbyte_cdk.sources.cac.types import Record
 
 
 class JqExtractor(Extractor):
-    def __init__(self, transform, vars=None, config=None):
-        if vars is None:
-            vars = dict()
-        if config is None:
-            config = dict()
+    default_transform = "."
+
+    def __init__(self, transform: str, config, kwargs=None):
+        if kwargs is None:
+            kwargs = dict()
         self._vars = vars
-        self._config = config
         self._interpolator = JinjaInterpolation()
         self._transform = transform
+        self._config = config
+        self._kwargs = kwargs
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = response.json()
-        # FIXME: need to ensure I'm passing the vars and the parent vars...
-        script = self._interpolator.eval(self._transform, self._vars, self._config)
+        script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
         return pyjq.all(script, response_body)

@@ -95,6 +95,8 @@ class SendgridSource(ConfigurableSource):
             request_parameters_provider=request_parameters_provider(),
         )
 
+        jq = create_partial.create(JqExtractor, config=config)
+
         # Define the streams
         streams = [
             configurable_stream(
@@ -105,7 +107,7 @@ class SendgridSource(ConfigurableSource):
                         path=next_page_url_from_token_partial(default="marketing/lists"),
                     ),
                     paginator=metadata_paginator,
-                    extractor=JqExtractor(".result[]"),
+                    extractor=jq(".result[]"),
                 ),
             ),
             configurable_stream(
@@ -115,7 +117,7 @@ class SendgridSource(ConfigurableSource):
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/campaigns"),
                     ),
-                    extractor=JqExtractor(transform=".result[]"),
+                    extractor=jq(transform=".result[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -126,7 +128,7 @@ class SendgridSource(ConfigurableSource):
                     requester=http_requester(
                         path="marketing/contacts",
                     ),
-                    extractor=JqExtractor(transform=".result[]"),
+                    extractor=jq(transform=".result[]"),
                 ),
             ),
             configurable_stream(
@@ -137,7 +139,7 @@ class SendgridSource(ConfigurableSource):
                         path=next_page_url_from_token_partial(default="marketing/stats/automations"),
                         request_parameters_provider=request_parameters_provider(),
                     ),
-                    extractor=JqExtractor(transform=".results[]"),
+                    extractor=jq(transform=".results[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -148,7 +150,7 @@ class SendgridSource(ConfigurableSource):
                     requester=http_requester(
                         path="marketing/segments",
                     ),
-                    extractor=JqExtractor(transform=".results[]"),
+                    extractor=jq(transform=".results[]"),
                 ),
             ),
             configurable_stream(
@@ -158,7 +160,7 @@ class SendgridSource(ConfigurableSource):
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/singlesends"),
                     ),
-                    extractor=JqExtractor(transform=".results[]"),
+                    extractor=jq(transform=".results[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -172,7 +174,7 @@ class SendgridSource(ConfigurableSource):
                             request_parameters={"generations": "legacy,dynamic"},
                         ),
                     ),
-                    extractor=JqExtractor(transform=".templates[]"),  # Could also the custom extractor above
+                    extractor=jq(transform=".templates[]"),  # Could also the custom extractor above
                     paginator=metadata_paginator,
                 ),
             ),
@@ -184,7 +186,7 @@ class SendgridSource(ConfigurableSource):
                         path="suppression/unsubscribes",
                         request_parameters_provider=offset_pagination_request_parameters,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                     paginator=OffsetPagination(limit),
                 ),
             ),
@@ -195,7 +197,7 @@ class SendgridSource(ConfigurableSource):
                     requester=http_requester(
                         path="asm/groups",
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                 ),
             ),
             configurable_stream(
@@ -206,7 +208,7 @@ class SendgridSource(ConfigurableSource):
                         path="asm/suppressions",
                         request_parameters_provider=offset_pagination_request_parameters,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                     paginator=OffsetPagination(limit),
                 ),
             ),
@@ -221,7 +223,7 @@ class SendgridSource(ConfigurableSource):
                         path="suppression/blocks",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -236,7 +238,7 @@ class SendgridSource(ConfigurableSource):
                         path="suppression/bounces",
                         request_parameters_provider=cursor_request_parameter_provider,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                 ),
             ),
             configurable_stream(
@@ -250,7 +252,7 @@ class SendgridSource(ConfigurableSource):
                         path="suppression/invalid_emails",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                     paginator=metadata_paginator,
                 ),
             ),
@@ -265,7 +267,7 @@ class SendgridSource(ConfigurableSource):
                         path="suppression/spam_reports",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
                     ),
-                    extractor=JqExtractor(transform=".[]"),
+                    extractor=jq(transform=".[]"),
                     paginator=metadata_paginator,
                 ),
             ),
