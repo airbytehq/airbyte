@@ -59,7 +59,7 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
   return (
     <MainView>
-      <ApiErrorBoundary withRetry resetOnLocationChange>
+      <ApiErrorBoundary>
         <Routes>
           <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />

@@ -30,23 +30,12 @@ enum ErrorId {
   UnknownError = "unknown",
 }
 
-interface ApiErrorBoundaryProps {
-  /**
-   * If the error should clear out when the user navigates to another page
-   */
-  resetOnLocationChange?: boolean;
-  /**
-   * Whether the user should be allowed to retry the request
-   */
-  withRetry?: boolean;
-}
-
-interface ApiErrorBoundaryHooks {
+interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
 }
 
-class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorBoundaryHooks, ApiErrorBoundaryState> {
+class ApiErrorBoundary extends React.Component<ApiErrorBoundaryHookProps, ApiErrorBoundaryState> {
   state: ApiErrorBoundaryState = {};
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
@@ -65,10 +54,10 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorB
     return { errorId: ErrorId.UnknownError, didRetry: false };
   }
 
-  componentDidUpdate(prevProps: ApiErrorBoundaryProps & ApiErrorBoundaryHooks) {
-    const { location, resetOnLocationChange } = this.props;
+  componentDidUpdate(prevProps: ApiErrorBoundaryHookProps) {
+    const { location } = this.props;
 
-    if (resetOnLocationChange && location !== prevProps.location) {
+    if (location !== prevProps.location) {
       this.setState({ errorId: undefined, didRetry: false });
     }
   }
@@ -78,7 +67,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorB
 
   render(): React.ReactNode {
     const { errorId, didRetry, message } = this.state;
-    const { withRetry, onRetry, children } = this.props;
+    const { onRetry, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
@@ -87,7 +76,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorB
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
       return (
         <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
-          {withRetry && onRetry && (
+          {onRetry && (
             <RetryContainer>
               <Button
                 onClick={() => {
@@ -110,12 +99,12 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorB
   }
 }
 
-const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
+const ApiErrorBoundaryWithHooks: React.FC = ({ children }) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
 
   return (
-    <ApiErrorBoundary {...props} location={location} onRetry={reset}>
+    <ApiErrorBoundary location={location} onRetry={reset}>
       {children}
     </ApiErrorBoundary>
   );

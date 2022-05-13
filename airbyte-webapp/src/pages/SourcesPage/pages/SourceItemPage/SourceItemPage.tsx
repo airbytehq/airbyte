@@ -91,7 +91,7 @@ const SourceItemPage: React.FC = () => {
       />
 
       <Suspense fallback={<LoadingPage />}>
-        <ApiErrorBoundary withRetry resetOnLocationChange>
+        <ApiErrorBoundary>
           <Routes>
             <Route
               path="/settings"
