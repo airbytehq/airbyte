@@ -36,11 +36,16 @@ class AirbyteRecordMessage(BaseModel):
     namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
 
 
-class AirbyteStateMessage(BaseModel):
-    class Config:
-        extra = Extra.allow
+class AirbyteStateType(Enum):
+    GLOBAL = "GLOBAL"
+    PER_STREAM = "PER_STREAM"
 
-    data: Dict[str, Any] = Field(..., description="the state data")
+
+class AirbyteStateBlob(BaseModel):
+    pass
+
+    class Config:
+        extra = Extra.forbid
 
 
 class Level(Enum):
@@ -157,6 +162,14 @@ class OAuthConfigSpecification(BaseModel):
     )
 
 
+class AirbyteStreamState(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: Optional[str] = Field(None, description="Stream name")
+    state: Optional[AirbyteStateBlob] = None
+
+
 class AirbyteTraceMessage(BaseModel):
     class Config:
         extra = Extra.allow
@@ -242,6 +255,16 @@ class ConnectorSpecification(BaseModel):
         None,
         description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
     )
+
+
+class AirbyteStateMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    state_type: Optional[AirbyteStateType] = None
+    data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")
+    global_: Optional[AirbyteStateBlob] = Field(None, alias="global")
+    streams: Optional[List[AirbyteStreamState]] = None
 
 
 class AirbyteCatalog(BaseModel):

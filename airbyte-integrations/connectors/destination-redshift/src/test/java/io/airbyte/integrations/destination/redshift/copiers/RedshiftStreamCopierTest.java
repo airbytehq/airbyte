@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.redshift.copiers;
 
 import static java.util.Comparator.comparing;
 import static org.mockito.ArgumentMatchers.argThat;
