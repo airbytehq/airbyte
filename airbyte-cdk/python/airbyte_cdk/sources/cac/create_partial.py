@@ -4,6 +4,19 @@
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.interpolation.interpolated_mapping import InterpolatedMapping
 
+"""
+    Create a partial on steroids.
+    Returns a partial object which when called will behave like func called with the arguments supplied.
+    Parameters will be interpolated before the creation of the object
+    The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.
+    If any of the parameters are also create functions, they will also be created.
+    kwargs are propagated to the recursive method calls
+    :param func: Function
+    :param args:
+    :param keywords:
+    :return: partially created object
+    """
+
 
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
