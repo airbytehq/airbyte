@@ -5,11 +5,12 @@
 package io.airbyte.integrations.destination.redshift;
 
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
-import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcDatabase;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -30,6 +31,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
   private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
-  public RedshiftStagingS3Destination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+  public RedshiftStagingS3Destination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
     this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
   }
@@ -51,7 +53,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
         new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode);
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations));
@@ -61,13 +65,14 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
 
-  }
-
-  @Override
-  protected JdbcDatabase getDatabase(final JsonNode config) {
-    return getJdbcDatabase(config);
   }
 
   @Override
@@ -76,13 +81,13 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return SSL_JDBC_PARAMETERS;
   }
 
   // this is a no op since we override getDatabase.
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     return Jsons.emptyObject();
   }
 
@@ -93,7 +98,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        getDatabase(config),
+        getDatabase(getDataSource(config)),
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),

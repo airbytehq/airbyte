@@ -32,6 +32,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
@@ -43,7 +44,6 @@ import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -189,11 +189,9 @@ class DefaultJobPersistenceTest {
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() throws Exception {
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
   private void resetDb() throws SQLException {

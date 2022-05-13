@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
-import java.io.Closeable;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -60,9 +60,7 @@ class BaseDatabaseInstanceTest {
   void tearDown() throws Exception {
     database.transaction(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME)));
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
