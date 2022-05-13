@@ -2,12 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
-
-if TYPE_CHECKING:
-    pass
 
 
 class Iterator(ABC):
