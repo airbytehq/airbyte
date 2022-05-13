@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+from abc import ABC, abstractmethod, abstractproperty
+from typing import Optional, Union
+
+import requests
+
+
+class Retrier(ABC):
+    @abstractproperty
+    def max_retries(self) -> Union[int, None]:
+        pass
+
+    @abstractproperty
+    def retry_factor(self) -> float:
+        pass
+
+    @abstractmethod
+    def should_retry(self, response: requests.Response) -> bool:
+        pass
+
+    @abstractmethod
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        pass
