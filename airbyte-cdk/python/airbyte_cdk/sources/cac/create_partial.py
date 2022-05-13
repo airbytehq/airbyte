@@ -21,33 +21,37 @@ from airbyte_cdk.sources.cac.interpolation.interpolated_mapping import Interpola
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
         interpolation = JinjaInterpolation()
-        newkeywords = {**keywords}
-        newkeywords.update(fkeywords)
-        config = newkeywords.pop("config", None)
-        if "kwargs" in newkeywords:
-            kwargs = newkeywords.pop("kwargs")
+        all_keywords = {**keywords}
+        all_keywords.update(fkeywords)
+
+        # config is a special keyword used for interpolation
+        config = all_keywords.pop("config", None)
+
+        # kwargs is a special keyword used for interpolation and propagation
+        if "kwargs" in all_keywords:
+            kwargs = all_keywords.pop("kwargs")
         else:
             kwargs = dict()
-        if "parent_kwargs" in newkeywords:
-            parent_kwargs = newkeywords.pop("parent_kwargs")
+
+        # parent_kwargs is a special keyword used for interpolation and propagation
+        if "parent_kwargs" in all_keywords:
+            parent_kwargs = all_keywords.pop("parent_kwargs")
         else:
             parent_kwargs = dict()
 
-        fully_created = dict()
-        for k, v in newkeywords.items():
-            if type(v) == type(create):
-                # keywords_without_k = {key: value for key, value in newkeywords.items() if key != k}
-                fully_created[k] = v(parent_kwargs={**kwargs, **parent_kwargs})
-            else:
-                fully_created[k] = v
+        # create object's partial parameters
+        fully_created = _create_inner_objects(all_keywords, kwargs, parent_kwargs)
 
+        # interpolate the parameters
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(
             config, **{"kwargs": {**fully_created, **parent_kwargs}}
         )
-        newkeywords.update(interpolated_keywords)
+        all_keywords.update(interpolated_keywords)
+
+        # if config is not none, add it back to the keywords mapping
         if config is not None:
-            newkeywords["config"] = config
-        ret = func(*args, *fargs, **{**newkeywords, **kwargs})
+            all_keywords["config"] = config
+        ret = func(*args, *fargs, **{**all_keywords, **kwargs})
         return ret
 
     newfunc.func = func
@@ -55,3 +59,13 @@ def create(func, /, *args, **keywords):
     newfunc.kwargs = keywords
 
     return newfunc
+
+
+def _create_inner_objects(keywords, kwargs, parent_kwargs):
+    fully_created = dict()
+    for k, v in keywords.items():
+        if type(v) == type(create):
+            fully_created[k] = v(parent_kwargs={**kwargs, **parent_kwargs})
+        else:
+            fully_created[k] = v
+    return fully_created
