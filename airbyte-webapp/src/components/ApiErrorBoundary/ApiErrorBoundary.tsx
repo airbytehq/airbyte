@@ -1,5 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-use";
+import { LocationSensorState } from "react-use/lib/useLocation";
 import styled from "styled-components";
 
 import { Button } from "components/base/Button";
@@ -29,6 +31,8 @@ enum ErrorId {
 
 interface ApiErrorBoundaryProps {
   onReset?: () => void;
+  clearOnLocationChange?: boolean;
+  location: LocationSensorState;
 }
 
 class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBoundaryState> {
@@ -50,6 +54,14 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
     return { errorId: ErrorId.UnknownError, wasReset: false };
   }
 
+  componentDidUpdate(prevProps: ApiErrorBoundaryProps) {
+    const { location, clearOnLocationChange } = this.props;
+
+    if (clearOnLocationChange && location !== prevProps.location) {
+      this.setState({ errorId: undefined, wasReset: false });
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   componentDidCatch(): void {}
 
@@ -64,7 +76,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
     if (errorId === ErrorId.ServerUnavailable && !wasReset) {
       return (
         <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
-          {this.props.onReset && (
+          {onReset && (
             <RetryContainer>
               <Button
                 onClick={() => {
@@ -87,4 +99,15 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
   }
 }
 
-export default ApiErrorBoundary;
+function withLocation<P>(Component: React.ComponentType<P>) {
+  return ({ children, ...props }: React.PropsWithChildren<Omit<P, "location">>) => {
+    const location = useLocation();
+    return (
+      <Component {...(props as P)} location={location}>
+        {children}
+      </Component>
+    );
+  };
+}
+
+export default withLocation(ApiErrorBoundary);
