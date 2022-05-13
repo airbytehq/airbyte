@@ -101,7 +101,7 @@ public class FailureHelper {
         .withFailureType(FailureType.SYSTEM_ERROR)
         .withInternalMessage(
             "Setting attempt to FAILED because the temporal workflow for this connection was restarted, and existing job state was cleaned.")
-        .withExternalMessage("An internal Airbyte connection restart caused this job to fail. No user action required.")
+        .withExternalMessage("An internal Airbyte error has occurred. This sync will need to be retried.")
         .withTimestamp(System.currentTimeMillis())
         .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
     return new AttemptFailureSummary().withFailures(List.of(failureReason));
