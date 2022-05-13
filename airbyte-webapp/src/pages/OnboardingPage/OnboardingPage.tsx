@@ -4,6 +4,7 @@ import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
 import { Button } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
@@ -95,35 +96,35 @@ const OnboardingPage: React.FC = () => {
         >
           <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
           <StepsCounter steps={steps} currentStep={currentStep} />
-
           <Suspense fallback={<LoadingPage />}>
-            {currentStep === StepType.INSTRUCTION && (
-              <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
-            )}
-            {currentStep === StepType.CREATE_SOURCE && (
-              <SourceStep
-                onSuccess={() => setAnimateExit(true)}
-                onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
-              />
-            )}
-            {currentStep === StepType.CREATE_DESTINATION && (
-              <DestinationStep
-                onSuccess={() => setAnimateExit(true)}
-                onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
-              />
-            )}
-            {currentStep === StepType.SET_UP_CONNECTION && (
-              <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAL)} />
-            )}
-            {currentStep === StepType.FINAL && <FinalStep />}
+            <ApiErrorBoundary>
+              {currentStep === StepType.INSTRUCTION && (
+                <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
+              )}
+              {currentStep === StepType.CREATE_SOURCE && (
+                <SourceStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
+                />
+              )}
+              {currentStep === StepType.CREATE_DESTINATION && (
+                <DestinationStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
+                />
+              )}
+              {currentStep === StepType.SET_UP_CONNECTION && (
+                <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAL)} />
+              )}
+              {currentStep === StepType.FINAL && <FinalStep />}
+            </ApiErrorBoundary>
           </Suspense>
-
           <Footer>
             <Button secondary onClick={() => handleFinishOnboarding()}>
               {currentStep === StepType.FINAL ? (
                 <FormattedMessage id="onboarding.closeOnboarding" />
               ) : (
-                <FormattedMessage id={"onboarding.skipOnboarding"} />
+                <FormattedMessage id="onboarding.skipOnboarding" />
               )}
             </Button>
           </Footer>
