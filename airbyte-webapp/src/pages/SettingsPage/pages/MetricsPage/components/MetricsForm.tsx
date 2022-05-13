@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Label from "components/Label";
-import LabeledToggle from "components/LabeledToggle";
+import { LabeledSwitch } from "components/LabeledSwitch";
 
 import { useConfig } from "config";
 
@@ -69,7 +69,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
         />
       </Text>
       <FormItem>
-        <LabeledToggle
+        <LabeledSwitch
           checked={anonymousDataCollection}
           disabled={isLoading}
           label={<FormattedMessage id="preferences.anonymizeData" />}

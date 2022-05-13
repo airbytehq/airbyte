@@ -34,7 +34,7 @@ const AdditionMessage = styled.span`
   }
 `;
 
-const LabeledToggle: React.FC<LabeledToggleProps> = (props) => (
+export const LabeledSwitch: React.FC<LabeledToggleProps> = (props) => (
   <ToggleContainer>
     {props.checkbox ? (
       <CheckBox {...props} id={`toggle-${props.name}`} />
@@ -48,5 +48,3 @@ const LabeledToggle: React.FC<LabeledToggleProps> = (props) => (
     </Label>
   </ToggleContainer>
 );
-
-export default LabeledToggle;
