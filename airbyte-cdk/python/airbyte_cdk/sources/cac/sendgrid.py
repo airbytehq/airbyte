@@ -78,7 +78,11 @@ class SendgridSource(ConfigurableSource):
         next_page_url_from_token_partial = create_partial.create(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
 
         simple_retriever = create_partial.create(
-            SimpleRetriever, state=NoState(), iterator=OnlyOnceIterator(), paginator=NoPagination(), config=config
+            SimpleRetriever,
+            state=NoState(),
+            iterator=OnlyOnceIterator(),
+            paginator=NoPagination(),
+            primary_key="{{ kwargs['primary_key'] }}",
         )
 
         configurable_stream = create_partial.create(
@@ -100,8 +104,7 @@ class SendgridSource(ConfigurableSource):
         # Define the streams
         streams = [
             configurable_stream(
-                kwargs={"name": "lists"},
-                primary_key="id",
+                kwargs={"name": "lists", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/lists"),
@@ -111,8 +114,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "campaigns"},
-                primary_key="id",
+                kwargs={"name": "campaigns", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/campaigns"),
@@ -122,8 +124,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "contacts"},
-                primary_key="id",
+                kwargs={"name": "contacts", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="marketing/contacts",
@@ -132,8 +133,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "stats_automations"},
-                primary_key="id",
+                kwargs={"name": "stats_automations", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/automations"),
@@ -144,8 +144,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "segments"},
-                primary_key="id",
+                kwargs={"name": "segments", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="marketing/segments",
@@ -154,8 +153,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "single_sends"},
-                primary_key="id",
+                kwargs={"name": "single_sends", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="marketing/stats/singlesends"),
@@ -165,8 +163,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "templates"},
-                primary_key="id",
+                kwargs={"name": "templates", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path=next_page_url_from_token_partial(default="templates"),
@@ -179,8 +176,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "global_suppressions"},
-                primary_key="email",
+                kwargs={"name": "global_suppressions", "primary_key": "email"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="suppression/unsubscribes",
@@ -191,8 +187,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "suppression_groups"},
-                primary_key="id",
+                kwargs={"name": "suppression_groups", "primary_key": "id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="asm/groups",
@@ -201,8 +196,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "suppression_group_members"},
-                primary_key="group_id",
+                kwargs={"name": "suppression_group_members", "primary_key": "group_id"},
                 retriever=simple_retriever(
                     requester=http_requester(
                         path="asm/suppressions",
@@ -213,8 +207,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "blocks"},
-                primary_key="email",
+                kwargs={"name": "blocks", "primary_key": "email"},
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
@@ -228,8 +221,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "bounces"},
-                primary_key="email",
+                kwargs={"name": "bounces", "primary_key": "email"},
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
@@ -242,8 +234,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "invalid_emails"},
-                primary_key="email",
+                kwargs={"name": "invalid_emails", "primary_key": "email"},
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
@@ -257,8 +248,7 @@ class SendgridSource(ConfigurableSource):
                 ),
             ),
             configurable_stream(
-                kwargs={"name": "spam_reports"},
-                primary_key="email",
+                kwargs={"name": "spam_reports", "primary_key": "email"},
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,

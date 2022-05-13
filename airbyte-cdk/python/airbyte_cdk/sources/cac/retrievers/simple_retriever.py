@@ -15,8 +15,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
-    def __init__(self, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State, config):
-        # FIXME: we should probably share the factory?
+    def __init__(self, primary_key, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State):
+        self._primary_key = primary_key
         self._paginator = paginator
         self._requester = requester
         self._extractor = extractor
@@ -43,7 +43,6 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # FIXME: I think we want the decoded version here
         self._last_response = response
         records = self._extractor.extract_records(response)
         self._last_records = records
@@ -51,11 +50,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        # FIXME: TODO
-        return "id"
-
-    def merge_dicts(self, d1, d2):
-        return {**d1, **d2}
+        return self._primary_key
 
     def request_params(
         self,
@@ -69,14 +64,6 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         return self._requester.request_params(stream_state, stream_slice, next_page_token)
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
-        return {}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -98,12 +85,11 @@ class SimpleRetriever(Retriever, HttpStream):
         records = [r for r in HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)]
         for r in records:
             self._state.update_state(stream_slice, stream_state, self._last_response, r)
-        if not records:
-            # FIXME?
+        if records:
+            yield from records
+        else:
             self._state.update_state(stream_slice, stream_state, self._last_response, None)
             yield from []
-        else:
-            yield from records
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
