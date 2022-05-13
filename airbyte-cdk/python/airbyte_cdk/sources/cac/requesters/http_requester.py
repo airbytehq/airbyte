@@ -7,6 +7,8 @@ from typing import Any, Mapping, MutableMapping
 from airbyte_cdk.sources.cac.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.cac.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.cac.requesters.requester import Requester
+from airbyte_cdk.sources.cac.types import Config
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
 class HttpMethod(Enum):
@@ -21,8 +23,8 @@ class HttpRequester(Requester):
         path: [str, InterpolatedString],
         http_method: HttpMethod,
         request_parameters_provider: RequestParameterProvider,
-        authenticator,
-        config,
+        authenticator: HttpAuthenticator,
+        config: Config,
     ):
         self._authenticator = authenticator
         if type(url_base) == str:
