@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -148,6 +149,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
+    TimeZone timeZone = TimeZone.getTimeZone("UTC"); // e.g. "Europe/Rome"
+    TimeZone.setDefault(timeZone);
     return database.bufferedResultSetQuery(
         connection -> {
           try (final ResultSet tableInfo = connection.createStatement()
@@ -156,6 +159,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
             // check that we're creating permanent tables. DBT defaults to transient tables, which have
             // `TRANSIENT` as the value for the `kind` column.
             assertEquals("TABLE", tableInfo.getString("kind"));
+            connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
                 .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
           }
