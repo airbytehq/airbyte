@@ -13,20 +13,10 @@ from airbyte_cdk.sources.cac.iterators.datetime_iterator import DatetimeIterator
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01"}
-# start_date = {
-#    "value": "{{ stream_state['date'] }}",
-#    "default": "{{ config['start_date'] }}",
-# }
 start_date = InterpolatedString("{{ stream_state['date'] }}", "{{ config['start_date'] }}")
-# end_date_now = {
-#    "value": "{{ today_utc() }}",
-# }
 end_date_now = InterpolatedString(
     "{{ today_utc() }}",
 )
-# end_date = {
-#    "value": "2021-01-10",
-# }
 end_date = InterpolatedString("2021-01-10")
 cursor_value = InterpolatedString("{{ stream_state['date'] }}")
 timezone = datetime.timezone.utc
