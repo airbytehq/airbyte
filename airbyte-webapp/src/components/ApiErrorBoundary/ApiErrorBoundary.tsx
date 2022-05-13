@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useQueryErrorResetBoundary } from "react-query";
 import { useLocation } from "react-use";
 import { LocationSensorState } from "react-use/lib/useLocation";
 import styled from "styled-components";
@@ -20,7 +21,7 @@ const RetryContainer = styled.div`
 interface ApiErrorBoundaryState {
   errorId?: string;
   message?: string;
-  wasReset?: boolean;
+  didRetry?: boolean;
 }
 
 enum ErrorId {
@@ -30,12 +31,22 @@ enum ErrorId {
 }
 
 interface ApiErrorBoundaryProps {
-  onReset?: () => void;
-  clearOnLocationChange?: boolean;
-  location: LocationSensorState;
+  /**
+   * If the error should clear out when the user navigates to another page
+   */
+  resetOnLocationChange?: boolean;
+  /**
+   * Whether the user should be allowed to retry the request
+   */
+  withRetry?: boolean;
 }
 
-class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBoundaryState> {
+interface ApiErrorBoundaryHooks {
+  location: LocationSensorState;
+  onRetry?: () => void;
+}
+
+class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps & ApiErrorBoundaryHooks, ApiErrorBoundaryState> {
   state: ApiErrorBoundaryState = {};
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
@@ -48,17 +59,17 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
     const is502 = error.status === 502;
 
     if (isNetworkBoundaryMessage || is502) {
-      return { errorId: ErrorId.ServerUnavailable, wasReset: false };
+      return { errorId: ErrorId.ServerUnavailable, didRetry: false };
     }
 
-    return { errorId: ErrorId.UnknownError, wasReset: false };
+    return { errorId: ErrorId.UnknownError, didRetry: false };
   }
 
-  componentDidUpdate(prevProps: ApiErrorBoundaryProps) {
-    const { location, clearOnLocationChange } = this.props;
+  componentDidUpdate(prevProps: ApiErrorBoundaryProps & ApiErrorBoundaryHooks) {
+    const { location, resetOnLocationChange } = this.props;
 
-    if (clearOnLocationChange && location !== prevProps.location) {
-      this.setState({ errorId: undefined, wasReset: false });
+    if (resetOnLocationChange && location !== prevProps.location) {
+      this.setState({ errorId: undefined, didRetry: false });
     }
   }
 
@@ -66,21 +77,21 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
   componentDidCatch(): void {}
 
   render(): React.ReactNode {
-    const { errorId, wasReset, message } = this.state;
-    const { onReset, children } = this.props;
+    const { errorId, didRetry, message } = this.state;
+    const { withRetry, onRetry, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
     }
 
-    if (errorId === ErrorId.ServerUnavailable && !wasReset) {
+    if (errorId === ErrorId.ServerUnavailable && !didRetry) {
       return (
         <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
-          {onReset && (
+          {withRetry && onRetry && (
             <RetryContainer>
               <Button
                 onClick={() => {
-                  this.setState({ wasReset: true, errorId: undefined }, () => onReset?.());
+                  this.setState({ didRetry: true, errorId: undefined }, () => onRetry?.());
                 }}
               >
                 <FormattedMessage id="errorView.retry" />
@@ -99,15 +110,15 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBo
   }
 }
 
-function withLocation<P>(Component: React.ComponentType<P>) {
-  return ({ children, ...props }: React.PropsWithChildren<Omit<P, "location">>) => {
-    const location = useLocation();
-    return (
-      <Component {...(props as P)} location={location}>
-        {children}
-      </Component>
-    );
-  };
-}
+const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
+  const { reset } = useQueryErrorResetBoundary();
+  const location = useLocation();
 
-export default withLocation(ApiErrorBoundary);
+  return (
+    <ApiErrorBoundary {...props} location={location} onRetry={reset}>
+      {children}
+    </ApiErrorBoundary>
+  );
+};
+
+export default ApiErrorBoundaryWithHooks;

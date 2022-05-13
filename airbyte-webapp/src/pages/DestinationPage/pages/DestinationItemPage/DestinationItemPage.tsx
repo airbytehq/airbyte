@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Route, Routes } from "react-router-dom";
 
 import { DropDownRow, LoadingPage, PageTitle } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
@@ -92,38 +93,40 @@ const DestinationItemPage: React.FC = () => {
       />
 
       <Suspense fallback={<LoadingPage />}>
-        <Routes>
-          <Route
-            path="/settings"
-            element={
-              <DestinationSettings
-                currentDestination={destination}
-                connectionsWithDestination={connectionsWithDestination}
-              />
-            }
-          />
-          <Route
-            index
-            element={
-              <>
-                <TableItemTitle
-                  type="source"
-                  dropDownData={sourcesDropDownData}
-                  onSelect={onSelect}
-                  entityName={destination.name}
-                  entity={destination.destinationName}
-                  entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
-                  releaseStage={destinationDefinition.releaseStage}
+        <ApiErrorBoundary withRetry resetOnLocationChange>
+          <Routes>
+            <Route
+              path="/settings"
+              element={
+                <DestinationSettings
+                  currentDestination={destination}
+                  connectionsWithDestination={connectionsWithDestination}
                 />
-                {connectionsWithDestination.length ? (
-                  <DestinationConnectionTable connections={connectionsWithDestination} />
-                ) : (
-                  <Placeholder resource={ResourceTypes.Sources} />
-                )}
-              </>
-            }
-          />
-        </Routes>
+              }
+            />
+            <Route
+              index
+              element={
+                <>
+                  <TableItemTitle
+                    type="source"
+                    dropDownData={sourcesDropDownData}
+                    onSelect={onSelect}
+                    entityName={destination.name}
+                    entity={destination.destinationName}
+                    entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
+                    releaseStage={destinationDefinition.releaseStage}
+                  />
+                  {connectionsWithDestination.length ? (
+                    <DestinationConnectionTable connections={connectionsWithDestination} />
+                  ) : (
+                    <Placeholder resource={ResourceTypes.Sources} />
+                  )}
+                </>
+              }
+            />
+          </Routes>
+        </ApiErrorBoundary>
       </Suspense>
     </ConnectorDocumentationWrapper>
   );

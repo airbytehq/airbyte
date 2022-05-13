@@ -1,5 +1,4 @@
 import React, { Suspense, useMemo } from "react";
-import { useQueryErrorResetBoundary } from "react-query";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
@@ -57,7 +56,6 @@ export const CloudRoutes = {
 } as const;
 
 const MainRoutes: React.FC = () => {
-  const { reset } = useQueryErrorResetBoundary();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
@@ -84,7 +82,7 @@ const MainRoutes: React.FC = () => {
   useFeatureRegisterValues(features);
 
   return (
-    <ApiErrorBoundary onReset={reset} clearOnLocationChange>
+    <ApiErrorBoundary withRetry resetOnLocationChange>
       <Routes>
         <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />

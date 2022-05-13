@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
-import { useQueryErrorResetBoundary } from "react-query";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
@@ -58,10 +57,9 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
-  const { reset } = useQueryErrorResetBoundary();
   return (
     <MainView>
-      <ApiErrorBoundary onReset={reset}>
+      <ApiErrorBoundary withRetry resetOnLocationChange>
         <Routes>
           <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
