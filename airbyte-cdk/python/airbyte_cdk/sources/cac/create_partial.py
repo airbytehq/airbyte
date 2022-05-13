@@ -66,7 +66,6 @@ def _get_kwargs_to_pass_to_func(func, kwargs):
 def _create_inner_objects(keywords, kwargs):
     fully_created = dict()
     for k, v in keywords.items():
-        print(f"{k}: {type(v)} == {type(create)}")
         if type(v) == type(create):
             fully_created[k] = v(kwargs=kwargs)
         else:
