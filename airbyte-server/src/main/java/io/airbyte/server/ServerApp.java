@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -268,9 +269,10 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway);
   }
 
-  private static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
-                                                                    final JobPersistence jobPersistence,
-                                                                    final EventRunner eventRunner)
+  @VisibleForTesting
+  static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
+                                                            final JobPersistence jobPersistence,
+                                                            final EventRunner eventRunner)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     // Skip the migration if it was already performed, to save on resources/startup time
     if (jobPersistence.isSchedulerMigrated()) {
