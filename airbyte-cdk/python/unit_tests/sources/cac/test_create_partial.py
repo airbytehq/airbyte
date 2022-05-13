@@ -17,6 +17,13 @@ class OuterClass:
         self.inner_param = inner_param
 
 
+class OuterOuterClass:
+    def __init__(self, name, param, inner_class):
+        self.name = name
+        self.param = param
+        self.inner_class = inner_class
+
+
 def test_pass_parameter_to_create_function():
     object = create(AClass, parameter="A")(another_param="B")
     assert object.parameter == "A"
@@ -42,3 +49,15 @@ def test_propagate_kwargs():
     assert object.some_field == "A"
     assert object.inner_param.parameter == "I"
     assert object.inner_param.another_param == "AIRBYTE"
+
+
+def test_propagate_kwargs_2_levels_down():
+    inner_object = create(AClass, parameter="I", another_param="{{ kwargs['name'] }}")
+    object = create(OuterClass, some_field="A", inner_param=inner_object)
+    outer_object = create(OuterOuterClass, inner_class=object)(kwargs={"name": "AIRBYTE", "param": "param"})
+    assert outer_object.inner_class.name == "AIRBYTE"
+    assert outer_object.inner_class.some_field == "A"
+    assert outer_object.inner_class.inner_param.parameter == "I"
+    assert outer_object.inner_class.inner_param.another_param == "AIRBYTE"
+    assert outer_object.name == "AIRBYTE"
+    assert outer_object.param == "param"

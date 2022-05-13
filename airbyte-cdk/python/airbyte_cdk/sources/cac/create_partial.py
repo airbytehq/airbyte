@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import inspect
+
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.interpolation.interpolated_mapping import InterpolatedMapping
 
@@ -51,7 +53,11 @@ def create(func, /, *args, **keywords):
         # if config is not none, add it back to the keywords mapping
         if config is not None:
             all_keywords["config"] = config
-        ret = func(*args, *fargs, **{**all_keywords, **kwargs})
+        args_to_pass_down = set(inspect.getfullargspec(func).args)
+        print(f"args to pass down: {args_to_pass_down}")
+        kwargs_to_pass_down = {k: v for k, v in {**kwargs, **parent_kwargs}.items() if k in args_to_pass_down}
+        print(f"kwargs to pass down {kwargs_to_pass_down}")
+        ret = func(*args, *fargs, **{**all_keywords, **kwargs_to_pass_down})
         return ret
 
     newfunc.func = func
@@ -64,6 +70,7 @@ def create(func, /, *args, **keywords):
 def _create_inner_objects(keywords, kwargs, parent_kwargs):
     fully_created = dict()
     for k, v in keywords.items():
+        print(f"{k}: {type(v)} == {type(create)}")
         if type(v) == type(create):
             fully_created[k] = v(parent_kwargs={**kwargs, **parent_kwargs})
         else:
