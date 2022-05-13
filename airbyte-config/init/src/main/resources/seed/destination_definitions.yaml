@@ -18,7 +18,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
   icon: amazonsqs.svg
   releaseStage: alpha
-  custom: true
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
