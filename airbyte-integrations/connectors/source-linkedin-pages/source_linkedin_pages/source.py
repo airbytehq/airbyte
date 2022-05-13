@@ -14,10 +14,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
-# from .utils import transform_data
 
 
-class LinkedinPagesStream(HttpStream):
+class LinkedinPagesStream(HttpStream, ABC):
+
     url_base = "https://api.linkedin.com/v2/"
     primary_key = None
 
@@ -28,16 +28,14 @@ class LinkedinPagesStream(HttpStream):
     @property
     def org(self):
         """Property to return the list of the user Account Ids from input"""
-        return ",".join(map(str, self.config.get("org_ids")))
+        return self.config.get("org_ids")
         
-
-    def next_page_token(self) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
-        return None
-
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
         return self.endpoint
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def parse_response(
         self,
@@ -46,24 +44,34 @@ class LinkedinPagesStream(HttpStream):
         stream_slice: Mapping[str, Any] = None
     ) -> Iterable[Mapping]:
         return [response.json()]
-        # yield from transform_data(response.json().get("elements"))
-
 
 class OrganizationLookup(LinkedinPagesStream):
 
-        endpoint = "organizations/35571209"
+    endpoint = "organizations/35571209"
 
-  # def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """
-        Override request_params() to have the ability to accept the specific account_ids from user's configuration.
-        If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
-        We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
-        so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
-        """
-        # params = super().request_params(stream_state=stream_state, **kwargs)
-        # if self.org:
-        #     params[self.org]
-        # return params
+class FollowerStatistics(LinkedinPagesStream):
+
+    endpoint = "organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:35571209"
+
+class PageStatistics(LinkedinPagesStream):
+
+    endpoint = "organizationPageStatistics?q=organization&organization=urn%3Ali%3Aorganization%3A35571209"
+
+class ShareStatistics(LinkedinPagesStream):
+
+    endpoint = "organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A35571209"
+
+class Shares(LinkedinPagesStream):
+
+    endpoint = "shares?q=owners&owners=urn%3Ali%3Aorganization%3A35571209&sortBy=LAST_MODIFIED&sharesPerOwner=100"
+
+class TotalFollowerCount(LinkedinPagesStream):
+
+    endpoint = "networkSizes/urn:li:organization:35571209?edgeType=CompanyFollowedByMember"
+
+class UgcPosts(LinkedinPagesStream):
+
+    endpoint = "shares?q=owners&owners=urn%3Ali%3Aorganization%3A35571209&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
 
 
 class SourceLinkedinPages(AbstractSource):
@@ -105,7 +113,6 @@ class SourceLinkedinPages(AbstractSource):
 
         config["authenticator"] = self.get_authenticator(config)
         stream = OrganizationLookup(config)
-        # need to load the first item only
         stream.records_limit = 1
         try:
             next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
@@ -115,11 +122,13 @@ class SourceLinkedinPages(AbstractSource):
 
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Mapping a input config of the user input configuration as defined in the connector spec.
-        Passing config to the streams.
-        """
         config["authenticator"] = self.get_authenticator(config)
         return [
-            OrganizationLookup(config)
+            OrganizationLookup(config),
+            FollowerStatistics(config),
+            PageStatistics(config),
+            ShareStatistics(config),
+            Shares(config),
+            TotalFollowerCount(config),
+            UgcPosts(config)
         ]

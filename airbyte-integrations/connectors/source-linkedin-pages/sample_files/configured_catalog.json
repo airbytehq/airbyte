@@ -3,278 +3,61 @@
     {
       "stream": {
         "name": "organization_lookup",
-        "json_schema": {
-            "type": "object",
-            "properties": {
-              "vanityName": {
-                "type": "string"
-              },
-              "localizedName": {
-                "type": "string"
-              },
-              "website": {
-                "type": "object",
-                "properties": {
-                  "localized": {
-                    "type": "object",
-                    "properties": {
-                      "en_US": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "preferredLocale": {
-                    "type": "object",
-                    "properties": {
-                      "country": {
-                        "type": "string"
-                      },
-                      "language": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "foundedOn": {
-                "type": "object",
-                "properties": {
-                  "year": {
-                    "type": "integer"
-                  }
-                }
-              },
-              "groups": {
-                "type": "array",
-                "items": {}
-              },
-              "description": {
-                "type": "object",
-                "properties": {
-                  "localized": {
-                    "type": "object",
-                    "properties": {
-                      "en_US": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "preferredLocale": {
-                    "type": "object",
-                    "properties": {
-                      "country": {
-                        "type": "string"
-                      },
-                      "language": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "versionTag": {
-                "type": "string"
-              },
-              "coverPhotoV2": {
-                "type": "object",
-                "properties": {
-                  "cropped": {
-                    "type": "string"
-                  },
-                  "original": {
-                    "type": "string"
-                  },
-                  "cropInfo": {
-                    "type": "object",
-                    "properties": {
-                      "x": {
-                        "type": "integer"
-                      },
-                      "width": {
-                        "type": "integer"
-                      },
-                      "y": {
-                        "type": "integer"
-                      },
-                      "height": {
-                        "type": "integer"
-                      }
-                    }
-                  }
-                }
-              },
-              "defaultLocale": {
-                "type": "object",
-                "properties": {
-                  "country": {
-                    "type": "string"
-                  },
-                  "language": {
-                    "type": "string"
-                  }
-                }
-              },
-              "organizationType": {
-                "type": "string"
-              },
-              "alternativeNames": {
-                "type": "array",
-                "items": {}
-              },
-              "specialties": {
-                "type": "array",
-                "items": {}
-              },
-              "staffCountRange": {
-                "type": "string"
-              },
-              "localizedSpecialties": {
-                "type": "array",
-                "items": {}
-              },
-              "industries": {
-                "type": "array",
-                "items": [
-                  {
-                    "type": "string"
-                  }
-                ]
-              },
-              "name": {
-                "type": "object",
-                "properties": {
-                  "localized": {
-                    "type": "object",
-                    "properties": {
-                      "en_US": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "preferredLocale": {
-                    "type": "object",
-                    "properties": {
-                      "country": {
-                        "type": "string"
-                      },
-                      "language": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "primaryOrganizationType": {
-                "type": "string"
-              },
-              "locations": {
-                "type": "array",
-                "items": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "locationType": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "object",
-                        "properties": {
-                          "localized": {
-                            "type": "object",
-                            "properties": {
-                              "en_US": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "preferredLocale": {
-                            "type": "object",
-                            "properties": {
-                              "country": {
-                                "type": "string"
-                              },
-                              "language": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "address": {
-                        "type": "object",
-                        "properties": {
-                          "geographicArea": {
-                            "type": "string"
-                          },
-                          "country": {
-                            "type": "string"
-                          },
-                          "city": {
-                            "type": "string"
-                          },
-                          "line1": {
-                            "type": "string"
-                          },
-                          "postalCode": {
-                            "type": "string"
-                          }
-                        }
-                      },
-                      "localizedDescription": {
-                        "type": "string"
-                      },
-                      "geoLocation": {
-                        "type": "string"
-                      },
-                      "streetAddressFieldState": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                ]
-              },
-              "id": {
-                "type": "integer"
-              },
-              "localizedDescription": {
-                "type": "string"
-              },
-              "$URN": {
-                "type": "string"
-              },
-              "localizedWebsite": {
-                "type": "string"
-              },
-              "logoV2": {
-                "type": "object",
-                "properties": {
-                  "cropped": {
-                    "type": "string"
-                  },
-                  "original": {
-                    "type": "string"
-                  },
-                  "cropInfo": {
-                    "type": "object",
-                    "properties": {
-                      "x": {
-                        "type": "integer"
-                      },
-                      "width": {
-                        "type": "integer"
-                      },
-                      "y": {
-                        "type": "integer"
-                      },
-                      "height": {
-                        "type": "integer"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-        },
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "follower_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "page_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "share_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "shares",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "total_follower_count",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ugc_posts",
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
