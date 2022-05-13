@@ -14,10 +14,6 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_local"] = datetime.datetime.now
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
-        self._environment.globals["to_timestamp"] = lambda s: datetime.datetime.strptime(s, "%Y-%m-%d")  # FIXME hardcoded format
-        self._environment.globals["from_timestamp"] = lambda i: datetime.datetime.fromtimestamp(i).strftime(
-            "%Y-%m-%d"
-        )  # FIXME hardcoded format
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
@@ -29,7 +25,6 @@ class JinjaInterpolation(Interpolation):
             else:
                 return input_str
         except UndefinedError:
-            # TODO: log warning
             pass
         return self._eval(default, context)
 
@@ -37,6 +32,5 @@ class JinjaInterpolation(Interpolation):
         try:
             return self._environment.from_string(s).render(context)
         except TypeError:
-            # TODO log warning!
-            # Type error if not a template node!
+            # Not a template node!
             return s
