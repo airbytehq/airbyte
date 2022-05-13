@@ -3,12 +3,9 @@
 #
 from typing import Any, Mapping, MutableMapping
 
-from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import \
-    InterpolatedMapping
-from airbyte_cdk.sources.configurable.interpolation.jinja import \
-    JinjaInterpolation
-from airbyte_cdk.sources.configurable.requesters.request_params.request_parameters_provider import \
-    RequestParameterProvider
+from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.configurable.requesters.request_params.request_parameters_provider import RequestParameterProvider
 
 
 class InterpolatedRequestParameterProvider(RequestParameterProvider):
@@ -20,7 +17,7 @@ class InterpolatedRequestParameterProvider(RequestParameterProvider):
         self._config = config
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         return self._interpolation.eval(self._config, **kwargs)
