@@ -1,10 +1,10 @@
 import Status from "core/statuses";
 
-import { checkOperation, OperationRead } from "../../request/AirbyteClient";
+import { checkOperation, OperationCreate } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class OperationService extends AirbyteRequestService {
-  public async check({ operatorConfiguration }: OperationRead) {
+  public async check({ operatorConfiguration }: OperationCreate) {
     const rs = await checkOperation(operatorConfiguration, this.requestOptions);
 
     if (rs.status === Status.FAILED) {

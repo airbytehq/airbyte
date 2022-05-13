@@ -11,7 +11,6 @@ import {
   isDbtTransformation,
   isNormalizationTransformation,
   NormalizationType,
-  Transformation,
 } from "core/domain/connection/operation";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import { ValuesProps } from "hooks/services/useConnectionHook";
@@ -23,6 +22,7 @@ import {
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   NamespaceDefinitionType,
+  OperationCreate,
   OperationRead,
   OperatorType,
   SyncMode,
@@ -35,7 +35,7 @@ type FormikConnectionFormValues = {
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
   namespaceFormat: string;
-  transformations?: Transformation[];
+  transformations?: OperationRead[];
   normalization?: NormalizationType;
 };
 
@@ -53,10 +53,9 @@ const DEFAULT_SCHEDULE: ConnectionSchedule = {
   timeUnit: "hours",
 };
 
-function useDefaultTransformation(): Transformation {
+function useDefaultTransformation(): OperationCreate {
   const workspace = useCurrentWorkspace();
   return {
-    operationId: "", // TODO: Does this need a value?
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,
     operatorConfiguration: {
@@ -164,13 +163,13 @@ const connectionValidationSchema = yup
  */
 function mapFormPropsToOperation(
   values: {
-    transformations?: Transformation[];
+    transformations?: OperationRead[];
     normalization?: NormalizationType;
   },
   initialOperations: OperationRead[] = [],
   workspaceId: string
-): OperationRead[] {
-  const newOperations: OperationRead[] = [];
+): OperationCreate[] {
+  const newOperations: OperationCreate[] = [];
 
   if (values.normalization) {
     if (values.normalization !== NormalizationType.raw) {
@@ -182,7 +181,6 @@ function mapFormPropsToOperation(
         newOperations.push({
           name: "Normalization",
           workspaceId,
-          operationId: "", // TODO: Is this necessary?
           operatorConfiguration: {
             operatorType: OperatorType.normalization,
             normalization: {
@@ -251,16 +249,13 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
     [schema.streams]
   );
 
-const getInitialTransformations = (operations?: OperationRead[]): Transformation[] =>
+const getInitialTransformations = (operations?: OperationCreate[]): OperationRead[] =>
   operations?.filter(isDbtTransformation) ?? [];
 
-const getInitialNormalization = (operations?: OperationRead[], isEditMode?: boolean): NormalizationType => {
-  /*
-    TODO: I'm not entirely certain about the logic around this.
-    The types say this is either "basic" | "undefined".
-    So if it's undefined we want RAW, otherwise we want basic.
-    This _seems_ logical to me.
-  */
+const getInitialNormalization = (
+  operations?: (OperationRead | OperationCreate)[],
+  isEditMode?: boolean
+): NormalizationType => {
   const initialNormalization =
     operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
 

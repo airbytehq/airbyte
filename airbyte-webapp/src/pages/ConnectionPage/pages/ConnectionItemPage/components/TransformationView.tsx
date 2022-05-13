@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import { NormalizationType, Transformation } from "core/domain/connection";
+import { NormalizationType } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -24,6 +24,7 @@ import { FormCard } from "views/Connection/FormCard";
 
 import {
   ConnectionStatus,
+  OperationCreate,
   OperationRead,
   OperatorType,
   WebBackendConnectionRead,
@@ -50,7 +51,7 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 
 const CustomTransformationsCard: React.FC<{
   operations?: OperationRead[];
-  onSubmit: FormikOnSubmit<{ transformations?: Transformation[] }>;
+  onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
@@ -63,7 +64,7 @@ const CustomTransformationsCard: React.FC<{
   );
 
   return (
-    <FormCard<{ transformations?: Transformation[] }>
+    <FormCard<{ transformations?: OperationRead[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
       bottomSeparator
@@ -121,14 +122,14 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
 
   const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
 
-  const onSubmit: FormikOnSubmit<{ transformations?: Transformation[]; normalization?: NormalizationType }> = async (
+  const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
     { resetForm }
   ) => {
     const newOp = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
     const operations = values.transformations
-      ? connection.operations
+      ? (connection.operations as OperationCreate[]) // There's an issue meshing the OperationRead here with OperationCreate that we want, in the types
           ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.normalization)
           .concat(newOp)
       : newOp.concat(
