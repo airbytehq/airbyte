@@ -35,6 +35,7 @@ extend-ignore = [
   "E231",  # Bad trailing comma (conflicts with Black)
   "E501",  # line too long (conflicts with Black)
   "W503",  # line break before binary operator (conflicts with Black)
+  "C901",
 ]
 
 [tool.isort]
