@@ -9,7 +9,7 @@ value = "{{ last_record['updated_at'] }}"
 
 
 def test_empty_state_is_none():
-    state = DictState(name, value, str, vars, config)
+    state = DictState(name, value, str, config)
     initial_state = state.get_state()
     expected_state = {}
     assert expected_state == initial_state

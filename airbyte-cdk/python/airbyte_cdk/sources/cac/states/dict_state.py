@@ -6,11 +6,16 @@ from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.states.state import State
 
 
-# FIXME: currently only support single values
+def _get_max(val, name, other_state):
+    other_val = other_state.get(name)
+    if other_val:
+        return max(val, other_val)
+    else:
+        return val
+
+
 class DictState(State):
-    def __init__(self, name, value, state_type=str, vars=None, config=None):
-        if vars is None:
-            vars = dict()
+    def __init__(self, name, value, state_type=str, config=None):
         if config is None:
             config = dict()
         self._name = name
@@ -18,7 +23,6 @@ class DictState(State):
         self._state_type = state_type
         self._interpolator = JinjaInterpolation()
         self._context = dict()
-        self._vars = vars
         self._config = config
 
     def update_state(self, stream_slice, stream_state, last_response, last_record):
@@ -34,9 +38,8 @@ class DictState(State):
         return self._context.get("stream_state", {})
 
     def _compute_state(self, prev_state):
-        # FIXME: date needs to be properly formatted!
-        name = self._interpolator.eval(self._name, self._vars, self._config)
-        val = self._interpolator.eval(self._value, self._vars, self._config, **self._context)
+        name = self._interpolator.eval(self._name, self._config)
+        val = self._interpolator.eval(self._value, self._config, **self._context)
         if val:
             val = self._state_type(val)
         else:
@@ -46,17 +49,10 @@ class DictState(State):
             return prev_state
 
         if prev_state:
-            val = self._get_max(val, name, prev_state)
+            val = _get_max(val, name, prev_state)
         if self._context.get("stream_state"):
-            val = self._get_max(val, name, self._context["stream_state"])
+            val = _get_max(val, name, self._context["stream_state"])
 
         updated_state = {name: val}
         self._context["stream_state"] = updated_state
         return {name: val}
-
-    def _get_max(self, val, name, other_state):
-        other_val = other_state.get(name)
-        if other_val:
-            return max(val, other_val)
-        else:
-            return val
