@@ -215,7 +215,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices]
+    [availableServices, orderOverwrite]
   );
 
   const getNoOptionsMessage = useCallback(
