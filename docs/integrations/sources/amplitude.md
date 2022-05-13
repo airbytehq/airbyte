@@ -9,18 +9,17 @@ Before you begin replicating the data from `Amplitude`, please follow this guide
 Once you have your credentials, you now can use them in order to setup the connection in Airbyte.
 
 ## Setup guide
-### Requirements
-* Amplitude API Key
-* Amplitude Secret Key
-* Start Date
+### Step 1: Set up Amplitude source
+You would need to obtain your Amplitude `API Key` and `Secret Key` using this [guide](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information) to set up the connector in Airbyte.
 
-Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information) before you begin setup the Airbyte connection.
+### Step 2: Set up Amplitude source connector in Airbyte
 
 ### For OSS Airbyte:
 1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 2. On the Set up the `source` page, enter the name for the `Amplitude` connector and select **Amplitude** from the Source type dropdown.
 3. Enter your `API Key` and `Secret Key` to corresponding fields
 4. Enter the `Start Date` as the statrting point for your data replication.
+5. Click on `Check Connection` to finish configuring the Amplitude source.
 
 ### For Airbyte Cloud:
 
@@ -29,6 +28,7 @@ Please read [How to get your API key and Secret key](https://help.amplitude.com/
 3. On the Set up the `source` page, enter the name for the `Amplitude` connector and select **Amplitude** from the Source type dropdown.
 4. Enter your `API Key` and `Secret Key` to corresponding fields
 5. Enter the `Start Date` as the statrting point for your data replication.
+6. Click on `Check Connection` to finish configuring the Amplitude source.
 
 ## Supported Streams
 

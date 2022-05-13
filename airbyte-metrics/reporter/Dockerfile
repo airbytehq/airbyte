@@ -1,7 +1,8 @@
 ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS metrics-reporter
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+FROM ${JDK_IMAGE} AS metrics-reporter
 
-ARG VERSION=0.37.0-alpha
+ARG VERSION=0.38.3-alpha
 
 ENV APPLICATION airbyte-metrics-reporter
 ENV VERSION ${VERSION}

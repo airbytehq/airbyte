@@ -14,6 +14,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.db.jdbc.streaming.FetchSizeConstants;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
@@ -24,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.dbcp2.BasicDataSource;
+import javax.sql.DataSource;
 import org.elasticsearch.common.collect.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,14 +67,14 @@ public class TestStreamingJdbcDatabase {
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName("org.postgresql.Driver");
-    connectionPool.setUsername(config.get("username").asText());
-    connectionPool.setPassword(config.get("password").asText());
-    connectionPool.setUrl(String.format("jdbc:postgresql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final DataSource connectionPool = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
     streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), AdaptiveStreamingQueryConfig::new);

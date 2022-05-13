@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -33,7 +34,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
   private List<String> schemas;
 

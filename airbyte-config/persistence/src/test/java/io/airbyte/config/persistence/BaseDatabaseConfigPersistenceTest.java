@@ -29,6 +29,9 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.jooq.Table;
@@ -45,6 +48,9 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static Database database;
   protected static DatabaseConfigPersistence configPersistence;
   protected static JsonSecretsProcessor jsonSecretsProcessor;
+  protected static DataSource dataSource;
+  protected static DSLContext dslContext;
+  protected static Flyway flyway;
 
   @BeforeAll
   public static void dbSetup() {

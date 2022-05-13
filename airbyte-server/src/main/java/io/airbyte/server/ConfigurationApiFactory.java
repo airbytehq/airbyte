@@ -25,6 +25,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import org.flywaydb.core.Flyway;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
@@ -52,6 +53,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static HttpClient httpClient;
   private static FeatureFlags featureFlags;
   private static EventRunner eventRunner;
+  private static Flyway configsFlyway;
+  private static Flyway jobsFlyway;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -75,7 +78,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final Path workspaceRoot,
                                final HttpClient httpClient,
                                final FeatureFlags featureFlags,
-                               final EventRunner eventRunner) {
+                               final EventRunner eventRunner,
+                               final Flyway configsFlyway,
+                               final Flyway jobsFlyway) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -98,6 +103,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.httpClient = httpClient;
     ConfigurationApiFactory.featureFlags = featureFlags;
     ConfigurationApiFactory.eventRunner = eventRunner;
+    ConfigurationApiFactory.configsFlyway = configsFlyway;
+    ConfigurationApiFactory.jobsFlyway = jobsFlyway;
   }
 
   @Override
@@ -125,7 +132,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.workspaceRoot,
         ConfigurationApiFactory.httpClient,
         ConfigurationApiFactory.featureFlags,
-        ConfigurationApiFactory.eventRunner);
+        ConfigurationApiFactory.eventRunner,
+        ConfigurationApiFactory.configsFlyway,
+        ConfigurationApiFactory.jobsFlyway);
   }
 
   @Override

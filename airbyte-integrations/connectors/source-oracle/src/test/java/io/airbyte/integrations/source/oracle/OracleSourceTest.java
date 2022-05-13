@@ -12,7 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -70,13 +72,17 @@ class OracleSourceTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.ORACLE.getDriverClassName(),
+            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("sid").asText())
+        )
+    );
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
