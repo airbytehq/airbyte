@@ -27,8 +27,8 @@ You'll also need to find these values. See the [setup guide](#setup-guide) for i
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
-1. Create a Google Ads Account. Here are [Google's instruction](https://support.google.com/google-ads/answer/6366720) on how to create one.
-2. Create a Google Ads MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
+1. Create a Google Ads Account. Here are [Google's instructions](https://support.google.com/google-ads/answer/6366720) on how to create one.
+2. Create a Google Ads MANAGER Account. Here are [Google's instructions](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
 3. You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
 4. Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
@@ -106,7 +106,7 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 **Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
 
-**Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+**Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ## Understanding Google Ads Query Language
 
