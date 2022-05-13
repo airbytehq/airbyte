@@ -31,7 +31,9 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
@@ -54,7 +56,6 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
   private final WorkflowServiceStubs service;
-  private final Configs configs;
 
   /**
    * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
@@ -63,23 +64,74 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
+  public static TemporalClient production(final Configs configs) {
+    if (configs.temporalCloudEnabled()) {
+      log.info("TemporalClient.production chose Cloud...");
+      return TemporalClient.cloud(configs);
+    }
+    log.info("TemporalClient.production chose Airbyte...");
+    return TemporalClient.airbyte(configs);
+  }
 
-  public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-    return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
+  public static WorkerFactory productionWorkerFactory(final Configs configs) {
+    if (configs.temporalCloudEnabled()) {
+      log.info("TemporalClient.productionWorkerFactory chose Cloud...");
+      return WorkerFactory.newInstance(cloudWorkflowClient(TemporalUtils.createTemporalCloudService(), configs));
+    }
+    log.info("TemporalClient.productionWorkerFactory chose Airbyte...");
+    return WorkerFactory.newInstance(airbyteWorkflowClient(TemporalUtils.createTemporalAirbyteService()));
+  }
+
+  public static TemporalClient cloud(final Configs configs) {
+    log.info("Using Temporal Cloud with:\nhost: {}\nnamespace: {}", configs.getTemporalCloudHost(), configs.getTemporalCloudNamespace());
+    final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalCloudService();
+    return new TemporalClient(
+        WorkflowClient.newInstance(
+            temporalCloudService,
+            WorkflowClientOptions.newBuilder()
+                .setNamespace(configs.getTemporalCloudNamespace())
+                .build()),
+        configs.getWorkspaceRoot(),
+        temporalCloudService);
+  }
+
+  public static TemporalClient airbyte(final Configs configs) {
+    final String temporalHost = configs.getTemporalHost();
+    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", temporalHost, TemporalUtils.DEFAULT_NAMESPACE);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalAirbyteService(temporalHost);
+    return new TemporalClient(WorkflowClient.newInstance(temporalService), configs.getWorkspaceRoot(), temporalService);
+  }
+
+  private static WorkflowClient cloudWorkflowClient(final WorkflowServiceStubs temporalService, final Configs configs) {
+    return WorkflowClient.newInstance(
+        temporalService,
+        WorkflowClientOptions.newBuilder()
+            .setNamespace(configs.getTemporalCloudNamespace())
+            .build());
+  }
+
+  private static WorkflowClient airbyteWorkflowClient(final WorkflowServiceStubs temporalService) {
+    return WorkflowClient.newInstance(temporalService);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
-  public TemporalClient(final WorkflowClient client,
-                        final Path workspaceRoot,
-                        final WorkflowServiceStubs workflowServiceStubs,
-                        final Configs configs) {
+  @VisibleForTesting
+  protected TemporalClient(final WorkflowClient client,
+      final Path workspaceRoot,
+      final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
-    this.configs = configs;
+  }
+
+  /**
+   * Direct termination of Temporal Workflows should generally be avoided.
+   * This method exists for some rare circumstances where this may be required. Originally added
+   * to facilitate Airbyte's migration to Temporal Cloud.
+   */
+  public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
+    this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
   }
 
   public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
@@ -211,6 +263,11 @@ public class TemporalClient {
               .build();
 
     } while (token != null && token.size() > 0);
+  }
+
+  public Set<String> getAllRunningWorkflows() {
+    refreshRunningWorkflow();
+    return workflowNames;
   }
 
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
