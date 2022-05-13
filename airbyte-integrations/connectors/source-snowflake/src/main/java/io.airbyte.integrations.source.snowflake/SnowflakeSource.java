@@ -55,6 +55,11 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   @Override
+  protected void initializeDataSource(final JsonNode config) {
+    dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+  }
+
+  @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final String jdbcUrl = SnowflakeDataSourceUtils.buildJDBCUrl(config);
 
