@@ -87,7 +87,8 @@ class ApiErrorBoundary extends React.Component<
             <RetryContainer>
               <Button
                 onClick={() => {
-                  this.setState({ didRetry: true, errorId: undefined }, () => onRetry?.());
+                  this.setState({ didRetry: true, errorId: undefined });
+                  onRetry?.();
                 }}
               >
                 <FormattedMessage id="errorView.retry" />
