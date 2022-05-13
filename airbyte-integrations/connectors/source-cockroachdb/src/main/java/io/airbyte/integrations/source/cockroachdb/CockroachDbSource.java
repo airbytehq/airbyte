@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +130,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     return new CockroachJdbcDatabase(database, sourceOperations);
