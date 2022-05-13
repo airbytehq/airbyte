@@ -22,3 +22,14 @@ def test_value_depends_response_body():
     next_page_token = paginator.next_page_token(response, last_responses)
 
     assert next_page_token == {"next_page_url": "next_url"}
+
+
+def test_no_next_page_found():
+    next_page_tokens = {"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}
+    paginator = NextPageUrlPaginator("https://airbyte.io/", InterpolatedPaginator(next_page_tokens, config))
+
+    r = requests.Response()
+    r._content = json.dumps({"data": []}).encode("utf-8")
+    next_page_token = paginator.next_page_token(r, last_responses)
+
+    assert next_page_token is None
