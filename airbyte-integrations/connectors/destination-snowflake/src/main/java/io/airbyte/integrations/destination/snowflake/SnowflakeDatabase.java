@@ -49,7 +49,7 @@ public class SnowflakeDatabase {
       .connectTimeout(Duration.ofSeconds(10))
       .build();
 
-  private static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config) {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
@@ -70,7 +70,7 @@ public class SnowflakeDatabase {
         accessToken = getAccessTokenUsingRefreshToken(config.get("host").asText(),
             credentials.get("client_id").asText(),
             credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new RuntimeException(e);
       }
       properties.put("client_id", credentials.get("client_id").asText());
@@ -169,24 +169,23 @@ public class SnowflakeDatabase {
     }
   }
 
-  public static JdbcDatabase getDatabase(final JsonNode config) {
-    final DataSource dataSource = createDataSource(config);
+  public static JdbcDatabase getDatabase(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource);
   }
 
   private static Runnable getRefreshTokenTask(final HikariDataSource dataSource) {
     return () -> {
       LOGGER.info("Refresh token process started");
-      var props = dataSource.getDataSourceProperties();
+      final var props = dataSource.getDataSourceProperties();
       try {
-        var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
         dataSource.setDataSourceProperties(props);
 
         LOGGER.info("New refresh token has been obtained");
-      } catch (IOException e) {
+      } catch (final IOException e) {
         LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }
     };
