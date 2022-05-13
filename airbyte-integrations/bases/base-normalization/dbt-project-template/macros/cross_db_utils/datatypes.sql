@@ -59,6 +59,9 @@
     String
 {%- endmacro -%}
 
+{%- macro postgres__type_string() -%}
+    text
+{%- endmacro -%}
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
