@@ -6,7 +6,7 @@ from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.cac import create_partial
 from airbyte_cdk.sources.cac.checks.check_stream import CheckStream
-from airbyte_cdk.sources.cac.configurable_connector import ConfigurableConnector
+from airbyte_cdk.sources.cac.configurable_source import ConfigurableSource
 from airbyte_cdk.sources.cac.configurable_stream import ConfigurableStream
 from airbyte_cdk.sources.cac.extractors.jq import JqExtractor
 from airbyte_cdk.sources.cac.interpolation.interpolated_string import InterpolatedString
@@ -26,7 +26,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
-class SendgridSource(ConfigurableConnector):
+class SendgridSource(ConfigurableSource):
     """
     This is a sample low-code connector.
     It still uses the existing spec.yaml file
