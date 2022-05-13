@@ -29,6 +29,7 @@ GIT_HISTORY_DEPTH=5
 function configuredbt() {
   # We first need to generate a workspace folder for a dbt project to run from:
   if [[ -z "${GIT_REPO}" ]]; then
+    echo "PARKER: base normalization no GIT_REPO env var present"
     # No git repository provided, use the dbt-template folder (shipped inside normalization docker image)
     # as the base folder for dbt workspace
     cp -r /airbyte/normalization_code/dbt-template/* "${PROJECT_DIR}"
@@ -50,6 +51,8 @@ function configuredbt() {
     set -e # tells bash, in a script, to exit whenever anything returns a non-zero return value.
   else
     trap config_cleanup EXIT
+    echo "PARKER: GIT_REPO env var present: ${GIT_REPO}"
+
     # Use git repository as a base workspace folder for dbt projects
     if [[ -d git_repo ]]; then
       rm -rf git_repo

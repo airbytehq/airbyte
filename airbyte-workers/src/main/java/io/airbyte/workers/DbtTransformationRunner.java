@@ -7,7 +7,9 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
@@ -31,6 +33,7 @@ public class DbtTransformationRunner implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
+  private static final String DBT_PROFILES_YML = "profiles.yml";
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("dbt")
       .setPrefixColor(Color.PURPLE_BACKGROUND);
@@ -69,6 +72,8 @@ public class DbtTransformationRunner implements AutoCloseable {
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
+    LOGGER.info("PARKER: inside DbtTransformationRunner's run() with config: \n{}\n and dbtConfig:\n{}", Jsons.serialize(config),
+        Jsons.serialize(dbtConfig));
     if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
     }
@@ -83,15 +88,25 @@ public class DbtTransformationRunner implements AutoCloseable {
                            final OperatorDbt dbtConfig)
       throws Exception {
     try {
+      final Path profilePath = jobRoot.resolve(DBT_PROFILES_YML);
+      DbtTransformConfig.transformConfigToProfile(config, profilePath);
+
       final Map<String, String> files = ImmutableMap.of(
           DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
+          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"),
+          DBT_PROFILES_YML, IOs.readFile(profilePath));
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add(DBT_ENTRYPOINT_SH);
       if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
         throw new WorkerException("Dbt Arguments are required");
       }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
+
+      final StringBuilder gitArguments = new StringBuilder().append("--git-repo ").append(dbtConfig.getGitRepoUrl());
+      if (dbtConfig.getGitRepoBranch() != null && !dbtConfig.getGitRepoBranch().isBlank()) {
+        gitArguments.append("--git-branch ").append(dbtConfig.getGitRepoBranch());
+      }
+      Collections.addAll(dbtArguments, Commandline.translateCommandline(gitArguments.toString()));
       process =
           processFactory.create(
               AirbyteIntegrationLauncher.CUSTOM_STEP,

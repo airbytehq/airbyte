@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
@@ -40,6 +41,11 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
+    LOGGER.info(
+        String.format("inputs:\noperatorDbtInput.getDestinationConfiguration(): %s\noperatorDbtInput.getOperatorDbt(): %s",
+            Jsons.serialize(operatorDbtInput.getDestinationConfiguration()),
+            Jsons.serialize(operatorDbtInput.getOperatorDbt())));
+
     try (dbtTransformationRunner) {
       LOGGER.info("Running dbt transformation.");
       dbtTransformationRunner.start();
@@ -51,6 +57,13 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
           operatorDbtInput.getDestinationConfiguration(),
           resourceRequirements,
           operatorDbtInput.getOperatorDbt())) {
+
+        LOGGER.info("Will throw exception DBT Transformation Failed.");
+        LOGGER.info(
+            String.format("args:\ntransformRoot: %s\noperatorDbtInput.getDestinationConfiguration(): %s\noperatorDbtInput.getOperatorDbt(): %s",
+                transformRoot,
+                Jsons.serialize(operatorDbtInput.getDestinationConfiguration()),
+                Jsons.serialize(operatorDbtInput.getOperatorDbt())));
         throw new WorkerException("DBT Transformation Failed.");
       }
     } catch (final Exception e) {

@@ -74,11 +74,18 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+    LOGGER.info("PARKER: inside DefaultNormalizationRunner's configureDbt() with config: \n{}", Jsons.serialize(config));
     final String gitRepoUrl = dbtConfig.getGitRepoUrl();
     if (Strings.isNullOrEmpty(gitRepoUrl)) {
       throw new WorkerException("Git Repo Url is required");
     }
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
+    LOGGER.info("PARKER: git information in default normalization runner's configureDbt(): gitRepoUrl: {}, gitRepoBranch: {}", gitRepoUrl,
+        gitRepoBranch);
+
+    LOGGER.info(String.format("args here: \nfiles: %s \ndestinationType: %s \ngit-repo: %s \nconfig: %s", Jsons.serialize(files),
+        destinationType.toString(), gitRepoUrl, Jsons.serialize(config)));
+
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
           "--integration-type", destinationType.toString().toLowerCase(),
@@ -104,6 +111,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+
+    LOGGER.info("PARKER: inside DefaultNormalizationRunner's normalize() with config: \n{}", Jsons.serialize(config));
 
     return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
         "--integration-type", destinationType.toString().toLowerCase(),
