@@ -1,6 +1,6 @@
 import { DestinationSyncMode, SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 
-import { calculateInitialCatalog } from "./formConfig";
+import calculateInitialCatalog from "./calculateInitialCatalog";
 
 const mockSyncSchemaStream: SyncSchemaStream = {
   id: "1",

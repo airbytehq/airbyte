@@ -5,7 +5,7 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { DestinationSyncMode, SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode, SyncSchema } from "core/domain/catalog";
 import { Connection, ScheduleProperties } from "core/domain/connection";
 import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
 import {
@@ -21,7 +21,7 @@ import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
+import calculateInitialCatalog from "./calculateInitialCatalog";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -191,23 +191,6 @@ function mapFormPropsToOperation(
 
   return newOperations;
 }
-
-export const calculateInitialCatalog = (
-  schema: SyncSchema,
-  supportedDestinationSyncModes: DestinationSyncMode[],
-  isEditMode?: boolean
-): SyncSchema => ({
-  streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-    const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySupportedSyncModes(nodeWithId);
-
-    if (isEditMode) {
-      return nodeStream;
-    }
-
-    return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
-  }),
-});
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] => operations.filter(isDbtTransformation);
 

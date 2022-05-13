@@ -2,8 +2,9 @@ import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   SyncMode,
+  SyncSchema,
   SyncSchemaStream,
-} from "../../../core/domain/catalog";
+} from "core/domain/catalog";
 
 const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   if (streamNode.stream.defaultCursorField.length) {
@@ -12,7 +13,7 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   return streamNode.config.cursorField;
 };
 
-export const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSchemaStream => {
+const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSchemaStream => {
   const {
     stream: { supportedSyncModes },
   } = streamNode;
@@ -23,7 +24,7 @@ export const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSche
   return { ...streamNode, stream: { ...streamNode.stream, supportedSyncModes: [SyncMode.FullRefresh] } };
 };
 
-export const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchemaStream => {
+const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchemaStream => {
   const { config } = streamNode;
 
   return {
@@ -35,7 +36,7 @@ export const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchem
   };
 };
 
-export const getOptimalSyncMode = (
+const getOptimalSyncMode = (
   streamNode: SyncSchemaStream,
   supportedDestinationSyncModes: DestinationSyncMode[]
 ): SyncSchemaStream => {
@@ -86,3 +87,22 @@ export const getOptimalSyncMode = (
   }
   return streamNode;
 };
+
+const calculateInitialCatalog = (
+  schema: SyncSchema,
+  supportedDestinationSyncModes: DestinationSyncMode[],
+  isEditMode?: boolean
+): SyncSchema => ({
+  streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+    const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+    const nodeStream = verifySupportedSyncModes(nodeWithId);
+
+    if (isEditMode) {
+      return nodeStream;
+    }
+
+    return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
+  }),
+});
+
+export default calculateInitialCatalog;
