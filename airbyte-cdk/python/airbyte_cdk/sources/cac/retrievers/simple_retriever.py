@@ -118,3 +118,6 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         # FIXME: this is not passing the cursor field because i think it should be known at init time. Is this always true?
         return self._iterator.stream_slices(sync_mode, stream_state)
+
+    def get_state(self) -> MutableMapping[str, Any]:
+        return self._state.get_state()

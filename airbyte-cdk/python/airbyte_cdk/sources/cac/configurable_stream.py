@@ -16,20 +16,6 @@ from airbyte_cdk.sources.streams.core import IncrementalMixin, Stream
 
 
 class ConfigurableStream(Stream, IncrementalMixin):
-    @classmethod
-    def create(cls, /, *args, **keywords):
-        func = ConfigurableStream
-
-        def newfunc(*fargs, **fkeywords):
-            newkeywords = {**keywords, **fkeywords}
-            return func(*args, *fargs, **newkeywords)
-
-        newfunc.func = func
-        newfunc.args = args
-        newfunc.kwargs = keywords
-
-        return newfunc
-
     def __init__(self, name, primary_key, cursor_field, schema, retriever, config: "Config"):
         self._name = name
         self._primary_key = primary_key
@@ -40,13 +26,12 @@ class ConfigurableStream(Stream, IncrementalMixin):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._retriever._state.get_state()
+        return self._retriever.get_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        """State setter, accept state serialized by state getter."""
-        # FIXME: Do we still need this?
-        self._retriever._state.update_state(None, value, None, None)
+        """This method is only needed to interface with AbstractSource..."""
+        pass
 
     def read_records(
         self,
@@ -55,17 +40,11 @@ class ConfigurableStream(Stream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        records = self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
-        return records
+        return self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        # FIXME: TODO
         return self._primary_key
-
-    def merge_dicts(self, d1, d2):
-        return {**d1, **d2}
 
     @property
     def name(self) -> str:
@@ -95,7 +74,7 @@ class ConfigurableStream(Stream, IncrementalMixin):
         :param stream_state:
         :return:
         """
-        # FIXME: this is not passing the cursor field because i think it should be known at init time. Is this always true?
+        # this is not passing the cursor field because i think it should be known at init time. Is this always true?
         return self._retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
 
     @property
