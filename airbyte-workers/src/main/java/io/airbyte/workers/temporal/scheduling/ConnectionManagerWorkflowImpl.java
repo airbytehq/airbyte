@@ -29,6 +29,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
@@ -68,6 +69,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
   private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
+
+  private static final String ENSURE_CLEAN_JOB_STATE = "ensure_clean_job_state";
+  private static final int ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION = 1;
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -128,6 +132,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
 
+      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+      // This catches cases where the temporal workflow was terminated and restarted while a job was
+      // actively running, leaving that job in an orphaned and non-terminal state.
+      ensureCleanJobState(connectionUpdaterInput);
+
       // workflow state is only ever set in test cases. for production cases, it will always be null.
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
@@ -136,9 +145,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
       // which case it does nothing). the previous run that cancels itself then passes on the
       // resetConnection flag to the next run so that that run can execute the actual reset
-      workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
-
-      workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
+      if (connectionUpdaterInput.isResetConnection()) {
+        workflowState.setResetConnection(true);
+      }
+      if (connectionUpdaterInput.isFromJobResetFailure()) {
+        workflowState.setResetWithScheduling(true);
+      }
 
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
@@ -430,6 +442,23 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         scheduleRetrieverInput);
 
     return scheduleRetrieverOutput.getTimeToWait();
+  }
+
+  private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
+    final int ensureCleanJobStateVersion =
+        Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
+
+    // For backwards compatibility and determinism, skip if workflow existed before this change
+    if (ensureCleanJobStateVersion < ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION) {
+      return;
+    }
+
+    if (connectionUpdaterInput.getJobId() != null) {
+      log.info("This workflow is already attached to a job, so no need to clean job state.");
+      return;
+    }
+
+    runMandatoryActivity(jobCreationAndStatusUpdateActivity::ensureCleanJobState, new EnsureCleanJobStateInput(connectionId));
   }
 
   /**
