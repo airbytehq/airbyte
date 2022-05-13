@@ -144,8 +144,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
 
-  console.log({ streamNode });
-
   return (
     <Section error={hasError} isSelected={isSelected}>
       <TreeRowWrapper>
