@@ -14,14 +14,11 @@
         "description": "UTC date in the format 2020-09-17. Any data before this date will not be replicated.",
         "examples": ["2021-05-17"]
       },
-      "org_ids": {
-        "title": "Organization IDs (Optional)",
-        "type": "array",
-        "description": "Specify the organization IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated organizations. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.",
-        "items": {
-          "type": "integer"
-        },
-        "default": []
+      "org_id": {
+        "title": "Organization ID",
+        "type": "integer",
+        "description": "Specify the Organization ID",
+        "examples": 123456789
       },
       "credentials": {
         "title": "Authentication *",
