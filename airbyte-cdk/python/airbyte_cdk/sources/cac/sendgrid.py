@@ -83,9 +83,8 @@ class SendgridSource(ConfigurableSource):
 
         configurable_stream = create_partial.create(
             ConfigurableStream,
-            schema=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
+            schema_loader=create_partial.create(JsonSchema, file_path="./source_sendgrid/schemas/{{kwargs['name']}}.json"),
             cursor_field=[],
-            config=config,
         )
         http_requester = create_partial.create(
             HttpRequester,

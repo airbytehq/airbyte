@@ -12,10 +12,10 @@ config = dict()
 def test_check_stream():
     record = MagicMock()
     stream = MagicMock()
-    stream.return_value.read_records.return_value = [record]
+    stream.read_records.return_value = iter([record])
 
     source = MagicMock()
-    source.return_value.streams.return_value = [stream]
+    source.streams.return_value = [stream]
 
     check_stream = CheckStream(source)
 
@@ -26,7 +26,7 @@ def test_check_stream():
 
 def test_check_stream_no_records():
     stream = MagicMock()
-    stream.read_records.return_value = []
+    stream.read_records.return_value = iter([])
 
     source = MagicMock()
     source.streams.return_value = [stream]
