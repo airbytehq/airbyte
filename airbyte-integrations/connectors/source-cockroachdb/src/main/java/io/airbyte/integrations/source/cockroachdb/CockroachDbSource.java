@@ -114,6 +114,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     return false;
   }
 
+  @Override
   protected void initializeDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
