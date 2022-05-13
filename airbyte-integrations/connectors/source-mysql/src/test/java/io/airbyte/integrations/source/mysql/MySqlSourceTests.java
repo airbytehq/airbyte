@@ -39,7 +39,7 @@ public class MySqlSourceTests {
         .withLogConsumer(new Slf4jLogConsumer(LOGGER))) {
 
       container.start();
-      
+
       final Properties properties = new Properties();
       properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
       DriverManager.getConnection(container.getJdbcUrl(), properties);
