@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CREDENTIALS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +31,8 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -213,7 +216,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CREDENTIALS, credentialsJson.get(CREDENTIALS))
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
@@ -228,14 +231,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     }
 
     config = createConfig();
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
 
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    bigquery = BigQueryCredentialsFactory.createCredentialsClient(config, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
 
     final DatasetInfo datasetInfo =
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();

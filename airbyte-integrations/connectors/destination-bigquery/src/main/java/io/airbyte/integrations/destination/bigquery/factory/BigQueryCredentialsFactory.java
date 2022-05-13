@@ -5,8 +5,6 @@ import static io.airbyte.integrations.destination.bigquery.factory.GoogleCredent
 import static io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType.SERVICE_ACCOUNT;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
