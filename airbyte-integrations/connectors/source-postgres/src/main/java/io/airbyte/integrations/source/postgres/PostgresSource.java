@@ -332,7 +332,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                 WHERE t.grpid = m.oid AND t.userid = r.oid)
                  AND             privilege_type = 'SELECT';
           """);
-      final String username = database.getDatabaseConfig().get("username").asText();
+      final String username = getUsername(database.getDatabaseConfig());
       ps.setString(1, username);
       ps.setString(2, username);
       ps.setString(3, username);
@@ -347,6 +347,22 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .tableName(e.get("table_name").asText())
             .build())
         .collect(toSet());
+  }
+
+  static String getUsername(final JsonNode databaseConfig) {
+    final String host = databaseConfig.get("host").asText();
+    final String username = databaseConfig.get("username").asText();
+
+    // Azure Postgres server has this username pattern: <username>@<host>.
+    // Inside Postgres, the true username is just <username>.
+    if (username.contains("@") && host.endsWith("azure.com")) {
+      final String[] tokens = username.split("@");
+      final String postgresUsername = tokens[0];
+      LOGGER.info("Azure username \"{}\" is detected; use \"{}\" to check permission", username, postgresUsername);
+      return postgresUsername;
+    }
+
+    return username;
   }
 
   @Override
