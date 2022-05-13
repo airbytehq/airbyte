@@ -16,10 +16,11 @@ connectionSpecification:
       examples:
         - "2021-05-17"
       order: 0
-    org_ids:
-      type: array
-      title: Organization IDs (Optional)
-      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+    org_id:
+      type: integer
+      title: Organization ID
       description: >-
-        Specify the organization IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated organizations. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.
+        Specify the Organization ID
+      examples:
+        - 123456789
       order: 1

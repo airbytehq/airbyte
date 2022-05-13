@@ -28,8 +28,8 @@ class LinkedinPagesStream(HttpStream, ABC):
 
     @property
     def org(self):
-        """Property to return the list of the user Account Ids from input"""
-        return self.config.get("org_ids")
+        """Property to return the user Organization Id from input"""
+        return self.config.get("org_id")
         
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
@@ -48,43 +48,52 @@ class LinkedinPagesStream(HttpStream, ABC):
 
 class OrganizationLookup(LinkedinPagesStream):
 
-    endpoint = "organizations/35571209"
-
-    # def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    #     """
-    #     Override request_params() to have the ability to accept the specific account_ids from user's configuration.
-    #     If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
-    #     We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
-    #     so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
-    #     """
-    #     params = super().request_params(stream_state=stream_state, **kwargs)
-    #     if self.org:
-    #         params[self.config["org_ids"]]
-    #     return params
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"organizations/{self.org}"
+        return path
 
 class FollowerStatistics(LinkedinPagesStream):
 
-    endpoint = "organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:35571209"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
+        return path
 
 class PageStatistics(LinkedinPagesStream):
 
-    endpoint = "organizationPageStatistics?q=organization&organization=urn%3Ali%3Aorganization%3A35571209"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"organizationPageStatistics?q=organization&organization=urn%3Ali%3Aorganization%3A{self.org}"
+        return path
 
 class ShareStatistics(LinkedinPagesStream):
 
-    endpoint = "organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A35571209"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
+        return path
 
 class Shares(LinkedinPagesStream):
 
-    endpoint = "shares?q=owners&owners=urn%3Ali%3Aorganization%3A35571209&sortBy=LAST_MODIFIED&sharesPerOwner=100"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
+        return path
 
 class TotalFollowerCount(LinkedinPagesStream):
 
-    endpoint = "networkSizes/urn:li:organization:35571209?edgeType=CompanyFollowedByMember"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
+        return path
 
 class UgcPosts(LinkedinPagesStream):
 
-    endpoint = "shares?q=owners&owners=urn%3Ali%3Aorganization%3A35571209&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
+        return path
 
 
 class SourceLinkedinPages(AbstractSource):
