@@ -1,5 +1,8 @@
 {
-  "start_date": "2020-01-01",
-  "access_token": "78fgsd78agirfg21yukgecow8dsgvyoe3",
-  "account_ids": [1, 2]
+  "start_date": "2022-01-25",
+  "org_ids": [12345678],
+  "credentials": {
+    "auth_method": "access_token",
+    "access_token": "drAL4JXBJ6v1qaU9iWargosra6ibiw0ZWEdMnC0ZizeD1gLRQP6u1pkQ"
+  }
 }
