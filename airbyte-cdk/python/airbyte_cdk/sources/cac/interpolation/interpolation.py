@@ -8,6 +8,7 @@ from airbyte_cdk.sources.cac.types import Config
 
 class Interpolation(ABC):
     @abstractmethod
-    def eval(self, input_str: str, config: Config, **kwargs):  # FIXME: declare the output!
-        # FIXME: also declare parameter types
-        pass
+    def eval(self, input_str: str, config: Config, **kwargs):
+        str
+
+    pass
