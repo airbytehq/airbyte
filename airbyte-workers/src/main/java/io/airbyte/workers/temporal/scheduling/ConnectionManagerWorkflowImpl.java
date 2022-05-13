@@ -38,6 +38,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
+import io.airbyte.workers.temporal.scheduling.state.ResetStreamState;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.NoopStateListener;
@@ -72,6 +73,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
   private final WorkflowInternalState workflowInternalState = new WorkflowInternalState();
+
+  private final ResetStreamState resetStreamState = new ResetStreamState();
 
   private final GenerateInputActivity getSyncInputActivity =
       Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
@@ -488,6 +491,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private GeneratedJobInput getJobInput() {
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
+    final Set<String> streamsToBeReset = resetStreamState.getStreamToReset();
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
 
@@ -521,6 +525,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * state.
    */
   private void reportJobStarting() {
+    resetStreamState.startRunningMethod();
     runMandatoryActivity(
         jobCreationAndStatusUpdateActivity::reportJobStart,
         new ReportJobStartInput(
