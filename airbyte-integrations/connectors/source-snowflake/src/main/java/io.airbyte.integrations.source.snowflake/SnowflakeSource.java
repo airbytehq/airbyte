@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,17 +48,17 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    initializeDataSource(config);
+    final var dataSource = createDataSource(config);
     final var database = new StreamingJdbcDatabase(dataSource, new SnowflakeSourceOperations(), AdaptiveStreamingQueryConfig::new);
     quoteString = database.getMetaData().getIdentifierQuoteString();
     return database;
   }
 
   @Override
-  protected void initializeDataSource(final JsonNode config) {
-    if (dataSource == null) {
-      dataSource = SnowflakeDataSourceUtils.createDataSource(config);
-    }
+  protected DataSource createDataSource(final JsonNode config) {
+    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    dataSources.add(dataSource);
+    return dataSource;
   }
 
   @Override

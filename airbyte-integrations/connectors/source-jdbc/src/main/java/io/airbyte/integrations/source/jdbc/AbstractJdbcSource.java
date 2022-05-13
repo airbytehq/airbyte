@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
-  protected DataSource dataSource;
+  protected Collection<DataSource> dataSources = new ArrayList<>();
 
   public AbstractJdbcSource(final String driverClass,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
@@ -289,23 +290,23 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     });
   }
 
-  protected void initializeDataSource(final JsonNode config) {
-    if (dataSource == null) {
-      final JsonNode jdbcConfig = toDatabaseConfig(config);
-      dataSource = DataSourceFactory.create(
-          jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-          jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-          driverClass,
-          jdbcConfig.get("jdbc_url").asText(),
-          JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-      );
-    }
+  protected DataSource createDataSource(final JsonNode config) {
+    final JsonNode jdbcConfig = toDatabaseConfig(config);
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        driverClass,
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+    );
+    // Record the data source so that it can be closed.
+    dataSources.add(dataSource);
+    return dataSource;
   }
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    initializeDataSource(config);
-
+    final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
@@ -323,13 +324,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   public void close() {
-    try {
-      DataSourceFactory.close(dataSource);
-    } catch (final Exception e) {
-      LOGGER.warn("Unable to close data source.", e);
-    } finally {
-      dataSource = null;
-    }
+    dataSources.forEach( d -> {
+      try {
+        DataSourceFactory.close(d);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
+    });
   }
 
 }
