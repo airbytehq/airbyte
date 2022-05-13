@@ -16,6 +16,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -99,7 +100,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     dataSource = createDataSource();
-    database = new DefaultJdbcDatabase(dataSource);
+    database = new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String
         .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,

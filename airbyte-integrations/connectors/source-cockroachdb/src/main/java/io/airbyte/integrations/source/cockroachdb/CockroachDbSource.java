@@ -114,23 +114,22 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     return false;
   }
 
-  @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+  protected void initializeDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            driverClass,
-            jdbcConfig.get("jdbc_url").asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
-        ),
-        sourceOperations
+    dataSource = DataSourceFactory.create(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        driverClass,
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
     );
+  }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
     return new CockroachJdbcDatabase(database, sourceOperations);
   }
 
