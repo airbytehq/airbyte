@@ -105,6 +105,11 @@ class IncrementalConfig(BaseConfig):
     )
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     timeout_seconds: int = timeout_seconds
+    threshold_days: int = Field(
+        description="Allow records to be emitted with a cursor value this number of days before the state cursor",
+        default=0,
+        ge=0,
+    )
 
 
 class TestConfig(BaseConfig):

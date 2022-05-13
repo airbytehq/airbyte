@@ -1,10 +1,12 @@
 import React, { useCallback } from "react";
+import { useQueryClient } from "react-query";
 
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
 import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
+import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -18,6 +20,7 @@ type IProps = {
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
   const { changeStatus, syncManualConnection } = useSyncActions();
+  const queryClient = useQueryClient();
 
   const { sourceDefinitions } = useSourceDefinitionList();
 
@@ -31,9 +34,10 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
       if (connection) {
         await changeStatus(connection);
+        await invalidateConnectionsList(queryClient);
       }
     },
-    [changeStatus, connections]
+    [changeStatus, connections, queryClient]
   );
 
   const onSync = useCallback(
