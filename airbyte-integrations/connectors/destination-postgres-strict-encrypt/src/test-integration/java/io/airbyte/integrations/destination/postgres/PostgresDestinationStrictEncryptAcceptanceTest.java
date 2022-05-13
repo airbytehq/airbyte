@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -112,21 +113,21 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return new Database(
-        DSLContextFactory.create(
-            db.getUsername(),
-            db.getPassword(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            db.getJdbcUrl(),
-            SQLDialect.POSTGRES
-        )
-    ).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        db.getJdbcUrl(),
+        SQLDialect.POSTGRES)) {
+      return new Database(dslContext)
+          .query(
+              ctx -> ctx
+                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                  .stream()
+                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+                  .map(Jsons::deserialize)
+                  .collect(Collectors.toList()));
+    }
   }
 
   @Override
