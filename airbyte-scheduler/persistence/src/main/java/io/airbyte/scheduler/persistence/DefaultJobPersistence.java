@@ -387,6 +387,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<Job> listJobsForConnectionWithStatuses(final UUID connectionId, final Set<ConfigType> configTypes, final Set<JobStatus> statuses)
+      throws IOException {
+    return jobDatabase.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "scope = ? AND " +
+            "config_type IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "jobs.status IN " + Sqls.toSqlInFragment(statuses) + " " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
+            connectionId.toString())));
+  }
+
+  @Override
   public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
                                                                                  final Set<ConfigType> configTypes,
                                                                                  final Instant jobCreatedAtTimestamp)
