@@ -2,8 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+
 from abc import ABC, abstractmethod
+from asyncio.log import logger
 from datetime import datetime, timedelta
+from distutils.command.config import config
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -13,6 +16,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from typing_extensions import Self
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
@@ -22,8 +26,11 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
-    page_size = 100 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+    
+    def __init__(self, pagesize: int = 50, **kwargs):
+        super().__init__(**kwargs)
+        self._page_size = pagesize
     
     @property
     def data_field(self):
@@ -39,11 +46,11 @@ class TwilioStream(HttpStream, ABC):
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
 
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
         next_page_uri = stream_data.get("next_page_uri")
         if next_page_uri:
+            print (next_page_uri)
             next_url = urlparse(next_page_uri)
             next_page_params = dict(parse_qsl(next_url.query))
             return next_page_params
@@ -70,12 +77,11 @@ class TwilioStream(HttpStream, ABC):
         backoff_time = response.headers.get("Retry-After")
         if backoff_time is not None:
           return float(backoff_time)
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
+          
+    
+    def request_params(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params["PageSize"] = self.page_size
+        params["PageSize"] = self._page_size  
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -93,12 +99,13 @@ class TwilioStream(HttpStream, ABC):
                 # is no need in transforming anything.
                 pass
         return original_value
+        
 
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
-
+    
     def __init__(self, start_date: str = None, lookback: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date  
@@ -339,6 +346,7 @@ class Messages(TwilioNestedStream, IncrementalTwilioStream):
     parent_stream = Accounts
     incremental_filter_field = "DateSent>"
     cursor_field = "date_sent"
+    page_size = config
 
 
 class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
