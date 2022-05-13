@@ -6,7 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.sources.cac.sendgrid import SendgridSource
+from source_sendgrid.sendgrid import SendgridSource
 
 # from airbyte_cdk.sources.cac.configurable_source import ConfigurableSource
 
