@@ -169,3 +169,27 @@ jobs:
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
             > :bug: ${{env.GRADLE_SCAN_LINK}}
             > ${{env.PYTHON_SHORT_TEST_SUMMARY_INFO}}
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-test-runner:
+    name: Stop Build EC2 Runner
+    timeout-minutes: 10
+    needs:
+      - start-test-runner # required to get output from the start-runner job
+      - integration-test # required to wait when the main job is done
+      - find_valid_pat
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ needs.start-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-test-runner.outputs.ec2-instance-id }}
