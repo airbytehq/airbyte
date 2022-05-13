@@ -18,9 +18,11 @@ import { RoutePaths } from "../routePaths";
 import ConnectionStep from "./components/ConnectionStep";
 import DestinationStep from "./components/DestinationStep";
 import FinalStep from "./components/FinalStep";
+import HighlightedText from "./components/HighlightedText";
 import LetterLine from "./components/LetterLine";
 import SourceStep from "./components/SourceStep";
 import StepsCounter from "./components/StepsCounter";
+import TitlesBlock from "./components/TitlesBlock";
 import WelcomeStep from "./components/WelcomeStep";
 import { StepType } from "./types";
 import useGetStepsConfig from "./useStepsConfig";
@@ -52,6 +54,12 @@ const ScreenContent = styled.div`
   width: 100%;
   position: relative;
 `;
+
+const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
+  [StepType.CREATE_SOURCE]: "FirstSource",
+  [StepType.CREATE_DESTINATION]: "FirstDestination",
+  [StepType.SET_UP_CONNECTION]: "Connection",
+};
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
@@ -97,6 +105,20 @@ const OnboardingPage: React.FC = () => {
           <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
           <StepsCounter steps={steps} currentStep={currentStep} />
           <Suspense fallback={<LoadingPage />}>
+            {TITLE_BY_STEP[currentStep] && (
+              <TitlesBlock
+                title={
+                  <FormattedMessage
+                    id={`onboarding.create${TITLE_BY_STEP[currentStep]}`}
+                    values={{
+                      name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
+                    }}
+                  />
+                }
+              >
+                <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />
+              </TitlesBlock>
+            )}
             <ApiErrorBoundary>
               {currentStep === StepType.INSTRUCTION && (
                 <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
