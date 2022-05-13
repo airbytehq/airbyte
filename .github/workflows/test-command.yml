@@ -36,7 +36,7 @@ jobs:
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
   start-test-runner:
-    name: Start Build EC2 Runner (2)
+    name: Start Build EC2 Runner
     needs: find_valid_pat
     timeout-minutes: 10
     runs-on: ubuntu-latest
