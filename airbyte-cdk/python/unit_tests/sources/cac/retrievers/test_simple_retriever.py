@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.cac.requesters.requester import HttpMethod
 from airbyte_cdk.sources.cac.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"
@@ -34,11 +35,33 @@ def test():
     state.get_state.return_value = underlying_state
 
     url_base = "https://airbyte.io"
-    path = "/v1"
     requester.get_url_base.return_value = url_base
+    path = "/v1"
     requester.get_path.return_value = path
+    http_method = HttpMethod.GET
+    requester.get_method.return_value = http_method
+    raise_on_http_errors = True
+    requester.raise_on_http_errors = raise_on_http_errors
+    max_retries = 10
+    requester.max_retries = max_retries
+    retry_factor = 2
+    requester.retry_factor = retry_factor
+    should_retry = True
+    requester.should_retry.return_value = should_retry
+    backoff_time = 60
+    requester.backoff_time.return_value = backoff_time
+    request_body_data = {"body": "data"}
+    requester.request_body_data.return_value = request_body_data
+    request_body_json = {"body": "json"}
+    requester.request_body_json.return_value = request_body_json
+    request_kwargs = {"kwarg": "value"}
+    requester.request_kwargs.return_value = request_kwargs
+    cache_filename = "cache"
+    requester.cache_filename = cache_filename
+    use_cache = True
+    requester.use_cache = use_cache
 
-    retriever = SimpleRetriever(primary_key, requester, paginator, extractor, iterator, state)
+    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, extractor, iterator, state)
 
     # hack because we clone the state...
     retriever._state = state
@@ -56,3 +79,15 @@ def test():
     assert retriever.parse_response(response, stream_state=None) == records
     assert retriever._last_response == response
     assert retriever._last_records == records
+
+    assert retriever.http_method == "GET"
+    assert retriever.raise_on_http_errors == raise_on_http_errors
+    assert retriever.max_retries == max_retries
+    assert retriever.retry_factor == retry_factor
+    assert retriever.should_retry(requests.Response()) == should_retry
+    assert retriever.backoff_time(requests.Response()) == backoff_time
+    assert retriever.request_body_data(None, None, None) == request_body_data
+    assert retriever.request_body_json(None, None, None) == request_body_json
+    assert retriever.request_kwargs(None, None, None) == request_kwargs
+    assert retriever.cache_filename == cache_filename
+    assert retriever.use_cache == use_cache
