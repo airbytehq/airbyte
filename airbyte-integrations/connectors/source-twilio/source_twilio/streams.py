@@ -99,7 +99,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
 
-    def __init__(self, start_date: str = None, lookback: str = None, **kwargs):
+    def __init__(self, start_date: str = None, lookback: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date  
         self._lookback = lookback
