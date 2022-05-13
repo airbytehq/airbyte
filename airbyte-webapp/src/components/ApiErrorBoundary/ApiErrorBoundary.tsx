@@ -30,12 +30,19 @@ enum ErrorId {
   UnknownError = "unknown",
 }
 
+interface ApiErrorBoundaryProps {
+  hideHeader?: boolean;
+}
+
 interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
 }
 
-class ApiErrorBoundary extends React.Component<ApiErrorBoundaryHookProps, ApiErrorBoundaryState> {
+class ApiErrorBoundary extends React.Component<
+  ApiErrorBoundaryProps & ApiErrorBoundaryHookProps,
+  ApiErrorBoundaryState
+> {
   state: ApiErrorBoundaryState = {};
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
@@ -67,7 +74,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryHookProps, ApiErr
 
   render(): React.ReactNode {
     const { errorId, didRetry, message } = this.state;
-    const { onRetry, children } = this.props;
+    const { onRetry, hideHeader, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
@@ -75,7 +82,7 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryHookProps, ApiErr
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
       return (
-        <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />}>
+        <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} hideHeader={hideHeader}>
           {onRetry && (
             <RetryContainer>
               <Button
@@ -92,19 +99,21 @@ class ApiErrorBoundary extends React.Component<ApiErrorBoundaryHookProps, ApiErr
     }
 
     return !errorId ? (
-      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView hideHeader={hideHeader} />}>
+        {children}
+      </ResourceNotFoundErrorBoundary>
     ) : (
-      <ErrorOccurredView message={<FormattedMessage id="errorView.unknownError" />} />
+      <ErrorOccurredView message={<FormattedMessage id="errorView.unknownError" />} hideHeader={hideHeader} />
     );
   }
 }
 
-const ApiErrorBoundaryWithHooks: React.FC = ({ children }) => {
+const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, hideHeader }) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
 
   return (
-    <ApiErrorBoundary location={location} onRetry={reset}>
+    <ApiErrorBoundary location={location} onRetry={reset} hideHeader={hideHeader}>
       {children}
     </ApiErrorBoundary>
   );

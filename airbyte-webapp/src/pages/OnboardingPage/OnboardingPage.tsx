@@ -119,7 +119,7 @@ const OnboardingPage: React.FC = () => {
                 <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />
               </TitlesBlock>
             )}
-            <ApiErrorBoundary>
+            <ApiErrorBoundary hideHeader>
               {currentStep === StepType.INSTRUCTION && (
                 <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
               )}
