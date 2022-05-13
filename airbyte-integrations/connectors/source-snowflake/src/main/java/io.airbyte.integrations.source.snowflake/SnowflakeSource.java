@@ -55,7 +55,9 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   protected void initializeDataSource(final JsonNode config) {
-    dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    if (dataSource == null) {
+      dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    }
   }
 
   @Override
