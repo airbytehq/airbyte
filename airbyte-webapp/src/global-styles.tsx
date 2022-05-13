@@ -2,8 +2,6 @@ import { createGlobalStyle, ThemeProps } from "styled-components";
 
 import { Theme } from "./theme";
 
-import "react-reflex/styles.css";
-
 const GlobalStyle = createGlobalStyle<ThemeProps<Theme>>`
   #__next,
   html,
