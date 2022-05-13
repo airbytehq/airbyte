@@ -35,28 +35,18 @@ def create(func, /, *args, **keywords):
         else:
             kwargs = dict()
 
-        # parent_kwargs is a special keyword used for interpolation and propagation
-        if "parent_kwargs" in all_keywords:
-            parent_kwargs = all_keywords.pop("parent_kwargs")
-        else:
-            parent_kwargs = dict()
-
         # create object's partial parameters
-        fully_created = _create_inner_objects(all_keywords, kwargs, parent_kwargs)
+        fully_created = _create_inner_objects(all_keywords, kwargs)
 
         # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(
-            config, **{"kwargs": {**fully_created, **parent_kwargs}}
-        )
+        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": {**fully_created, **kwargs}})
         all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
             all_keywords["config"] = config
-        args_to_pass_down = set(inspect.getfullargspec(func).args)
-        print(f"args to pass down: {args_to_pass_down}")
-        kwargs_to_pass_down = {k: v for k, v in {**kwargs, **parent_kwargs}.items() if k in args_to_pass_down}
-        print(f"kwargs to pass down {kwargs_to_pass_down}")
+
+        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, kwargs)
         ret = func(*args, *fargs, **{**all_keywords, **kwargs_to_pass_down})
         return ret
 
@@ -67,12 +57,18 @@ def create(func, /, *args, **keywords):
     return newfunc
 
 
-def _create_inner_objects(keywords, kwargs, parent_kwargs):
+def _get_kwargs_to_pass_to_func(func, kwargs):
+    args_to_pass_down = set(inspect.getfullargspec(func).args)
+    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in args_to_pass_down}
+    return kwargs_to_pass_down
+
+
+def _create_inner_objects(keywords, kwargs):
     fully_created = dict()
     for k, v in keywords.items():
         print(f"{k}: {type(v)} == {type(create)}")
         if type(v) == type(create):
-            fully_created[k] = v(parent_kwargs={**kwargs, **parent_kwargs})
+            fully_created[k] = v(kwargs=kwargs)
         else:
             fully_created[k] = v
     return fully_created
