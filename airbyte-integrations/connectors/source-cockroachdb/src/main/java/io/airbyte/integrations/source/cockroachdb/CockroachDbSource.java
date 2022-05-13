@@ -116,16 +116,18 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected void initializeDataSource(final JsonNode config) {
+  protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    dataSource = DataSourceFactory.create(
+    final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
     );
+    dataSources.add(dataSource);
+    return dataSource;
   }
 
   @Override
