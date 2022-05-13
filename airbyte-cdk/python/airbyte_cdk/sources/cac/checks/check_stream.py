@@ -13,10 +13,8 @@ class CheckStream(ConnectionChecker):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         stream = self._source.streams(config)[0]
-        print(f"stream: {stream}")
         try:
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            print(f"records: {records}")
             next(records)
             return True, None
         except Exception as error:
