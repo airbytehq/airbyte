@@ -76,7 +76,7 @@ public class AirbyteMessageUtils {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
   }
 
-  public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Long emittedAt) {
+  public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Double emittedAt) {
     return new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
         .withEmittedAt(emittedAt)
@@ -84,7 +84,7 @@ public class AirbyteMessageUtils {
   }
 
   public static AirbyteTraceMessage createErrorTraceMessage(final String message,
-                                                            final Long emittedAt,
+                                                            final Double emittedAt,
                                                             final AirbyteErrorTraceMessage.FailureType failureType) {
     return new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
@@ -92,7 +92,7 @@ public class AirbyteMessageUtils {
         .withError(new AirbyteErrorTraceMessage().withMessage(message).withFailureType(failureType));
   }
 
-  public static AirbyteMessage createTraceMessage(final String message, final Long emittedAt) {
+  public static AirbyteMessage createTraceMessage(final String message, final Double emittedAt) {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.TRACE)
         .withTrace(new AirbyteTraceMessage()

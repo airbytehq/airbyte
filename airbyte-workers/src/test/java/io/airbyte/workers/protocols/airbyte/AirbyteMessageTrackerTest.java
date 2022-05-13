@@ -268,10 +268,10 @@ class AirbyteMessageTrackerTest {
 
   @Test
   public void testGetFirstDestinationAndSourceMessages() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Long.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Long.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Long.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Long.valueOf(126));
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
@@ -289,10 +289,10 @@ class AirbyteMessageTrackerTest {
 
   @Test
   public void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Long.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Long.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Long.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Long.valueOf(126));
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
@@ -305,7 +305,7 @@ class AirbyteMessageTrackerTest {
 
   @Test
   public void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
-    final AirbyteMessage destMessage = AirbyteMessageUtils.createTraceMessage("dest trace 1", Long.valueOf(125));
+    final AirbyteMessage destMessage = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
     messageTracker.acceptFromDestination(destMessage);
 
     final FailureReason failureReason = FailureHelper.destinationFailure(destMessage.getTrace(), Long.valueOf(123), 1);

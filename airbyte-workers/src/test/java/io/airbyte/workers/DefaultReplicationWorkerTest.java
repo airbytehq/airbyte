@@ -81,7 +81,7 @@ class DefaultReplicationWorkerTest {
   private static final AirbyteMessage RECORD_MESSAGE3 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, 3);
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
   private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE =
-      AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Long.valueOf(123));
+      AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Double.valueOf(123));
 
   private Path jobRoot;
   private AirbyteSource source;
@@ -245,7 +245,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()

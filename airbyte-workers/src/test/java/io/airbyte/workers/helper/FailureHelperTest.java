@@ -46,7 +46,7 @@ public class FailureHelperTest {
 
   @Test
   public void testGenericFailureFromTrace() throws Exception {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Long.valueOf(123),
+    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
         AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR);
     final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
     assertEquals(FailureType.CONFIG_ERROR, failureReason.getFailureType());
@@ -54,7 +54,7 @@ public class FailureHelperTest {
 
   @Test
   public void testGenericFailureFromTraceNoFailureType() throws Exception {
-    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Long.valueOf(123));
+    final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123));
     final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
     assertEquals(failureReason.getFailureType(), FailureType.SYSTEM_ERROR);
   }
