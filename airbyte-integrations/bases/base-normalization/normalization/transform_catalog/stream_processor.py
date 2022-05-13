@@ -297,9 +297,10 @@ class StreamProcessor(object):
                 unique_key=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
                 partition_by=PartitionScheme.ACTIVE_ROW,
             )
+            where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
-                self.generate_final_model(from_table, column_names, self.get_unique_key(), remove_duplicates_and_deletions=True),
+                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
@@ -994,11 +995,9 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(
-        self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "", remove_duplicates_and_deletions=False
-    ) -> Any:
-        outer_query_source_table = jinja_call(from_table)
-        query = """
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
+        template = Template(
+            """
 -- Final base SQL model
 -- depends_on: {{ from_table }}
 select
@@ -1015,41 +1014,11 @@ select
     {{ col_emitted_at }},
     {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
     {{ hash_id }}
-from {{ outer_query_source_table }}
+from {{ from_table }}
 {{ sql_table_comment }}
 where 1 = 1
     """
-        if remove_duplicates_and_deletions:
-            # TODO better name for this table?
-            outer_query_source_table = "partitioned_data"
-            # TODO do this incrementally to avoid scanning the whole table
-            query = (
-                """
-with partitioned_data as (
-    select row_number() over (
-        partition by _airbyte_unique_key
-        order by _airbyte_active_row desc, _airbyte_ab_id
-    ) as _airbyte_row_num,
-    {{ from_table }}.*
-    from {{ from_table }}
-)
-            """
-                + query
-                # Note that {{ '{{ type_timestamp_with_timezone() }}' }} resolves to a jinja macro, which is resolved by DBT to a SQL type
-                + """\nand (
-{{ normalized_active_row_column_name }} = 1
-or (
-cast({{ normalized_normalized_at_column_name }} as {{ '{{ type_timestamp_with_timezone() }}' }})
-    >=
-    (select max(cast({{ normalized_normalized_at_column_name }} as {{ '{{ type_timestamp_with_timezone() }}' }})) from {{ from_table }})
-and
-_airbyte_end_at is null
-and
-_airbyte_row_num = 1
-)
-)"""
-            )
-        template = Template(query)
+        )
         sql = template.render(
             col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
@@ -1060,9 +1029,6 @@ _airbyte_row_num = 1
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
             unique_key=unique_key,
-            normalized_active_row_column_name=self.name_transformer.normalize_column_name("_airbyte_active_row"),
-            normalized_normalized_at_column_name=self.name_transformer.normalize_column_name(self.airbyte_normalized_at),
-            outer_query_source_table=outer_query_source_table,
         )
         return sql
 
