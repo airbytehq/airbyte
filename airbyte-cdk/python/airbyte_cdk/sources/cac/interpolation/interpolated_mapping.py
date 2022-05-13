@@ -3,11 +3,12 @@
 #
 from typing import Mapping
 
+from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.cac.interpolation.interpolation import Interpolation
 
 
 class InterpolatedMapping:
-    def __init__(self, mapping: Mapping[str, str], interpolation: Interpolation):
+    def __init__(self, mapping: Mapping[str, str], interpolation: Interpolation = JinjaInterpolation()):
         self._mapping = mapping
         self._interpolation = interpolation
 
