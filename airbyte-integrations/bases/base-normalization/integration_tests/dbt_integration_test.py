@@ -323,7 +323,10 @@ class DbtIntegrationTest(object):
         if destination_type.value == DestinationType.BIGQUERY.value:
             credentials = profiles_config["basic_bigquery_config"]
             profiles_config = {
-                "credentials_json": json.dumps(credentials),
+                "credentials": {
+                    "auth_type": "service_account",
+                    "credentials_json": credentials["credentials"]["credentials_json"],
+                },
                 "dataset_id": self.target_schema,
                 "project_id": credentials["project_id"],
                 "dataset_location": "US",
