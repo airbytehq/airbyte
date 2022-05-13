@@ -95,6 +95,18 @@ public class FailureHelper {
     return failureSummary(failures, partialSuccess);
   }
 
+  public static AttemptFailureSummary failureSummaryForTemporalCleaningJobState(final Long jobId, final Integer attemptNumber) {
+    final FailureReason failureReason = new FailureReason()
+        .withFailureOrigin(FailureOrigin.AIRBYTE_PLATFORM)
+        .withFailureType(FailureType.SYSTEM_ERROR)
+        .withInternalMessage(
+            "Setting attempt to FAILED because the temporal workflow for this connection was restarted, and existing job state was cleaned.")
+        .withExternalMessage("An internal Airbyte error has occurred. This sync will need to be retried.")
+        .withTimestamp(System.currentTimeMillis())
+        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
+    return new AttemptFailureSummary().withFailures(List.of(failureReason));
+  }
+
   public static FailureReason failureReasonFromWorkflowAndActivity(
                                                                    final String workflowType,
                                                                    final String activityType,

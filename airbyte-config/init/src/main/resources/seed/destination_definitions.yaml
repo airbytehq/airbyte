@@ -15,7 +15,7 @@
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
   dockerRepository: airbyte/destination-amazon-sqs
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/amazon-sqs
   icon: amazonsqs.svg
   releaseStage: alpha
 - name: AWS Datalake
@@ -237,7 +237,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
