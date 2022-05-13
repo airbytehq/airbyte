@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
@@ -17,7 +18,9 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
 import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.BeforeEach;
 
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
@@ -27,6 +30,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
   private JsonNode config;
   private Database database;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -50,12 +54,17 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   }
 
   private Database getDatabase() {
-    return Databases.createDatabase(
+    return new Database(dslContext);
+  }
+
+  @Override
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    super.setupEnvironment(environment);
+    dslContext = DSLContextFactory.create(
         config.get("credentials").get("username").asText(),
         config.get("credentials").get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
         SQLDialect.DEFAULT,
         Map.of(
             "role", config.get("role").asText(),
@@ -69,7 +78,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database = getDatabase();
     database.query(ctx -> ctx.fetch(dropSchemaQuery));
-    database.close();
+    dslContext.close();
   }
 
   @Override

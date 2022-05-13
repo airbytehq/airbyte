@@ -22,10 +22,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -202,14 +203,17 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = Databases.createStreamingJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass(),
-        AdaptiveStreamingQueryConfig::new,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
-        JdbcUtils.getDefaultSourceOperations());
+    database = new StreamingJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            getDriverClass(),
+            jdbcConfig.get("jdbc_url").asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+        ),
+        JdbcUtils.getDefaultSourceOperations(),
+        AdaptiveStreamingQueryConfig::new
+    );
 
     if (supportsSchemas()) {
       createSchemas();

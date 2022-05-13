@@ -172,8 +172,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         return null;
       });
     }
-
-    database.close();
   }
 
   /**

@@ -25,7 +25,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:oracle-xe:1.16.0'
+    testImplementation libs.testcontainers.oracle.xe
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-oracle')

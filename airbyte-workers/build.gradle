@@ -33,11 +33,11 @@ dependencies {
 
     testImplementation 'io.temporal:temporal-testing:1.8.1'
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
-    testImplementation "org.flywaydb:flyway-core:7.14.0"
+    testImplementation libs.flyway.core
     testImplementation 'org.mockito:mockito-inline:4.0.0'
-    testImplementation 'org.postgresql:postgresql:42.2.18'
-    testImplementation 'org.testcontainers:testcontainers:1.15.3'
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
+    testImplementation libs.postgresql
+    testImplementation libs.testcontainers
+    testImplementation libs.testcontainers.postgresql
 
     testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')

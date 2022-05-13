@@ -9,11 +9,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
 
 public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
@@ -50,15 +54,15 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
       case "unencrypted" -> additionalParameter = "encrypt=false;";
       case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
     }
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s;%s",
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d;%s",
             baseConfig.get("host").asText(),
             baseConfig.get("port").asInt(),
-            additionalParameter),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+            additionalParameter), null);
+    return new Database(dslContext);
   }
 
   @Override
