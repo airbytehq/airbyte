@@ -4,12 +4,13 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -21,9 +22,9 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
-    page_size = 100
+    page_size = 100 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
+    
     @property
     def data_field(self):
         return self.name
@@ -37,6 +38,7 @@ class TwilioStream(HttpStream, ABC):
 
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
@@ -93,7 +95,7 @@ class TwilioStream(HttpStream, ABC):
         return original_value
 
 
-class IncrementalTwilioStream(TwilioStream, ABC):
+class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -101,6 +103,7 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         super().__init__(**kwargs)
         self._start_date = start_date  
         self._lookback = lookback
+        self._cursor_value = None
 
     @property
     @abstractmethod
@@ -109,28 +112,29 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         return: date filter query parameter name
         """
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = pendulum.parse((datetime.strptime(latest_record[self.cursor_field],self.time_filter_template)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value.strftime(self.time_filter_template)}
+        else:
+            return {self.cursor_field: self._start_date.strftime(self.time_filter_template)}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+       self._cursor_value = datetime.strptime(value[self.cursor_field], self.time_filter_template)
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state.get(self.cursor_field) or self._start_date
         if start_date:
-            params.update({self.incremental_filter_field: pendulum.parse(start_date, strict=False).strftime(self.time_filter_template)})
+            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template)})
         return params
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
-        records = super().read_records(stream_state=stream_state, **kwargs)
-        for record in records:
-            record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)           
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            if self._cursor_value:
+                latest_record_date = datetime.strptime(record[self.cursor_field], self.time_filter_template)
+                self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
 
