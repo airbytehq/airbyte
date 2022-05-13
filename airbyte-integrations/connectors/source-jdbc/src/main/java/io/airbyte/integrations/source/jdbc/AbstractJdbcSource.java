@@ -331,6 +331,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         LOGGER.warn("Unable to close data source.", e);
       }
     });
+    dataSources.clear();
   }
 
 }
