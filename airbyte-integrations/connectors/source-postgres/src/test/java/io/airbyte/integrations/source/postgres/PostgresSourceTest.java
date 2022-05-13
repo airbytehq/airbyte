@@ -365,11 +365,15 @@ class PostgresSourceTest {
     final String username = "airbyte-user";
 
     // normal host
-    final JsonNode normalConfig = Jsons.jsonNode(Map.of("username", username, "host", "airbyte.aws.com"));
+    final JsonNode normalConfig = Jsons.jsonNode(Map.of(
+        "username", username,
+        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(normalConfig));
 
     // azure host
-    final JsonNode azureConfig = Jsons.jsonNode(Map.of("username", username + "@airbyte", "host", "airbyte.azure.com"));
+    final JsonNode azureConfig = Jsons.jsonNode(Map.of(
+        "username", username + "@airbyte",
+        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 

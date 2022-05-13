@@ -351,15 +351,13 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @VisibleForTesting
   static String getUsername(final JsonNode databaseConfig) {
-    final String host = databaseConfig.get("host") == null
-        // host can be null in test
-        ? ""
-        : databaseConfig.get("host").asText();
+    final String jdbcUrl = databaseConfig.get("jdbc_url").asText();
     final String username = databaseConfig.get("username").asText();
 
     // Azure Postgres server has this username pattern: <username>@<host>.
     // Inside Postgres, the true username is just <username>.
-    if (username.contains("@") && host.endsWith("azure.com")) {
+    // The jdbc_url is constructed in the toDatabaseConfigStatic method.
+    if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
       final String[] tokens = username.split("@");
       final String postgresUsername = tokens[0];
       LOGGER.info("Azure username \"{}\" is detected; use \"{}\" to check permission", username, postgresUsername);
