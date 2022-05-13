@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.4"
+- dockerImage: "airbyte/destination-bigquery:1.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -494,7 +494,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.4"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -3461,7 +3461,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.32"
+- dockerImage: "airbyte/destination-redshift:0.3.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -3514,27 +3514,30 @@
           default: "public"
           title: "Default Schema"
         s3_bucket_name:
-          title: "S3 Bucket Name"
+          title: "S3 Bucket Name (Optional)"
           type: "string"
           description: "The name of the staging S3 bucket to use if utilising a COPY\
             \ strategy. COPY is recommended for production workloads for better speed\
-            \ and scalability. See <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html\"\
+            \ and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\"\
             >AWS docs</a> for more details."
           examples:
           - "airbyte.staging"
         s3_bucket_path:
-          title: "S3 Bucket Path"
+          title: "S3 Bucket Path (Optional)"
           type: "string"
           description: "The directory under the S3 bucket where data will be written.\
-            \ If not provided, then defaults to the root directory."
+            \ If not provided, then defaults to the root directory. See <a href=\"\
+            https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\"\
+            >path's name recommendations</a> for more details."
           examples:
           - "data_sync/test"
         s3_bucket_region:
-          title: "S3 Bucket Region"
+          title: "S3 Bucket Region (Optional)"
           type: "string"
           default: ""
           description: "The region of the S3 staging bucket to use if utilising a\
-            \ copy strategy."
+            \ COPY strategy. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html#:~:text=In-,Region,-%2C%20choose%20the%20AWS\"\
+            >AWS docs</a> for details."
           enum:
           - ""
           - "us-east-1"
@@ -3562,15 +3565,18 @@
           - "me-south-1"
         access_key_id:
           type: "string"
-          description: "The Access Key Id granting allow one to access the above S3\
-            \ staging bucket. Airbyte requires Read and Write permissions to the given\
-            \ bucket."
-          title: "S3 Key Id"
+          description: "This ID grants access to the above S3 staging bucket. Airbyte\
+            \ requires Read and Write permissions to the given bucket. See <a href=\"\
+            https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+            >AWS docs</a> on how to generate an access key ID and secret access key."
+          title: "S3 Key Id (Optional)"
           airbyte_secret: true
         secret_access_key:
           type: "string"
-          description: "The corresponding secret to the above access key id."
-          title: "S3 Access Key"
+          description: "The corresponding secret to the above access key id. See <a\
+            \ href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+            >AWS docs</a> on how to generate an access key ID and secret access key."
+          title: "S3 Access Key (Optional)"
           airbyte_secret: true
         part_size:
           type: "integer"
@@ -3578,20 +3584,22 @@
           maximum: 100
           examples:
           - "10"
-          description: "Optional. Increase this if syncing tables larger than 100GB.\
-            \ Only relevant for COPY. Files are streamed to S3 in parts. This determines\
-            \ the size of each part, in MBs. As S3 has a limit of 10,000 parts per\
-            \ file, part size affects the table size. This is 10MB by default, resulting\
-            \ in a default limit of 100GB tables. Note, a larger part size will result\
+          description: "Increase this if syncing tables larger than 100GB. Only relevant\
+            \ for COPY. Files are streamed to S3 in parts. This determines the size\
+            \ of each part, in MBs. As S3 has a limit of 10,000 parts per file, part\
+            \ size affects the table size. This is 10MB by default, resulting in a\
+            \ default limit of 100GB tables. Note: a larger part size will result\
             \ in larger memory requirements. A rule of thumb is to multiply the part\
-            \ size by 10 to get the memory requirement. Modify this with care."
-          title: "Stream Part Size"
+            \ size by 10 to get the memory requirement. Modify this with care. See\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=above%20key%20id.-,Part%20Size,-Affects%20the%20size\"\
+            ,> docs</a> for details."
+          title: "Stream Part Size (Optional)"
         purge_staging_data:
-          title: "Purge Staging Files and Tables"
+          title: "Purge Staging Files and Tables (Optional)"
           type: "boolean"
           description: "Whether to delete the staging files from S3 after completing\
-            \ the sync. See the docs for details. Only relevant for COPY. Defaults\
-            \ to true."
+            \ the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"\
+            > docs</a> for details."
           default: true
     supportsIncremental: true
     supportsNormalization: true
@@ -3643,7 +3651,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.4"
+- dockerImage: "airbyte/destination-s3:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3660,8 +3668,9 @@
         access_key_id:
           type: "string"
           description: "The access key ID to access the S3 bucket. Airbyte requires\
-            \ Read and Write permissions to the given bucket. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)\
-            \ on how to generate an access key."
+            \ Read and Write permissions to the given bucket. Read more <a href=\"\
+            https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+            >here</a>."
           title: "S3 Key ID *"
           airbyte_secret: true
           examples:
@@ -3669,34 +3678,37 @@
           order: 0
         secret_access_key:
           type: "string"
-          description: "The corresponding secret to the access key ID. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)"
+          description: "The corresponding secret to the access key ID. Read more <a\
+            \ href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+            >here</a>"
           title: "S3 Access Key *"
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
           order: 1
         s3_bucket_name:
-          title: "S3 Bucket Name *"
+          title: "S3 Bucket Name"
           type: "string"
-          description: "The name of the S3 bucket. See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)\
-            \ to create an S3 bucket."
+          description: "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\"\
+            >here</a>."
           examples:
           - "airbyte_sync"
           order: 2
         s3_bucket_path:
-          title: "S3 Bucket Path *"
+          title: "S3 Bucket Path"
           description: "Directory under the S3 bucket where data will be written.\
-            \ See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A)"
+            \ Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A\"\
+            >here</a>"
           type: "string"
           examples:
           - "data_sync/test"
           order: 3
         s3_bucket_region:
-          title: "S3 Bucket Region *"
+          title: "S3 Bucket Region"
           type: "string"
           default: ""
-          description: "The region of the S3 bucket. See [this](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions)\
-            \ for all region codes."
+          description: "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\"\
+            >here</a> for all region codes."
           enum:
           - ""
           - "us-east-1"
@@ -3728,8 +3740,8 @@
         format:
           title: "Output Format *"
           type: "object"
-          description: "Format of the data output. See [this](https://docs.airbyte.com/integrations/destinations/s3/#output-schema)\
-            \ for more details"
+          description: "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\"\
+            >here</a> for more details"
           oneOf:
           - title: "Avro: Apache Avro"
             required:
@@ -4016,15 +4028,16 @@
           title: "Endpoint (Optional)"
           type: "string"
           default: ""
-          description: "This is your S3 endpoint url. (If you are working with AWS\
-            \ S3, you can leave blank). See [this](https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use)"
+          description: "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\"\
+            >here</a>"
           examples:
           - "http://localhost:9000"
           order: 6
         s3_path_format:
           title: "S3 Path Format (Optional)"
           description: "Format string on how data will be organized inside the S3\
-            \ bucket directory. See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format)"
+            \ bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\"\
+            >here</a>"
           type: "string"
           examples:
           - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
@@ -4088,7 +4101,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.25"
+- dockerImage: "airbyte/destination-snowflake:0.4.26"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4779,3 +4792,64 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "airbyte/destination-google-sheets:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/google-sheets"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Google Sheets"
+      type: "object"
+      required:
+      - "spreadsheet_id"
+      - "credentials"
+      additionalProperties: false
+      properties:
+        spreadsheet_id:
+          type: "string"
+          title: "Spreadsheet Link"
+          description: "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this\
+            \ guide</a> for more details."
+          examples:
+          - "https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG/edit"
+        credentials:
+          type: "object"
+          title: "* Authentication via Google (OAuth)"
+          description: "Google API Credentials for connecting to Google Sheets and\
+            \ Google Drive APIs"
+          required:
+          - "client_id"
+          - "client_secret"
+          - "refresh_token"
+          properties:
+            client_id:
+              title: "Client ID"
+              type: "string"
+              description: "The Client ID of your Google Sheets developer application."
+              airbyte_secret: true
+            client_secret:
+              title: "Client Secret"
+              type: "string"
+              description: "The Client Secret of your Google Sheets developer application."
+              airbyte_secret: true
+            refresh_token:
+              title: "Refresh Token"
+              type: "string"
+              description: "The token for obtaining new access token."
+              airbyte_secret: true
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+    - "append_dedup"
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"

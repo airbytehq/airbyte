@@ -21,7 +21,6 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
-import { hasFromState } from "utils/stateUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -107,16 +106,12 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { location } = useRouter();
+  const { query } = useRouter();
 
   return (
     <Routes>
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
-        <Route
-          key={r}
-          path={`${r}/*`}
-          element={hasFromState(location.state) ? <Navigate to={location.state.from} replace /> : <DefaultView />}
-        />
+        <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
       <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
