@@ -233,10 +233,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      // only .setFailures() if a failure occurred
+      // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
       final FailureReason sourceFailure = replicationRunnableFailureRef.get();
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
+      final FailureReason traceMessageFailure = messageTracker.errorTraceMessageFailure(Long.valueOf(jobId), attempt);
+
       final List<FailureReason> failures = new ArrayList<>();
+
+      if (traceMessageFailure != null) {
+        failures.add(traceMessageFailure);
+      }
+
       if (sourceFailure != null) {
         failures.add(sourceFailure);
       }
