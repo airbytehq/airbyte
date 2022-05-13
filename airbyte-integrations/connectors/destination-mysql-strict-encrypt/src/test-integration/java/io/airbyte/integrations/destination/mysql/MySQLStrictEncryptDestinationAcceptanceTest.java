@@ -163,15 +163,14 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void executeQuery(final String query) {
-    try {
-      final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
           db.getUsername(),
           db.getPassword(),
           db.getDriverClassName(),
           String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.MYSQL);
+              db.getDatabaseName()), SQLDialect.MYSQL)) {
       new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));

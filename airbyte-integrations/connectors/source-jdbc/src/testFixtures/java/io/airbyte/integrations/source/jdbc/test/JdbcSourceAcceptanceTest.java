@@ -58,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -107,6 +108,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
 
   public JsonNode config;
+  public DataSource dataSource;
   public JdbcDatabase database;
   public JdbcSourceOperations sourceOperations = getSourceOperations();
   public Source source;
@@ -203,14 +205,15 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = new StreamingJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            getDriverClass(),
-            jdbcConfig.get("jdbc_url").asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-        ),
+    dataSource = DataSourceFactory.create(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        getDriverClass(),
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
+    );
+
+    database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
         AdaptiveStreamingQueryConfig::new
     );

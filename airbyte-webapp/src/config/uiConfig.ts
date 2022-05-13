@@ -17,7 +17,7 @@ const uiConfig = {
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
   recipesLink: "https://airbyte.com/recipes",
-  syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections/incremental-deduped-history`,
+  syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections`,
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",

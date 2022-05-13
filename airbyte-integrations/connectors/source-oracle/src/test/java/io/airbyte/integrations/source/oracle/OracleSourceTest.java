@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,26 +73,27 @@ class OracleSourceTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("sid").asText())
-        )
-    );
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("sid").asText()));
 
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
-      connection.createStatement()
-          .execute("INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
-    });
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.close();
+      database.execute(connection -> {
+        connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+        connection.createStatement().execute("CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
+        connection.createStatement()
+            .execute("INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
+      });
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   private JsonNode getConfig(final OracleContainer oracleDb) {
