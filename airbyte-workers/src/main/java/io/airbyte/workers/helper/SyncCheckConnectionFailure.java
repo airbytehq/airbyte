@@ -14,12 +14,14 @@ import java.util.List;
 
 public class SyncCheckConnectionFailure {
 
-  private final JobRunConfig jobRunConfig;
+  private final Long jobId;
+  private final Integer attemptId;
   private StandardCheckConnectionOutput failureOutput;
   private FailureReason.FailureOrigin origin = null;
 
-  public SyncCheckConnectionFailure(JobRunConfig jobRunConfig) {
-    this.jobRunConfig = jobRunConfig;
+  public SyncCheckConnectionFailure(Long jobId, Integer attemptId) {
+    this.jobId = jobId;
+    this.attemptId = attemptId;
   }
 
   public boolean isFailed() {
@@ -40,10 +42,7 @@ public class SyncCheckConnectionFailure {
     }
 
     final Exception ex = new IllegalArgumentException(failureOutput.getMessage());
-    // TODO: Why are these values null and needing a default?
-    final String jobId = jobRunConfig.getJobId() != null ? jobRunConfig.getJobId() : "1";
-    final long attemptId = jobRunConfig.getAttemptId() != null ? jobRunConfig.getAttemptId() : 1L;
-    final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobId), Math.toIntExact(attemptId), origin);
+    final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, jobId, attemptId, origin);
     return new StandardSyncOutput()
         .withFailures(List.of(checkFailureReason))
         .withStandardSyncSummary(

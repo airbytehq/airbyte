@@ -325,7 +325,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
     final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
-    SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+    final Long jobId = jobRunConfig.getJobId() != null ? Long.valueOf(jobRunConfig.getJobId()) : 1L;
+    final Integer attemptId = jobRunConfig.getAttemptId() != null ? Math.toIntExact(jobRunConfig.getAttemptId()) : 1;
+    SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobId, attemptId);
 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
