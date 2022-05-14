@@ -4,18 +4,21 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.SyncStats;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.SyncCheckConnectionFailure;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
@@ -61,7 +64,6 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -189,11 +191,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       reportJobStarting();
       StandardSyncOutput standardSyncOutput = null;
-      StandardSyncOutput checkFailureOutput = null;
 
       try {
-        checkFailureOutput = checkConnections(jobInputs);
-        if (checkFailureOutput != null) {
+        final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
+        if (syncCheckConnectionFailure.isFailed()) {
+          final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
           reportFailure(connectionUpdaterInput, checkFailureOutput);
         } else {
@@ -316,54 +318,57 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
-  private StandardSyncOutput checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
+  private SyncCheckConnectionFailure checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
+    final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
+    final StandardSyncInput syncInput = jobInputs.getSyncInput();
+    final JsonNode sourceConfig = syncInput.getSourceConfiguration();
+    final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
+    final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
+    final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
+    SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
 
-    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION) {
-      return null;
-    }
+    if (attemptCreationVersion >= CHECK_BEFORE_SYNC_CURRENT_VERSION) {
+      final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
+      final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+      final String launchSourceDockerImage = sourceLauncherConfig.getDockerImage();
 
-    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
-        .withConnectionConfiguration(jobInputs.getSyncInput().getSourceConfiguration());
-    final CheckConnectionInput checkSourceInput =
-        new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getSourceLauncherConfig(), sourceConfiguration);
-    final String launchSourceDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
-
-    if (launchSourceDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)) {
-      log.info("SOURCE CHECK: Skipped");
-    } else {
-      log.info("SOURCE CHECK: Starting");
-      final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
-      if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
-        log.info("SOURCE CHECK: Failed");
-        return checkFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobInputs.getJobRunConfig(), sourceCheckResponse);
+      if (WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(launchSourceDockerImage) || checkFailure.isFailed()) {
+        log.info("SOURCE CHECK: Skipped");
       } else {
-        log.info("SOURCE CHECK: Successful");
+        log.info("SOURCE CHECK: Starting");
+        final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+        if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
+          checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
+          checkFailure.setFailureOutput(sourceCheckResponse);
+          log.info("SOURCE CHECK: Failed");
+        } else {
+          log.info("SOURCE CHECK: Successful");
+        }
+      }
+
+      final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
+      final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+      final String launchDestinationDockerImage = destinationLauncherConfig.getDockerImage();
+
+      if (WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(launchDestinationDockerImage) || checkFailure.isFailed()) {
+        log.info("DESTINATION CHECK: Skipped");
+      } else {
+        log.info("DESTINATION CHECK: Starting");
+        final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+        if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
+          checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
+          checkFailure.setFailureOutput(destinationCheckResponse);
+          log.info("DESTINATION CHECK: Failed");
+        } else {
+          log.info("DESTINATION CHECK: Successful");
+        }
       }
     }
 
-    final StandardCheckConnectionInput destinationConfiguration =
-        new StandardCheckConnectionInput().withConnectionConfiguration(jobInputs.getSyncInput().getDestinationConfiguration());
-    final CheckConnectionInput checkDestinationInput =
-        new CheckConnectionInput(jobInputs.getJobRunConfig(), jobInputs.getDestinationLauncherConfig(), destinationConfiguration);
-    final String launchDestinationDockerImage = jobInputs.getSourceLauncherConfig().getDockerImage();
-
-    if (launchDestinationDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)) {
-      log.info("DESTINATION CHECK: Skipped");
-    } else {
-      log.info("DESTINATION CHECK: Starting");
-      final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
-      if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
-        log.info("DESTINATION CHECK: Failed");
-        return checkFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobInputs.getJobRunConfig(), destinationCheckResponse);
-      } else {
-        log.info("DESTINATION CHECK: Successful");
-      }
-    }
-
-    // return no failure response if the CHECKS succeed
-    return null;
+    return checkFailure;
   }
 
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -719,30 +724,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
     resetNewConnectionInput(connectionUpdaterInput);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-  }
-
-  private StandardSyncOutput checkFailureSyncOutput(FailureReason.FailureOrigin origin,
-                                                    JobRunConfig jobRunConfig,
-                                                    StandardCheckConnectionOutput checkResponse) {
-    final Exception ex = new IllegalArgumentException(checkResponse.getMessage());
-    // TODO: Why are these values null and needing a default?
-    final String jobId = jobRunConfig.getJobId() != null ? jobRunConfig.getJobId() : "1";
-    final long attemptId = jobRunConfig.getAttemptId() != null ? jobRunConfig.getAttemptId() : 1L;
-    final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobId), Math.toIntExact(attemptId), origin);
-    return new StandardSyncOutput()
-        .withFailures(List.of(checkFailureReason))
-        .withStandardSyncSummary(
-            new StandardSyncSummary()
-                .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
-                .withStartTime(System.currentTimeMillis())
-                .withEndTime(System.currentTimeMillis())
-                .withRecordsSynced(0L)
-                .withBytesSynced(0L)
-                .withTotalStats(new SyncStats()
-                    .withRecordsEmitted(0L)
-                    .withBytesEmitted(0L)
-                    .withStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L)));
   }
 
 }
