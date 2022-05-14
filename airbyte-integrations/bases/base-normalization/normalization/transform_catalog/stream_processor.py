@@ -831,7 +831,7 @@ new_data as (
     from {{'{{'}} {{ from_table }}  {{'}}'}}
     {{ sql_table_comment }}
     where 1 = 1
-    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
+    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}, this) {{'}}'}}
 ),
 new_data_ids as (
     -- build a subset of {{ unique_key }} from rows that are new
@@ -1040,7 +1040,7 @@ where 1 = 1
         template = Template(
             """
 {{ sql_query }}
-{{'{{'}} incremental_clause({{ col_emitted_at }}) {{'}}'}}
+{{'{{'}} incremental_clause({{ col_emitted_at }}, this) {{'}}'}}
     """
         )
         sql = template.render(
@@ -1048,6 +1048,10 @@ where 1 = 1
             col_emitted_at=self.get_emitted_at(in_jinja=True),
         )
         return sql
+
+    # TODO use this method in add_incremental_clause (maybe not, since we need to configure the table name :/ )
+    def get_incremental_clause(self, tablename: str) -> Any:
+        return "{{ incremental_clause(" + self.get_emitted_at(in_jinja=True) + ", " + tablename + ") }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
@@ -1101,9 +1105,29 @@ where 1 = 1
                 sql = self.add_incremental_clause(sql)
                 if do_deletions:
                     # TODO figure out how to get SCD table name correctly
-                    config[
-                        "post_hook"
-                    ] = f"""["delete from {{{{ this }}}} where _airbyte_ab_id in ( select _airbyte_ab_id from {{{{ {scd_table} }}}} where _airbyte_active_row = 0 and cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}}) >= (select max(cast({self.name_transformer.normalize_column_name(self.airbyte_normalized_at)} as {{{{ type_timestamp_with_timezone() }}}})) from {{{{ {scd_table} }}}}))"]"""
+                    deletion_hook = Template(
+                        """
+with partitioned_data as (
+    select row_number() over (
+        partition by _airbyte_unique_key
+        order by _airbyte_active_row desc, _airbyte_ab_id
+    ) as _airbyte_row_num,
+    {{ scd_table }}.*
+    from {{ scd_table }}
+    where 1=1
+    {{ incremental_clause }}
+)
+delete from {{ '{{ this }}' }} where _airbyte_unique_key in (
+    select _airbyte_unique_key from partitioned_data
+    where _airbyte_active_row = 0 and _airbyte_row_num = 1
+)
+"""
+                    ).render(
+                        scd_table="{{" + scd_table + "}}",
+                        normalized_normalized_at_column_name=self.name_transformer.normalize_column_name(self.airbyte_normalized_at),
+                        incremental_clause=self.get_incremental_clause(scd_table),
+                    )
+                    config["post_hook"] = '["' + deletion_hook + '"]'
         template = Template(
             """
 {{ '{{' }} config(
