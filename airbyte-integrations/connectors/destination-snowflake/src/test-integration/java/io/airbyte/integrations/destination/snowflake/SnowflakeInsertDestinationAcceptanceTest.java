@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -25,6 +26,8 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,6 +50,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   // schema name that is different for each test run
   private JsonNode config;
   private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -160,7 +165,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
 
-    database = SnowflakeDatabase.getDatabase(config);
+    dataSource = SnowflakeDatabase.createDataSource(config);
+    database = SnowflakeDatabase.getDatabase(dataSource);
     database.execute(createSchemaQuery);
   }
 
@@ -168,7 +174,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(createSchemaQuery);
-    database.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Test

@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -33,7 +34,6 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private PostgreSQLContainer<?> container;
-  private Database database;
   private JsonNode config;
 
   @Override
@@ -50,26 +50,25 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
             container.getDatabaseName()))
         .build());
 
-    database = new Database(
-        DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            config.get("jdbc_url").asText(),
-            SQLDialect.POSTGRES
-        )
-    );
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        config.get("jdbc_url").asText(),
+        SQLDialect.POSTGRES
+        )) {
+      final Database database = new Database(dslContext);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      return null;
-    });
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        return null;
+      });
+    }
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    database.close();
     container.close();
   }
 
