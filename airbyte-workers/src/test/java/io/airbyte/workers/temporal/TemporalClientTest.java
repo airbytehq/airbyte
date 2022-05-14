@@ -48,6 +48,7 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.workflow.Functions.Proc;
+import io.temporal.workflow.Functions.Proc1;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -606,7 +607,7 @@ class TemporalClientTest {
       assertTrue(result.getJobId().isPresent());
       assertEquals(jobId2, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
-      verify(mConnectionManagerWorkflow).resetConnection();
+      verify(mConnectionManagerWorkflow).resetConnection(ResetInput.getDefault());
     }
 
     @Test
@@ -641,11 +642,11 @@ class TemporalClientTest {
 
       // Verify that the resetConnection signal was passed to the batch request by capturing the argument,
       // executing the signal, and verifying that the desired signal was executed
-      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
-      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
-      final Proc signal = batchRequestAddArgCaptor.getValue();
-      signal.apply();
-      verify(mNewConnectionManagerWorkflow).resetConnection();
+      final ArgumentCaptor<Proc1> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc1.class);
+      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture(), Mockito.eq(ResetInput.getDefault()));
+      final Proc1 signal = batchRequestAddArgCaptor.getValue();
+      signal.apply(ResetInput.getDefault());
+      verify(mNewConnectionManagerWorkflow).resetConnection(ResetInput.getDefault());
     }
 
     @Test
@@ -663,7 +664,7 @@ class TemporalClientTest {
       // this is only called when updating an existing workflow
       assertFalse(result.getJobId().isPresent());
       assertTrue(result.getFailingReason().isPresent());
-      verify(mConnectionManagerWorkflow, times(0)).resetConnection();
+      verify(mConnectionManagerWorkflow, times(0)).resetConnection(ResetInput.getDefault());
     }
 
   }
