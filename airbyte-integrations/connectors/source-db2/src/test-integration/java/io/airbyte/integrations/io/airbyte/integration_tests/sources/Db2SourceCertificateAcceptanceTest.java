@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
 import org.testcontainers.containers.Db2Container;
 
 public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
@@ -42,7 +43,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private Db2Container db;
   private JsonNode config;
-  private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -120,34 +121,36 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            Db2Source.DRIVER_CLASS,
-            jdbcUrl
-        )
+    dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        Db2Source.DRIVER_CLASS,
+        jdbcUrl
     );
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME2);
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(createSchemaQuery);
-    database.execute(createTableQuery1);
-    database.execute(createTableQuery2);
-    database.execute(insertIntoTableQuery1);
-    database.execute(insertIntoTableQuery2);
+      final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+      final String createTableQuery1 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+      final String createTableQuery2 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+      final String insertIntoTableQuery1 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME1);
+      final String insertIntoTableQuery2 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME2);
 
-    database.close();
+      database.execute(createSchemaQuery);
+      database.execute(createTableQuery1);
+      database.execute(createTableQuery2);
+      database.execute(insertIntoTableQuery1);
+      database.execute(insertIntoTableQuery2);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @Override

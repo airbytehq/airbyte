@@ -25,6 +25,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
+  private DSLContext dslContext;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
@@ -84,19 +85,8 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   protected void setup(final TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
-    setLocalInFileToTrue();
-    revokeAllPermissions();
-    grantCorrectPermissions();
-  }
 
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
-  }
-
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
@@ -104,6 +94,20 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()), SQLDialect.DEFAULT);
+
+    setLocalInFileToTrue();
+    revokeAllPermissions();
+    grantCorrectPermissions();
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+    db.stop();
+    db.close();
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return new Database(dslContext).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
@@ -127,15 +131,14 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void executeQuery(final String query) {
-    try {
-      final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
           "root",
           "test",
           db.getDriverClassName(),
           String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.DEFAULT);
+              db.getDatabaseName()), SQLDialect.DEFAULT)) {
       new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));

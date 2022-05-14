@@ -110,6 +110,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
         LOGGER.info("Testing {} database connection...", databaseName);
         return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
       } catch (final Exception e) {
+        LOGGER.error("Failed to verify database connection.", e);
         return false;
       }
     };
