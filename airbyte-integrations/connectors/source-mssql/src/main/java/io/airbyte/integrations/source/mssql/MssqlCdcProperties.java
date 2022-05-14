@@ -20,7 +20,7 @@ public class MssqlCdcProperties {
     props.setProperty("converters", "mssql_converter");
     props.setProperty("mssql_converter.type", "io.airbyte.integrations.debezium.internals.MSSQLConverter");
 
-    return props;
+    return props; 
   }
 
 }
