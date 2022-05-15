@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.Objects.isNull;
-
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -120,11 +119,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
 
     try {
-      final ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
-
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
           .build().getService();
       final List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
@@ -160,15 +158,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     try {
       final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-      ServiceAccountCredentials credentials = null;
-      if (BigQueryUtils.isUsingJsonCredentials(config)) {
-        // handle the credentials json being passed as a json object or a json object already serialized as
-        // a string.
-        credentials = getServiceAccountCredentials(config);
-      }
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
           .build()
           .getService();
     } catch (final IOException e) {
@@ -176,14 +169,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ServiceAccountCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    final ServiceAccountCredentials credentials;
+  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+      LOGGER.info("No service account key json is provided; using the default service account credential from environment");
+      return ServiceAccountCredentials.getApplicationDefault();
+    }
+
+    // The JSON credential can either be a raw JSON object, or a serialized JSON object.
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    return credentials;
+    return ServiceAccountCredentials.fromStream(
+        new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
   @Override
