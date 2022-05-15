@@ -109,7 +109,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
       }
     } catch (final Exception e) {
-      LOGGER.info("Check failed.", e);
+      LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
@@ -144,11 +144,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+      LOGGER.error("Cannot access the GCS bucket", e);
 
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
+          .withMessage("Could access the GCS bucket with the provided configuration.\n" + e
               .getMessage());
     }
   }
@@ -171,7 +171,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
-      LOGGER.info("No service account key json is provided; using the default service account credential from environment");
+      LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
+      LOGGER.info("Using the default service account credential from environment.");
       return ServiceAccountCredentials.getApplicationDefault();
     }
 
