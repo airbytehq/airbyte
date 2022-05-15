@@ -138,6 +138,23 @@ Service Account Keys are used to authenticate as Google Service Accounts. For Ai
 
 Follow the [Creating and Managing Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create a key. Airbyte currently supports JSON Keys only, so make sure you create your key in that format. As soon as you created the key, make sure to download it, as that is the only time Google will allow you to see its contents. Once you've successfully configured BigQuery as a destination in Airbyte, delete this key from your computer.
 
+The key JSON looks like the following (copied from the example [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating)):
+
+```json
+{
+  "type": "service_account",
+  "project_id": "<PROJECT_ID>",
+  "private_key_id": "<KEY_ID>",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n<PRIVATE_KEY>\n-----END PRIVATE KEY-----\n",
+  "client_email": "<SERVICE_ACCOUNT_EMAIL>",
+  "client_id": "<CLIENT_ID>",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/<SERVICE_ACCOUNT_EMAIL>"
+}
+```
+
 This parameter is **REQUIRED** when you set up the connector on cloud. It is only optional if you deploy Airbyte in your own infra and provide the credential through the environment. The service account key json will be searched in the following order:
 
 - Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
