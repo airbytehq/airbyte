@@ -520,7 +520,7 @@ where 1 = 1
                 if is_datetime_without_timezone(definition):
                     return self.generate_snowflake_timestamp_statement(column_name)
                 elif is_datetime_with_timezone(definition):
-                    pass
+                    return self.generate_snowflake_timestamp_tz_statement(column_name)
                 return self.generate_snowflake_timestamp_tz_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
