@@ -1040,16 +1040,12 @@ where 1 = 1
         template = Template(
             """
 {{ sql_query }}
-{{'{{'}} incremental_clause({{ col_emitted_at }}, this) {{'}}'}}
+{{ incremental_clause }}
     """
         )
-        sql = template.render(
-            sql_query=sql_query,
-            col_emitted_at=self.get_emitted_at(in_jinja=True),
-        )
+        sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause("this"))
         return sql
 
-    # TODO use this method in add_incremental_clause (maybe not, since we need to configure the table name :/ )
     def get_incremental_clause(self, tablename: str) -> Any:
         return "{{ incremental_clause(" + self.get_emitted_at(in_jinja=True) + ", " + tablename + ") }}"
 
