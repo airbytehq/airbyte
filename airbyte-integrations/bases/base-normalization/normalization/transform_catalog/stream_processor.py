@@ -1100,7 +1100,6 @@ where 1 = 1
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
                 if do_deletions:
-                    # TODO figure out how to get SCD table name correctly
                     deletion_hook = Template(
                         """
 with partitioned_data as (
