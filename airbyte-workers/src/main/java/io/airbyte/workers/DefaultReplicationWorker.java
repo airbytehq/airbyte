@@ -304,7 +304,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               try {
                 recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
               } catch (final RecordSchemaValidationException e) {
-                if (validationErrors.size() < 10) {
+                if (validationErrors.size() < 100) {
                   final Integer exceptionCount = validationErrors.get(e.getMessage());
                   if (exceptionCount == null) {
                     validationErrors.put(e.getMessage(), 1);
