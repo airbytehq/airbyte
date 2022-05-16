@@ -22,7 +22,7 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 export const DocumentationContainer = styled.div`
   padding: 0px 0px 20px;
   background-color: #ffffff;
-  height: 100vh;
+  min-height: 100vh;
 `;
 
 export const DocumentationContent = styled(Markdown)`
