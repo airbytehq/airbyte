@@ -50,7 +50,7 @@ public class RecordSchemaValidator {
       validator.ensure(matchingSchema, messageData);
     } catch (final JsonValidationException e) {
       throw new RecordSchemaValidationException(
-          String.format("Record schema validation failed for %s. Expected schema: %s", messageStream, matchingSchema));
+          String.format("Record schema validation failed for stream %s. Expected schema: %s", messageStream, matchingSchema));
     }
   }
 
