@@ -62,13 +62,13 @@ public interface ConnectionManagerWorkflow {
   @Builder
   class ResetInput {
 
-    private boolean isGlobal;
-    private Set<String> streamNames;
+    @Builder.Default
+    private boolean isGlobal = true;
+    @Builder.Default
+    private Set<String> streamNames = new HashSet<>();
 
     public static ResetInput getDefault() {
       return ResetInput.builder()
-          .isGlobal(true)
-          .streamNames(new HashSet<>())
           .build();
     }
 
