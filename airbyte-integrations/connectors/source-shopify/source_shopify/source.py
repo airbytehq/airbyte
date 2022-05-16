@@ -130,6 +130,39 @@ class Orders(IncrementalShopifyStream):
             params["status"] = "any"
         return params
 
+class LineItems(Orders):
+    data_field = "orders"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        if not next_page_token:
+            params["status"] = "any"
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        raw_response = response.json()["orders"]
+        modified_response = []
+        for data in raw_response:
+            try:
+                line_items = data["line_items"]
+                for line_item in line_items:
+                    try:
+                        line_item['order_id'] = data['id']
+                        modified_response.append(line_item)
+                    except:
+                        pass
+            except:
+                pass
+        return modified_response
 
 class ChildSubstream(IncrementalShopifyStream):
 
@@ -422,6 +455,7 @@ class SourceShopify(AbstractSource):
         return [
             Customers(config),
             Orders(config),
+            LineItems(config),
             DraftOrders(config),
             Products(config),
             AbandonedCheckouts(config),
