@@ -19,6 +19,7 @@ class InterpolatedPaginator(Paginator):
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
         headers = response.headers
+        # Pass in values as kwargs
         kwargs = {"decoded_response": decoded_response, "headers": headers, "last_records": last_records}
         interpolated_values = self._interpolation.eval(self._config, **kwargs)
 
