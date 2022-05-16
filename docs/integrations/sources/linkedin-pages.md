@@ -28,7 +28,6 @@ All streams only sync all-time statistics at this time. A `start_date` field wil
 | :--------------- | :----------- | :------------------------- |
 | `number`         | `number`     | float number               |
 | `integer`        | `integer`    | whole number               |
-| `time`           | `integer`    | milliseconds               |
 | `array`          | `array`      |                            |
 | `boolean`        | `boolean`    | True/False                 |
 | `string`         | `string`     |                            |
