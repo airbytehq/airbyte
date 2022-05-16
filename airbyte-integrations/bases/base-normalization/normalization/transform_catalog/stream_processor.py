@@ -20,12 +20,14 @@ from normalization.transform_catalog.utils import (
     is_boolean,
     is_combining_node,
     is_date,
+    is_datetime,
+    is_datetime_with_timezone,
+    is_datetime_without_timezone,
     is_integer,
     is_number,
     is_object,
     is_simple_property,
     is_string,
-    is_timestamp_with_time_zone,
     jinja_call,
     remove_jinja,
 )
@@ -494,7 +496,7 @@ where 1 = 1
     def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
-    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:
+    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
         if "type" not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
@@ -511,11 +513,15 @@ where 1 = 1
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
-        elif is_timestamp_with_time_zone(definition):
+        elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
                 # snowflake uses case when statement to parse timestamp field
                 # in this case [cast] operator is not needed as data already converted to timestamp type
-                return self.generate_snowflake_timestamp_statement(column_name)
+                if is_datetime_without_timezone(definition):
+                    return self.generate_snowflake_timestamp_statement(column_name)
+                elif is_datetime_with_timezone(definition):
+                    return self.generate_snowflake_timestamp_tz_statement(column_name)
+                return self.generate_snowflake_timestamp_tz_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
@@ -574,7 +580,7 @@ where 1 = 1
         return template.render(column_name=column_name)
 
     @staticmethod
-    def generate_snowflake_timestamp_statement(column_name: str) -> Any:
+    def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:
         """
         Generates snowflake DB specific timestamp case when statement
         """
@@ -595,6 +601,28 @@ where 1 = 1
 {% endfor %}
         when {{column_name}} = '' then NULL
     else to_timestamp_tz({{column_name}})
+    end as {{column_name}}
+    """
+        )
+        return template.render(formats=formats, column_name=column_name)
+
+    @staticmethod
+    def generate_snowflake_timestamp_statement(column_name: str) -> Any:
+        """
+        Generates snowflake DB specific timestamp case when statement
+        """
+        formats = [
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SS"},
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}", "format": "YYYY-MM-DDTHH24:MI:SS.FF"},
+        ]
+        template = Template(
+            """
+    case
+{% for format_item in formats %}
+        when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp({{column_name}}, '{{format_item['format']}}')
+{% endfor %}
+        when {{column_name}} = '' then NULL
+    else to_timestamp({{column_name}})
     end as {{column_name}}
     """
         )
