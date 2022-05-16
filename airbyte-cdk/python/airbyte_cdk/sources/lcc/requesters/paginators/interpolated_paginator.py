@@ -13,7 +13,6 @@ from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
 class InterpolatedPaginator(Paginator):
     def __init__(self, next_page_token: Mapping[str, str], config):
         self._interpolation = InterpolatedMapping(next_page_token, JinjaInterpolation())
-        self._next_page_token = next_page_token
         self._config = config
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
