@@ -149,4 +149,5 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
   }
+
 }
