@@ -17,6 +17,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -111,21 +112,21 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return new Database(
-        DSLContextFactory.create(
-            db.getUsername(),
-            db.getPassword(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            db.getJdbcUrl(),
-            SQLDialect.POSTGRES
-        )
-    ).query(ctx -> {
-          ctx.execute("set time zone 'UTC';");
-          return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList());
-        });
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        db.getJdbcUrl(),
+        SQLDialect.POSTGRES)) {
+      return new Database(dslContext)
+          .query(ctx -> {
+            ctx.execute("set time zone 'UTC';");
+            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(this::getJsonFromRecord)
+                .collect(Collectors.toList());
+          });
+    }
   }
 
   @Override

@@ -26,6 +26,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   static final String DB_NAME = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
   protected static MSSQLServerContainer<?> container;
   protected JsonNode config;
+  protected DSLContext dslContext;
 
   @Override
   protected Database setupDatabase() throws Exception {
@@ -40,7 +41,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("password", container.getPassword())
         .build());
 
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", DB_NAME));
       ctx.fetch(String.format("USE %s;", DB_NAME));
@@ -53,14 +55,17 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return database;
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
             config.get("port").asInt()), null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
@@ -80,7 +85,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.stop();
     container.close();
   }
