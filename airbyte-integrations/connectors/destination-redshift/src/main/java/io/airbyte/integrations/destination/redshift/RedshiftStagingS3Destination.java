@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.*;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.JDBC_URL;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.PASSWORD;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
