@@ -86,7 +86,6 @@ public class DatabricksDestination extends CopyDestination {
   static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
     return String.format(DatabaseDriver.DATABRICKS.getUrlFormatString(),
         databricksConfig.getDatabricksServerHostname(),
-        databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
   }
 }
