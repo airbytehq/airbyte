@@ -70,10 +70,10 @@ The API user account should be assigned the `ADMIN` role.
 There are 2 authentication methods: Access Token or OAuth2.0.
 OAuth2.0 is recommended since it will continue streaming data for 12 months instead of 2 months with an access token.
 
-##### Create the `Refresh_Token` or `Access_Token`
+##### Create the `Refresh_Token` or `Access_Token`:
 The source LinkedIn Pages can use either the `client_id`, `client_secret` and `refresh_token` for OAuth2.0 authentication or simply use an `access_token` in the UI connector's settings to make API requests. Access tokens expire after `2 months from creation date (60 days)` and require a user to manually authenticate again. Refresh tokens expire after `12 months from creation date (365 days)`. If you receive a `401 invalid token response`, the error logs will state that your token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
 
-1. **Log in to LinkedIn as the API user.**
+1. **Log in to LinkedIn as the API user**
 
 2. **Create an App** [here](https://www.linkedin.com/developers/apps):
    * `App Name`: airbyte-source
@@ -81,37 +81,33 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    * `Privacy policy URL`: link to company privacy policy
    * `Business email`: developer/admin email address
    * `App logo`: Airbyte's \(or Company's\) logo
-   * Review/agree to legal terms and create app.
+   * Review/agree to legal terms and create app
+   * Review the **Auth** tab:
+     * **Save your `client_id` and `client_secret`** \(for later steps\)
+     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
 
 3. **Verify App**:
    * In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
    * Generate and provide the verify URL to your Company's LinkedIn Admin to verify the app.
-   * Once verified, select the App in the Console [here](https://www.linkedin.com/developers/apps).
-   * **Review the `Auth` tab**:
-     * Record `client_id` and `client_secret` \(for later steps\).
-     * Review permissions in the **OAuth 2.0 scopes** section and ensure app has the correct permissions \(above\).
-     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
-     * Review the `Products` tab and ensure `Marketing Developer Platform` has been added and approved \(listed in the `Products` section/tab\).
-     * Review the `Usage & limits` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
 
 4. **Request API Access**:
    * Navigate to the **Products** tab
    * Select the [Marketing Developer Platform](https://docs.microsoft.com/en-us/linkedin/marketing/) and agree to the legal terms
    * After a few minutes, refresh the page to see a link to `View access form` in place of the **Select** button
-   * Fill out the access form and access should be granted within 72 hours (usually quicker).
+   * Fill out the access form and access should be granted **within 72 hours** (usually quicker)
 
-5. **Create A Refresh Token (or Access Token)**:
-   * Navigate to the LinkedIn Developers [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**
+5. **Create A Refresh Token** (or Access Token):
+   * Navigate to the LinkedIn Developers' [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**
    * Select your newly created app and check the boxes for the following scopes:
      * `r_organization_social`
      * `rw_organization_admin`
-   * Click **Request access token** and save your Refresh token (access tokens expire in just 2 months while refresh tokens don't expire for 12 months)
+   * Click **Request access token** and once generated, **save your Refresh token**
 
-6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 3 and 5 to autorize LinkedIn Pages connector.
-   * As mentioned earlier, you can also simply use an access token for 60-day access.
+6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 2 and 5 to autorize the LinkedIn Pages connector within the Airbyte UI.
+   * As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                           |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| 0.0.1   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description  |
+| dev   | 2022-05-16 |  | Initial Connector Submission  |
