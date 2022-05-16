@@ -240,10 +240,10 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 The service account does not have the proper permissions.
 - Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles, or equivalent permissions as those two roles.
-- If the GCS staging mode is selected, make sure the BigQuery service account has the right permissions, or the `Cloud Storage Admin` role, which includes a super set of the required permissions.
+- If the GCS staging mode is selected, make sure the BigQuery service account has the right permissions to the GCS bucket and path, or the `Cloud Storage Admin` role, which includes a super set of the required permissions.
 
 The HMAC key is wrong.
-- Make sure that the HMAC key is created under the right GCS bucket, and it has access to the GCS bucket path.
+- Make sure the HMAC key is created for the BigQuery service account, and the service account has the permission to access the GCS bucket and path.
 
 ## CHANGELOG
 
