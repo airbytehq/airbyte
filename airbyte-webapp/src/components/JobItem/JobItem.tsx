@@ -10,6 +10,7 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/comp
 import { AttemptRead, JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
+import ErrorDetails from "./components/ErrorDetails";
 import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 
@@ -86,7 +87,12 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs job={job} jobIsFailed={!didSucceed} />}
+            {isOpen ? (
+                <>
+                  <ErrorDetails attempts={getJobAttemps(job)} />
+                  <JobLogs id={job} jobIsFailed={!didSucceed} />
+                </>
+            ) : null}
           </Suspense>
         </div>
       </ContentWrapper>
