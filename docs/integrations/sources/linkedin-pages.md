@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync coming soon.
+The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
 
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
 
@@ -20,7 +20,7 @@ This Source is capable of syncing the following data as streams:
 
 ### NOTE:
 
-All streams only sync lifetime statistics for now. A 'start_date' field will be added soon to only pull data starting at a single point in time.
+All streams only sync all-time statistics at this time. A `start_date` field will be added soon to pull data starting at a single point in time.
 
 ### Data type mapping
 
@@ -38,9 +38,9 @@ All streams only sync lifetime statistics for now. A 'start_date' field will be 
 | Feature                                   | Supported?\(Yes/No\) | Notes |
 | :---------------------------------------- | :------------------- | :---- |
 | Full Refresh Overwrite Sync               | Yes                  |       |
-| Full Refresh Append Sync                  | Yes                  |       |
-| Incremental - Append Sync                 | Yes                  |       |
-| Incremental - Append + Deduplication Sync | Yes                  |       |
+| Full Refresh Append Sync                  | No                   |       |
+| Incremental - Append Sync                 | No                   |       |
+| Incremental - Append + Deduplication Sync | No                   |       |
 | Namespaces                                | No                   |       |
 
 ### Performance considerations
@@ -57,83 +57,59 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 "Max try rate limit exceded..."
 ```
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics. 
+After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics. 
 
 ## Getting started
 The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaings`, `Creatives` requires the next permissions set:
-* `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
-Endpoints such as: `Ad Analytics by Campaign`, `Ad Analytics by Creatives` requires the next permissions set:
-* `r_ads_reporting`: read ads reporting
-The complete set of permissions is:
-* `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
+Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Page Statistics`, `Share Statistics`, `Shares`, `UGC Posts` requires the next permissions set:
+* `r_organization_social`: Retrieve your organization's posts, comments, reactions, and other engagement data.
+* `rw_organization_admin`: Manage your organization's pages and retrieve reporting data.
 
-The API user account should be assigned one of the following roles:
-* ACCOUNT\_BILLING\_ADMIN
-* ACCOUNT\_MANAGER
-* CAMPAIGN\_MANAGER
-* CREATIVE\_MANAGER
-* VIEWER \(Recommended\)
+The API user account should be assigned the `ADMIN` role.
 
 ### Authentication
 There are 2 authentication methods:
 ##### Generate the Access\_Token
 The source LinkedIn uses `access_token` provided in the UI connector's settings to make API requests. Access tokens expire after `2 months from generating date (60 days)` and require a user to manually authenticate again. If you receive a `401 invalid token response`, the error logs will state that your access token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
 1. **Login to LinkedIn as the API user.**
+
 2. **Create an App** [here](https://www.linkedin.com/developers/apps):
    * `App Name`: airbyte-source
-   * `Company`: search and find your company LinkedIn page
+   * `Company`: search and find your LinkedIn Company Page
    * `Privacy policy URL`: link to company privacy policy
    * `Business email`: developer/admin email address
    * `App logo`: Airbyte's \(or Company's\) logo
-   * `Products`: Select [Marketing Developer Platform](https://www.linkedin.com/developers/apps/122632736/products/marketing-developer-platform) \(checkbox\)
+   * Review/agree to legal terms and create app.
 
-     Review/agree to legal terms and create app.
 3. **Verify App**:
-   * Provide the verify URL to your Company's LinkedIn Admin to verify and authorize the app.
+   * In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
+   * Generate and provide the verify URL to your Company's LinkedIn Admin to verify the app.
    * Once verified, select the App in the Console [here](https://www.linkedin.com/developers/apps).
    * **Review the `Auth` tab**:
      * Record `client_id` and `client_secret` \(for later steps\).
-     * Review permissions and ensure app has the permissions \(above\).
+     * Review permissions in the **OAuth 2.0 scopes** section and ensure app has the correct permissions \(above\).
      * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
      * Review the `Products` tab and ensure `Marketing Developer Platform` has been added and approved \(listed in the `Products` section/tab\).
      * Review the `Usage & limits` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
-4. **Authorize App**: \(The authorization token `lasts 60-days before expiring`. The connector app will need to be reauthorized when the authorization token expires.\):
 
-    Create an Authorization URL with the following pattern:
+4. **Request API Access**:
+   * Navigate to the **Products** tab
+   * Select the [Marketing Developer Platform](https://docs.microsoft.com/en-us/linkedin/marketing/) and agree to the legal terms
+   * After a few minutes, refresh the page to see a link to `View access form` in place of the **Select** button
+   * Fill out the access form and access should be granted within 72 hours (usually quicker).
 
-   * The permissions set you need to use is: `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-   * URL pattern: Provide the scope from permissions above \(with + delimiting each permission\) and replace the other highlighted parameters: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-   * Modify and open the `url` in the browser.
-   * Once redirected, click `Allow` to authorize app.
-   * The browser will be redirected to the `redirect_uri`. Record the `code` parameter listed in the redirect URL in the Browser header URL.
+5. **Create A Refresh Token (or Access Token)**:
+   * Navigate to the LinkedIn Developers [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**
+   * Select your newly created app and check the boxes for the following scopes:
+     * `r_organization_social`
+     * `rw_organization_admin`
+   * Click **Request access token** and save your Refresh token (access tokens expire in just 2 months while refresh tokens don't expire for 12 months)
 
-5. **Run the following curl command** using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
-
-   ```text
-    curl -0 -v -X POST https://www.linkedin.com/oauth/v2/accessToken\
-    -H "Accept: application/json"\
-    -H "application/x-www-form-urlencoded"\
-    -d "grant_type=authorization_code"\
-    -d "code=YOUR_CODE"\
-    -d "client_id=YOUR_CLIENT_ID"\
-    -d "client_secret=YOUR_CLIENT_SECRET"\
-    -d "redirect_uri=YOUR_REDIRECT_URI"
-   ```
-
-6. **Use the `access_token`** from response from the `Step 5` to autorize LinkedIn Pages connector.
-
-##### OAuth2 authentication
-The source LinkedIn supports the oAuth2 protocol. Everyone can use it directly via the Airbyte Web interface. As result Airbyte server will save a 'refresh_token' which expire after `1 year from generating date (356 days)` and require a user to manually authenticate again.
+6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 3 and 5 to autorize LinkedIn Pages connector.
+   * As mentioned earlier, you can also simply use an access token for 60-day access.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                           |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description                                                                         |
-| 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382) | Modify log message in rate-limit cases                                                                            |
-| 0.1.3   | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839) | Added oauth support                                                                                               |
-| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                                                                                   |
-| 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for  `Campaigns/targetingCriteria` transformation, coerced  `Creatives/variables/values` to string by default |
-| 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Pages connector for Airbyte                                                      |
-
+| 0.0.1   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description  |
