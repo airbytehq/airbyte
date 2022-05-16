@@ -92,7 +92,8 @@ public class FailureHelper {
         .withFailureOrigin(origin)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
         .withRetryable(false)
-        .withExternalMessage(String.format("Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing", origin));
+        .withExternalMessage(String
+            .format("Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing", origin));
   }
 
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {

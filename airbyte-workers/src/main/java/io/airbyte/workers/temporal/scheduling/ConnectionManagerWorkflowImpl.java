@@ -16,7 +16,6 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.SyncCheckConnectionFailure;
 import io.airbyte.workers.temporal.TemporalJobType;
@@ -325,48 +324,51 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
     final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
-    final Long jobId = jobRunConfig.getJobId() != null ? Long.valueOf(jobRunConfig.getJobId()) : 1L;
-    final Integer attemptId = jobRunConfig.getAttemptId() != null ? Math.toIntExact(jobRunConfig.getAttemptId()) : 1;
+    final Long jobId = Long.valueOf(jobRunConfig.getJobId());
+    final Integer attemptId = Math.toIntExact(jobRunConfig.getAttemptId());
     SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobId, attemptId);
 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
 
     if (attemptCreationVersion >= CHECK_BEFORE_SYNC_CURRENT_VERSION) {
-      final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
-      final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
-      final String launchSourceDockerImage = sourceLauncherConfig.getDockerImage();
+      // return early if this instance of the workflow was created beforehand
+      return checkFailure;
+    }
 
-      if (WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(launchSourceDockerImage) || checkFailure.isFailed()) {
-        log.info("SOURCE CHECK: Skipped");
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
+    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+    final String launchSourceDockerImage = sourceLauncherConfig.getDockerImage();
+
+    if (workflowState.isResetConnection() || checkFailure.isFailed()) {
+      log.info("SOURCE CHECK: Skipped");
+    } else {
+      log.info("SOURCE CHECK: Starting");
+      final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+      if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
+        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
+        checkFailure.setFailureOutput(sourceCheckResponse);
+        log.info("SOURCE CHECK: Failed");
       } else {
-        log.info("SOURCE CHECK: Starting");
-        final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
-        if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
-          checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
-          checkFailure.setFailureOutput(sourceCheckResponse);
-          log.info("SOURCE CHECK: Failed");
-        } else {
-          log.info("SOURCE CHECK: Successful");
-        }
+        log.info("SOURCE CHECK: Successful");
       }
+    }
 
-      final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
-      final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
-      final String launchDestinationDockerImage = destinationLauncherConfig.getDockerImage();
+    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
+    final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    final String launchDestinationDockerImage = destinationLauncherConfig.getDockerImage();
 
-      if (WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(launchDestinationDockerImage) || checkFailure.isFailed()) {
-        log.info("DESTINATION CHECK: Skipped");
+    if (checkFailure.isFailed()) {
+      log.info("DESTINATION CHECK: Skipped");
+    } else {
+      log.info("DESTINATION CHECK: Starting");
+      final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+      if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
+        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
+        checkFailure.setFailureOutput(destinationCheckResponse);
+        log.info("DESTINATION CHECK: Failed");
       } else {
-        log.info("DESTINATION CHECK: Starting");
-        final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
-        if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
-          checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
-          checkFailure.setFailureOutput(destinationCheckResponse);
-          log.info("DESTINATION CHECK: Failed");
-        } else {
-          log.info("DESTINATION CHECK: Successful");
-        }
+        log.info("DESTINATION CHECK: Successful");
       }
     }
 

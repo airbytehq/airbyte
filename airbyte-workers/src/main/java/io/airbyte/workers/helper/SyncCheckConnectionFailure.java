@@ -9,7 +9,6 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
-import io.airbyte.scheduler.models.JobRunConfig;
 import java.util.List;
 
 public class SyncCheckConnectionFailure {
