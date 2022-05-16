@@ -88,4 +88,5 @@ public class DatabricksDestination extends CopyDestination {
         databricksConfig.getDatabricksServerHostname(),
         databricksConfig.getDatabricksHttpPath());
   }
+
 }
