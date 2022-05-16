@@ -6,17 +6,17 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.lcc.extractors.extractor import Extractor
-from airbyte_cdk.sources.lcc.iterators.iterator import Iterator
 from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.lcc.requesters.requester import Requester
 from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
 from airbyte_cdk.sources.lcc.states.state import State
+from airbyte_cdk.sources.lcc.stream_slicers.StreamSlicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
     def __init__(
-        self, name, primary_key, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: Iterator, state: State
+        self, name, primary_key, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: StreamSlicer, state: State
     ):
         self._name = name
         self._primary_key = primary_key
@@ -24,7 +24,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
-        self._iterator: Iterator = iterator
+        self._iterator: StreamSlicer = iterator
         self._state: State = state.copy()
         self._last_response = None
         self._last_records = None

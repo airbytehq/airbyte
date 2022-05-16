@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.lcc.states.state import State
 
 

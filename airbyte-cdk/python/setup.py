@@ -54,6 +54,8 @@ setup(
         "sentry-sdk~=1.5.1",
         "vcrpy",
         "Deprecated~=1.2",
+        "Jinja2~=3.1.2",
+        "pyjq~=1.2.2",
     ],
     python_requires=">=3.9",
     extras_require={

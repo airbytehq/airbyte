@@ -2,11 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.iterators.only_once import OnlyOnceIterator
+from airbyte_cdk.sources.lcc.stream_slicers.single_slice import SingleSlice
 
 
 def test():
-    iterator = OnlyOnceIterator()
+    iterator = SingleSlice()
 
     stream_slices = iterator.stream_slices(SyncMode.incremental, None)
     assert stream_slices == [dict()]
