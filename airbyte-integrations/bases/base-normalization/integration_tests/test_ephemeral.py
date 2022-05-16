@@ -30,7 +30,10 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    pass
+    dbt_test_utils.tear_down_db()
+    for folder in temporary_folders:
+        print(f"Deleting temporary test folder {folder}")
+        shutil.rmtree(folder, ignore_errors=True)
 
 
 @pytest.fixture
