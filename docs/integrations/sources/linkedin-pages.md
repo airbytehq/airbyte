@@ -70,7 +70,7 @@ The API user account should be assigned the `ADMIN` role.
 There are 2 authentication methods: Access Token or OAuth2.0.
 OAuth2.0 is recommended since it will continue streaming data for 12 months instead of 2 months with an access token.
 
-##### Create the `Refresh\_Token` or `Access\_Token`
+##### Create the `Refresh_Token` or `Access_Token`
 The source LinkedIn Pages can use `access_token` provided in the UI connector's settings to make API requests. Access tokens expire after `2 months from creation date (60 days)` and require a user to manually authenticate again. If you receive a `401 invalid token response`, the error logs will state that your access token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
 
 1. **Log in to LinkedIn as the API user.**
