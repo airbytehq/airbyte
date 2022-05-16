@@ -81,9 +81,4 @@ public class CockroachJdbcDatabase
 
   }
 
-  @Override
-  public void close() throws Exception {
-    database.close();
-  }
-
 }
