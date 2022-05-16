@@ -121,26 +121,31 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final List<org.jooq.Record> result = getDatabase(config)
-        .query(ctx -> ctx.fetch(
-            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                OracleDestination.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .collect(Collectors.toList()));
-    return result
-        .stream()
-        .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-        .map(Jsons::deserialize)
-        .collect(Collectors.toList());
+    try (final DSLContext dslContext = getDSLContext(config)) {
+      final List<org.jooq.Record> result = getDatabase(dslContext)
+          .query(ctx -> ctx.fetch(
+                  String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                      OracleDestination.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .collect(Collectors.toList()));
+      return result
+          .stream()
+          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+          .map(Jsons::deserialize)
+          .collect(Collectors.toList());
+    }
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static DSLContext getDSLContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("sid").asText()), null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
@@ -155,12 +160,14 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
     config = getConfig(db);
 
-    final Database database = getDatabase(config);
-    database.query(
-        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
+    try (final DSLContext dslContext = getDSLContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(
+          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    ((ObjectNode) config).put("schema", dbName);
+      ((ObjectNode) config).put("schema", dbName);
+    }
   }
 
   @Override

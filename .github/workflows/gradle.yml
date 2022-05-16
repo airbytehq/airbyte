@@ -57,6 +57,7 @@ jobs:
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
+              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'

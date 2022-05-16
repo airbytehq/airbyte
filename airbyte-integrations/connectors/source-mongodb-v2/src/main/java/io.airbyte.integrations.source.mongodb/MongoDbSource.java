@@ -250,6 +250,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
+  public void close() throws Exception {}
+  @Override
   public ConnectorType getConnectorType() {
     return ConnectorType.MONGO;
   }

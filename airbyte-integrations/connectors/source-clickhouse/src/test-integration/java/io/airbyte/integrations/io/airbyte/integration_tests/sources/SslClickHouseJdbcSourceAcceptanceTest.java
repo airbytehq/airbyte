@@ -17,6 +17,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
 import java.util.List;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +27,8 @@ import org.testcontainers.containers.GenericContainer;
 public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static GenericContainer container;
-  private static JdbcDatabase db;
+  private static JdbcDatabase jdbcDatabase;
+  private static DataSource dataSource;
   private JsonNode config;
   private String dbName;
 
@@ -72,20 +74,19 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
         .put("password", "")
         .build());
 
-    db = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            ClickHouseSource.DRIVER_CLASS,
-            String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
-                config.get("host").asText(),
-                config.get("port").asInt())
-        )
-    );
+    dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        ClickHouseSource.DRIVER_CLASS,
+        String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
+            config.get("host").asText(),
+            config.get("port").asInt()));
+
+    jdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    db.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
 
@@ -94,13 +95,13 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
 
   @AfterEach
   public void tearDownMySql() throws Exception {
-    db.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
+    jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
     super.tearDown();
   }
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    db.close();
+    DataSourceFactory.close(dataSource);
     container.close();
   }
 
