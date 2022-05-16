@@ -1,5 +1,5 @@
 import { useField } from "formik";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
@@ -21,6 +21,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 import { WarningMessage } from "../WarningMessage";
 import { DocumentationLink } from "./DocumentationLink";
@@ -218,6 +219,10 @@ const ConnectorServiceTypeControl: React.FC<{
     [availableServices, orderOverwrite]
   );
 
+  const { setDocumentationUrl } = useDocumentationPanelContext();
+
+  useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);
+
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
       analytics.track(
@@ -283,7 +288,7 @@ const ConnectorServiceTypeControl: React.FC<{
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && documentationUrl && <DocumentationLink />}
+      {selectedService && <DocumentationLink />}
       {selectedService &&
         (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
           <WarningMessage stage={selectedService.releaseStage} />

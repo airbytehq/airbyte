@@ -82,7 +82,7 @@ export const DocumentationPanel: React.FC = () => {
     </DocumentationContainer>
   ) : (
     <ReflexElement className="right-pane" maxSize={1000}>
-      <FormattedMessage id="docs.notFoundError" />
+      <FormattedMessage id="connector.setupGuide.notFound" />
     </ReflexElement>
   );
 };

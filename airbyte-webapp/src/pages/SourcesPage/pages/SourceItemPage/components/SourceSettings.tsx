@@ -10,18 +10,19 @@ import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 const Content = styled.div`
   max-width: 813px;
   margin: 18px auto;
 `;
 
-type IProps = {
+interface SourceSettingsProps {
   currentSource: Source;
   connectionsWithSource: Connection[];
-};
+}
 
-const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {
+const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
 
@@ -42,22 +43,24 @@ const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource
   const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
-    <Content>
-      <ConnectorCard
-        title={<FormattedMessage id="sources.sourceSettings" />}
-        isEditMode
-        onSubmit={onSubmit}
-        formType="source"
-        connector={currentSource}
-        availableServices={[sourceDefinition]}
-        formValues={{
-          ...currentSource,
-          serviceType: currentSource.sourceDefinitionId,
-        }}
-        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      />
-      <DeleteBlock type="source" onDelete={onDelete} />
-    </Content>
+    <ConnectorDocumentationWrapper>
+      <Content>
+        <ConnectorCard
+          title={<FormattedMessage id="sources.sourceSettings" />}
+          isEditMode
+          onSubmit={onSubmit}
+          formType="source"
+          connector={currentSource}
+          availableServices={[sourceDefinition]}
+          formValues={{
+            ...currentSource,
+            serviceType: currentSource.sourceDefinitionId,
+          }}
+          selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        />
+        <DeleteBlock type="source" onDelete={onDelete} />
+      </Content>
+    </ConnectorDocumentationWrapper>
   );
 };
 
