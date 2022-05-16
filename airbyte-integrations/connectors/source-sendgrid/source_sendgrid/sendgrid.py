@@ -10,8 +10,6 @@ from airbyte_cdk.sources.lcc.configurable_source import ConfigurableSource
 from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
 from airbyte_cdk.sources.lcc.extractors.jq import JqExtractor
 from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.lcc.iterators.datetime_iterator import DatetimeIterator
-from airbyte_cdk.sources.lcc.iterators.only_once import OnlyOnceIterator
 from airbyte_cdk.sources.lcc.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.lcc.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
@@ -23,6 +21,8 @@ from airbyte_cdk.sources.lcc.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.lcc.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.lcc.states.dict_state import DictState
 from airbyte_cdk.sources.lcc.states.no_state import NoState
+from airbyte_cdk.sources.lcc.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.lcc.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -62,8 +62,8 @@ class SendgridSource(ConfigurableSource):
         )
         request_parameters_provider = create_partial.create(InterpolatedRequestParameterProvider, config=config)
 
-        # Iterators
-        datetime_iterator = DatetimeIterator(
+        # Stream Slicer
+        stream_slicer = DatetimeStreamSlicer(
             InterpolatedString("{{ stream_state['created'] }}", "{{ config['start_time'] }}"),
             InterpolatedString("{{ today_utc() }}"),
             step="1000d",
@@ -82,7 +82,7 @@ class SendgridSource(ConfigurableSource):
             SimpleRetriever,
             name="{{ kwargs['name'] }}",
             state=NoState(),
-            iterator=OnlyOnceIterator(),
+            iterator=SingleSlice(),
             paginator=NoPagination(),
             primary_key="{{ kwargs['primary_key'] }}",
         )
@@ -215,7 +215,7 @@ class SendgridSource(ConfigurableSource):
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
-                    iterator=datetime_iterator,
+                    iterator=stream_slicer,
                     requester=http_requester(
                         path="suppression/blocks",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
@@ -229,7 +229,7 @@ class SendgridSource(ConfigurableSource):
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
-                    iterator=datetime_iterator,
+                    iterator=stream_slicer,
                     requester=http_requester(
                         path="suppression/bounces",
                         request_parameters_provider=cursor_request_parameter_provider,
@@ -242,7 +242,7 @@ class SendgridSource(ConfigurableSource):
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
-                    iterator=datetime_iterator,
+                    iterator=stream_slicer,
                     requester=http_requester(
                         path="suppression/invalid_emails",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
@@ -256,7 +256,7 @@ class SendgridSource(ConfigurableSource):
                 cursor_field=["created"],
                 retriever=simple_retriever(
                     state=cursor_state,
-                    iterator=datetime_iterator,
+                    iterator=stream_slicer,
                     requester=http_requester(
                         path="suppression/spam_reports",
                         request_parameters_provider=cursor_offset_request_parameter_provider,
