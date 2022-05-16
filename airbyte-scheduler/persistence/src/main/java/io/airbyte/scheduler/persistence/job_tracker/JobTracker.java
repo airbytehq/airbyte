@@ -220,7 +220,7 @@ public class JobTracker {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
       // and use that sub-schema to convert the config to a map
       final JsonSchemaValidator validator = new JsonSchemaValidator();
-      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext(); ) {
+      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext();) {
         final JsonNode subSchema = it.next();
         if (validator.test(subSchema, config)) {
           return configToMetadata(config, subSchema);
