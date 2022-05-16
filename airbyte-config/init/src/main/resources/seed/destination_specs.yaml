@@ -1887,6 +1887,7 @@
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
                 - "SCRAM-SHA-512"
+                - "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "JAAS login context parameters for SASL connections in\
