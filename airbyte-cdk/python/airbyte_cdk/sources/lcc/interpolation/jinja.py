@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 import datetime
 
 from airbyte_cdk.sources.lcc.interpolation.interpolation import Interpolation

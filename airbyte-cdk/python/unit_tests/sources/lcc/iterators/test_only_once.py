@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.lcc.stream_slicers.single_slice import SingleSlice
 
