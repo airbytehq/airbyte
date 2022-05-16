@@ -9,8 +9,11 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
+import io.airbyte.scheduler.models.JobRunConfig;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SyncCheckConnectionFailure {
 
   private final Long jobId;
@@ -18,7 +21,18 @@ public class SyncCheckConnectionFailure {
   private StandardCheckConnectionOutput failureOutput;
   private FailureReason.FailureOrigin origin = null;
 
-  public SyncCheckConnectionFailure(Long jobId, Integer attemptId) {
+  public SyncCheckConnectionFailure(JobRunConfig jobRunConfig) {
+    Long jobId = 0L;
+    Integer attemptId = 0;
+
+    try {
+      jobId = Long.valueOf(jobRunConfig.getJobId());
+      attemptId = Math.toIntExact(jobRunConfig.getAttemptId());
+    } catch (Exception e) {
+      // In tests, the jobId and attemptId may not be available
+      log.warn("Cannot determine jobId or attemptId: " + e.getMessage());
+    }
+
     this.jobId = jobId;
     this.attemptId = attemptId;
   }
