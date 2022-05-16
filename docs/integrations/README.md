@@ -71,6 +71,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Alpha |
+| [LinkedIn Pages](sources/linkedin-pages.md) | Alpha |
 | [Linnworks](sources/linnworks.md) | Alpha |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Alpha |

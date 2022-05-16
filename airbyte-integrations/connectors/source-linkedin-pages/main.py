@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import sys
 
 from airbyte_cdk.entrypoint import launch

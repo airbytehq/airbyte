@@ -98,6 +98,7 @@
     * [Kustomer](integrations/sources/kustomer.md)
     * [Lemlist](integrations/sources/lemlist.md)
     * [LinkedIn Ads](integrations/sources/linkedin-ads.md)
+    * [LinkedIn Pages](integrations/sources/linkedin-pages.md)
     * [Linnworks](integrations/sources/linnworks.md)
     * [Lever Hiring](integrations/sources/lever-hiring.md)
     * [Looker](integrations/sources/looker.md)

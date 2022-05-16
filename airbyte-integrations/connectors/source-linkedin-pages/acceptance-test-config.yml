@@ -1,6 +1,6 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-linkedin-pages:dev
+connector_image: airbyte/source-linkedin-pages:dev0.0.3
 tests:
   spec:
     - spec_path: "source_linkedin_pages/spec.json"
