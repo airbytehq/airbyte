@@ -70,6 +70,12 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
+- name: Databricks
+  destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
+  dockerRepository: airbyte/destination-databricks
+  dockerImageTag: 0.2.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
+  releaseStage: alpha
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
