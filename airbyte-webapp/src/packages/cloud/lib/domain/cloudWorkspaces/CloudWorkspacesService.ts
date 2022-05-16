@@ -3,8 +3,8 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { CloudWorkspace, CloudWorkspaceUsage } from "./types";
 
 export class CloudWorkspacesService extends AirbyteRequestService {
-  get url() {
-    return `cloud_workspaces`;
+  get url(): string {
+    return "v1/cloud_workspaces";
   }
 
   public async list(): Promise<CloudWorkspace[]> {
@@ -42,7 +42,7 @@ export class CloudWorkspacesService extends AirbyteRequestService {
 
   public async listByUser(userId: string): Promise<CloudWorkspace[]> {
     const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
-      `web_backend/permissions/list_workspaces_by_user`,
+      `v1/web_backend/permissions/list_workspaces_by_user`,
       { userId }
     );
 
@@ -50,7 +50,10 @@ export class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async create(cloudWorkspaceCreatePayload: { name: string; userId: string }): Promise<CloudWorkspace> {
-    return this.fetch<CloudWorkspace>(`web_backend/permissioned_cloud_workspace/create`, cloudWorkspaceCreatePayload);
+    return this.fetch<CloudWorkspace>(
+      `v1/web_backend/permissioned_cloud_workspace/create`,
+      cloudWorkspaceCreatePayload
+    );
   }
 
   public async update(

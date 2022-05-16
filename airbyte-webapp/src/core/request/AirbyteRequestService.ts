@@ -6,7 +6,13 @@ import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
-  constructor(private rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
+  private readonly rootUrl: string;
+
+  constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
+    // Remove the `/v1` at the end of the URL if it exists, during the transition period
+    // to remove it from all cloud environments
+    this.rootUrl = rootUrl.replace(/v1\/?$/, "");
+  }
 
   protected get requestOptions(): ApiOverrideRequestOptions {
     return {
@@ -17,7 +23,7 @@ abstract class AirbyteRequestService {
 
   /** Perform network request */
   public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
-    const path = `${this.rootUrl}/v1/${url}`;
+    const path = `${this.rootUrl}${url}`;
 
     const requestOptions: RequestInit = merge(
       {
