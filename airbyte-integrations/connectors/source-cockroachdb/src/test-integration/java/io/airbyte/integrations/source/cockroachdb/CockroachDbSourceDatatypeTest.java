@@ -27,6 +27,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   private CockroachContainer container;
   private JsonNode config;
+  private DSLContext dslContext;
   private static final Logger LOGGER = LoggerFactory
       .getLogger(CockroachDbSourceDatatypeTest.class);
 
@@ -46,7 +47,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .build());
     LOGGER.warn("PPP:config:" + config);
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -78,6 +79,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 

@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.NoOpStreamingQueryConfig;
@@ -63,7 +64,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static Source getWrappedSource() {
     return new SshWrappedSource(new ClickHouseSource(), List.of("host"), List.of("port"));
