@@ -1,7 +1,7 @@
 # Linkedin Pages Source
 
 This is the repository for the Linkedin Pages source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/linkedin-pages).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/linkedin-pages).
 
 ## Local development
 
