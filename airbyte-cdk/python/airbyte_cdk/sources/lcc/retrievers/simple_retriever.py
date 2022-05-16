@@ -10,7 +10,7 @@ from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.lcc.requesters.requester import Requester
 from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
 from airbyte_cdk.sources.lcc.states.state import State
-from airbyte_cdk.sources.lcc.stream_slicers.StreamSlicer import StreamSlicer
+from airbyte_cdk.sources.lcc.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
