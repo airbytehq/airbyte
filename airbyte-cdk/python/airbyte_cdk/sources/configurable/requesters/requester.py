@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union

@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Any, Mapping, MutableMapping
 
 from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import InterpolatedMapping
