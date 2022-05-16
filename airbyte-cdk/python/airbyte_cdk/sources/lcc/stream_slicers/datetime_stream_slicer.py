@@ -6,12 +6,12 @@ import re
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.lcc.iterators.iterator import Iterator
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.lcc.stream_slicers.StreamSlicer import StreamSlicer
 
 
-class DatetimeIterator(Iterator):
+class DatetimeStreamSlicer(StreamSlicer):
     timedelta_regex = re.compile(
         r"((?P<weeks>[\.\d]+?)w)?"
         r"((?P<days>[\.\d]+?)d)?"
