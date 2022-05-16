@@ -36,6 +36,7 @@ public class TestDefaultJdbcDatabase {
 
   private static PostgreSQLContainer<?> PSQL_DB;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private DataSource dataSource;
   private JdbcDatabase database;
 
   @BeforeAll
@@ -58,7 +59,8 @@ public class TestDefaultJdbcDatabase {
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
-    database = getDatabaseFromConfig(config);
+    dataSource = getDataSourceFromConfig(config);
+    database = new DefaultJdbcDatabase(dataSource);
     database.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -67,7 +69,7 @@ public class TestDefaultJdbcDatabase {
 
   @AfterEach
   void close() throws Exception {
-    database.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
@@ -96,8 +98,8 @@ public class TestDefaultJdbcDatabase {
     assertEquals(RECORDS_AS_JSON, actual);
   }
 
-  private JdbcDatabase getDatabaseFromConfig(final JsonNode config) {
-    final DataSource dataSource = DataSourceFactory.create(
+  private DataSource getDataSourceFromConfig(final JsonNode config) {
+    return DataSourceFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -105,7 +107,6 @@ public class TestDefaultJdbcDatabase {
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("database").asText()));
-    return new DefaultJdbcDatabase(dataSource);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {

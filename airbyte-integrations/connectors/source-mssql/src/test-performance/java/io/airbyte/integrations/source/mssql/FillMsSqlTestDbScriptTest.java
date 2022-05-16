@@ -13,11 +13,13 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected JsonNode getConfig() {
@@ -25,7 +27,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @Override
   protected String getImageName() {
@@ -47,7 +51,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("replication_method", replicationMethod)
         .build());
 
-    return new Database(DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
@@ -55,7 +59,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             config.get("host").asText(),
             config.get("port").asInt(),
             dbName),
-        null));
+        null);
+
+    return new Database(dslContext);
   }
 
   /**

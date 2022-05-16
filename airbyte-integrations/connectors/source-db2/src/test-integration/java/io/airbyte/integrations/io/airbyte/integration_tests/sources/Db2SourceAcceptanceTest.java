@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Db2Container;
 
@@ -47,7 +48,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
   private Db2Container db;
   private JsonNode config;
-  private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -102,7 +103,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getState() throws Exception {
+  protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
 
@@ -113,48 +114,50 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = getConfig(db.getUsername(), db.getPassword());
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            Db2Source.DRIVER_CLASS,
-            String.format(DatabaseDriver.DB2.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("db").asText())
-        )
+    dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        Db2Source.DRIVER_CLASS,
+        String.format(DatabaseDriver.DB2.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("db").asText())
     );
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
-    final String createTableQuery3 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME2);
-    final String grantSelect1 = String
-        .format("GRANT SELECT ON TABLE %s.%s TO %s",
-            SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
-    final String grantSelect2 = String
-        .format("GRANT SELECT ON TABLE %s.%s TO %s",
-            SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(createSchemaQuery);
-    database.execute(createTableQuery1);
-    database.execute(createTableQuery2);
-    database.execute(createTableQuery3);
-    database.execute(insertIntoTableQuery1);
-    database.execute(insertIntoTableQuery2);
-    database.execute(grantSelect1);
-    database.execute(grantSelect2);
+      final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+      final String createTableQuery1 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+      final String createTableQuery2 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+      final String createTableQuery3 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
+      final String insertIntoTableQuery1 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME1);
+      final String insertIntoTableQuery2 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME2);
+      final String grantSelect1 = String
+          .format("GRANT SELECT ON TABLE %s.%s TO %s",
+              SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
+      final String grantSelect2 = String
+          .format("GRANT SELECT ON TABLE %s.%s TO %s",
+              SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
 
-    database.close();
+      database.execute(createSchemaQuery);
+      database.execute(createTableQuery1);
+      database.execute(createTableQuery2);
+      database.execute(createTableQuery3);
+      database.execute(insertIntoTableQuery1);
+      database.execute(insertIntoTableQuery2);
+      database.execute(grantSelect1);
+      database.execute(grantSelect2);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @Override
