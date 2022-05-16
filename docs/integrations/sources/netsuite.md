@@ -10,6 +10,8 @@ Your Netsuite account has to have the REST API and token based authentication en
 
 Ensure the role has `Permissions->Reports->SuireAnalytics Workbook` allowed, or else you will not be able to perform queries.
 
+Also ensure that your integration user's date format is set up to match 2020-01-01 12:00:00 AM.
+
 ## Supported Streams
 All objects, including custom ones, should be supported, however subobjects have not been set up.
 

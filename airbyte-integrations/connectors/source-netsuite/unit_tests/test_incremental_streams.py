@@ -5,6 +5,8 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
+from unittest.mock import Mock, patch
+import datetime
 from source_netsuite.source import IncrementalNetsuiteStream, SourceNetsuite
 
 config = {
@@ -53,7 +55,34 @@ def test_source_defined_cursor(patch_incremental_base_class):
     assert stream.source_defined_cursor
 
 
-def test_stream_checkpoint_interval(patch_incremental_base_class):
+def test_request_params(patch_incremental_base_class):
     stream = make_stream()
-    expected_checkpoint_interval = 100
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval
+    expected = {"q": 'lastModifiedDate AFTER "2022-01-01 12:00:00 AM" AND lastModifiedDate BEFORE 2022-02-01'}
+    inpt = {"stream_state": {}, "stream_slice": {"q": 'lastModifiedDate AFTER "2022-01-01 12:00:00 AM" AND lastModifiedDate BEFORE 2022-02-01'}}
+    assert expected == stream.request_params(**inpt)
+
+
+def test_stream_slices_start_datetime(patch_incremental_base_class):
+    date_mock = Mock(wraps=datetime.date)
+    date_mock.today.return_value = datetime.date.fromisoformat("2022-01-03")
+    with patch('source_netsuite.source.date', new=date_mock):
+        stream = make_stream()
+        stream.start_datetime =  "2022-01-01T00:00:00Z"
+        expected = [
+            {"q": 'lastModifiedDate AFTER "2022-01-01 12:00:00 AM" AND lastModifiedDate BEFORE 2022-01-02'},
+            {"q": 'lastModifiedDate AFTER "2022-01-02" AND lastModifiedDate BEFORE 2022-01-03'},
+            {"q": 'lastModifiedDate AFTER "2022-01-03" AND lastModifiedDate BEFORE 2022-01-04'},
+        ]
+        assert expected == stream.stream_slices(**{"sync_mode": SyncMode.incremental, "stream_state": {}})
+
+def test_stream_slices_stream_state(patch_incremental_base_class):
+    date_mock = Mock(wraps=datetime.date)
+    date_mock.today.return_value = datetime.date.fromisoformat("2022-01-03")
+    with patch('source_netsuite.source.date', new=date_mock):
+        stream = make_stream()
+        expected = [
+            {"q": 'lastModifiedDate AFTER "2022-01-01 12:00:00 AM" AND lastModifiedDate BEFORE 2022-01-02'},
+            {"q": 'lastModifiedDate AFTER "2022-01-02" AND lastModifiedDate BEFORE 2022-01-03'},
+            {"q": 'lastModifiedDate AFTER "2022-01-03" AND lastModifiedDate BEFORE 2022-01-04'},
+        ]
+        assert expected == stream.stream_slices(**{"sync_mode": SyncMode.incremental, "stream_state": {"lastModifiedDate": "2022-01-01T00:00:00Z"}})

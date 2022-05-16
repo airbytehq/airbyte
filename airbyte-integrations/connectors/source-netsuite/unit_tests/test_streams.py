@@ -4,6 +4,7 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
+import requests_mock
 
 import pytest
 from source_netsuite.source import NetsuiteStream, SourceNetsuite
@@ -33,9 +34,9 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = make_stream()
-    stream.start_date = "2022-01-01T00:00:00Z"
+    stream.start_datetime = "2022-01-01T00:00:00Z"
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}}
-    expected_params = {"offset": 1000, "q": "lastModifiedDate GREATER 2022-01-01T00:00:00Z"}
+    expected_params = {"offset": 1000, "q": "lastModifiedDate AFTER 2022-01-01 12:00:00 AM"}
     assert stream.request_params(**inputs) == expected_params
 
 
@@ -47,11 +48,25 @@ def test_next_page_token(patch_base_class):
     expected_token = {"offset": 1000}
     assert stream.next_page_token(**inputs) == expected_token
 
+def test_format_date(patch_base_class):
+    stream = make_stream()
+    inpt = "2022-01-01T00:00:00Z"
+    expected = "2022-01-01 12:00:00 AM"
+    assert stream.format_date(inpt) == expected
+
+def test_fetch_record(patch_base_class, requests_mock):
+    stream = make_stream()
+    expected = {"id": 1}
+    record = {"links": [{"href": "https://netsuite.com/1"}]}
+    requests_mock.get("https://netsuite.com/1", json={"id": 1})
+    assert expected == stream.fetch_record(record)
+
 def test_parse_response(patch_base_class):
     stream = make_stream()
     response = MagicMock()
     response.json = MagicMock(return_value={"items": [{"id": 1}]})
     inputs = {"response": response}
+    stream.pool.map = MagicMock(return_value=[{"id": 1}])
     expected_parsed_object = {"id": 1}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 

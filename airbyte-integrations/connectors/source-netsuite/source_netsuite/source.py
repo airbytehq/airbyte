@@ -8,17 +8,22 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from requests_oauthlib import OAuth1
+from multiprocessing import Pool
+from datetime import datetime, timedelta, date
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from datetime import datetime
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
-    def __init__(self, auth: OAuth1, name: str, record_url: str, start_date: str = None):
+    def __init__(self, auth: OAuth1, name: str, record_url: str, concurrency_limit: int = 1, start_datetime: str = None):
         self.obj_name = name
         self.record_url = record_url
-        self.start_date = start_date
+        self.concurrency_limit = concurrency_limit
+        self.start_datetime = start_datetime
+        self.pool = Pool(processes=self.concurrency_limit)
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -47,10 +52,21 @@ class NetsuiteStream(HttpStream, ABC):
         count = resp["count"]
         return {"offset": offset + count} if resp["hasMore"] else None
 
+    output_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
+    input_datetime_format = "%Y-%m-%d %I:%M:%S %p"
+
+    def format_date(self, last_modified_date: str) -> str:
+        # the date format returned is differnet than what we need to use in the query
+        lmd_datetime = datetime.strptime(last_modified_date, self.output_datetime_format)
+        return lmd_datetime.strftime(self.input_datetime_format)
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        query = {"q": f"lastModifiedDate GREATER {self.start_date}"} if self.start_date else {}
+        query = {}
+        if self.start_datetime:
+            fmt_date = self.format_date(self.start_datetime)
+            query = {"q": f"lastModifiedDate AFTER {fmt_date}"}
         return {**query, **next_page_token}
 
     def fetch_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -61,16 +77,32 @@ class NetsuiteStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json().get("items")
-        return iter([self.fetch_record(r) for r in records])
+        data = self.pool.map(self.fetch_record, records) if records else []
+        return iter(data)
 
 
 # Basic incremental stream
 class IncrementalNetsuiteStream(NetsuiteStream, ABC):
-    state_checkpoint_interval = 100
-
     @property
     def cursor_field(self) -> str:
         return "lastModifiedDate"
+
+    def stream_slices(
+            self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs: Optional[Mapping[str, Any]]
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # Netsuite cannot order records returned by the API, so we need stream slices
+        # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
+        ranges = []
+        start_str = (stream_state.get(self.cursor_field) or self.start_datetime) if sync_mode == SyncMode.incremental else self.start_datetime
+        first = datetime.strptime(start_str, self.output_datetime_format)
+        start = first.date() + timedelta(days=1)
+        # we want the first slice to be after the datetime of the last cursor
+        ranges.append([self.format_date(start_str), start.isoformat()])
+        while start <= date.today():
+            next_day = start + timedelta(days=1)
+            ranges.append([start.isoformat(), next_day.isoformat()])
+            start = next_day
+        return [{"q": f'{self.cursor_field} AFTER "{r[0]}" AND {self.cursor_field} BEFORE {r[1]}'} for r in ranges]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field) or ""
@@ -80,9 +112,9 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        cur = stream_state.get(self.cursor_field) or self.start_date
-        query = {"q": f"{self.cursor_field} GREATER {cur}"} if cur else {}
-        return {**query, **(next_page_token or {})}
+        print(stream_slice)
+        print(stream_state)
+        return {**(stream_slice or {}), **(next_page_token or {})}
 
 # Source
 class SourceNetsuite(AbstractSource):
@@ -119,5 +151,6 @@ class SourceNetsuite(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         record_url = self.record_url(config)
         auth = self.auth(config)
-        start_date = config.get("start_date")
-        return [IncrementalNetsuiteStream(auth, name, record_url, start_date) for name in self.record_types(record_url, auth)]
+        start_datetime = config.get("start_datetime")
+        concurrency_limit = config.get("concurrency_limit")
+        return [IncrementalNetsuiteStream(auth, name, record_url, concurrency_limit, start_datetime) for name in self.record_types(record_url, auth)]
