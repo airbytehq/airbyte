@@ -1,5 +1,4 @@
 {
-  "start_date": "2022-01-25",
   "org_id": 12345678,
   "credentials": {
     "auth_method": "access_token",

@@ -77,7 +77,7 @@ class Shares(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
     
-        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
+        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=50"
         return path
 
 class TotalFollowerCount(LinkedinPagesStream):
