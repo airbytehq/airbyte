@@ -50,7 +50,9 @@ import logging
 
 LOGGER = logging.getLogger()
 filenames = []
-
+stream_file_name = {}
+in_process_records = {}
+total_stream_records = {}
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -66,6 +68,7 @@ class DestinationS3Parquet(Destination):
             input_messages: Iterable[AirbyteMessage],
     ) -> Generator[Dict[str, Any], None, None]:
 
+        LOGGER.info('inside _stream_generator call ')
         for message in input_messages:
             # Due to the way this generator streams data directly into HDFS, we
             # can only accept record messages. All others are ignored
@@ -90,8 +93,11 @@ class DestinationS3Parquet(Destination):
             input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
+        LOGGER.info('Started writing data into S3 {}'.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
         for configured_stream in configured_catalog.streams:
-            LOGGER.info('stream name all' + configured_stream.stream.name)
+            LOGGER.info('stream name ' + configured_stream.stream.name)
+            in_process_records[configured_stream.stream.name] = 0
+            total_stream_records[configured_stream.stream.name] = 0
 
         config = dict(config)
         s3_client = s3.create_client(config)
@@ -116,14 +122,16 @@ class DestinationS3Parquet(Destination):
                 continue
 
         # Upload created CSV files to S3
-        for filename, stream in filenames:
+        for filename, stream_name in filenames:
             #LOGGER.info('inside write method')
-            self.upload_to_s3(s3_client, config.get("s3_bucket_name"), config.get("s3_bucket_path"), filename, stream,
+            self.upload_to_s3(s3_client, config.get("s3_bucket_name"), config.get("s3_bucket_path"), filename, stream_name,
                               config.get('field_to_partition_by_time'),
                               config.get('record_unique_field'),
                               config.get("compression"),
                               config.get('encryption_type'),
                               config.get('encryption_key'))
+            LOGGER.info(' processing_info: stream_name: {}, total_records: {}, current_file_records: {}'.format(stream_name, total_stream_records[stream_name], in_process_records[stream_name]))
+        LOGGER.info('Finished writing data into S3 {} '.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -284,6 +292,8 @@ class DestinationS3Parquet(Destination):
             for fn in filenames:
                 temp_file = os.path.join(dirpath, fn)
                 os.remove(temp_file)
+                #LOGGER.info(" file_info:  removed_file_name : {} ".format(temp_file))
+        #LOGGER.info(" file_info: removed_file_name : {} ".format(filename))
         os.remove(filename)
 
     def persist_messages(self, data, config, s3_client, stream_name,
@@ -292,8 +302,8 @@ class DestinationS3Parquet(Destination):
         #LOGGER.info('persist_messages stream name: ' + stream_name)
         state = None
         filename = None
-        timestamp_file_part = '-' + datetime.now().strftime('%Y%m%dT%H%M%S') if do_timestamp_file else ''
-        max_file_size_mb = config.get('max_temp_file_size_mb', 50)
+        timestamp_file_part = '-' + datetime.now().strftime('%Y%m%dT%H%M') if do_timestamp_file else ''
+        max_file_size_mb = config.get('max_temp_file_size_mb', 100)
 
         record_to_load = data
 
@@ -302,6 +312,31 @@ class DestinationS3Parquet(Destination):
         filename = os.path.join(tempfile.gettempdir(), filename)
         filename = os.path.expanduser(filename)
         #LOGGER.info(" persist_messages file name = {}" + filename)
+        
+        in_process_records[stream_name] = in_process_records[stream_name] + 1 
+        total_stream_records[stream_name] = total_stream_records[stream_name] + 1
+        
+        # Fetch old file name.
+        old_file = stream_file_name[stream_name] if stream_name in stream_file_name.keys() else filename
+        
+        # If old file and new file is different upload the old file to s3
+        if filename != old_file:
+            #LOGGER.info("file_info:  old_file_name : {}, new_file_name: {} ".format(old_file, filename))
+            self.upload_to_s3(s3_client, config.get("s3_bucket_name"), config.get("s3_bucket_path"), old_file,
+                              stream_name,
+                              config.get('field_to_partition_by_time'),
+                              config.get('record_unique_field'),
+                              config.get("compression"),
+                              config.get('encryption_type'),
+                              config.get('encryption_key'))
+            LOGGER.info(' processing_info:  stream_name: {}, total_records: {}, current_file_records: {} '.format(stream_name, total_stream_records[stream_name], in_process_records[stream_name]))
+            in_process_records[stream_name] = 0
+            filenames.remove((old_file, stream_name))
+            stream_file_name.pop(stream_name)
+        
+        # Set filename against stream.
+        stream_file_name[stream_name] = filename
+        
         if not (filename, stream_name) in filenames:
             filenames.append((filename, stream_name))
 
@@ -311,9 +346,10 @@ class DestinationS3Parquet(Destination):
 
         file_size = os.path.getsize(filename) if os.path.isfile(filename) else 0
         file_size_mb = round(file_size / (1024 * 1024), 3)
-        #LOGGER.info(" persist_messages file_size  = {}" + str(file_size_mb))
+        
+        # upload file to s3 if file size is greater than the max configured file size 
         if file_size_mb > max_file_size_mb:
-            LOGGER.info('file_size: {} MB, filename: {}'.format(round(file_size >> 20, 2), filename))
+            #LOGGER.info('file_size: {} MB, filename: {}'.format(round(file_size >> 20, 2), filename))
             self.upload_to_s3(s3_client, config.get("s3_bucket_name"), config.get("s3_bucket_path"), filename,
                               stream_name,
                               config.get('field_to_partition_by_time'),
@@ -321,6 +357,10 @@ class DestinationS3Parquet(Destination):
                               config.get("compression"),
                               config.get('encryption_type'),
                               config.get('encryption_key'))
+            
+            LOGGER.info(' processing_info:  stream_name: {}, total_records: {}, current_file_records: {} '.format(stream_name, total_stream_records[stream_name], in_process_records[stream_name]))
             filenames.remove((filename, stream_name))
+            in_process_records[stream_name] = 0
+            stream_file_name.pop(stream_name)
 
         return state
