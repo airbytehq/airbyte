@@ -7,7 +7,7 @@ type IProps = {
   attempts?: Attempt[];
 };
 
-const ExpandedErrorContainer = styled.div`
+const ExpandedFailureContainer = styled.div`
   font-size: 12px;
   line-height: 15px;
   padding: 10px;
@@ -41,7 +41,7 @@ const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
   }
 
   const internalMessage = getInternalFailureMessage(failure);
-  return <ExpandedErrorContainer>{internalMessage}</ExpandedErrorContainer>;
+  return <ExpandedFailureContainer>{internalMessage}</ExpandedFailureContainer>;
 };
 
 export default ErrorDetails;
