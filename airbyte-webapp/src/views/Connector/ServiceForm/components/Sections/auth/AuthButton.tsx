@@ -3,10 +3,12 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import { useServiceForm } from "../../../serviceFormContext";
-import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
+
 import { ConnectorSpecification } from "core/domain/connector";
+
+import { useServiceForm } from "../../../serviceFormContext";
 import GoogleAuthButton from "./GoogleAuthButton";
+import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 
 const AuthSectionRow = styled.div`
   display: flex;
@@ -28,7 +30,8 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
     "eff3616a-f9c3-11eb-9a03-0242ac130003", // google analytics
     "d19ae824-e289-4b14-995a-0632eb46d246", // google directory
     "eb4c9e00-db83-4d63-a386-39cfa91012a8", // google search console
-    "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets
+    "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // google sheets source
+    "a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a", // google sheets destination
     "ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734", // google workspace admin reports
   ].includes(connectorDefinitionId);
 }
@@ -67,10 +70,7 @@ export const AuthButton: React.FC = () => {
         {done ? (
           <FormattedMessage id="connectorForm.reauthenticate" />
         ) : (
-          <FormattedMessage
-            id={getAuthenticateMessageId(definitionId)}
-            values={{ connector: selectedService?.name }}
-          />
+          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
         )}
       </Component>
       {done && (

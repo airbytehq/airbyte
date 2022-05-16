@@ -1,11 +1,12 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { Label, Input, LoadingButton, LabeledToggle } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
+
 import { WebhookPayload } from "hooks/services/useWorkspace";
 import { equal } from "utils/objects";
 
@@ -58,20 +59,10 @@ type WebHookFormProps = {
   onTest: (data: WebhookPayload) => void;
 };
 
-const WebHookForm: React.FC<WebHookFormProps> = ({
-  webhook,
-  onSubmit,
-  successMessage,
-  errorMessage,
-  onTest,
-}) => {
+const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
   const formatMessage = useIntl().formatMessage;
 
-  const feedBackBlock = (
-    dirty: boolean,
-    isSubmitting: boolean,
-    webhook?: string
-  ) => {
+  const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {
       return <Success>{successMessage}</Success>;
     }
@@ -118,14 +109,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         <Form>
           <Label
             error={!!errors.webhook}
-            message={
-              !!errors.webhook && (
-                <FormattedMessage
-                  id={errors.webhook}
-                  defaultMessage={errors.webhook}
-                />
-              )
-            }
+            message={!!errors.webhook && <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />}
           >
             <FormattedMessage id="settings.webhookTitle" />
           </Label>
@@ -146,9 +130,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
                 )}
               </Field>
             </Cell>
-            <FeedbackCell>
-              {feedBackBlock(dirty, isSubmitting, initialValues.webhook)}
-            </FeedbackCell>
+            <FeedbackCell>{feedBackBlock(dirty, isSubmitting, initialValues.webhook)}</FeedbackCell>
           </InputRow>
           {initialValues.webhook ? (
             <Message>

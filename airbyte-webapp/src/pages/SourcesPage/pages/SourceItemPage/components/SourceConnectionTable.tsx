@@ -1,16 +1,15 @@
 import React, { useCallback } from "react";
-import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
-import { RoutePaths } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import { Connection } from "core/resources/Connection";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useWorkspace from "hooks/services/useWorkspace";
+import { getConnectionTableData } from "components/EntityTable/utils";
+
+import { Connection } from "core/domain/connection";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 type IProps = {
   connections: Connection[];
@@ -18,35 +17,17 @@ type IProps = {
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getConnectionTableData(
-    connections,
-    sourceDefinitions,
-    destinationDefinitions,
-    "source"
-  );
+  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "source");
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
         await changeStatus(connection);
@@ -57,9 +38,7 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
 
   const onSync = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         await syncManualConnection(connection);
       }
@@ -67,8 +46,7 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) =>
-    push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => push(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

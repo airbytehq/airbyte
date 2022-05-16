@@ -32,6 +32,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -386,6 +387,40 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<Job> listJobsForConnectionWithStatuses(final UUID connectionId, final Set<ConfigType> configTypes, final Set<JobStatus> statuses)
+      throws IOException {
+    return jobDatabase.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "scope = ? AND " +
+            "config_type IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "jobs.status IN " + Sqls.toSqlInFragment(statuses) + " " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
+            connectionId.toString())));
+  }
+
+  @Override
+  public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
+                                                                                 final Set<ConfigType> configTypes,
+                                                                                 final Instant jobCreatedAtTimestamp)
+      throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
+
+    final String JobStatusSelect = "SELECT id, status, created_at, updated_at FROM jobs ";
+    return jobDatabase.query(ctx -> ctx
+        .fetch(JobStatusSelect + "WHERE " +
+            "scope = ? AND " +
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
+        .stream()
+        .map(r -> new JobWithStatusAndTimestamp(
+            r.get("id", Long.class),
+            JobStatus.valueOf(r.get("status", String.class).toUpperCase()),
+            r.get("created_at", Long.class) / 1000,
+            r.get("updated_at", Long.class) / 1000))
+        .toList();
+  }
+
+  @Override
   public Optional<Job> getLastReplicationJob(final UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
@@ -393,6 +428,21 @@ public class DefaultJobPersistence implements JobPersistence {
             "scope = ? AND " +
             "CAST(jobs.status AS VARCHAR) <> ? " +
             "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.CANCELLED))
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public Optional<Job> getFirstReplicationJob(final UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at ASC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -496,6 +546,32 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(final Record record, final String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  private final String SECRET_MIGRATION_STATUS = "secretMigration";
+
+  @Override
+  public boolean isSecretMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SECRET_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSecretMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SECRET_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
   }
 
   @Override

@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.SQLException;
@@ -79,7 +80,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partitions = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_FILES_PER_COPY);
+    final List<List<String>> partitions = Lists.partition(new ArrayList<>(getStagingFiles()), MAX_FILES_PER_COPY);
     LOGGER.info("Starting parallel copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
         schemaName, partitions.size());
 
@@ -88,7 +89,8 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
   }
 
   @Override
-  public void copyIntoStage(List<String> files) {
+  public void copyIntoStage(final List<String> files) {
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
@@ -97,8 +99,8 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
         schemaName,
         tmpTableName,
         generateBucketPath(),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey());
+        credentialConfig.getAccessKeyId(),
+        credentialConfig.getSecretAccessKey());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }

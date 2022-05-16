@@ -30,9 +30,12 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -180,36 +183,46 @@ class OperationsHandlerTest {
   }
 
   @Test
-  void testDeleteOperation() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testDeleteOperation() throws IOException {
     final OperationIdRequestBody operationIdRequestBody = new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
 
     final OperationsHandler spiedOperationsHandler = spy(operationsHandler);
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
 
     spiedOperationsHandler.deleteOperation(operationIdRequestBody);
 
-    verify(configRepository).writeStandardSyncOperation(standardSyncOperation.withTombstone(true));
+    verify(configRepository).deleteStandardSyncOperation(standardSyncOperation.getOperationId());
   }
 
   @Test
   void testDeleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID syncConnectionId = UUID.randomUUID();
+    final UUID otherConnectionId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
-    final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
+    final UUID remainingOperationId = UUID.randomUUID();
+    final List<UUID> toDelete = Stream.of(standardSyncOperation.getOperationId(), operationId).collect(Collectors.toList());
     final StandardSync sync = new StandardSync()
-        .withConnectionId(UUID.randomUUID())
-        .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
+        .withConnectionId(syncConnectionId)
+        .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId, remainingOperationId));
     when(configRepository.listStandardSyncs()).thenReturn(List.of(
         sync,
         new StandardSync()
-            .withConnectionId(UUID.randomUUID())
+            .withConnectionId(otherConnectionId)
             .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
     final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
+    final StandardSyncOperation remainingOperation = new StandardSyncOperation().withOperationId(remainingOperationId);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+    when(configRepository.getStandardSyncOperation(remainingOperationId)).thenReturn(remainingOperation);
     when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
 
+    // first, test that a remaining operation results in proper call
     operationsHandler.deleteOperationsForConnection(sync, toDelete);
-
     verify(configRepository).writeStandardSyncOperation(operation.withTombstone(true));
+    verify(configRepository).updateConnectionOperationIds(syncConnectionId, Collections.singleton(remainingOperationId));
+
+    // next, test that removing all operations results in proper call
+    toDelete.add(remainingOperationId);
+    operationsHandler.deleteOperationsForConnection(sync, toDelete);
+    verify(configRepository).updateConnectionOperationIds(syncConnectionId, Collections.emptySet());
   }
 
   @Test

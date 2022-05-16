@@ -30,6 +30,7 @@ import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -39,11 +40,14 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceState;
+import io.airbyte.api.model.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -51,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -71,6 +76,19 @@ public class WebBackendConnectionsHandler {
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
   private final EventRunner eventRunner;
+  private final ConfigRepository configRepository;
+
+  public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
+    final var workspaceId = webBackendWorkspaceState.getWorkspaceId();
+    final var connectionCount = configRepository.countConnectionsForWorkspace(workspaceId);
+    final var destinationCount = configRepository.countDestinationsForWorkspace(workspaceId);
+    final var sourceCount = configRepository.countSourcesForWorkspace(workspaceId);
+
+    return new WebBackendWorkspaceStateResult()
+        .hasConnections(connectionCount > 0)
+        .hasDestinations(destinationCount > 0)
+        .hasSources(sourceCount > 0);
+  }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -103,6 +121,7 @@ public class WebBackendConnectionsHandler {
     final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
     WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
     setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
+    WebBackendConnectionRead.setCatalogId(connectionRead.getSourceCatalogId());
     return WebBackendConnectionRead;
   }
 
@@ -180,17 +199,24 @@ public class WebBackendConnectionsHandler {
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
+    final Optional<AirbyteCatalog> discovered;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
-      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
+      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
+          new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
+      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
-      final AirbyteCatalog original = connection.getSyncCatalog();
-      final AirbyteCatalog discovered = discoverSchema.getCatalog();
-      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
-
-      connection.setSyncCatalog(combined);
+      discovered = Optional.of(discoverSchema.getCatalog());
+      connection.setSourceCatalogId(discoverSchema.getCatalogId());
+    } else {
+      discovered = connectionsHandler.getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
     }
-
+    final AirbyteCatalog original = connection.getSyncCatalog();
+    if (discovered.isPresent()) {
+      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered.get());
+      connection.setSyncCatalog(combined);
+    } else {
+      connection.setSyncCatalog(original);
+    }
     return buildWebBackendConnectionRead(connection);
   }
 
@@ -232,9 +258,10 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
-        outputStreamConfig.setSelected(originalStreamConfig.getSelected());
+        outputStreamConfig.setSelected(true);
       } else {
         outputStreamConfig = s.getConfig();
+        outputStreamConfig.setSelected(false);
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
           .stream(Jsons.clone(stream))
@@ -247,6 +274,7 @@ public class WebBackendConnectionsHandler {
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
+
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
@@ -361,6 +389,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
+    connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
 
     return connectionCreate;
   }
@@ -373,11 +402,13 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
+    connectionUpdate.name(webBackendConnectionUpdate.getName());
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
+    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
 
     return connectionUpdate;
   }

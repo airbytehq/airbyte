@@ -1,14 +1,16 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+
+import { Button, H1 } from "components/base";
+import Link from "components/Link";
 
 import { Connection } from "core/domain/connection";
-import Link from "components/Link";
-import { Button, H1 } from "components/base";
-import { RoutePaths } from "pages/routes";
 import Status from "core/statuses";
+
+import { RoutePaths } from "../../routePaths";
 
 const run = keyframes`
   from {
@@ -60,10 +62,7 @@ type ProgressBlockProps = {
   onSync: () => void;
 };
 
-const ProgressBlock: React.FC<ProgressBlockProps> = ({
-  connection,
-  onSync,
-}) => {
+const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => {
   const showMessage = (status: string | null) => {
     if (status === null || !status) {
       return <FormattedMessage id="onboarding.firstSync" />;
@@ -82,10 +81,7 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
     return null;
   }
 
-  if (
-    connection.latestSyncJobStatus !== Status.RUNNING &&
-    connection.latestSyncJobStatus !== Status.INCOMPLETE
-  ) {
+  if (connection.latestSyncJobStatus !== Status.RUNNING && connection.latestSyncJobStatus !== Status.INCOMPLETE) {
     return (
       <ControlBlock>
         <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
@@ -104,23 +100,15 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
         values={{
           source: (
             <>
-              <Lnk to={`../${RoutePaths.Source}/${connection.sourceId}`}>
-                {connection.source.name}
-              </Lnk>{" "}
+              <Lnk to={`../${RoutePaths.Source}/${connection.sourceId}`}>{connection.source.name}</Lnk>{" "}
               <FontAwesomeIcon icon={faChevronRight} />
             </>
           ),
           destination: (
-            <Lnk
-              to={`../${RoutePaths.Destination}/${connection.destinationId}`}
-            >
-              {connection.destination.name}
-            </Lnk>
+            <Lnk to={`../${RoutePaths.Destination}/${connection.destinationId}`}>{connection.destination.name}</Lnk>
           ),
           sync: (sync: React.ReactNode) => (
-            <Lnk to={`../${RoutePaths.Connections}/${connection.connectionId}`}>
-              {sync}
-            </Lnk>
+            <Lnk to={`../${RoutePaths.Connections}/${connection.connectionId}`}>{sync}</Lnk>
           ),
         }}
       />

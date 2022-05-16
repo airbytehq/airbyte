@@ -57,8 +57,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> sourceSpecConfigs = getConfigs(seedResourceClass, SeedType.SOURCE_SPEC);
     final Map<String, JsonNode> fullSourceDefinitionConfigs = sourceDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
-          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          final JsonNode output = mergeSpecIntoDefinition(withTombstone, sourceSpecConfigs);
+          final JsonNode withMissingFields =
+              addMissingCustomField(
+                  addMissingPublicField(
+                      addMissingTombstoneField(e.getValue())));
+          final JsonNode output = mergeSpecIntoDefinition(withMissingFields, sourceSpecConfigs);
           AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_SOURCE_DEFINITION, output);
           return output;
         }));
@@ -67,8 +70,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> destinationSpecConfigs = getConfigs(seedResourceClass, SeedType.DESTINATION_SPEC);
     final Map<String, JsonNode> fullDestinationDefinitionConfigs = destinationDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
-          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          final JsonNode output = mergeSpecIntoDefinition(withTombstone, destinationSpecConfigs);
+          final JsonNode withMissingFields =
+              addMissingCustomField(
+                  addMissingPublicField(
+                      addMissingTombstoneField(e.getValue())));
+          final JsonNode output = mergeSpecIntoDefinition(withMissingFields, destinationSpecConfigs);
           AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_DESTINATION_DEFINITION, output);
           return output;
         }));
@@ -102,6 +108,24 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final JsonNode currTombstone = definitionJson.get("tombstone");
     if (currTombstone == null || currTombstone.isNull()) {
       ((ObjectNode) definitionJson).set("tombstone", BooleanNode.FALSE);
+    }
+    return definitionJson;
+  }
+
+  private JsonNode addMissingPublicField(final JsonNode definitionJson) {
+    final JsonNode currPublic = definitionJson.get("public");
+    if (currPublic == null || currPublic.isNull()) {
+      // definitions loaded from seed yamls are by definition public
+      ((ObjectNode) definitionJson).set("public", BooleanNode.TRUE);
+    }
+    return definitionJson;
+  }
+
+  private JsonNode addMissingCustomField(final JsonNode definitionJson) {
+    final JsonNode currCustom = definitionJson.get("custom");
+    if (currCustom == null || currCustom.isNull()) {
+      // definitions loaded from seed yamls are by definition not custom
+      ((ObjectNode) definitionJson).set("custom", BooleanNode.FALSE);
     }
     return definitionJson;
   }

@@ -115,8 +115,9 @@ class DestinationHandlerTest {
         .thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(destinationConnection.getConfiguration());
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationCreate destinationCreate = new DestinationCreate()
         .name(destinationConnection.getName())
@@ -140,7 +141,7 @@ class DestinationHandlerTest {
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
     verify(secretsRepositoryWriter).writeDestinationConnection(destinationConnection, connectorSpecification);
     verify(secretsProcessor)
-        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+        .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
 
   @Test
@@ -162,7 +163,7 @@ class DestinationHandlerTest {
     when(secretsProcessor
         .copySecrets(destinationConnection.getConfiguration(), newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(newConfiguration);
-    when(secretsProcessor.maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
+    when(secretsProcessor.prepareSecretsForOutput(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
@@ -180,7 +181,7 @@ class DestinationHandlerTest {
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
-    verify(secretsProcessor).maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
+    verify(secretsProcessor).prepareSecretsForOutput(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
     verify(secretsRepositoryWriter).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
@@ -197,8 +198,9 @@ class DestinationHandlerTest {
     final DestinationIdRequestBody destinationIdRequestBody =
         new DestinationIdRequestBody().destinationId(expectedDestinationRead.getDestinationId());
 
-    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(destinationConnection.getConfiguration());
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
@@ -207,7 +209,7 @@ class DestinationHandlerTest {
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
     verify(secretsProcessor)
-        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+        .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
 
   @Test
@@ -225,14 +227,15 @@ class DestinationHandlerTest {
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(destinationConnection.getConfiguration());
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationReadList actualDestinationRead = destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
     verify(secretsProcessor)
-        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+        .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
 
   @Test
@@ -249,15 +252,16 @@ class DestinationHandlerTest {
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(destinationConnection.getConfiguration());
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
 
     when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
     DestinationReadList actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
     assertEquals(1, actualDestinationRead.getDestinations().size());
     assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
     verify(secretsProcessor)
-        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+        .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
 
     when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(false);
     actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
@@ -292,8 +296,9 @@ class DestinationHandlerTest {
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
         .thenReturn(standardDestinationDefinition);
-    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(destinationConnection.getConfiguration());
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationIdRequestBody);
 

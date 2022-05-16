@@ -8,7 +8,6 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -51,18 +50,18 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = dataSource.getConnection();
-        final Stream<T> results = toStream(query.apply(connection), recordTransform)) {
+        final Stream<T> results = toUnsafeStream(query.apply(connection), recordTransform)) {
       return results.collect(Collectors.toList());
     }
   }
 
   @Override
   @MustBeClosed
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
-    return toStream(query.apply(connection), recordTransform)
+    return toUnsafeStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -96,11 +95,11 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    */
   @Override
   @MustBeClosed
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = dataSource.getConnection();
-    return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return toUnsafeStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");
@@ -109,18 +108,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
             throw new RuntimeException(e);
           }
         });
-  }
-
-  @Override
-  public void close() throws Exception {
-    // Close the source in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-    if (dataSource instanceof AutoCloseable autoCloseable) {
-      autoCloseable.close();
-    }
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
   }
 
 }

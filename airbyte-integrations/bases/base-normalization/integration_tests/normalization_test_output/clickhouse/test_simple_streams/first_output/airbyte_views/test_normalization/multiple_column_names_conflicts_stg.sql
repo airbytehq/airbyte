@@ -9,13 +9,13 @@ with __dbt__cte__multiple_column_names_conflicts_ab1 as (
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: test_normalization._airbyte_raw_multiple_column_names_conflicts
 select
-    JSONExtractRaw(_airbyte_data, 'id') as id,
-    JSONExtractRaw(_airbyte_data, 'User Id') as "User Id",
-    JSONExtractRaw(_airbyte_data, 'user_id') as user_id,
-    JSONExtractRaw(_airbyte_data, 'User id') as "User id",
-    JSONExtractRaw(_airbyte_data, 'user id') as "user id",
-    JSONExtractRaw(_airbyte_data, 'User@Id') as "User@Id",
-    JSONExtractRaw(_airbyte_data, 'UserId') as UserId,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'id') as id,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'User Id') as "User Id",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'user_id') as user_id,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'User id') as "User id",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'user id') as "user id",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'User@Id') as "User@Id",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'UserId') as UserId,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at

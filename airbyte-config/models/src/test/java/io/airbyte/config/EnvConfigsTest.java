@@ -187,75 +187,102 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testSplitKVPairsFromEnvString() {
+    String input = "key1=value1,key2=value2";
+    Map<String, String> map = config.splitKVPairsFromEnvString(input);
+    assertNotNull(map);
+    assertEquals(2, map.size());
+    assertEquals(map, Map.of("key1", "value1", "key2", "value2"));
+
+    input = "key=k,,;$%&^#";
+    map = config.splitKVPairsFromEnvString(input);
+    assertNotNull(map);
+    assertEquals(map, Map.of("key", "k"));
+
+    input = null;
+    map = config.splitKVPairsFromEnvString(input);
+    assertNull(map);
+
+    input = " key1= value1,  key2 =    value2";
+    map = config.splitKVPairsFromEnvString(input);
+    assertNotNull(map);
+    assertEquals(map, Map.of("key1", "value1", "key2", "value2"));
+
+    input = "key1:value1,key2:value2";
+    map = config.splitKVPairsFromEnvString(input);
+    assertNull(map);
+  }
+
+  @Test
   void testJobKubeNodeSelectors() {
     envMap.put(EnvConfigs.JOB_KUBE_NODE_SELECTORS, null);
-    assertFalse(config.getJobKubeNodeSelectors().isPresent());
+    assertNull(config.getJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.JOB_KUBE_NODE_SELECTORS, ",,,");
-    assertFalse(config.getJobKubeNodeSelectors().isPresent());
+    assertNull(config.getJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.JOB_KUBE_NODE_SELECTORS, "key=k,,;$%&^#");
-    assertEquals(config.getJobKubeNodeSelectors().get(), Map.of("key", "k"));
+    assertEquals(config.getJobKubeNodeSelectors(), Map.of("key", "k"));
 
     envMap.put(EnvConfigs.JOB_KUBE_NODE_SELECTORS, "one=two");
-    assertEquals(config.getJobKubeNodeSelectors().get(), Map.of("one", "two"));
+    assertEquals(config.getJobKubeNodeSelectors(), Map.of("one", "two"));
 
     envMap.put(EnvConfigs.JOB_KUBE_NODE_SELECTORS, "airbyte=server,something=nothing");
-    assertEquals(config.getJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
+    assertEquals(config.getJobKubeNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
   @Test
   void testSpecKubeNodeSelectors() {
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, null);
-    assertFalse(config.getSpecJobKubeNodeSelectors().isPresent());
+    assertNull(config.getSpecJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, ",,,");
-    assertFalse(config.getSpecJobKubeNodeSelectors().isPresent());
+    assertNull(config.getSpecJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, "key=k,,;$%&^#");
-    assertEquals(config.getSpecJobKubeNodeSelectors().get(), Map.of("key", "k"));
+    assertEquals(config.getSpecJobKubeNodeSelectors(), Map.of("key", "k"));
 
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, "one=two");
-    assertEquals(config.getSpecJobKubeNodeSelectors().get(), Map.of("one", "two"));
+    assertEquals(config.getSpecJobKubeNodeSelectors(), Map.of("one", "two"));
 
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, "airbyte=server,something=nothing");
-    assertEquals(config.getSpecJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
+    assertEquals(config.getSpecJobKubeNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
   @Test
   void testCheckKubeNodeSelectors() {
     envMap.put(EnvConfigs.CHECK_JOB_KUBE_NODE_SELECTORS, null);
-    assertFalse(config.getCheckJobKubeNodeSelectors().isPresent());
+    assertNull(config.getCheckJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.CHECK_JOB_KUBE_NODE_SELECTORS, ",,,");
-    assertFalse(config.getCheckJobKubeNodeSelectors().isPresent());
+    assertNull(config.getCheckJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.CHECK_JOB_KUBE_NODE_SELECTORS, "key=k,,;$%&^#");
-    assertEquals(config.getCheckJobKubeNodeSelectors().get(), Map.of("key", "k"));
+    assertEquals(config.getCheckJobKubeNodeSelectors(), Map.of("key", "k"));
 
     envMap.put(EnvConfigs.CHECK_JOB_KUBE_NODE_SELECTORS, "one=two");
-    assertEquals(config.getCheckJobKubeNodeSelectors().get(), Map.of("one", "two"));
+    assertEquals(config.getCheckJobKubeNodeSelectors(), Map.of("one", "two"));
 
     envMap.put(EnvConfigs.CHECK_JOB_KUBE_NODE_SELECTORS, "airbyte=server,something=nothing");
-    assertEquals(config.getCheckJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
+    assertEquals(config.getCheckJobKubeNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
   @Test
   void testDiscoverKubeNodeSelectors() {
     envMap.put(EnvConfigs.DISCOVER_JOB_KUBE_NODE_SELECTORS, null);
-    assertFalse(config.getDiscoverJobKubeNodeSelectors().isPresent());
+    assertNull(config.getDiscoverJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.DISCOVER_JOB_KUBE_NODE_SELECTORS, ",,,");
-    assertFalse(config.getDiscoverJobKubeNodeSelectors().isPresent());
+    assertNull(config.getDiscoverJobKubeNodeSelectors());
 
     envMap.put(EnvConfigs.DISCOVER_JOB_KUBE_NODE_SELECTORS, "key=k,,;$%&^#");
-    assertEquals(config.getDiscoverJobKubeNodeSelectors().get(), Map.of("key", "k"));
+    assertEquals(config.getDiscoverJobKubeNodeSelectors(), Map.of("key", "k"));
 
     envMap.put(EnvConfigs.DISCOVER_JOB_KUBE_NODE_SELECTORS, "one=two");
-    assertEquals(config.getDiscoverJobKubeNodeSelectors().get(), Map.of("one", "two"));
+    assertEquals(config.getDiscoverJobKubeNodeSelectors(), Map.of("one", "two"));
 
     envMap.put(EnvConfigs.DISCOVER_JOB_KUBE_NODE_SELECTORS, "airbyte=server,something=nothing");
-    assertEquals(config.getDiscoverJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
+    assertEquals(config.getDiscoverJobKubeNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
   @Test

@@ -12,4 +12,10 @@ public interface FeatureFlags {
 
   boolean usesNewScheduler();
 
+  boolean autoDisablesFailingConnections();
+
+  boolean exposeSecretsInExport();
+
+  boolean forceSecretMigration();
+
 }

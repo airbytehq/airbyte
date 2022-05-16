@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import ImageBlock from "components/ImageBlock";
 
@@ -51,15 +51,8 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
     <Content enabled={enabled}>
       <Image num={values.length} />
       <div>
-        <FormattedMessage
-          id={`tables.${entity}ConnectWithNum`}
-          values={{ num: values.length }}
-        />
-        <Connector>
-          {`${values[0].connector}, ${values[1].connector}${
-            values.length > 2 ? ",..." : ""
-          }`}
-        </Connector>
+        <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
+        <Connector>{`${values[0].connector}, ${values[1].connector}${values.length > 2 ? ",..." : ""}`}</Connector>
       </div>
     </Content>
   );

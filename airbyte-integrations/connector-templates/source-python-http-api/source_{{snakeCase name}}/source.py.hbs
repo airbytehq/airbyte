@@ -23,7 +23,7 @@ stream from a source. This pattern is the same one used by Airbyte internally to
 
 The approach here is not authoritative, and devs are free to use their own judgement.
 
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
+There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
 """
 
 
@@ -189,7 +189,7 @@ class Source{{properCase name}}(AbstractSource):
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
-        :param config:  the user-input config object conforming to the connector's spec.json
+        :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """

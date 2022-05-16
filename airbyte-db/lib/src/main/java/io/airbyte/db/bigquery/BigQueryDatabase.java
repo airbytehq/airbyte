@@ -91,7 +91,7 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   @Override
-  public Stream<JsonNode> query(final String sql, final String... params) throws Exception {
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws Exception {
     final List<QueryParameterValue> parameterValueList;
     if (params == null)
       parameterValueList = Collections.emptyList();
@@ -112,13 +112,6 @@ public class BigQueryDatabase extends SqlDatabase {
     } else
       throw new Exception(
           "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
-  }
-
-  @Override
-  public void close() throws Exception {
-    /**
-     * The BigQuery doesn't require connection close. It will be done automatically.
-     */
   }
 
   public QueryJobConfiguration getQueryConfig(final String sql, final List<QueryParameterValue> params) {

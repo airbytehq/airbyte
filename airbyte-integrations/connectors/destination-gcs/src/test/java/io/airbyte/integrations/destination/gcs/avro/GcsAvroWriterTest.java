@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -28,7 +29,7 @@ class GcsAvroWriterTest {
             "fake-bucket",
             "fake-bucketPath",
             "fake-bucketRegion",
-            null,
+            new GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
             new S3AvroFormatConfig(new ObjectMapper().createObjectNode())),
         mock(AmazonS3.class, RETURNS_DEEP_STUBS),
         new ConfiguredAirbyteStream()
@@ -38,7 +39,7 @@ class GcsAvroWriterTest {
         Timestamp.from(Instant.ofEpochMilli(1234)),
         null);
 
-    assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
+    assertEquals("fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro", writer.getOutputPath());
   }
 
 }

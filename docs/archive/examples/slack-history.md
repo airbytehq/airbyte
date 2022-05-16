@@ -29,9 +29,11 @@ docker run -it --rm \
 
 That's it!
 
-{% hint style="info" %}
+:::info
+
 MeiliSearch stores data in $\(pwd\)/data.ms, so if you prefer to store it somewhere else, just adjust this path.
-{% endhint %}
+
+:::
 
 ## 2. Replicate Your Slack Messages to MeiliSearch
 

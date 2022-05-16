@@ -1,7 +1,8 @@
 import React from "react";
 import styled, { useTheme } from "styled-components";
-import Spinner from "components/Spinner";
 import { Theme } from "theme";
+
+import Spinner from "components/Spinner";
 
 type IProps = {
   full?: boolean;

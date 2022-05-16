@@ -7,15 +7,22 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.CustomSourceDefinitionUpdate;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -25,6 +32,7 @@ import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
@@ -33,6 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -120,17 +129,70 @@ public class SourceDefinitionsHandler {
     }
   }
 
+  public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toSourceDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicSourceDefinitions(false),
+        configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
+  public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardSourceDefinition, Boolean>> standardSourceDefinitionBooleanMap =
+        configRepository.listGrantableSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toPrivateSourceDefinitionReadList(standardSourceDefinitionBooleanMap);
+  }
+
+  private static PrivateSourceDefinitionReadList toPrivateSourceDefinitionReadList(final List<Entry<StandardSourceDefinition, Boolean>> defs) {
+    final List<PrivateSourceDefinitionRead> reads = defs.stream()
+        .map(entry -> new PrivateSourceDefinitionRead()
+            .sourceDefinition(buildSourceDefinitionRead(entry.getKey()))
+            .granted(entry.getValue()))
+        .collect(Collectors.toList());
+    return new PrivateSourceDefinitionReadList().sourceDefinitions(reads);
+  }
+
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionRead createCustomSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
+  public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
+    final UUID workspaceId = sourceDefinitionIdWithWorkspaceId.getWorkspaceId();
+    if (!configRepository.workspaceCanUseDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    return getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
+  }
+
+  public SourceDefinitionRead createPrivateSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
       throws JsonValidationException, IOException {
+    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
+        .withPublic(false)
+        .withCustom(false);
+    configRepository.writeStandardSourceDefinition(sourceDefinition);
+
+    return buildSourceDefinitionRead(sourceDefinition);
+  }
+
+  public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate)
+      throws IOException {
+    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
+        .withPublic(false)
+        .withCustom(true);
+    configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
+
+    return buildSourceDefinitionRead(sourceDefinition);
+  }
+
+  private StandardSourceDefinition sourceDefinitionFromCreate(final SourceDefinitionCreate sourceDefinitionCreate)
+      throws IOException {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(id)
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
@@ -141,10 +203,6 @@ public class SourceDefinitionsHandler {
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
-
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-
-    return buildSourceDefinitionRead(sourceDefinition);
   }
 
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
@@ -172,12 +230,24 @@ public class SourceDefinitionsHandler {
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
         .withTombstone(currentSourceDefinition.getTombstone())
+        .withPublic(currentSourceDefinition.getPublic())
+        .withCustom(currentSourceDefinition.getCustom())
         .withReleaseStage(currentSourceDefinition.getReleaseStage())
         .withReleaseDate(currentSourceDefinition.getReleaseDate())
         .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
+  }
+
+  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID definitionId = customSourceDefinitionUpdate.getSourceDefinition().getSourceDefinitionId();
+    final UUID workspaceId = customSourceDefinitionUpdate.getWorkspaceId();
+    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    return updateSourceDefinition(customSourceDefinitionUpdate.getSourceDefinition());
   }
 
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -197,6 +267,16 @@ public class SourceDefinitionsHandler {
     configRepository.writeStandardSourceDefinition(persistedSourceDefinition);
   }
 
+  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
+    final UUID workspaceId = sourceDefinitionIdWithWorkspaceId.getWorkspaceId();
+    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    deleteSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
+  }
+
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
@@ -209,6 +289,26 @@ public class SourceDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(
+                                                                      final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateSourceDefinitionRead()
+        .sourceDefinition(buildSourceDefinitionRead(standardSourceDefinition))
+        .granted(true);
+  }
+
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }

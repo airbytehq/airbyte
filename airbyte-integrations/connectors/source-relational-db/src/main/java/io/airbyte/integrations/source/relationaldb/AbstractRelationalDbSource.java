@@ -58,7 +58,7 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
   protected AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(sqlQuery);
+        final Stream<JsonNode> stream = database.unsafeQuery(sqlQuery);
         return AutoCloseableIterators.fromStream(stream);
       } catch (final Exception e) {
         throw new RuntimeException(e);

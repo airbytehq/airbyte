@@ -14,9 +14,10 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
-import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -35,13 +36,15 @@ public class S3Destination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Destination.class);
   private final S3DestinationConfigFactory configFactory;
+  private final NamingConventionTransformer nameTransformer;
 
   public S3Destination() {
-    this.configFactory = new S3DestinationConfigFactory();
+    this(new S3DestinationConfigFactory());
   }
 
   public S3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
+    this.nameTransformer = new S3NameTransformer();
   }
 
   public static void main(final String[] args) throws Exception {
@@ -51,17 +54,18 @@ public class S3Destination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final S3DestinationConfig destinationConfig = this.configFactory.getS3DestinationConfig(config);
+      final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config);
       final AmazonS3 s3Client = destinationConfig.getS3Client();
+      final S3StorageOperations storageOperations = new S3StorageOperations(nameTransformer, s3Client, destinationConfig);
 
-      // Test for listObjects permission
-      testIAMUserHasListObjectPermission(s3Client, destinationConfig.getBucketName());
+      // Test for writing, list and delete
+      S3Destination.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
 
       // Test single upload (for small files) permissions
-      testSingleUpload(s3Client, destinationConfig.getBucketName());
+      testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       // Test multipart upload with stream transfer manager
-      testMultipartUpload(s3Client, destinationConfig.getBucketName());
+      testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -73,31 +77,32 @@ public class S3Destination extends BaseConnector implements Destination {
     }
   }
 
-  public static void testIAMUserHasListObjectPermission(final AmazonS3 s3Client, final String bucketName) {
-    LOGGER.info("Started testing if IAM user can call listObjects on the destination bucket");
-    final ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1);
-    s3Client.listObjects(request);
-    LOGGER.info("Finished checking for listObjects permission");
-  }
-
-  public static void testSingleUpload(final AmazonS3 s3Client, final String bucketName) {
+  public static void testSingleUpload(final AmazonS3 s3Client, final String bucketName, String bucketPath) {
     LOGGER.info("Started testing if all required credentials assigned to user for single file uploading");
-    final String testFile = "test_" + System.currentTimeMillis();
-    s3Client.putObject(bucketName, testFile, "this is a test file");
-    s3Client.deleteObject(bucketName, testFile);
+    if (bucketPath.endsWith("/")) {
+      throw new RuntimeException("Bucket Path should not end with /");
+    }
+    final String testFile = bucketPath + "/" + "test_" + System.currentTimeMillis();
+    try {
+      s3Client.putObject(bucketName, testFile, "this is a test file");
+    } finally {
+      s3Client.deleteObject(bucketName, testFile);
+    }
     LOGGER.info("Finished checking for normal upload mode");
   }
 
-  public static void testMultipartUpload(final AmazonS3 s3Client, final String bucketName) throws IOException {
+  public static void testMultipartUpload(final AmazonS3 s3Client, final String bucketName, String bucketPath) throws IOException {
     LOGGER.info("Started testing if all required credentials assigned to user for multipart upload");
-
-    final String testFile = "test_" + System.currentTimeMillis();
-    final StreamTransferManager manager = S3StreamTransferManagerHelper.getDefault(
+    if (bucketPath.endsWith("/")) {
+      throw new RuntimeException("Bucket Path should not end with /");
+    }
+    final String testFile = bucketPath + "/" + "test_" + System.currentTimeMillis();
+    final StreamTransferManager manager = StreamTransferManagerHelper.getDefault(
         bucketName,
         testFile,
         s3Client,
-        (long) S3StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
-
+        (long) StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
+    boolean success = false;
     try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
         final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
       final String oneMegaByteString = "a".repeat(500_000);
@@ -106,42 +111,69 @@ public class S3Destination extends BaseConnector implements Destination {
       for (int i = 0; i < 7; ++i) {
         csvPrinter.printRecord(System.currentTimeMillis(), oneMegaByteString);
       }
+      success = true;
+    } finally {
+      if (success) {
+        manager.complete();
+      } else {
+        manager.abort();
+      }
+      s3Client.deleteObject(bucketName, testFile);
     }
-
-    manager.complete();
-    s3Client.deleteObject(bucketName, testFile);
-
     LOGGER.info("Finished verification for multipart upload mode");
-  }
-
-  @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3WriterFactory formatterFactory = new ProductionWriterFactory();
-    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 
   /**
    * Note that this method completely ignores s3Config.getBucketPath(), in favor of the bucketPath
    * parameter.
    */
-  public static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config, final String bucketPath) {
-    attemptS3WriteAndDelete(s3Config, bucketPath, s3Config.getS3Client());
+  public static void attemptS3WriteAndDelete(final S3StorageOperations storageOperations,
+                                             final S3DestinationConfig s3Config,
+                                             final String bucketPath) {
+    attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client());
   }
 
   @VisibleForTesting
-  static void attemptS3WriteAndDelete(final S3DestinationConfig s3Config, final String bucketPath, final AmazonS3 s3) {
+  static void attemptS3WriteAndDelete(final S3StorageOperations storageOperations,
+                                      final S3DestinationConfig s3Config,
+                                      final String bucketPath,
+                                      final AmazonS3 s3) {
     final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-    attemptWriteAndDeleteS3Object(s3Config, outputTableName, s3);
+    attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3);
   }
 
-  private static void attemptWriteAndDeleteS3Object(final S3DestinationConfig s3Config, final String outputTableName, final AmazonS3 s3) {
+  private static void attemptWriteAndDeleteS3Object(final S3StorageOperations storageOperations,
+                                                    final S3DestinationConfig s3Config,
+                                                    final String outputTableName,
+                                                    final AmazonS3 s3) {
     final var s3Bucket = s3Config.getBucketName();
 
+    storageOperations.createBucketObjectIfNotExists(s3Bucket);
     s3.putObject(s3Bucket, outputTableName, "check-content");
+    testIAMUserHasListObjectPermission(s3, s3Bucket);
     s3.deleteObject(s3Bucket, outputTableName);
+  }
+
+  public static void testIAMUserHasListObjectPermission(final AmazonS3 s3, final String bucketName) {
+    LOGGER.info("Started testing if IAM user can call listObjects on the destination bucket");
+    final ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1);
+    s3.listObjects(request);
+    LOGGER.info("Finished checking for listObjects permission");
+  }
+
+  @Override
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final S3DestinationConfig s3Config = S3DestinationConfig.getS3DestinationConfig(config);
+    return new S3ConsumerFactory().create(
+        outputRecordCollector,
+        new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
+        nameTransformer,
+        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
+        s3Config,
+        catalog);
   }
 
 }

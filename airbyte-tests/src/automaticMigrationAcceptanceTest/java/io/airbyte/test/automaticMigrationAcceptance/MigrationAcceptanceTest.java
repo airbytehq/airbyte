@@ -273,14 +273,12 @@ public class MigrationAcceptanceTest {
         assertEquals("", connection.getPrefix());
         assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
         assertEquals("4e00862d-5484-4f50-9860-f3bbb4317397", connection.getDestinationId().toString());
-        assertEquals("default", connection.getName());
         assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
       } else if (connection.getConnectionId().toString().equals("49dae3f0-158b-4737-b6e4-0eed77d4b74e")) {
         assertEquals("", connection.getPrefix());
         assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
         assertEquals("5434615d-a3b7-4351-bc6b-a9a695555a30", connection.getDestinationId().toString());
-        assertEquals("default", connection.getName());
         assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
       } else {

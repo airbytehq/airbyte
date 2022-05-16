@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { ScheduleProperties } from "core/resources/Connection";
+import { ScheduleProperties } from "core/domain/connection";
 import { equal } from "utils/objects";
 
 type IProps = {

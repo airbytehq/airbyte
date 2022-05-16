@@ -13,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -25,19 +30,28 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,10 +64,15 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+        new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     truncateAllTables();
@@ -61,7 +80,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    dslContext.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
@@ -171,6 +191,26 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
+  public void testDumpConfigsWithoutSecret() throws Exception {
+    final ConnectorSpecification mockedConnectorSpec = new ConnectorSpecification()
+        .withConnectionSpecification(
+            Jsons.emptyObject());
+    doReturn(new StandardDestinationDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_DESTINATION_DEFINITION), any(), any());
+    doReturn(new StandardSourceDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_SOURCE_DEFINITION), any(), any());
+
+    writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
+    writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
+    writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
+    final Map<String, Stream<JsonNode>> result = configPersistence.dumpConfigs();
+    result.values().forEach(stream -> {
+      stream.collect(Collectors.toList());
+    });
+    verify(jsonSecretsProcessor, times(3)).prepareSecretsForOutput(any(), any());
+  }
+
+  @Test
   public void testGetConnectorRepositoryToInfoMap() throws Exception {
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
@@ -268,6 +308,33 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withName("random-name")
         .withTombstone(false);
     writeSource(configPersistence, source1);
+  }
+
+  @Test
+  public void filterCustomSource() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_POSTGRES)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap, ConfigSchema.STANDARD_SOURCE_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
+  }
+
+  @Test
+  public void filterCustomDestination() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_S3)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap,
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
   }
 
 }

@@ -7,7 +7,6 @@ package io.airbyte.integrations.standardtest.destination;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +18,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
@@ -27,6 +27,9 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -59,21 +62,25 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,9 +98,11 @@ public abstract class DestinationAcceptanceTest {
   private TestDestinationEnv testEnv;
 
   private Path jobRoot;
-  protected Path localRoot;
   private ProcessFactory processFactory;
   private WorkerConfigs workerConfigs;
+
+  protected Path localRoot;
+  protected TestDataComparator testDataComparator = getTestDataComparator();
 
   /**
    * Name of the docker image that the tests will run against.
@@ -292,10 +301,13 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
+  /**
+   * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
+   *             implementation of the method to your comparator implementation.
+   */
+  @Deprecated
   protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    return result;
+    return List.of(identifier);
   }
 
   @BeforeEach
@@ -376,7 +388,15 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(400, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+    final List<AirbyteMessage> largeNumberRecords = Collections
+        .nCopies(400, messages)
+        .stream()
+        .flatMap(List::stream)
+        // regroup messages per stream
+        .sorted(Comparator
+            .comparing(AirbyteMessage::getType)
+            .thenComparing(message -> message.getType().equals(Type.RECORD) ? message.getRecord().getStream() : message.toString()))
+        .collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
@@ -851,17 +871,12 @@ public abstract class DestinationAcceptanceTest {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    messages.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace);
-          }
-        });
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+    runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messagesWithNewNamespace, defaultSchema);
   }
 
   /**
@@ -891,29 +906,66 @@ public abstract class DestinationAcceptanceTest {
 
     final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
-    final var ns1Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns1Messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    ns1Msgs.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace1);
-          }
-        });
-    final var ns2Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1);
+    final var ns2Messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    ns2Msgs.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace2);
-          }
-        });
-    final var allMessages = new ArrayList<>(ns1Msgs);
-    allMessages.addAll(ns2Msgs);
+    final var ns2MessagesAtNamespace2 = getRecordMessagesWithNewNamespace(ns2Messages, namespace2);
+
+    final var allMessages = new ArrayList<>(ns1MessagesAtNamespace1);
+    allMessages.addAll(ns2MessagesAtNamespace2);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
+  }
+
+  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource("namespace_test_cases.json"));
+      return MoreIterators.toList(testCases.elements()).stream()
+          .filter(testCase -> testCase.get("enabled").asBoolean())
+          .map(testCase -> Arguments.of(
+              testCase.get("id").asText(),
+              testCase.get("namespace").asText(),
+              testCase.get("normalized").asText()));
+    }
+
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(NamespaceTestCaseProvider.class)
+  public void testNamespaces(final String testCaseId, final String namespace, final String normalizedNamespace) throws Exception {
+    final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
+    nameTransformer.ifPresent(namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
+        namingConventionTransformer.getNamespace(namespace)));
+
+    if (!implementsNamespaces() || !supportNamespaceTest()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.catalogFile), AirbyteCatalog.class);
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
+
+    final JsonNode config = getConfig();
+    try {
+      runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+    } catch (final Exception e) {
+      throw new IOException(String.format(
+          "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
+          testCaseId, namespace), e);
+    }
   }
 
   /**
@@ -934,6 +986,32 @@ public abstract class DestinationAcceptanceTest {
     assertFalse(entrypoint.isBlank());
   }
 
+  /**
+   * Whether the destination should be tested against different namespaces.
+   */
+  protected boolean supportNamespaceTest() {
+    return false;
+  }
+
+  /**
+   * Set up the name transformer used by a destination to test it against a variety of namespaces.
+   */
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.empty();
+  }
+
+  /**
+   * Override this method if the normalized namespace is different from the default one. E.g. BigQuery
+   * does allow a name starting with a number. So it should change the expected normalized namespace
+   * when testCaseId = "S3A-1". Find the testCaseId in "namespace_test_cases.json".
+   */
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace,
+        String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId));
+  }
+
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
@@ -944,6 +1022,18 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultCheckConnectionWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+  }
+
+  protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(final JsonNode config) {
+    try {
+      final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
+          workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+      return standardCheckConnectionOutput.getStatus();
+    } catch (final Exception e) {
+      LOGGER.error("Failed to check connection:" + e.getMessage());
+    }
+    return Status.FAILED;
   }
 
   protected AirbyteDestination getDestination() {
@@ -1029,8 +1119,7 @@ public abstract class DestinationAcceptanceTest {
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
           .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
-          .collect(Collectors.toList());
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data)).toList();
       actualMessages.addAll(msgList);
     }
 
@@ -1046,52 +1135,15 @@ public abstract class DestinationAcceptanceTest {
         .map(AirbyteMessage::getRecord)
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
-        .map(recordMessage -> recordMessage.getData())
+        .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
-        .map(recordMessage -> recordMessage.getData())
+        .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
-    assertSameData(expectedProcessed, actualProcessed);
-  }
-
-  private void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual) {
-    LOGGER.info("Expected data {}", expected);
-    LOGGER.info("Actual data   {}", actual);
-    assertEquals(expected.size(), actual.size());
-    final Iterator<JsonNode> expectedIterator = expected.iterator();
-    final Iterator<JsonNode> actualIterator = actual.iterator();
-    while (expectedIterator.hasNext() && actualIterator.hasNext()) {
-      final JsonNode expectedData = expectedIterator.next();
-      final JsonNode actualData = actualIterator.next();
-      final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
-      LOGGER.info("Expected row {}", expectedData);
-      LOGGER.info("Actual row   {}", actualData);
-      assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
-      while (expectedDataIterator.hasNext()) {
-        final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
-        final JsonNode expectedValue = expectedEntry.getValue();
-        JsonNode actualValue = null;
-        String key = expectedEntry.getKey();
-        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
-          actualValue = actualData.get(tmpKey);
-          if (actualValue != null) {
-            key = tmpKey;
-            break;
-          }
-        }
-        LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
-        assertTrue(actualData.has(key));
-        assertSameValue(expectedValue, actualValue);
-      }
-    }
-  }
-
-  // Allows subclasses to implement custom comparison asserts
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
-    assertEquals(expectedValue, actualValue);
+    testDataComparator.assertSameData(expectedProcessed, actualProcessed);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(final AirbyteCatalog catalog, final String defaultSchema) throws Exception {
@@ -1102,8 +1154,7 @@ public abstract class DestinationAcceptanceTest {
 
       final List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
           .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
-          .collect(Collectors.toList());
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data)).toList();
       actualMessages.addAll(msgList);
     }
     return actualMessages;
@@ -1303,6 +1354,10 @@ public abstract class DestinationAcceptanceTest {
           + "\n"
           + "Praesent finibus scelerisque elit, accumsan condimentum risus mattis vitae. Donec tristique hendrerit facilisis. Curabitur metus purus, venenatis non elementum id, finibus eu augue. Quisque posuere rhoncus ligula, et vehicula erat pulvinar at. Pellentesque vel quam vel lectus tincidunt congue quis id sapien. Ut efficitur mauris vitae pretium iaculis. Aliquam consectetur iaculis nisi vitae laoreet. Integer vel odio quis diam mattis tempor eget nec est. Donec iaculis facilisis neque, at dictum magna vestibulum ut. Sed malesuada non nunc ac consequat. Maecenas tempus lectus a nisl congue, ac venenatis diam viverra. Nam ac justo id nulla iaculis lobortis in eu ligula. Vivamus et ligula id sapien efficitur aliquet. Curabitur est justo, tempus vitae mollis quis, tincidunt vitae felis. Vestibulum molestie laoreet justo, nec mollis purus vulputate at.";
 
+  protected TestDataComparator getTestDataComparator() {
+    return new BasicTestDataComparator(this::resolveIdentifier);
+  }
+
   protected boolean supportBasicDataTypeTest() {
     return false;
   }
@@ -1368,6 +1423,18 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));
+  }
+
+  /**
+   * Mutate the input airbyte record message namespace.
+   */
+  private static List<AirbyteMessage> getRecordMessagesWithNewNamespace(final List<AirbyteMessage> airbyteMessages, final String namespace) {
+    airbyteMessages.forEach(message -> {
+      if (message.getRecord() != null) {
+        message.getRecord().setNamespace(namespace);
+      }
+    });
+    return airbyteMessages;
   }
 
 }

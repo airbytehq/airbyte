@@ -1,7 +1,12 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import withMock from "storybook-addon-mock";
 
-import ServiceForm from "./ServiceForm";
 import { ContentCard } from "components";
+
+import { ConnectorSpecification } from "core/domain/connector";
+import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+
+import { ServiceForm } from "./ServiceForm";
 
 const TempConnector = {
   name: "Service",
@@ -16,7 +21,19 @@ const TempConnector = {
 export default {
   title: "Views/ServiceForm",
   component: ServiceForm,
-  parameters: { actions: { argTypesRegex: "^on.*" } },
+  parameters: {
+    actions: { argTypesRegex: "^on.*" },
+    mockData: [
+      {
+        url: "http://localhost:8001/api/v1/workspaces/get",
+        method: "POST",
+        status: 200,
+        response: {
+          workspaceId: "",
+        },
+      },
+    ],
+  },
   args: {
     formType: "source",
     formValues: {
@@ -25,20 +42,22 @@ export default {
     onSubmit: (v) => console.log(v),
     availableServices: [TempConnector],
   },
+  decorators: [withMock],
 } as ComponentMeta<typeof ServiceForm>;
 
 const Template: ComponentStory<typeof ServiceForm> = (args) => {
   // Hack to allow devs to not specify sourceDefinitionId
   if (
-    args.selectedConnector &&
-    !(args.selectedConnector as any).sourceDefinitionId
+    args.selectedConnectorDefinitionSpecification &&
+    !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    (args.selectedConnector as any).sourceDefinitionId =
-      TempConnector.sourceDefinitionId;
+    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
+    }
   }
 
-  if (args.selectedConnector?.documentationUrl) {
-    args.selectedConnector.documentationUrl = "";
+  if (args.selectedConnectorDefinitionSpecification?.documentationUrl) {
+    args.selectedConnectorDefinitionSpecification.documentationUrl = "";
   }
 
   return (
@@ -50,7 +69,7 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
 
 export const Common = Template.bind({});
 Common.args = {
-  selectedConnector: {
+  selectedConnectorDefinitionSpecification: {
     ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -128,7 +147,7 @@ Common.args = {
 
 export const Oneof = Template.bind({});
 Oneof.args = {
-  selectedConnector: {
+  selectedConnectorDefinitionSpecification: {
     ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",

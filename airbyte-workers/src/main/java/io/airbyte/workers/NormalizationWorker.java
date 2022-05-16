@@ -5,5 +5,6 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 
-public interface NormalizationWorker extends Worker<NormalizationInput, Void> {}
+public interface NormalizationWorker extends Worker<NormalizationInput, NormalizationSummary> {}

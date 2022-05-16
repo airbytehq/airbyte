@@ -7,13 +7,17 @@ package io.airbyte.integrations.destination.mysql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -21,6 +25,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
+  private DSLContext dslContext;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
@@ -80,6 +85,16 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   protected void setup(final TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
+
+    dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        db.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()), SQLDialect.DEFAULT);
+
     setLocalInFileToTrue();
     revokeAllPermissions();
     grantCorrectPermissions();
@@ -87,20 +102,13 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     db.stop();
     db.close();
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createDatabase(
-        db.getUsername(),
-        db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
+    return new Database(dslContext).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
@@ -123,16 +131,15 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void executeQuery(final String query) {
-    try {
-      Databases.createDatabase(
+    try (final DSLContext dslContext = DSLContextFactory.create(
           "root",
           "test",
+          db.getDriverClassName(),
           String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
+              db.getDatabaseName()), SQLDialect.DEFAULT)) {
+      new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));
     } catch (final SQLException e) {

@@ -30,6 +30,7 @@ public class S3OutputPathHelper {
       paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
     paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
+
     return String.join("/", paths).replaceAll("/+", "/");
   }
 

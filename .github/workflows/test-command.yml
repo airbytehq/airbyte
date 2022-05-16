@@ -18,8 +18,26 @@ on:
         required: false
 
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   start-test-runner:
     name: Start Build EC2 Runner
+    needs: find_valid_pat
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -37,7 +55,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   integration-test:
@@ -71,9 +89,12 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
       - name: Install Pyenv and Tox
-        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv
@@ -155,6 +176,7 @@ jobs:
     needs:
       - start-test-runner # required to get output from the start-runner job
       - integration-test # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
@@ -165,9 +187,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-test-runner.outputs.ec2-instance-id }}

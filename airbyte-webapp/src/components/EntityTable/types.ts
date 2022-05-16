@@ -1,4 +1,4 @@
-import { ScheduleProperties } from "core/resources/Connection";
+import { ScheduleProperties } from "core/domain/connection";
 
 type EntityTableDataItem = {
   entityId: string;
@@ -34,6 +34,7 @@ enum Status {
   INACTIVE = "inactive",
   FAILED = "failed",
   EMPTY = "empty",
+  PENDING = "pending",
 }
 
 enum SortOrderEnum {

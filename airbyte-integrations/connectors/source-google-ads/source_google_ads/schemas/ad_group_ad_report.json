@@ -5,6 +5,9 @@
     "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
       "type": ["null", "string"]
     },
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
     "customer.currency_code": {
       "type": ["null", "string"]
     },
@@ -169,6 +172,9 @@
       "format": "datetime"
     },
     "segments.day_of_week": {
+      "type": ["null", "string"]
+    },
+    "segments.keyword.ad_group_criterion": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.description": {

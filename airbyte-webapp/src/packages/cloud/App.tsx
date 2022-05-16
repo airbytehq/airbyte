@@ -1,25 +1,27 @@
-import React, { Suspense } from "react";
-import { ThemeProvider } from "styled-components";
-import { IntlProvider } from "react-intl";
-import { CacheProvider } from "rest-hooks";
-import { BrowserRouter as Router } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "react-query";
-
-import en from "locales/en.json";
-import cloudLocales from "packages/cloud/locales/en.json";
 import GlobalStyle from "global-styles";
-import { theme } from "packages/cloud/theme";
+import React, { Suspense } from "react";
+import { IntlProvider } from "react-intl";
+import { BrowserRouter as Router } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
-import { Routing } from "packages/cloud/cloudRoutes";
-import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import LoadingPage from "components/LoadingPage";
+
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import NotificationServiceProvider from "hooks/services/Notification";
+import en from "locales/en.json";
+import { Routing } from "packages/cloud/cloudRoutes";
+import cloudLocales from "packages/cloud/locales/en.json";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
+import { theme } from "packages/cloud/theme";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { StoreProvider } from "views/common/StoreProvider";
+
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -42,36 +44,24 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      suspense: true,
-    },
-  },
-});
-
-const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  </CacheProvider>
-);
-
 const Services: React.FC = ({ children }) => (
-  <ConfigProvider>
-    <AnalyticsProvider>
-      <ApiErrorBoundary>
-        <NotificationServiceProvider>
-          <FeatureService>
-            <AppServicesProvider>
-              <AuthenticationProvider>
-                <IntercomProvider>{children}</IntercomProvider>
-              </AuthenticationProvider>
-            </AppServicesProvider>
-          </FeatureService>
-        </NotificationServiceProvider>
-      </ApiErrorBoundary>
-    </AnalyticsProvider>
-  </ConfigProvider>
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <NotificationServiceProvider>
+        <ConfirmationModalService>
+          <FormChangeTrackerService>
+            <FeatureService>
+              <AppServicesProvider>
+                <AuthenticationProvider>
+                  <IntercomProvider>{children}</IntercomProvider>
+                </AuthenticationProvider>
+              </AppServicesProvider>
+            </FeatureService>
+          </FormChangeTrackerService>
+        </ConfirmationModalService>
+      </NotificationServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
 
 const App: React.FC = () => {
@@ -81,11 +71,13 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <Router>
-                <Services>
-                  <Routing />
-                </Services>
-              </Router>
+              <ConfigProvider>
+                <Router>
+                  <Services>
+                    <Routing />
+                  </Services>
+                </Router>
+              </ConfigProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

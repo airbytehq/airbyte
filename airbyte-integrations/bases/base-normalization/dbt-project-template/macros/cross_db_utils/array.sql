@@ -5,6 +5,7 @@
     - Redshift: -> https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
     - MSSQL: openjson() –> https://docs.microsoft.com/en-us/sql/relational-databases/json/validate-query-and-change-json-data-with-built-in-functions-sql-server?view=sql-server-ver15
+    - ClickHouse: ARRAY JOIN –> https://clickhouse.com/docs/zh/sql-reference/statements/select/array-join/
 #}
 
 {# cross_join_unnest -------------------------------------------------     #}
@@ -19,6 +20,10 @@
 
 {% macro bigquery__cross_join_unnest(stream_name, array_col) -%}
     cross join unnest({{ array_col }}) as {{ array_col }}
+{%- endmacro %}
+
+{% macro clickhouse__cross_join_unnest(stream_name, array_col) -%}
+    ARRAY JOIN {{ array_col }}
 {%- endmacro %}
 
 {% macro oracle__cross_join_unnest(stream_name, array_col) -%}
@@ -99,8 +104,19 @@
 
 {% macro default__unnest_cte(from_table, stream_name, column_col) -%}{%- endmacro %}
 
-{# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
 {% macro redshift__unnest_cte(from_table, stream_name, column_col) -%}
+
+    {# -- based on https://docs.aws.amazon.com/redshift/latest/dg/query-super.html #}
+    {% if redshift_super_type() -%}
+        with joined as (
+            select
+                table_alias._airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
+                _airbyte_nested_data
+            from {{ from_table }} as table_alias, table_alias.{{ column_col }} as _airbyte_nested_data
+        )
+    {%- else -%}
+
+    {# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
     {%- if not execute -%}
         {{ return('') }}
     {% endif %}
@@ -129,6 +145,7 @@ joined as (
     -- to the number of items in {{ from_table }}.{{ column_col }}
     where numbers.generated_number <= json_array_length({{ column_col }}, true)
 )
+    {%- endif %}
 {%- endmacro %}
 
 {% macro mysql__unnest_cte(from_table, stream_name, column_col) -%}

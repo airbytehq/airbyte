@@ -68,7 +68,13 @@ public class ConnectionHelper {
         .withPrefix(update.getPrefix())
         .withOperationIds(update.getOperationIds())
         .withCatalog(update.getCatalog())
-        .withStatus(update.getStatus());
+        .withStatus(update.getStatus())
+        .withSourceCatalogId(update.getSourceCatalogId());
+
+    // update name
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {

@@ -3,14 +3,14 @@ import { Props } from "react-select";
 import { SelectComponentsConfig } from "react-select/src/components";
 import { CSSObject } from "styled-components";
 
+import { equal, naturalComparatorBy } from "utils/objects";
+
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
-import SingleValue from "./components/SingleValue";
 import Option, { IDataItem } from "./components/Option";
-
-import { equal, naturalComparatorBy } from "utils/objects";
-import { SelectContainer } from "./SelectContainer";
+import SingleValue from "./components/SingleValue";
 import { CustomSelect } from "./CustomSelect";
+import { SelectContainer } from "./SelectContainer";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;
@@ -44,9 +44,7 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   const currentValue =
     props.value !== undefined
       ? props.isMulti
-        ? props.options?.filter((op) =>
-            props.value.find((o: OptionType) => equal(o, op.value))
-          )
+        ? props.options?.filter((op) => props.value.find((o: OptionType) => equal(o, op.value)))
         : props.options?.find((op) => equal(op.value, props.value))
       : null;
 
@@ -79,9 +77,7 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   );
 });
 
-const defaultDataItemSort = naturalComparatorBy<IDataItem>(
-  (dataItem) => dataItem.label || ""
-);
+const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
 export default DropDown;
 export { DropDown, defaultDataItemSort };

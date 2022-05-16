@@ -1,50 +1,36 @@
-import { AnySchema } from "yup";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import flatten from "flat";
 import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-import flatten from "flat";
 import merge from "lodash/merge";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnySchema } from "yup";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
+import { buildPathInitialState } from "core/form/uiWidget";
+import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
-import { buildPathInitialState } from "core/form/uiWidget";
-import { ServiceFormValues } from "./types";
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
+
+import { ServiceFormValues } from "./types";
 
 function upgradeSchemaLegacyAuth(
   connectorSpecification: Required<
-    Pick<
-      ConnectorDefinitionSpecification,
-      "authSpecification" | "connectionSpecification"
-    >
+    Pick<ConnectorDefinitionSpecification, "authSpecification" | "connectionSpecification">
   >
 ) {
   const spec = connectorSpecification.authSpecification.oauth2Specification;
-  return applyFuncAt(
-    connectorSpecification.connectionSpecification,
-    spec.rootObject ?? [],
-    (schema) => {
-      // Very hacky way to allow placing button within section
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (schema as any).is_auth = true;
-      const schemaWithoutPaths = removeNestedPaths(
-        schema,
-        spec.oauthFlowInitParameters ?? [],
-        false
-      );
+  return applyFuncAt(connectorSpecification.connectionSpecification, spec.rootObject ?? [], (schema) => {
+    // Very hacky way to allow placing button within section
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (schema as any).is_auth = true;
+    const schemaWithoutPaths = removeNestedPaths(schema, spec.oauthFlowInitParameters ?? [], false);
 
-      const schemaWithoutOutputPats = removeNestedPaths(
-        schemaWithoutPaths,
-        spec.oauthFlowOutputParameters ?? [],
-        false
-      );
+    const schemaWithoutOutputPats = removeNestedPaths(schemaWithoutPaths, spec.oauthFlowOutputParameters ?? [], false);
 
-      return schemaWithoutOutputPats;
-    }
-  );
+    return schemaWithoutOutputPats;
+  });
 }
 
 function useBuildInitialSchema(
@@ -54,13 +40,9 @@ function useBuildInitialSchema(
 
   return useMemo(() => {
     if (hasFeature(FeatureItem.AllowOAuthConnector)) {
-      if (
-        connectorSpecification?.authSpecification &&
-        !connectorSpecification?.advancedAuth
-      ) {
+      if (connectorSpecification?.authSpecification && !connectorSpecification?.advancedAuth) {
         return upgradeSchemaLegacyAuth({
-          connectionSpecification:
-            connectorSpecification.connectionSpecification,
+          connectionSpecification: connectorSpecification.connectionSpecification,
           authSpecification: connectorSpecification.authSpecification,
         });
       }
@@ -87,10 +69,7 @@ function useBuildForm(
     [initialValues]
   );
 
-  const formFields = useMemo<FormBlock>(
-    () => jsonSchemaToUiWidget(jsonSchema),
-    [jsonSchema]
-  );
+  const formFields = useMemo<FormBlock>(() => jsonSchemaToUiWidget(jsonSchema), [jsonSchema]);
 
   return {
     initialValues: startValues,
@@ -106,26 +85,20 @@ const useBuildUiWidgetsContext = (
   uiWidgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
 } => {
-  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
-    uiOverrides ?? {}
-  );
+  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(uiOverrides ?? {});
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
   const mergedState = useMemo(
     () =>
       merge(
-        buildPathInitialState(
-          Array.isArray(formFields) ? formFields : [formFields],
-          formValues
-        ),
+        buildPathInitialState(Array.isArray(formFields) ? formFields : [formFields], formValues),
         merge(overriddenWidgetState, uiOverrides)
       ),
     [formFields, formValues, overriddenWidgetState, uiOverrides]
   );
 
   const setUiWidgetsInfoSubState = useCallback(
-    (widgetId: string, updatedValues: WidgetConfig) =>
-      setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
+    (widgetId: string, updatedValues: WidgetConfig) => setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
     [mergedState, setUiWidgetsInfo]
   );
 
@@ -136,24 +109,11 @@ const useBuildUiWidgetsContext = (
 };
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
-const useConstructValidationSchema = (
-  jsonSchema: JSONSchema7,
-  uiWidgetsInfo: WidgetConfigMap
-): AnySchema =>
-  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [
-    uiWidgetsInfo,
-    jsonSchema,
-  ]);
+const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
+  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
 
 const usePatchFormik = (): void => {
-  const {
-    setFieldTouched,
-    isSubmitting,
-    isValidating,
-    validationSchema,
-    validateForm,
-    errors,
-  } = useFormikContext();
+  const { setFieldTouched, isSubmitting, isValidating, validationSchema, validateForm, errors } = useFormikContext();
   // Formik doesn't validate values again, when validationSchema was changed on the fly.
   useEffect(() => {
     validateForm();
@@ -180,10 +140,4 @@ const usePatchFormik = (): void => {
   }, [errors, isSubmitting, isValidating, setFieldTouched]);
 };
 
-export {
-  useBuildForm,
-  useBuildInitialSchema,
-  useBuildUiWidgetsContext,
-  useConstructValidationSchema,
-  usePatchFormik,
-};
+export { useBuildForm, useBuildInitialSchema, useBuildUiWidgetsContext, useConstructValidationSchema, usePatchFormik };

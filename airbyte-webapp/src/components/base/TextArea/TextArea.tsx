@@ -15,9 +15,7 @@ const TextArea = styled.textarea<TextAreaProps>`
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;
-  border: 1px solid
-    ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor0};
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
   background: ${({ theme }) => theme.greyColor0};
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
@@ -27,15 +25,12 @@ const TextArea = styled.textarea<TextAreaProps>`
   }
 
   &:hover {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor20};
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.greyColor20)};
+    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
   }
 
   &:focus {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.primaryColor12};
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
     border-color: ${({ theme }) => theme.primaryColor};
   }
 

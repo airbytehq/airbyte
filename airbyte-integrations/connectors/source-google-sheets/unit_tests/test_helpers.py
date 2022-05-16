@@ -227,6 +227,31 @@ class TestHelpers(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_get_spreadsheet_id(self):
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q/edit#gid=1820065035"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q", result)
+
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q/edit"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q", result)
+
+        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
+
+        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
+
+        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
+
+        test_url = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
+        result = Helpers.get_spreadsheet_id(test_url)
+        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q", result)
+
 
 if __name__ == "__main__":
     unittest.main()

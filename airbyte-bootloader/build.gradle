@@ -10,13 +10,13 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
     implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:persistence')
-    implementation project(':airbyte-scheduler:models')
 
     implementation 'io.temporal:temporal-sdk:1.8.1'
-    implementation "org.flywaydb:flyway-core:7.14.0"
+    implementation libs.flyway.core
 
-    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation libs.testcontainers.postgresql
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
 }
 
@@ -80,7 +80,7 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("bootloader",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("bootloader", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
 

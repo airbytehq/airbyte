@@ -2,25 +2,18 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
+import HeadTitle from "components/HeadTitle";
 import Table from "components/Table";
+
+import { Connector, ConnectorDefinition, DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
+
 import ConnectorCell from "./ConnectorCell";
+import CreateConnector from "./CreateConnector";
 import ImageCell from "./ImageCell";
-import VersionCell from "./VersionCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
-import CreateConnector from "./CreateConnector";
-import HeadTitle from "components/HeadTitle";
-import {
-  Connector,
-  ConnectorDefinition,
-  DestinationDefinition,
-  SourceDefinition,
-} from "core/domain/connector";
-import {
-  FeatureItem,
-  useFeatureService,
-  WithFeature,
-} from "hooks/services/Feature";
+import VersionCell from "./VersionCell";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
@@ -62,10 +55,9 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <ConnectorCell
             connectorName={cell.value}
             img={row.original.icon}
-            hasUpdate={
-              allowUpdateConnectors && Connector.hasNewerVersion(row.original)
-            }
+            hasUpdate={allowUpdateConnectors && Connector.hasNewerVersion(row.original)}
             isDeprecated={Connector.isDeprecated(row.original)}
+            releaseStage={row.original.releaseStage}
           />
         ),
       },
@@ -74,10 +66,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerRepository",
         customWidth: 36,
         Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
-          <ImageCell
-            imageName={cell.value}
-            link={row.original.documentationUrl}
-          />
+          <ImageCell imageName={cell.value} link={row.original.documentationUrl} />
         ),
       },
       {
@@ -118,62 +107,38 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         <WithFeature featureId={FeatureItem.AllowUploadCustomImage}>
           <CreateConnector type={type} />
         </WithFeature>
-        {(hasNewConnectorVersion || isUpdateSuccess) &&
-          allowUpdateConnectors && (
-            <UpgradeAllButton
-              isLoading={loading}
-              hasError={!!error && !loading}
-              hasSuccess={isUpdateSuccess}
-              onUpdate={onUpdate}
-            />
-          )}
+        {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
+          <UpgradeAllButton
+            isLoading={loading}
+            hasError={!!error && !loading}
+            hasSuccess={isUpdateSuccess}
+            onUpdate={onUpdate}
+          />
+        )}
       </div>
     );
 
   return (
     <>
       <HeadTitle
-        titles={[
-          { id: "sidebar.settings" },
-          { id: type === "sources" ? "admin.sources" : "admin.destinations" },
-        ]}
+        titles={[{ id: "sidebar.settings" }, { id: type === "sources" ? "admin.sources" : "admin.destinations" }]}
       />
       {usedConnectorsDefinitions.length > 0 && (
         <Block>
           <Title bold>
-            <FormattedMessage
-              id={
-                type === "sources"
-                  ? "admin.manageSource"
-                  : "admin.manageDestination"
-              }
-            />
+            <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
             {renderHeaderControls("used")}
           </Title>
-          <Table
-            columns={columns}
-            data={usedConnectorsDefinitions}
-            sortBy={defaultSorting}
-          />
+          <Table columns={columns} data={usedConnectorsDefinitions} sortBy={defaultSorting} />
         </Block>
       )}
 
       <Block>
         <Title bold>
-          <FormattedMessage
-            id={
-              type === "sources"
-                ? "admin.availableSource"
-                : "admin.availableDestinations"
-            }
-          />
+          <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
           {renderHeaderControls("available")}
         </Title>
-        <Table
-          columns={columns}
-          data={connectorsDefinitions}
-          sortBy={defaultSorting}
-        />
+        <Table columns={columns} data={connectorsDefinitions} sortBy={defaultSorting} />
       </Block>
     </>
   );

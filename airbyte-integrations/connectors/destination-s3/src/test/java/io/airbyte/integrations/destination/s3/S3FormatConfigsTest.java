@@ -7,33 +7,34 @@ package io.airbyte.integrations.destination.s3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.jackson.MoreMappers;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("S3FormatConfigs")
 public class S3FormatConfigsTest {
 
-  private static final ObjectMapper mapper = MoreMappers.initMapper();
-
   @Test
   @DisplayName("When CSV format is specified, it returns CSV format config")
   public void testGetCsvS3FormatConfig() {
-    final ObjectNode stubFormatConfig = mapper.createObjectNode();
-    stubFormatConfig.put("format_type", S3Format.CSV.toString());
-    stubFormatConfig.put("flattening", Flattening.ROOT_LEVEL.getValue());
+    final JsonNode configJson = Jsons.jsonNode(Map.of(
+        "format", Jsons.jsonNode(Map.of(
+            "format_type", S3Format.CSV.toString(),
+            "flattening", Flattening.ROOT_LEVEL.getValue(),
+            "compression", Jsons.jsonNode(Map.of(
+                "compression_type", "No Compression"))))));
 
-    final ObjectNode stubConfig = mapper.createObjectNode();
-    stubConfig.set("format", stubFormatConfig);
-    final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(stubConfig);
+    final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(configJson);
     assertEquals(formatConfig.getFormat(), S3Format.CSV);
     assertTrue(formatConfig instanceof S3CsvFormatConfig);
     final S3CsvFormatConfig csvFormatConfig = (S3CsvFormatConfig) formatConfig;
-    assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
+    assertEquals(Flattening.ROOT_LEVEL, csvFormatConfig.getFlattening());
+    assertEquals(CompressionType.NO_COMPRESSION, csvFormatConfig.getCompressionType());
   }
 
 }

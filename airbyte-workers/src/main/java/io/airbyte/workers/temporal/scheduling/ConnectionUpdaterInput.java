@@ -38,6 +38,7 @@ public class ConnectionUpdaterInput {
   @Nullable
   private WorkflowState workflowState;
   private boolean resetConnection;
+  @Builder.Default
   private boolean fromJobResetFailure = false;
 
 }

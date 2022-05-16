@@ -6,6 +6,7 @@ package io.airbyte.workers;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   }
 
   @Override
-  public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
+  public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
     try (normalizationRunner) {
@@ -64,11 +65,18 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       LOGGER.info("Normalization was cancelled.");
     }
 
-    final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
+    final long endTime = System.currentTimeMillis();
+    final Duration duration = Duration.ofMillis(endTime - startTime);
     final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
     LOGGER.info("Normalization executed in {}.", durationDescription);
 
-    return null;
+    final NormalizationSummary summary = new NormalizationSummary()
+        .withStartTime(startTime)
+        .withEndTime(endTime);
+
+    LOGGER.info("Normalization summary: {}", summary);
+
+    return summary;
   }
 
   @Override

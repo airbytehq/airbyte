@@ -10,6 +10,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -94,6 +95,20 @@ public class SecretsRepositoryReader {
       final Stream<JsonNode> augmentedValue = dump.get(key).map(secretsHydrator::hydrate);
       dump.put(key, augmentedValue);
     }
+  }
+
+  public WorkspaceServiceAccount getWorkspaceServiceAccountWithSecrets(final UUID workspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceServiceAccount workspaceServiceAccount = configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    final JsonNode jsonCredential =
+        workspaceServiceAccount.getJsonCredential() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getJsonCredential())
+            : null;
+
+    final JsonNode hmacKey =
+        workspaceServiceAccount.getHmacKey() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getHmacKey()) : null;
+
+    return Jsons.clone(workspaceServiceAccount).withJsonCredential(jsonCredential).withHmacKey(hmacKey);
   }
 
 }
