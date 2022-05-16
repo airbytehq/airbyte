@@ -1,15 +1,15 @@
 import { setIn, useFormikContext } from "formik";
-import merge from "lodash/merge";
-import pick from "lodash/pick";
 import get from "lodash/get";
 import isEmpty from "lodash/isEmpty";
+import merge from "lodash/merge";
+import pick from "lodash/pick";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
-import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
-import { ServiceFormValues } from "../../../types";
 import { useServiceForm } from "../../../serviceFormContext";
+import { ServiceFormValues } from "../../../types";
+import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 
 function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   loading: boolean;

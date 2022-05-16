@@ -12,11 +12,10 @@ import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
 

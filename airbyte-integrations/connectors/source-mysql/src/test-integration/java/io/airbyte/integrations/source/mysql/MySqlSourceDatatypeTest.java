@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
@@ -66,16 +67,18 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL,
-        Map.of("zeroDateTimeBehavior", "convertToNull"));
+    final Database database = new Database(
+        DSLContextFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.MYSQL.getDriverClassName(),
+            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText()),
+            SQLDialect.MYSQL,
+            Map.of("zeroDateTimeBehavior", "convertToNull"))
+    );
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"

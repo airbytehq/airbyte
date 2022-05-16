@@ -1,13 +1,13 @@
-import React from "react";
 import { useField } from "formik";
+import React from "react";
 
 import { LabeledToggle, TextWithHTML } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-import { Label } from "../Property/Label";
-import { Control } from "../Property/Control";
 import { useServiceForm } from "../../serviceFormContext";
+import { Control } from "../Property/Control";
+import { Label } from "../Property/Label";
 
 const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ property, path }) => {
   const propertyPath = path ?? property.path;

@@ -1,8 +1,8 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedRelativeTime } from "react-intl";
+import styled from "styled-components";
 
 const CalendarIcon = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.greyColor40};

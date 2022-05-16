@@ -33,12 +33,16 @@ const config = {
                 docs: {
                     routeBasePath: '/',
                     sidebarPath: require.resolve('./sidebars.js'),
-                    editUrl: 'https://github.com/airbytehq/airbyte/docs',
+                    editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs'
                 },
                 blog: false,
                 theme: {
                     customCss: require.resolve('./src/css/custom.css'),
+                },
+                gtag: {
+                    trackingID: 'UA-156258629-2',
+                    anonymizeIP: true,
                 },
             }),
         ],

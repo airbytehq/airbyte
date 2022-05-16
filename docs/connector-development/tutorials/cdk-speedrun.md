@@ -17,8 +17,11 @@ If you are a visual learner and want to see a video version of this guide going 
 #### Generate the Template
 
 ```bash
-$ cd airbyte-integrations/connector-templates/generator # start from repo root
-$ ./generate.sh
+# # clone the repo if you havent already
+# git clone -–depth 1 https://github.com/airbytehq/airbyte/ 
+# cd airbyte # start from repo root
+cd airbyte-integrations/connector-templates/generator 
+./generate.sh
 ```
 
 Select the `Python HTTP API Source` and name it `python-http-example`.
@@ -38,27 +41,26 @@ pip install -r requirements.txt
 cd source_python_http_example
 ```
 
-We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.json` file here and replace it with:
+We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.yaml` file here and replace it with:
 
-```javascript
-{
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi",
-  "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Pokeapi Spec",
-    "type": "object",
-    "required": ["pokemon_name"],
-    "additionalProperties": false,
-    "properties": {
-      "pokemon_name": {
-        "type": "string",
-        "description": "Pokemon requested from the API.",
-        "pattern": "^[a-z0-9_\\-]+$",
-        "examples": ["ditto, luxray, snorlax"]
-      }
-    }
-  }
-}
+```yaml
+documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Pokeapi Spec
+  type: object
+  required:
+    - pokemon_name
+  additionalProperties: false
+  properties:
+    pokemon_name:
+      type: string
+      description: Pokemon requested from the API.
+      pattern: ^[a-z0-9_\-]+$
+      examples:
+        - ditto
+        - luxray
+        - snorlax
 ```
 
 As you can see, we have one input to our input schema, which is `pokemon_name`, which is required. Normally, input schemas will contain information such as API keys and client secrets that need to get passed down to all endpoints or streams.

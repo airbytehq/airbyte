@@ -1,7 +1,7 @@
 import React, { ReactNode, useMemo } from "react";
-import styled from "styled-components";
-import { useToggle } from "react-use";
 import { ActionMeta, ControlProps } from "react-select";
+import { useToggle } from "react-use";
+import styled from "styled-components";
 
 import { DropDown } from "components";
 import { DropdownProps } from "components/base/DropDown";

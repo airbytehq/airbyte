@@ -1075,6 +1075,10 @@ module.exports = {
         },
         {
           type: 'doc',
+          id: "contributing-to-airbyte/gradle-dependency-update",
+        },
+        {
+          type: 'doc',
           id: "contributing-to-airbyte/updating-documentation",
         },
         {

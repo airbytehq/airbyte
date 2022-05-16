@@ -9,7 +9,11 @@
 {% endmacro %}
 
 {%- macro redshift__type_json() -%}
+  {%- if redshift_super_type() -%}
+    super
+  {%- else -%}
     varchar
+  {%- endif -%}
 {%- endmacro -%}
 
 {% macro postgres__type_json() %}
@@ -29,7 +33,7 @@
 {%- endmacro -%}
 
 {%- macro sqlserver__type_json() -%}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
 
 {% macro clickhouse__type_json() %}
@@ -48,7 +52,7 @@
 {%- endmacro -%}
 
 {% macro sqlserver__type_string() %}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
 
 {%- macro clickhouse__type_string() -%}
@@ -150,7 +154,7 @@
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
     {#-- in TSQL timestamp is really datetime or datetime2 --#}
     {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
-    datetime
+    datetime2
 {%- endmacro -%}
 
 {% macro clickhouse__type_timestamp_with_timezone() %}

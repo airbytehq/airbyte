@@ -1,8 +1,8 @@
-import styled from "styled-components";
 import {
   Link as ReactLink,
   // LinkProps as ReactLinkProps,
 } from "react-router-dom";
+import styled from "styled-components";
 
 export type ILinkProps = {
   bold?: boolean;

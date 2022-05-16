@@ -1,12 +1,12 @@
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
 import { BigButton } from "components/CenteredPageComponents";
-import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
+import LabeledInput from "components/LabeledInput";
 import LabeledToggle from "components/LabeledToggle";
 
 import { useConfig } from "config";

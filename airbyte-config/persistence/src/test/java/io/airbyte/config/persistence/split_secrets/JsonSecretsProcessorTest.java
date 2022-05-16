@@ -339,7 +339,8 @@ public class JsonSecretsProcessorTest {
         Arguments.of("postgres_ssh_key", true),
         Arguments.of("postgres_ssh_key", false),
         Arguments.of("simple", true),
-        Arguments.of("simple", false));
+        Arguments.of("simple", false),
+        Arguments.of("enum", false));
   }
 
   @ParameterizedTest

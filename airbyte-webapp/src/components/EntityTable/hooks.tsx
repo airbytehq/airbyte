@@ -1,9 +1,7 @@
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection } from "core/domain/connection";
-import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-
-import { Status } from "./types";
+import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -22,7 +20,7 @@ const useSyncActions = (): {
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
-      status: connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+      status: connection.status === ConnectionStatus.ACTIVE ? ConnectionStatus.INACTIVE : ConnectionStatus.ACTIVE,
     });
 
     const frequency = FrequencyConfig.find(

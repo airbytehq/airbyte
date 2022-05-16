@@ -51,11 +51,13 @@ jobs:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
+              - '*.gradle'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
+              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'
@@ -981,7 +983,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
           args: >-
-            {\"channel\":\"C03AXC61YBZ\", \"blocks\":[
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" OSS Master Fixed! :white_check_mark: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},

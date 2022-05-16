@@ -14,6 +14,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.GetMaxAttemptOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -136,6 +137,9 @@ public class ConnectionManagerWorkflowTest {
                 new IntegrationLauncherConfig(),
                 new IntegrationLauncherConfig(),
                 new StandardSyncInput()));
+
+    Mockito.when(mAutoDisableConnectionActivity.autoDisableFailingConnection(Mockito.any()))
+        .thenReturn(new AutoDisableConnectionOutput(false));
   }
 
   @AfterEach
@@ -407,6 +411,28 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
+    }
+
+    @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that fresh workflow cleans the job state")
+    public void testStartFromCleanJobState() throws InterruptedException {
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(null)
+          .attemptId(null)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(null)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity, Mockito.times(1)).ensureCleanJobState(Mockito.any());
     }
 
   }

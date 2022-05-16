@@ -1,9 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import StatusIcon from "components/StatusIcon";
 import { Button, H4, Link, Spinner } from "components";
+import StatusIcon from "components/StatusIcon";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
