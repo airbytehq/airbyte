@@ -11,6 +11,8 @@ from jinja2.exceptions import UndefinedError
 class JinjaInterpolation(Interpolation):
     def __init__(self):
         self._environment = Environment()
+        # Defines some utility methods that can be called from template strings
+        # eg "{{ today_utc() }}
         self._environment.globals["now_local"] = datetime.datetime.now
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
