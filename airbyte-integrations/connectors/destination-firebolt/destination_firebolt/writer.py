@@ -1,5 +1,6 @@
 
 from collections import defaultdict
+from datetime import datetime
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -32,7 +33,7 @@ class FireboltWriter:
         cursor = self.connection.cursor()
         cursor.execute(query)
 
-    def queue_write_data(self, table_name: str, id: str, time: int, record: str) -> None:
+    def queue_write_data(self, table_name: str, id: str, time: datetime, record: str) -> None:
         self._buffer[table_name].append((id, time, record))
         self._values += 1
         if self._values == self.flush_interval:

@@ -130,13 +130,16 @@ def test_connection(mock_connection, config, config_no_engine, logger):
     establish_connection(config)
 
 
+@patch("destination_firebolt.destination.FireboltS3Writer")
 @patch("destination_firebolt.destination.connect")
-def test_check(mock_connection, config, config_external_table, logger):
+def test_check(mock_connection, mock_writer, config, config_external_table, logger):
     destination = DestinationFirebolt()
     status = destination.check(logger, config)
     assert status.status == Status.SUCCEEDED
+    mock_writer.assert_not_called()
     status = destination.check(logger, config_external_table)
     assert status.status == Status.SUCCEEDED
+    mock_writer.assert_called_once()
     mock_connection().__enter__().cursor().__enter__().execute.side_effect = Exception("my exception")
     status = destination.check(logger, config)
     assert status.status == Status.FAILED

@@ -2,9 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
 from datetime import datetime
+from logging import getLogger
 from typing import Any, Dict, Iterable, Mapping, Optional
 from uuid import uuid4
 
@@ -15,6 +15,8 @@ from firebolt.client import DEFAULT_API_URL
 from firebolt.db import Connection, connect
 
 from .writer import FireboltS3Writer, FireboltSQLWriter
+
+logger = getLogger("airbyte")
 
 
 def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
@@ -79,13 +81,18 @@ class DestinationFirebolt(Destination):
 
         with establish_connection(config) as connection:
             if config.get("s3_bucket"):
-                writer = FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"])
+                logger.info("Using the S3 writing strategy")
+                writer = FireboltS3Writer(
+                    connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"]
+                )
             else:
+                logger.info("Using the SQL writing strategy")
                 writer = FireboltSQLWriter(connection)
-
             for configured_stream in configured_catalog.streams:
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                    # TODO: Not working?
                     writer.delete_table(configured_stream.stream.name)
+                    logger.info(f"Stream {configured_stream.stream.name} is wiped.")
                 writer.create_raw_table(configured_stream.stream.name)
 
             for message in input_messages:
@@ -96,8 +103,9 @@ class DestinationFirebolt(Destination):
                     stream = message.record.stream
                     # Skip unselected streams
                     if stream not in streams:
+                        logger.debug(f"Stream {stream} was not present in configured streams, skipping")
                         continue
-                    writer.queue_write_data(stream, str(uuid4()), int(datetime.now().timestamp()) * 1000, json.dumps(data))
+                    writer.queue_write_data(stream, str(uuid4()), datetime.now(), json.dumps(data))
 
             # Flush any leftover messages
             writer.flush()
@@ -118,12 +126,16 @@ class DestinationFirebolt(Destination):
             s3_bucket = config.get("s3_bucket")
             aws_key_id = config.get("aws_key_id")
             aws_key_secret = config.get("aws_key_secret")
-            if any([s3_bucket, aws_key_id, aws_key_secret]) and not all([s3_bucket, aws_key_id, aws_key_secret]):
+            s3_strategy = any([s3_bucket, aws_key_id, aws_key_secret])
+            if s3_strategy and not all([s3_bucket, aws_key_id, aws_key_secret]):
                 raise Exception("If using External Table strategy please provide S3 bucket name, AWS Key and AWS Secret")
             with establish_connection(config, logger) as connection:
                 # We can only verify correctness of connection parameters on execution
                 with connection.cursor() as cursor:
                     cursor.execute("SELECT 1")
+                # Test access to the bucket
+                if s3_strategy:
+                    FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"])
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
