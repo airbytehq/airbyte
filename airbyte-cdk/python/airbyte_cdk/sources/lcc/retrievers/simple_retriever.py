@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.extractors.extractor import Extractor
+from airbyte_cdk.sources.lcc.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.lcc.requesters.requester import Requester
 from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
@@ -16,7 +17,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class SimpleRetriever(Retriever, HttpStream):
     def __init__(
-        self, name, primary_key, requester: Requester, paginator: Paginator, extractor: Extractor, iterator: StreamSlicer, state: State
+        self, name, primary_key, requester: Requester, paginator: Paginator, extractor: HttpExtractor, iterator: StreamSlicer, state: State
     ):
         self._name = name
         self._primary_key = primary_key
@@ -25,7 +26,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = iterator
-        self._state: State = state.copy()
+        self._state: State = state.deep_copy()
         self._last_response = None
         self._last_records = None
 
