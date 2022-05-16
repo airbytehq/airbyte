@@ -11,7 +11,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from pytest import param
 
 
@@ -218,6 +219,10 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     data_field = "messages"
     cursor_field = "last_event_time"
     limit = 1000
+
+    @property
+    def use_cache(self) -> bool:
+        return True
     
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
@@ -231,6 +236,47 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
 
     def path(self, **kwargs) -> str:
         return "messages"
+
+class MessagesDetails(HttpSubStream,SendgridStreamIncrementalMixin):
+    """
+    https://docs.sendgrid.com/api-reference/e-mail-activity/filter-messages-by-message-id
+    """
+    parent_stream = Messages
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"messages/{stream_slice['msg_id']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
+        for stream_slice in stream_slices:
+            for item in stream_instance.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
+            ):
+                yield {"msg_id": item["msg_id"]}
+
+class MessagesTemplate(HttpSubStream,SendgridStreamIncrementalMixin):
+    """
+    https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-a-single-transactional-template
+    """
+    parent_stream = MessagesDetails
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"templates/{stream_slice['template_id']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
+        for stream_slice in stream_slices:
+            for item in stream_instance.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
+            ):
+                yield {"template_id": item["template_id"]}    
+
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     primary_key = "email"

@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "generation": {
+            "type": "string"
+        },
+        "updated_at": {
+            "type": "string"
+        },
+        "versions": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "template_id": {
+                    "type": "string"
+                },
+                "active": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "html_content": {
+                    "type": "string"
+                },
+                "plain_content": {
+                    "type": "string"
+                },
+                "generate_plain_content": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "editor": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

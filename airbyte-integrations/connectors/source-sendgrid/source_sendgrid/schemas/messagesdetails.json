@@ -1,0 +1,89 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "from_email": {
+            "type": "string"
+        },
+        "msg_id": {
+            "type": "string"
+        },
+        "subject": {
+            "type": "string"
+        },
+        "to_email": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string"
+        },
+        "template_id": {
+            "type": "string"
+        },
+        "asm_group_id": {
+            "type": "integer"
+        },
+        "teammate": {
+            "type": "string"
+        },
+        "api_key_id": {
+            "type": "string"
+        },
+        "events": {
+            "type": "object",
+            "properties": {
+                "event_name": {
+                    "type": "string"
+                },
+                "processed": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "attempt_num": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "bounce_type": {
+                    "type": "string"
+                },
+                "http_user_agent": {
+                    "type": "string"
+                },
+                "mx_server": {
+                    "type": "string"
+                }
+            }
+        },
+        "originating_ip": {
+            "type": "string"
+        },
+        "categories": {
+            "type": "string"
+        },
+        "unique_args": {
+            "type": "string"
+        },
+        "outbound_ip": {
+            "type": "string"
+        },
+        "outbound_ip_type": {
+            "type": "string"
+        },
+        "marketing_campaign_id": {
+            "type": "string"
+        },
+        "marketing_campaign_name": {
+            "type": "string"
+        },
+        "marketing_campaign_split_id": {
+            "type": "string"
+        },
+        "marketing_campaign_version": {
+            "type": "string"
+        }
+    }
+}
