@@ -28,6 +28,10 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
+    for integration_type in [d.value for d in DestinationType]:
+        if integration_type in destinations_to_test:
+            test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
+            shutil.rmtree(test_root_dir, ignore_errors=True)
     if os.getenv("RANDOM_TEST_SCHEMA"):
         target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
         dbt_test_utils.set_target_schema(target_schema)
