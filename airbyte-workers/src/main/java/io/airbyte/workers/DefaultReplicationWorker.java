@@ -289,6 +289,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
+      var validationErrors = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -302,7 +303,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               try {
                 recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
               } catch (final RecordSchemaValidationException e) {
-                LOGGER.warn(e.getMessage());
+                validationErrors += 1;
+                if(validationErrors == 1){
+                  LOGGER.warn(e.getMessage());
+                }
               }
             }
 
@@ -318,6 +322,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             if (recordsRead % 1000 == 0) {
               LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+            }
+            if (validationErrors > 0) {
+              LOGGER.warn("{} record schema validation errors found", validationErrors);
             }
           } else {
             LOGGER.info("Source has no more messages, closing connection.");
