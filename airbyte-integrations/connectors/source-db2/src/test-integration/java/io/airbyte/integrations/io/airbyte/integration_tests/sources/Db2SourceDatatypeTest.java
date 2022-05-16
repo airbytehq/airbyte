@@ -28,6 +28,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private Db2Container container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -40,7 +41,8 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -60,7 +62,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .build()))
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
