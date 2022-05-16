@@ -26,7 +26,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = iterator
-        self._state: State = state.copy()
+        self._state: State = state.deep_copy()
         self._last_response = None
         self._last_records = None
 

@@ -8,3 +8,5 @@ from typing import Any, Mapping
 
 Record = Mapping[str, Any]
 Config = Mapping[str, Any]
+StreamSlice = Mapping[str, Any]
+StreamState = Mapping[str, Any]
