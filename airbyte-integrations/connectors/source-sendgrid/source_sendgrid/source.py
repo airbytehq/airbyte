@@ -17,6 +17,9 @@ from .streams import (
     GlobalSuppressions,
     InvalidEmails,
     Lists,
+    Messages,
+    MessagesDetails,
+    MessagesTemplate,
     Scopes,
     Segments,
     SingleSends,
@@ -25,9 +28,6 @@ from .streams import (
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
-    Messages,
-    MessagesDetails,
-    MessagesTemplate,
 )
 
 
@@ -53,8 +53,8 @@ class SourceSendgrid(AbstractSource):
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
             Messages(authenticator=authenticator, start_time=config["start_time"]),
-            MessagesDetails(authenticator=authenticator),
-            MessagesTemplate(authenticator=authenticator),
+            MessagesDetails(authenticator=authenticator, parent=Messages, start_time=config["start_time"]),
+            MessagesTemplate(authenticator=authenticator, parent=MessagesDetails),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),

@@ -7,6 +7,7 @@ import urllib
 from abc import ABC, abstractmethod
 from asyncio.log import logger
 from cgi import parse_multipart
+from distutils.command.config import config
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -220,6 +221,7 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     cursor_field = "last_event_time"
     limit = 1000
 
+
     @property
     def use_cache(self) -> bool:
         return True
@@ -227,8 +229,13 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        date_start = datetime.datetime.fromtimestamp(params["start_time"]).strftime(time_filter_template)
-        date_end = datetime.datetime.fromtimestamp(params["end_time"]).strftime(time_filter_template)
+        if type(params["start_time"]) == dict:
+            print(params)
+            print(params["start_time"]["start_time"])
+            date_start = datetime.datetime.fromtimestamp(int(params["start_time"]["start_time"])).strftime(time_filter_template)
+        else:
+            date_start = datetime.datetime.fromtimestamp(int(params["start_time"])).strftime(time_filter_template)
+        date_end = datetime.datetime.fromtimestamp(int(params["end_time"])).strftime(time_filter_template)
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
         params['query'] = urllib.parse.quote(queryapi)
         payload_str = "&".join("%s=%s" % (k,v) for k,v in params.items() if k not in ['start_time', 'end_time'])
@@ -237,21 +244,27 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "messages"
 
-class MessagesDetails(HttpSubStream,SendgridStreamIncrementalMixin):
+class MessagesDetails(HttpSubStream, SendgridStream, ABC):
     """
     https://docs.sendgrid.com/api-reference/e-mail-activity/filter-messages-by-message-id
     """
-    parent_stream = Messages
-
+    limit = 1000
+    primary_key = "msg_id"
+ 
     @property
     def use_cache(self) -> bool:
         return True
+
+    def __init__(self, start_time: int, parent: object, **kwargs):
+        super().__init__(parent, **kwargs)
+        self._start_time = start_time
+        self._parent = parent
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"messages/{stream_slice['msg_id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_instance = self._parent({"authenticator":self.authenticator, "start_time":self._start_time})
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
@@ -259,17 +272,17 @@ class MessagesDetails(HttpSubStream,SendgridStreamIncrementalMixin):
             ):
                 yield {"msg_id": item["msg_id"]}
 
-class MessagesTemplate(HttpSubStream,SendgridStreamIncrementalMixin):
+class MessagesTemplate(HttpSubStream, SendgridStream):
     """
     https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-a-single-transactional-template
     """
-    parent_stream = MessagesDetails
+    limit = 1000
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"templates/{stream_slice['template_id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_instance = MessagesDetails(authenticator=self.authenticator, parent=Messages)
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
