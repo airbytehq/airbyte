@@ -9,6 +9,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -26,6 +27,9 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.DatabaseInstance;
 import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -48,6 +52,7 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -60,13 +65,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import lombok.val;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.flywaydb.core.Flyway;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -75,6 +84,7 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
+  private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
 
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
@@ -127,24 +137,36 @@ public class ServerApp implements ServerRunnable {
 
   private static void assertDatabasesReady(final Configs configs,
                                            final DatabaseInstance configsDatabaseInstance,
-                                           final DatabaseInstance jobsDatabaseInstance)
+                                           final DataSource configsDataSource,
+                                           final DatabaseInstance jobsDatabaseInstance,
+                                           final DataSource jobsDataSource)
       throws InterruptedException {
     LOGGER.info("Checking configs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    val configsMigrator = new ConfigsDatabaseMigrator(configsDatabaseInstance.getInitialized(), ServerApp.class.getName());
+    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, ServerApp.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    val configsMigrator = new ConfigsDatabaseMigrator(configsDatabaseInstance.getInitialized(), configsFlyway);
     MinimumFlywayMigrationVersionCheck.assertMigrations(configsMigrator, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
         configs.getConfigsDatabaseInitializationTimeoutMs());
 
     LOGGER.info("Checking jobs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(jobsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    val jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), ServerApp.class.getName());
+    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    val jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), jobsFlyway);
     MinimumFlywayMigrationVersionCheck.assertMigrations(jobsMigrator, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
         configs.getJobsDatabaseInitializationTimeoutMs());
 
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
-    final Configs configs = new EnvConfigs();
+  public static ServerRunnable getServer(final ServerFactory apiFactory,
+                                         final ConfigPersistence seed,
+                                         final Configs configs,
+                                         final DSLContext configsDslContext,
+                                         final DataSource configsDataSource,
+                                         final DSLContext jobsDslContext,
+                                         final DataSource jobsDataSource)
+      throws Exception {
     final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(
@@ -154,10 +176,10 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Checking databases..");
     final DatabaseInstance configsDatabaseInstance =
-        new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl());
+        new ConfigsDatabaseInstance(configsDslContext);
     final DatabaseInstance jobsDatabaseInstance =
-        new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl());
-    assertDatabasesReady(configs, configsDatabaseInstance, jobsDatabaseInstance);
+        new JobsDatabaseInstance(jobsDslContext);
+    assertDatabasesReady(configs, configsDatabaseInstance, configsDataSource, jobsDatabaseInstance, jobsDataSource);
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
@@ -170,9 +192,9 @@ public class ServerApp implements ServerRunnable {
         .copySecrets(false)
         .build();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
@@ -206,6 +228,11 @@ public class ServerApp implements ServerRunnable {
     final EventRunner eventRunner = new TemporalEventRunner(
         TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
 
+    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, DbMigrationHandler.class.getSimpleName(),
+        ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -228,7 +255,9 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkspaceRoot(),
         httpClient,
         featureFlags,
-        eventRunner);
+        eventRunner,
+        configsFlyway,
+        jobsFlyway);
   }
 
   private static void migrateExistingConnection(final ConfigRepository configRepository, final EventRunner eventRunner)
@@ -244,7 +273,24 @@ public class ServerApp implements ServerRunnable {
 
   public static void main(final String[] args) throws Exception {
     try {
-      getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+      final Configs configs = new EnvConfigs();
+
+      // Manual configuration that will be replaced by Dependency Injection in the future
+      final DataSource configsDataSource =
+          DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
+              configs.getConfigDatabaseUrl());
+      final DataSource jobsDataSource =
+          DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl());
+
+      try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+          final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
+
+        // Ensure that the database resources are closed on application shutdown
+        CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
+
+        getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
+            configs, configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
+      }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
       System.exit(1); // so the app doesn't hang on background threads

@@ -12,7 +12,9 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
@@ -79,14 +81,17 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   protected JdbcDatabase createDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        RedshiftSource.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            RedshiftSource.DRIVER_CLASS,
+            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())
+        )
+    );
   }
 
   protected void createTestUser(final JdbcDatabase database, final JsonNode config, final String testUserName, final String testUserPassword)
