@@ -3,8 +3,6 @@
 set -e
 set -x
 
-echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root
-
 . tools/lib/lib.sh
 
 USAGE="
@@ -50,7 +48,6 @@ cmd_build() {
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
-    ./gradlew :airbyte-integrations:connectors:destination-bigquery:build
     ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
