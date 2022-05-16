@@ -3,8 +3,8 @@
 #
 import inspect
 
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.lcc.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 
 """
     Create a partial on steroids.
