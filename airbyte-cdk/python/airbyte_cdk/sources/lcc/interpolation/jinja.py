@@ -25,9 +25,11 @@ class JinjaInterpolation(Interpolation):
                 if result:
                     return result
             else:
+                # If input is not a string, return it as is
                 return input_str
         except UndefinedError:
             pass
+        # If result is empty or resulted in an undefined error, evaluate and return the default string
         return self._eval(default, context)
 
     def _eval(self, s: str, context):
