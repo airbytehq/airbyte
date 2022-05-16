@@ -149,6 +149,58 @@ class AdAccount(FBMarketingStream):
     use_batch = False
     enable_deleted = False
 
+    def createArraySchema(self, array_val):
+
+        arr_type = type(array_val)
+
+        if arr_type is dict:
+            return createSchema(array_val)
+        elif arr_type is int or arr_type is float:
+            return "Number"
+        elif arr_type is bool:
+            return "Boolean"
+        elif arr_type is str or arr_type is unicode:
+            return "String"
+
+    def createSchema(self, record):
+
+        schema = {}
+        for key in record:
+            key_type = type(record[key])
+            key = str(key)
+            if key_type is int or key_type is float:
+                schema[key] = "Number"
+            elif key_type is bool:
+                schema[key] = "Boolean"
+            elif key_type is str:
+                schema[key] = "String"
+            elif key_type is list:
+                ## create array and add to current schema
+                schema[key] = [self.createArraySchema(record[key][0])]
+            elif key_type is dict:
+                ## create object and add to current schema
+                schema[key] = self.createSchema(record[key])
+            else:
+                print("unknown type:", key_type)
+
+        return schema
+
+    def getSchema(self, record):
+        return self.createSchema(record)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            logger.info(f"Get each record schema for debugging purpose")
+            logger.info(self.getSchema(record))
+            yield record
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
         return [FBAdAccount(self._api.account.get_id())]
