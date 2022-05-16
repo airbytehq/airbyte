@@ -20,7 +20,6 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
-    GetXmlBrowseTreeData,
     FbaInventoryReports,
     FbaOrdersReports,
     FbaReplacementsReports,
@@ -29,6 +28,7 @@ from source_amazon_seller_partner.streams import (
     FlatFileOrdersReports,
     FlatFileOrdersReportsByLastUpdate,
     FulfilledShipmentsReports,
+    GetXmlBrowseTreeData,
     MerchantListingsReports,
     Orders,
     SellerFeedbackReports,
@@ -81,7 +81,7 @@ class ConnectorConfig(BaseModel):
         airbyte_secret=True,
     )
     role_arn: str = Field(
-        description="Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
+        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
     )
@@ -181,7 +181,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
             BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
             BrandAnalyticsItemComparisonReports(**stream_kwargs),
-            GetXmlBrowseTreeData(**stream_kwargs)
+            GetXmlBrowseTreeData(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
