@@ -21,6 +21,14 @@ class Stream(HttpStream, ABC):
 
     limit = 100
 
+    def request_kwargs(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+
+        return {
+            "timeout": 60
+        }
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
         if delay_time:
