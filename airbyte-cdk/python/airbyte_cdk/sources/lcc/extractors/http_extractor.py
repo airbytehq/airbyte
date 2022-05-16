@@ -8,7 +8,7 @@ import requests
 from airbyte_cdk.sources.lcc.types import Record
 
 
-class Extractor(ABC):
+class HttpExtractor(ABC):
     @abstractmethod
     def extract_records(self, response: requests.Response) -> List[Record]:
         pass
