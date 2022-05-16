@@ -18,7 +18,8 @@ from airbyte_cdk.models.airbyte_protocol import (
     SyncMode,
 )
 from destination_firebolt.destination import DestinationFirebolt, establish_connection
-from pytest import fixture, mark
+from firebolt.common.exception import FireboltError
+from pytest import fixture, mark, raises
 
 
 @fixture(scope="module")
@@ -30,13 +31,17 @@ def test_table_name() -> str:
 
 @fixture(scope="module")
 def config_sql() -> Dict[str, str]:
-    with open("secrets/config_sql.json",) as f:
+    with open(
+        "secrets/config_sql.json",
+    ) as f:
         yield load(f)
 
 
 @fixture(scope="module")
 def config_s3() -> Dict[str, str]:
-    with open("secrets/config_s3.json",) as f:
+    with open(
+        "secrets/config_s3.json",
+    ) as f:
         yield load(f)
 
 
@@ -53,7 +58,9 @@ def cleanup(config_sql: Dict[str, str], test_table_name: str):
 def table_schema() -> str:
     schema = {
         "type": "object",
-        "properties": {"column1": {"type": ["null", "string"]},},
+        "properties": {
+            "column1": {"type": ["null", "string"]},
+        },
     }
     return schema
 
@@ -70,13 +77,17 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
 
 @fixture(scope="module")
 def invalid_config() -> Dict[str, str]:
-    with open("integration_tests/invalid_config.json",) as f:
+    with open(
+        "integration_tests/invalid_config.json",
+    ) as f:
         yield load(f)
 
 
 @fixture(scope="module")
 def invalid_config_s3() -> Dict[str, str]:
-    with open("integration_tests/invalid_config_s3.json",) as f:
+    with open(
+        "integration_tests/invalid_config_s3.json",
+    ) as f:
         yield load(f)
 
 
@@ -85,7 +96,9 @@ def airbyte_message1(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value1", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000,
+            stream=test_table_name,
+            data={"key1": "value1", "key2": 2},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
@@ -95,7 +108,9 @@ def airbyte_message2(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value2", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000,
+            stream=test_table_name,
+            data={"key1": "value2", "key2": 3},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
@@ -124,7 +139,7 @@ def test_write(
     airbyte_message2: AirbyteMessage,
     test_table_name: str,
     cleanup,
-    request
+    request,
 ):
     config_values = request.getfixturevalue(config)
     destination = DestinationFirebolt()
@@ -133,8 +148,13 @@ def test_write(
     assert len(result) == 0
     with establish_connection(config_values, MagicMock()) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data")
+            cursor.execute(
+                f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
+            )
             result = cursor.fetchall()
+            # Make sure no temporary tables present
+            with raises(FireboltError):
+                cursor.execute(f"SELECT TOP 0 * FROM ex_airbyte_raw_{test_table_name}")
     assert len(result) == 2
     assert result[0][2] == dumps(airbyte_message1.record.data)
     assert result[1][2] == dumps(airbyte_message2.record.data)

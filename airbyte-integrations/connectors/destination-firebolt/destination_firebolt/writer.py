@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 
 from collections import defaultdict
 from datetime import datetime
+from time import time
+from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -56,22 +61,15 @@ class FireboltS3Writer(FireboltWriter):
         self.secret_key = secret_key
         self.s3_bucket = s3_bucket
         self._updated_tables = set()
+        self.unique_dir = f"{int(time())}_{uuid4()}"
         self.fs = fs.S3FileSystem(access_key=access_key, secret_key=secret_key, region=s3_region)
-
-    def delete_table(self, name: str) -> None:
-        super().delete_table(name)
-        cursor = self.connection.cursor()
-        cursor.execute(f"DROP TABLE IF EXISTS ext_airbyte_raw_{name}")
-
-    def create_raw_table(self, name: str):
-        super().create_raw_table(name)
 
     def _flush(self):
         for table, data in self._buffer.items():
             key_list, ts_list, payload = zip(*data)
             upload_data = [pa.array(key_list), pa.array(ts_list), pa.array(payload)]
             pa_table = pa.table(upload_data, names=["_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_data"])
-            pq.write_to_dataset(table=pa_table, root_path=f"{self.s3_bucket}/airbyte_output/{table}", filesystem=self.fs)
+            pq.write_to_dataset(table=pa_table, root_path=f"{self.s3_bucket}/airbyte_output/{self.unique_dir}/{table}", filesystem=self.fs)
         # Update tables
         self._updated_tables.update(self._buffer.keys())
         self._buffer.clear()
@@ -83,6 +81,7 @@ class FireboltS3Writer(FireboltWriter):
             self.create_raw_table(table)
             self.create_external_table(table)
             self.ingest_data(table)
+            self.cleanup(table)
 
     def create_external_table(self, name: str):
         query = f"""
@@ -91,7 +90,7 @@ class FireboltS3Writer(FireboltWriter):
             _airbyte_emitted_at TIMESTAMP,
             _airbyte_data TEXT
         )
-        URL = 's3://{self.s3_bucket}/airbyte_output/{name}'
+        URL = 's3://{self.s3_bucket}/airbyte_output/{self.unique_dir}/{name}'
         CREDENTIALS = ( AWS_KEY_ID = '{self.key_id}' AWS_SECRET_KEY = '{self.secret_key}' )
         OBJECT_PATTERN = '*.parquet'
         TYPE = (PARQUET);
@@ -103,6 +102,11 @@ class FireboltS3Writer(FireboltWriter):
         query = f"INSERT INTO _airbyte_raw_{name} SELECT * FROM ex_airbyte_raw_{name}"
         cursor = self.connection.cursor()
         cursor.execute(query)
+
+    def cleanup(self, table):
+        cursor = self.connection.cursor()
+        cursor.execute(f"DROP TABLE IF EXISTS ex_airbyte_raw_{table}")
+        self.fs.delete_dir_contents(f"{self.s3_bucket}/airbyte_output/{self.unique_dir}/{table}")
 
 
 class FireboltSQLWriter(FireboltWriter):
