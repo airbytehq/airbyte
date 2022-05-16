@@ -90,7 +90,6 @@ class DestinationFirebolt(Destination):
                 writer = FireboltSQLWriter(connection)
             for configured_stream in configured_catalog.streams:
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                    # TODO: Not working?
                     writer.delete_table(configured_stream.stream.name)
                     logger.info(f"Stream {configured_stream.stream.name} is wiped.")
                 writer.create_raw_table(configured_stream.stream.name)
