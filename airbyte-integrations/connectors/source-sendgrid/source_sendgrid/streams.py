@@ -231,10 +231,9 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
         params = super().request_params(next_page_token=next_page_token, **kwargs)
         if type(params["start_time"]) == dict:
             print(params)
-            print(params["start_time"]["start_time"])
-            date_start = datetime.datetime.fromtimestamp(int(params["start_time"]["start_time"])).strftime(time_filter_template)
-        else:
-            date_start = datetime.datetime.fromtimestamp(int(params["start_time"])).strftime(time_filter_template)
+            params["authenticator"]=params["start_time"]["authenticator"]
+            params["start_time"]=params["start_time"]["start_time"]
+        date_start = datetime.datetime.fromtimestamp(int(params["start_time"])).strftime(time_filter_template)
         date_end = datetime.datetime.fromtimestamp(int(params["end_time"])).strftime(time_filter_template)
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
         params['query'] = urllib.parse.quote(queryapi)
@@ -257,7 +256,6 @@ class MessagesDetails(HttpSubStream, SendgridStream, ABC):
 
     def __init__(self, start_time: int, parent: object, **kwargs):
         super().__init__(parent, **kwargs)
-        self._start_time = start_time
         self._parent = parent
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
