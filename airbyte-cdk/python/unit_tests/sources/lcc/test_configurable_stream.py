@@ -42,4 +42,3 @@ def test():
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
-    assert stream.state_checkpoint_interval == checkpoint_interval
