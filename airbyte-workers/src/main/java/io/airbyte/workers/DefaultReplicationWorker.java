@@ -22,6 +22,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -289,7 +290,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
-      var validationErrors = 0;
+      final Map<String, Integer> validationErrors = new HashMap<String, Integer>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -303,9 +304,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               try {
                 recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
               } catch (final RecordSchemaValidationException e) {
-                validationErrors += 1;
-                if (validationErrors == 1) {
-                  LOGGER.warn(e.getMessage());
+                if (validationErrors.size() < 10) {
+                  final Integer exceptionCount = validationErrors.get(e.getMessage());
+                  if (exceptionCount == null) {
+                    validationErrors.put(e.getMessage(), 1);
+                  } else {
+                    validationErrors.put(e.getMessage(), exceptionCount + 1);
+                  }
                 }
               }
             }
@@ -323,9 +328,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             if (recordsRead % 1000 == 0) {
               LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
             }
-            if (validationErrors > 0) {
-              LOGGER.warn("{} record schema validation errors found", validationErrors);
-            }
           } else {
             LOGGER.info("Source has no more messages, closing connection.");
             try {
@@ -336,6 +338,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        if (!validationErrors.isEmpty()) {
+          LOGGER.warn("Record schema validation errors found: {}", validationErrors);
+        }
+
         try {
           destination.notifyEndOfStream();
         } catch (final Exception e) {
