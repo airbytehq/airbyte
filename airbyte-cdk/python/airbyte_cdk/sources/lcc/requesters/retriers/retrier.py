@@ -1,18 +1,20 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import requests
 
 
 class Retrier(ABC):
-    @abstractproperty
+    @property
+    @abstractmethod
     def max_retries(self) -> Union[int, None]:
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def retry_factor(self) -> float:
         pass
 
