@@ -46,7 +46,7 @@ export const apiOverride = async <T, U = unknown>(
   const { apiUrl } = options.config;
   // Remove the `v1/` in the end of the apiUrl for now, during the transition period
   // to get rid of it from all environment variables.
-  const requestUrl = `${apiUrl.replace(/v1\/?$/, "")}${url}`;
+  const requestUrl = `${apiUrl.replace(/\/v1\/?$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
 
   for (const middleware of options.middlewares) {
     headers = (await middleware({ headers })).headers;

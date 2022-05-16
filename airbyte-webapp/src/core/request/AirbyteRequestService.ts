@@ -9,9 +9,9 @@ abstract class AirbyteRequestService {
   private readonly rootUrl: string;
 
   constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
-    // Remove the `/v1` at the end of the URL if it exists, during the transition period
+    // Remove the `/v1/` at the end of the URL if it exists, during the transition period
     // to remove it from all cloud environments
-    this.rootUrl = rootUrl.replace(/v1\/?$/, "");
+    this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
   }
 
   protected get requestOptions(): ApiOverrideRequestOptions {
@@ -23,7 +23,7 @@ abstract class AirbyteRequestService {
 
   /** Perform network request */
   public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
-    const path = `${this.rootUrl}${url}`;
+    const path = `${this.rootUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 
     const requestOptions: RequestInit = merge(
       {
