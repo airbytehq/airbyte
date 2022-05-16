@@ -9,5 +9,5 @@ from airbyte_cdk.sources.configurable.types import Config
 
 class Interpolation(ABC):
     @abstractmethod
-    def eval(self, input_str: str, config: Config, **kwargs):
+    def eval(self, input_str: str, config: Config, **kwargs) -> str:
         pass
