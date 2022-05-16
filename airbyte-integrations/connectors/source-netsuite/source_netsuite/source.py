@@ -23,7 +23,6 @@ class NetsuiteStream(HttpStream, ABC):
         self.record_url = record_url
         self.concurrency_limit = concurrency_limit
         self.start_datetime = start_datetime
-        self.pool = Pool(processes=self.concurrency_limit)
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -77,8 +76,8 @@ class NetsuiteStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json().get("items")
-        data = self.pool.map(self.fetch_record, records) if records else []
-        return iter(data)
+        with Pool(self.concurrency_limit) as pool:
+            return iter(pool.map(self.fetch_record, records) if records else [])
 
 
 # Basic incremental stream
