@@ -60,7 +60,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 ## Getting started
 The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Page Statistics`, `Share Statistics`, `Shares`, `UGC Posts` requires the next permissions set:
+Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Page Statistics`, `Share Statistics`, `Shares`, `UGC Posts` require the next permissions set:
 * `r_organization_social`: Retrieve your organization's posts, comments, reactions, and other engagement data.
 * `rw_organization_admin`: Manage your organization's pages and retrieve reporting data.
 
