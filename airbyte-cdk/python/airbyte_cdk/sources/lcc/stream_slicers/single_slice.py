@@ -4,10 +4,10 @@
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.iterators.iterator import Iterator
+from airbyte_cdk.sources.lcc.stream_slicers.StreamSlicer import StreamSlicer
 
 
-class OnlyOnceIterator(Iterator):
+class SingleSlice(StreamSlicer):
     def __init__(self, **kwargs):
         pass
 

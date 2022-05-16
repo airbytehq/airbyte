@@ -6,7 +6,7 @@ from typing import List
 import pyjq
 import requests
 from airbyte_cdk.sources.lcc.extractors.extractor import Extractor
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.lcc.types import Record
 
 

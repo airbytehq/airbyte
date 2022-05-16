@@ -3,8 +3,8 @@
 #
 from typing import Mapping
 
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.lcc.interpolation.interpolation import Interpolation
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 
 
 class InterpolatedMapping:

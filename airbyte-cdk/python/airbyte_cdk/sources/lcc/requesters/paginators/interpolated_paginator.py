@@ -5,8 +5,8 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.lcc.interpolation.eval import JinjaInterpolation
 from airbyte_cdk.sources.lcc.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
 
 
@@ -19,6 +19,7 @@ class InterpolatedPaginator(Paginator):
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
         headers = response.headers
+        # Pass in values as kwargs
         kwargs = {"decoded_response": decoded_response, "headers": headers, "last_records": last_records}
         interpolated_values = self._interpolation.eval(self._config, **kwargs)
 
