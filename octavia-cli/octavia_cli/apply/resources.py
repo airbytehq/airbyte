@@ -587,13 +587,13 @@ class Connection(BaseResource):
         return AirbyteCatalog(streams_and_configurations)
 
     def _deserialize_operations(
-        self, operations: List[dict], outputModelCls: Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]
+        self, operations: List[dict], outputModelClass: Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]
     ) -> List[Union[OperationCreate, WebBackendOperationCreateOrUpdate]]:
         """Deserialize operations to OperationCreate (to create connection) or WebBackendOperationCreateOrUpdate (to update connection) models.
 
         Args:
             operations (List[dict]): List of operations to deserialize
-            outputModelCls (Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]): The model to which the operation dict will be deserialized
+            outputModelClass (Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]): The model to which the operation dict will be deserialized
 
         Raises:
             ValueError: Raised if the operator type declared in the configuration is not supported
@@ -604,7 +604,7 @@ class Connection(BaseResource):
         deserialized_operations = []
         for operation in operations:
             if operation["operator_configuration"]["operator_type"] == "normalization":
-                operation = outputModelCls(
+                operation = outputModelClass(
                     workspace_id=self.workspace_id,
                     name=operation["name"],
                     operator_configuration=OperatorConfiguration(
@@ -613,7 +613,7 @@ class Connection(BaseResource):
                     ),
                 )
             elif operation["operator_configuration"]["operator_type"] == "dbt":
-                operation = outputModelCls(
+                operation = outputModelClass(
                     workspace_id=self.workspace_id,
                     name=operation["name"],
                     operator_configuration=OperatorConfiguration(
