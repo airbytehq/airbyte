@@ -318,7 +318,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private SyncCheckConnectionFailure checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
-    System.out.println(jobInputs);
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
     final StandardSyncInput syncInput = jobInputs.getSyncInput();
     final JsonNode sourceConfig = syncInput.getSourceConfiguration();
@@ -330,14 +329,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
 
-    if (attemptCreationVersion >= CHECK_BEFORE_SYNC_CURRENT_VERSION) {
+    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION) {
       // return early if this instance of the workflow was created beforehand
       return checkFailure;
     }
 
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
-    final String launchSourceDockerImage = sourceLauncherConfig.getDockerImage();
 
     if (workflowState.isResetConnection() || checkFailure.isFailed()) {
       log.info("SOURCE CHECK: Skipped");
@@ -355,7 +353,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
     final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
-    final String launchDestinationDockerImage = destinationLauncherConfig.getDockerImage();
 
     if (checkFailure.isFailed()) {
       log.info("DESTINATION CHECK: Skipped");

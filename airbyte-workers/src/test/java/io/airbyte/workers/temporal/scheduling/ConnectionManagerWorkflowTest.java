@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.scheduling;
 
 import static org.mockito.Mockito.atLeastOnce;
 
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -891,7 +892,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
-          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.SOURCE, FailureType.CONFIG_ERROR)));
     }
 
     @Test
@@ -932,7 +933,49 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
-          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
+    }
+
+    @Test
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that reset workflows do not CHECK the source")
+    public void testSourceCheckSkippedWhenReset() throws InterruptedException {
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
+          .thenReturn(new JobCreationOutput(JOB_ID));
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
+          .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
+      Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
+          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")); // first call, but should fail destination
+                                                                                                          // because source check is skipped
+
+      testEnv.start();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+      workflowState.setResetConnection(true);
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .resetConnection(true)
+          .fromJobResetFailure(false)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce())
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
     }
 
     @RepeatedTest(10)
@@ -1447,6 +1490,24 @@ public class ConnectionManagerWorkflowTest {
     @Override
     public boolean matches(final AttemptNumberFailureInput arg) {
       return arg.getAttemptFailureSummary().getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(expectedFailureOrigin));
+    }
+
+  }
+
+  private class HasFailureFromOriginWithType implements ArgumentMatcher<AttemptNumberFailureInput> {
+
+    private final FailureOrigin expectedFailureOrigin;
+    private final FailureType expectedFailureType;
+
+    public HasFailureFromOriginWithType(final FailureOrigin failureOrigin, final FailureType failureType) {
+      this.expectedFailureOrigin = failureOrigin;
+      this.expectedFailureType = failureType;
+    }
+
+    @Override
+    public boolean matches(final AttemptNumberFailureInput arg) {
+      final Stream<FailureReason> stream = arg.getAttemptFailureSummary().getFailures().stream();
+      return stream.anyMatch(f -> f.getFailureOrigin().equals(expectedFailureOrigin) && f.getFailureType().equals(expectedFailureType));
     }
 
   }
