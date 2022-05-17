@@ -7,6 +7,8 @@ import { FormattedMessage } from "react-intl";
 import { useIntl } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
 import { ReflexElement } from "react-reflex";
+import { useLocation } from "react-router-dom";
+import { useUpdateEffect } from "react-use";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
 import styled from "styled-components";
@@ -55,6 +57,12 @@ export const DocumentationPanel: React.FC = () => {
     };
     return [[urls, sanitizeLinks], [rehypeSlug]];
   }, [config.integrationUrl, config.ui.docsLink]);
+
+  const location = useLocation();
+
+  useUpdateEffect(() => {
+    setDocumentationPanelOpen(false);
+  }, [setDocumentationPanelOpen, location.pathname]);
 
   return isLoading ? (
     <LoadingPage />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -39,6 +39,12 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
 
   const { data: sourceDefinitionSpecification, isLoading } =
     useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const onSubmitSourceStep = async (values: {
     name: string;

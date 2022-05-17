@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -11,6 +11,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 const Content = styled.div`
   max-width: 813px;
@@ -25,6 +26,14 @@ interface SourceSettingsProps {
 const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
+
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -37,6 +37,12 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const onSubmitDestinationStep = async (values: {
     name: string;
