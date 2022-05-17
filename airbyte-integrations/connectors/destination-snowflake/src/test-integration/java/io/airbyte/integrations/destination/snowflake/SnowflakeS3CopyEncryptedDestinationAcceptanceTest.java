@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,4 +19,5 @@ public class SnowflakeS3CopyEncryptedDestinationAcceptanceTest extends Snowflake
     Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(copyConfig));
     return copyConfig;
   }
+
 }
