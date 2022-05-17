@@ -12,7 +12,6 @@ import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from deprecated.classic import deprecated
 
 
