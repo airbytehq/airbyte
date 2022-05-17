@@ -157,6 +157,10 @@ class LineItems(Orders):
                 for line_item in line_items:
                     try:
                         line_item['order_id'] = data['id']
+                        line_item['created_at'] = data['created_at']
+                        line_item['processed_at'] = data['processed_at']
+                        line_item['updated_at'] = data['updated_at']
+                        line_item['source_name'] = data['source_name']
                         modified_response.append(line_item)
                     except:
                         pass

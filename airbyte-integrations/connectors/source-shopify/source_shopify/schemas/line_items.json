@@ -9,6 +9,36 @@
         "integer"
       ]
     },
+    "order_id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "processed_at": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "source_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "admin_graphql_api_id": {
       "type": [
         "null",
