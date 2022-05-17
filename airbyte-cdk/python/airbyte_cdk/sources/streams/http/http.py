@@ -297,7 +297,7 @@ class HttpStream(Stream, ABC):
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
                 response.raise_for_status()
-            except HTTPError as exc:
+            except HTTPError as exc:  # FIXME is this using the right HTTPError? (requests vs urllib)
                 self.logger.error(response.text)
                 raise exc
         return response
@@ -335,6 +335,37 @@ class HttpStream(Stream, ABC):
             user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
             backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
             return backoff_handler(user_backoff_handler)(request, request_kwargs)
+
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+        # default logic to grab error from common fields
+
+        def _try_get_error(token):
+            if type(token) is str:
+                return token
+            elif type(token) is list:
+                return ", ".join(_try_get_error(t) for t in token)
+            elif type(token) is dict:
+                new_token = (
+                    token.get("message")
+                    or token.get("messages")
+                    or token.get("error")
+                    or token.get("errors")
+                    or token.get("failures")
+                    or token.get("failure")
+                )
+                return _try_get_error(new_token)
+            return None
+
+        try:
+            body = response.json()
+            return _try_get_error(body)
+        except requests.exceptions.JSONDecodeError:
+            return None
+
+    def get_error_display_message(self, exception) -> Optional[str]:
+        if isinstance(exception, requests.HTTPError):
+            return self.parse_response_error_message(exception.response)
+        return None
 
     def read_records(
         self,

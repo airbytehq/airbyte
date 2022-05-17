@@ -206,7 +206,7 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            records = stream_instance.read_records(
+            records = stream_instance.read_records_with_handler(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
                 stream_state=stream_state,
@@ -240,7 +240,7 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         total_records_counter = 0
         for slice in slices:
-            records = stream_instance.read_records(
+            records = stream_instance.read_records_with_handler(
                 stream_slice=slice,
                 sync_mode=SyncMode.full_refresh,
                 cursor_field=configured_stream.cursor_field,
