@@ -429,7 +429,7 @@ def test_config_skip_test():
     docker_runner_mock.call_read.return_value = []
     t = _TestIncremental()
     t.test_read_sequential_slices(
-        inputs=IncrementalConfig(skip_new_incremental_tests=True),
+        inputs=IncrementalConfig(skip_comprehensive_incremental_tests=True),
         connector_config=MagicMock(),
         configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
             streams=[

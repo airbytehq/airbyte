@@ -146,18 +146,19 @@ class TestIncremental(BaseTest):
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
     ):
         """
-        Incremental test that makes an initial API request without a state checkpoint. Then we partition the results by stream and
+        Incremental test that makes calls the read method without a state checkpoint. Then we partition the results by stream and
         slice checkpoints resulting in batches of messages that look like:
         <state message>
         <record message>
         ...
         <record message>
 
-        Using these batches, we then make API requests using the state message and verify the the correctness of the messages in the
-        response.
+        Using these batches, we then make additional read method calls using the state message and verify the correctness of the
+        messages in the response.
         """
-        if inputs.skip_new_incremental_tests:
+        if inputs.skip_comprehensive_incremental_tests:
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
+            return
 
         threshold_days = getattr(inputs, "threshold_days") or 0
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
@@ -181,17 +182,18 @@ class TestIncremental(BaseTest):
         checkpoint_messages = []
         for index, message in reversed(list(enumerate(filtered_messages))):
             if message.type == Type.STATE:
-                checkpoint_messages.insert(0, filtered_messages[index:right_index])
+                message_group = (filtered_messages[index], filtered_messages[index + 1 : right_index])
+                checkpoint_messages.insert(0, message_group)
                 right_index = index
 
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
         checkpoint_messages = [message for index, message in enumerate(checkpoint_messages) if message not in checkpoint_messages[:index]]
 
         # To avoid spamming APIs we only test a fraction of slices
-        sample_rate = 1 if len(checkpoint_messages) <= 5 else len(checkpoint_messages) // 5
-        for message_batch in checkpoint_messages[::sample_rate]:
+        num_slices_to_test = 1 if len(checkpoint_messages) <= 5 else len(checkpoint_messages) // 5
+        for message_batch in checkpoint_messages[::num_slices_to_test]:
             assert len(message_batch) > 0 and message_batch[0].type == Type.STATE
-            current_state = message_batch.pop(0)
+            current_state = message_batch[0]
             output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, current_state.state.data)
             records = filter_output(output, type_=Type.RECORD)
 
