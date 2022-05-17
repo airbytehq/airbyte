@@ -10,9 +10,9 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class GCSErrorMessage implements ErrorMessage {
+public class GcsErrorMessage extends ErrorMessage {
 
-  static {
+  {
     CONSTANTS.put("NoSuchBucket", INCORRECT_BUCKET_NAME);
     CONSTANTS.put("SignatureDoesNotMatch", INCORRECT_CREDENTIALS);
   }

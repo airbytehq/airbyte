@@ -13,9 +13,9 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class PostgresErrorMessage implements ErrorMessage {
+public class PostgresErrorMessage extends ErrorMessage {
 
-  static {
+  {
     CONSTANTS.put("28P01", INCORRECT_USERNAME_OR_PASSWORD);
     CONSTANTS.put("42501", INCORRECT_ACCESS_PERMISSION);
     CONSTANTS.put("08001", INCORRECT_HOST_OR_PORT);

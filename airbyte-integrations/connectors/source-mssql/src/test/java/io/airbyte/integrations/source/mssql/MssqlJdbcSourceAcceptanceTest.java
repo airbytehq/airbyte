@@ -16,15 +16,22 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
+import javax.sql.DataSource;
+
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
 
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static MSSQLServerContainer<?> dbContainer;
-  private static JdbcDatabase database;
   private JsonNode config;
 
   @BeforeAll
@@ -42,30 +49,32 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("password", dbContainer.getPassword())
         .build());
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
-            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-            String.format("jdbc:sqlserver://%s:%d",
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asInt())
-        )
-    );
+    final DataSource dataSource = DataSourceFactory.create(
+        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get("password").asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
+            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get("port").asInt()));
 
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
-    super.setup();
+      config = Jsons.clone(configWithoutDbName);
+      ((ObjectNode) config).put("database", dbName);
+
+      super.setup();
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    database.close();
     dbContainer.close();
   }
 
@@ -88,5 +97,43 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public String getDriverClass() {
     return MssqlSource.DRIVER_CLASS;
   }
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    ((ObjectNode) config).put("password", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+  }
 
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    ((ObjectNode) config).put("username", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    ((ObjectNode) config).put("host", "localhost2");
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() throws Exception {
+    ((ObjectNode) config).put("port", "0000");
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
+    ((ObjectNode) config).put("database", "wrongdatabase");
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+  }
 }

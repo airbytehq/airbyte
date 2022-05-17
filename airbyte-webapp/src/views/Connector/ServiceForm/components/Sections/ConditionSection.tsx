@@ -16,7 +16,10 @@ import { FormSection } from "./FormSection";
 const GroupLabel = styled(Label)`
   width: auto;
   margin-right: 8px;
+  padding-top: 8px;
   display: inline-block;
+  padding-bottom: 0px;
+  vertical-align: middle;
 `;
 
 const ConditionControls = styled.div`

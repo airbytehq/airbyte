@@ -59,13 +59,14 @@ import org.slf4j.LoggerFactory;
  * NoSql DB source.
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
-    BaseConnector implements Source {
+    BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    try (final Database database = createDatabaseInternal(config)) {
+    try {
+      final Database database = createDatabaseInternal(config);
       for (final CheckedConsumer<Database, Exception> checkOperation : getCheckOperations(config)) {
         checkOperation.accept(database);
       }
@@ -83,12 +84,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
+    } finally {
+      close();
     }
   }
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
-    try (final Database database = createDatabaseInternal(config)) {
+    try {
+      final Database database = createDatabaseInternal(config);
       final List<AirbyteStream> streams = getTables(database).stream()
           .map(tableInfo -> CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
@@ -98,6 +102,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
+    } finally {
+      close();
     }
   }
 
@@ -131,7 +137,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return AutoCloseableIterators
         .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
           LOGGER.info("Closing database connection pool.");
-          Exceptions.toRuntime(database::close);
+          Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
   }
@@ -352,9 +358,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .collect(Collectors.toList());
   }
 
-  protected Field toField(CommonField<DataType> field) {
+  protected Field toField(final CommonField<DataType> field) {
     if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null && !field.getProperties().isEmpty()) {
-      var properties = field.getProperties().stream().map(this::toField).toList();
+      final var properties = field.getProperties().stream().map(this::toField).toList();
       return Field.of(field.getName(), getType(field.getType()), properties);
     } else {
       return Field.of(field.getName(), getType(field.getType()));

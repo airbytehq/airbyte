@@ -17,6 +17,7 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.io.IOException;
 import java.sql.JDBCType;
@@ -48,10 +49,17 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    final var dataSource = createDataSource(config);
     final var database = new StreamingJdbcDatabase(dataSource, new SnowflakeSourceOperations(), AdaptiveStreamingQueryConfig::new);
     quoteString = database.getMetaData().getIdentifierQuoteString();
     return database;
+  }
+
+  @Override
+  protected DataSource createDataSource(final JsonNode config) {
+    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    dataSources.add(dataSource);
+    return dataSource;
   }
 
   @Override
@@ -71,12 +79,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     } else {
       return buildUsernamePasswordConfig(config, jdbcUrl);
     }
-  }
-
-  @Override
-  public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "INFORMATION_SCHEMA");
   }
 
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {
@@ -105,4 +107,14 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  public Set<String> getExcludedInternalNameSpaces() {
+    return Set.of(
+        "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.SNOWFLAKE;
+  }
 }

@@ -10,9 +10,9 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class MongoDbErrorMessage implements ErrorMessage {
+public class MongoDbErrorMessage extends ErrorMessage {
 
-  static {
+  {
     CONSTANTS.put("18", INCORRECT_USERNAME_OR_PASSWORD);
     CONSTANTS.put("fail_connection", INCORRECT_HOST_OR_PORT);
   }

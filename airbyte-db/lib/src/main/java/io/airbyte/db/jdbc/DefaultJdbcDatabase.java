@@ -9,7 +9,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.exception.ConnectionErrorException;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -81,8 +80,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       conn.close();
       return metaData;
     } catch (SQLException e) {
-      SQLException sqlException = (SQLException) e.getCause();
-      throw new ConnectionErrorException(sqlException.getSQLState(), e.getMessage());
+      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e.getMessage() : e.getCause().getMessage() );
     }
   }
 
@@ -115,18 +113,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
             throw new RuntimeException(e);
           }
         });
-  }
-
-  @Override
-  public void close() throws Exception {
-    // Close the source in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-    if (dataSource instanceof AutoCloseable autoCloseable) {
-      autoCloseable.close();
-    }
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
   }
 
 }

@@ -4,8 +4,10 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Map;
 import java.util.Optional;
 
@@ -101,5 +103,11 @@ public interface MessageTracker {
    * @return returns the total count of emitted state messages.
    */
   Long getTotalStateMessagesEmitted();
+
+  AirbyteTraceMessage getFirstDestinationErrorTraceMessage();
+
+  AirbyteTraceMessage getFirstSourceErrorTraceMessage();
+
+  FailureReason errorTraceMessageFailure(Long jobId, Integer attempt);
 
 }

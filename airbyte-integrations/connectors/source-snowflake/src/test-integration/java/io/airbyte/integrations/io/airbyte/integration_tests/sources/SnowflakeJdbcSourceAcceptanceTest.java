@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_HOST;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
@@ -61,7 +64,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @AfterEach
   public void clean() throws Exception {
     super.tearDown();
-    database.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Override
@@ -85,10 +88,34 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testCheckFailure() throws Exception {
-    ((ObjectNode) config.get("credentials")).put("password", "fake");
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
   }
 
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+      ((ObjectNode) config).put("username", "fake");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(Status.FAILED, actual.getStatus());
+      assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckEmptyUsernameFailure() throws Exception {
+    ((ObjectNode) config).put("username", "");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+      ((ObjectNode) config).put("host", "localhost2");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(Status.FAILED, actual.getStatus());
+      assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
+  }
 }

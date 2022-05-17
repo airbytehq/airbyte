@@ -7,10 +7,14 @@ package io.airbyte.db.factory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -102,6 +106,18 @@ public class DataSourceFactoryTest extends AbstractFactoryTest {
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
     assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+  }
+
+  @Test
+  void testClosingADataSource() {
+    final HikariDataSource dataSource1 = mock(HikariDataSource.class);
+    Assertions.assertDoesNotThrow(() -> DataSourceFactory.close(dataSource1));
+    verify(dataSource1, times(1)).close();
+
+    final DataSource dataSource2 = mock(DataSource.class);
+    Assertions.assertDoesNotThrow(() -> DataSourceFactory.close(dataSource2));
+
+    Assertions.assertDoesNotThrow(() -> DataSourceFactory.close(null));
   }
 
 }
