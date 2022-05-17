@@ -75,7 +75,7 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs job={job} jobIsFailed={didSucceed} />}
+            {isOpen && <JobLogs job={job} jobIsFailed={!didSucceed} />}
           </Suspense>
         </div>
       </ContentWrapper>
