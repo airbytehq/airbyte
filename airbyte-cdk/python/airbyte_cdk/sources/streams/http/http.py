@@ -339,21 +339,21 @@ class HttpStream(Stream, ABC):
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
         # default logic to grab error from common fields
 
-        def _try_get_error(token):
-            if type(token) is str:
-                return token
-            elif type(token) is list:
-                return ", ".join(_try_get_error(t) for t in token)
-            elif type(token) is dict:
-                new_token = (
-                    token.get("message")
-                    or token.get("messages")
-                    or token.get("error")
-                    or token.get("errors")
-                    or token.get("failures")
-                    or token.get("failure")
+        def _try_get_error(value):
+            if type(value) is str:
+                return value
+            elif type(value) is list:
+                return ", ".join(_try_get_error(v) for v in value)
+            elif type(value) is dict:
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
                 )
-                return _try_get_error(new_token)
+                return _try_get_error(new_value)
             return None
 
         try:
