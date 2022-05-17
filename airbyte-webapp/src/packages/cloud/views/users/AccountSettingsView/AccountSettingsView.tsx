@@ -1,13 +1,13 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 
 import { LabeledInput, LoadingButton } from "components";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { RowFieldItem } from "packages/cloud/views/auth/components/FormComponents";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { EmailSection, PasswordSection } from "./components";
 

@@ -26,6 +26,7 @@ import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.flywaydb.core.Flyway;
 import org.slf4j.MDC;
 
 public interface ServerFactory {
@@ -49,7 +50,9 @@ public interface ServerFactory {
                         Path workspaceRoot,
                         HttpClient httpClient,
                         FeatureFlags featureFlags,
-                        EventRunner eventRunner);
+                        EventRunner eventRunner,
+                        Flyway configsFlyway,
+                        Flyway jobsFlyway);
 
   class Api implements ServerFactory {
 
@@ -73,7 +76,9 @@ public interface ServerFactory {
                                  final Path workspaceRoot,
                                  final HttpClient httpClient,
                                  final FeatureFlags featureFlags,
-                                 final EventRunner eventRunner) {
+                                 final EventRunner eventRunner,
+                                 final Flyway configsFlyway,
+                                 final Flyway jobsFlyway) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -97,7 +102,9 @@ public interface ServerFactory {
           workspaceRoot,
           httpClient,
           featureFlags,
-          eventRunner);
+          eventRunner,
+          configsFlyway,
+          jobsFlyway);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

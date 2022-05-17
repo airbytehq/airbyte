@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.51
+- Add `threshold_days` option for lookback window support in incremental tests.
+- Update CDK to prevent warnings when encountering new `AirbyteTraceMessage`s.
+
+## 0.1.50
+Added support for passing a `.yaml` file as `spec_path`.
+
 ## 0.1.49
 Fixed schema parsing when a JSONschema `type` was not present - we now assume `object` if the `type` is not present.
 

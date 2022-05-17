@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
@@ -27,6 +28,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
@@ -35,6 +38,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -46,6 +50,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,10 +63,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class ConfigRepositoryE2EReadWriteTest {
 
   private static PostgreSQLContainer<?> container;
+  private DataSource dataSource;
+  private DSLContext dslContext;
   private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
+  private Flyway flyway;
 
   @BeforeAll
   public static void dbSetup() {
@@ -71,12 +82,16 @@ public class ConfigRepositoryE2EReadWriteTest {
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException, SQLException {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+        new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
@@ -156,24 +171,24 @@ public class ConfigRepositoryE2EReadWriteTest {
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), "1.2.0", "ConfigHash");
 
-    final Optional<AirbyteCatalog> catalog =
+    final Optional<ActorCatalog> catalog =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "ConfigHash");
     assertTrue(catalog.isPresent());
-    assertEquals(actorCatalog, catalog.get());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
+    assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", "ConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConnectorVersion =
+    final Optional<ActorCatalog> catalogNewConnectorVersion =
         configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash");
     assertTrue(catalogNewConnectorVersion.isPresent());
-    assertEquals(actorCatalog, catalogNewConnectorVersion.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConfig =
+    final Optional<ActorCatalog> catalogNewConfig =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash");
     assertTrue(catalogNewConfig.isPresent());
-    assertEquals(actorCatalog, catalogNewConfig.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);

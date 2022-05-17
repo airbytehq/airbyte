@@ -4,11 +4,11 @@ import { FormBlock } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
-import { SectionContainer } from "./common";
-import { PropertySection } from "./PropertySection";
-import { ConditionSection } from "./ConditionSection";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
+import { SectionContainer } from "./common";
+import { ConditionSection } from "./ConditionSection";
+import { PropertySection } from "./PropertySection";
 
 const FormNode: React.FC<{
   sectionPath: string;

@@ -25,6 +25,8 @@ data:
       # Longer time window for pods in error (to debug)
       NON_SUCCESS_DATE_STR=`date -d 'now - 24 hours' --utc -Ins`
       NON_SUCCESS_DATE=`date -d $NON_SUCCESS_DATE_STR +%s`
+      # default time to use in case its unavailable from kubectl
+      DEFAULT=`date --utc -Ins`
       (
           IFS=$'\n'
           for POD in `get_worker_pods`; do
@@ -32,7 +34,7 @@ data:
               POD_NAME=`echo $POD | cut -d " " -f 1`
               POD_STATUS=`echo $POD | cut -d " " -f 2`
               POD_DATE_STR=`echo $POD | cut -d " " -f 3`
-              POD_DATE=`date -d $POD_DATE_STR '+%s'`
+              POD_DATE=`date -d ${POD_DATE_STR:-$DEFAULT} '+%s'`
               if [ "$POD_STATUS" = "Succeeded" ]; then
                 if [ "$POD_DATE" -lt "$SUCCESS_DATE" ]; then
                   delete_worker_pod "$POD_NAME" "$POD_STATUS" "$POD_DATE_STR"

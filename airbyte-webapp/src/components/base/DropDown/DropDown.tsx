@@ -7,10 +7,10 @@ import { equal, naturalComparatorBy } from "utils/objects";
 
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
-import SingleValue from "./components/SingleValue";
 import Option, { IDataItem } from "./components/Option";
-import { SelectContainer } from "./SelectContainer";
+import SingleValue from "./components/SingleValue";
 import { CustomSelect } from "./CustomSelect";
+import { SelectContainer } from "./SelectContainer";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;

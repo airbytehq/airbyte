@@ -1,8 +1,8 @@
 import React, { useContext, useMemo } from "react";
 import { useLocalStorage } from "react-use";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import casesConfig from "config/casesConfig.json";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 type Context = {
   feedbackPassed?: boolean;

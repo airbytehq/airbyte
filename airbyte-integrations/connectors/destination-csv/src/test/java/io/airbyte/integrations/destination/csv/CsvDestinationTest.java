@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -202,7 +203,7 @@ class CsvDestinationTest {
   }
 
   private List<JsonNode> csvToJson(final Path csvPath) throws IOException {
-    final Reader in = new FileReader(csvPath.toFile());
+    final Reader in = new FileReader(csvPath.toFile(), Charset.defaultCharset());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()

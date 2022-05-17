@@ -5,17 +5,20 @@
 import json
 import random
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
+from unittest.mock import patch
 
 import pendulum
 import pytest
 import requests_mock
 import timeout_decorator
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
 SANDBOX_CONFIG_FILE = "secrets/config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
+PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
 
 
 @pytest.fixture(scope="module")
@@ -88,6 +91,7 @@ def test_random_items(prepared_prod_args):
             m.register_uri("GET", "/open_api/v1.2/oauth2/advertiser/get/", json=page_response)
         stream = Ads(**prepared_prod_args)
         stream.page_size = page_size
+        stream.get_advertiser_ids()
         assert not set(test_advertiser_ids).symmetric_difference(stream._advertiser_ids), "stream found not all  advertiser IDs"
 
         current_state = None
@@ -124,3 +128,65 @@ def test_random_items(prepared_prod_args):
                     ), "max updated cursor value should be returned for last slice only"
         assert len(stream._advertiser_ids) == 0, "all advertisers should be popped"
         assert current_state[stream.cursor_field].dict() == max_updated_value
+
+
+@pytest.mark.parametrize(
+    "config, stream_len",
+    [
+        (PROD_CONFIG_FILE, 10),
+        (SANDBOX_CONFIG_FILE, 8),
+        (PROD_CONFIG_DAY_FILE, 13),
+    ],
+)
+def test_source_streams(config, stream_len):
+    with open(config) as f:
+        config = json.load(f)
+    streams = SourceTiktokMarketing().streams(config=config)
+    assert len(streams) == stream_len
+
+
+def test_source_spec():
+    spec = SourceTiktokMarketing().spec()
+    assert isinstance(spec, ConnectorSpecification)
+
+
+@pytest.fixture(name="config")
+def config_fixture():
+    config = {
+        "account_id": 123,
+        "access_token": "TOKEN",
+        "start_date": "2019-10-10T00:00:00",
+        "end_date": "2020-10-10T00:00:00",
+    }
+    return config
+
+
+@pytest.fixture(name="logger_mock")
+def logger_mock_fixture():
+    return patch("source_tiktok_marketing.source.logger")
+
+
+def test_source_check_connection_ok(config, logger_mock):
+    with patch.object(Advertisers, "read_records", return_value=iter([1])):
+        assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
+
+
+def test_source_check_connection_failed(config, logger_mock):
+    with patch.object(Advertisers, "read_records", return_value=0):
+        assert SourceTiktokMarketing().check_connection(logger_mock, config=config)[0] is False
+
+
+SANDBOX_CONFIG_FILE = "secrets/config.json"
+PROD_CONFIG_FILE = "secrets/prod_config.json"
+PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
+
+
+@pytest.mark.parametrize(
+    "config_file",
+    ["integration_tests/invalid_config_oauth.json", "integration_tests/invalid_config_access_token.json", "secrets/config.json"],
+)
+def test_source_prepare_stream_args(config_file):
+    with open(config_file) as f:
+        config = json.load(f)
+        args = SourceTiktokMarketing._prepare_stream_args(config)
+        assert "authenticator" in args

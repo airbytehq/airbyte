@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Destination } from "core/domain/connector";
-import { isDefined } from "utils/common";
 import { useConfig } from "config";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
+import { Destination } from "core/domain/connector";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { DestinationService } from "core/domain/connector/DestinationService";
+import { isDefined } from "utils/common";
 
-import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -64,8 +64,6 @@ const useCreateDestination = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalyticsService();
-
   return useMutation(
     async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
       const { values, destinationConnector } = createDestinationPayload;
@@ -78,22 +76,10 @@ const useCreateDestination = () => {
       });
     },
     {
-      onSuccess: (data, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - success",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
+      onSuccess: (data) => {
         queryClient.setQueryData(destinationsKeys.lists(), (lst: DestinationList | undefined) => ({
           destinations: [data, ...(lst?.destinations ?? [])],
         }));
-      },
-      onError: (_, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - failure",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
       },
     }
   );

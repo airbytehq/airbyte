@@ -3,14 +3,13 @@
 #
 
 import datetime
+import logging
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Optional
 
-from airbyte_cdk.logger import AirbyteLogger
-
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class EventTimer:
@@ -42,7 +41,7 @@ class EventTimer:
             event = self.stack.pop(0)
             event.finish()
         else:
-            logger.warn(f"{self.name} finish_event called without start_event")
+            logger.warning(f"{self.name} finish_event called without start_event")
 
     def report(self, order_by="name"):
         """

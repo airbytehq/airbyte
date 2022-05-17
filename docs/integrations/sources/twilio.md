@@ -66,6 +66,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2022-04-20 | [12183](https://github.com/airbytehq/airbyte/pull/12183) | Add new subresource on the call stream + declare a valid primary key for conference_participants stream |
 | 0.1.2 | 2021-12-23 | [9092](https://github.com/airbytehq/airbyte/pull/9092) | Correct specification doc URL |
 | 0.1.1 | 2021-10-18 | [7034](https://github.com/airbytehq/airbyte/pull/7034) | Update schemas and transform data types according to the API schema |
 | 0.1.0 | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |

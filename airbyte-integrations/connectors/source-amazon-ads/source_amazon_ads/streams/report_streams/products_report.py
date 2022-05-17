@@ -119,6 +119,7 @@ METRICS_MAP = {
         "campaignId",
         "adGroupName",
         "adGroupId",
+        "adId",
         "impressions",
         "clicks",
         "cost",
@@ -156,6 +157,7 @@ METRICS_MAP = {
         "adGroupId",
         "keywordId",
         "keywordText",
+        "adId",
         "asin",
         "otherAsin",
         "sku",
@@ -179,6 +181,7 @@ METRICS_MAP = {
         "campaignId",
         "adGroupName",
         "adGroupId",
+        "adId",
         "asin",
         "otherAsin",
         "sku",
@@ -262,4 +265,9 @@ class SponsoredProductsReportStream(ReportStream):
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
+
+        # adId is automatically added to the report by amazon and requesting adId causes an amazon error
+        if "adId" in metrics_list:
+            metrics_list.remove("adId")
+
         return {**body, "metrics": ",".join(metrics_list)}

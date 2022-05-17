@@ -26,6 +26,7 @@ definitions:
           - SPEC
           - CONNECTION_STATUS
           - CATALOG
+          - TRACE
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -43,6 +44,9 @@ definitions:
       state:
         description: "schema message: the state. Must be the last message produced. The platform uses this information"
         "$ref": "#/definitions/AirbyteStateMessage"
+      trace:
+        description: "trace message: a message to communicate information about the status and performance of a connector"
+        "$ref": "#/definitions/AirbyteTraceMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -67,13 +71,48 @@ definitions:
   AirbyteStateMessage:
     type: object
     additionalProperties: true
-    required:
-      - data
     properties:
+      state_type:
+        "$ref": "#/definitions/AirbyteStateType"
       data:
-        description: "the state data"
+        description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      global:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
+
+  AirbyteStateType:
+    type: string
+    description: >
+      The type of state the other fields represent.
+      If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
+      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams.
+      PER_STREAM means that the state should be read from `streams`. Each item in the list represents the state for the associated stream.
+    enum:
+      - GLOBAL
+      - PER_STREAM
+
+  AirbyteStreamState:
+    type: object
+    description: "per stream state data"
+    additionalProperties: false
+    properties:
+      name:
+        description: "Stream name"
+        type: string
+      state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+
+  AirbyteStateBlob:
+    type: object
+    description: "the state data"
+    additionalProperties: false
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+
   AirbyteLogMessage:
     type: object
     additionalProperties: true
@@ -94,6 +133,46 @@ definitions:
       message:
         description: "the log message"
         type: string
+  AirbyteTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        title: "trace type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: "the type of trace message"
+        type: string
+        enum:
+          - ERROR
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      error:
+        description: "error trace message: the error object"
+        "$ref": "#/definitions/AirbyteErrorTraceMessage"
+  AirbyteErrorTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - message
+    properties:
+      message:
+        description: A user-friendly message that indicates the cause of the error
+        type: string
+      internal_message:
+        description: The internal error that caused the failure
+        type: string
+      stack_trace:
+        description: The full stack trace of the error
+        type: string
+      failure_type:
+        description: The type of error
+        type: string
+        enum:
+          - system_error
+          - config_error
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object

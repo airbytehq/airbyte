@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { DestinationDefinition } from "core/domain/connector";
 import { useConfig } from "config";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
-import { useInitService } from "services/useInitService";
+import { DestinationDefinition } from "core/domain/connector";
 import {
   CreateDestinationDefinitionPayload,
   DestinationDefinitionService,
 } from "core/domain/connector/DestinationDefinitionService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 

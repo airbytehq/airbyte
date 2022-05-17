@@ -1,17 +1,17 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 
 import { Button, LabeledInput, LoadingButton } from "components";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveWorkspace,
   useUpdateWorkspace,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 const Header = styled.div`
   display: flex;

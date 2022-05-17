@@ -12,6 +12,8 @@ public interface S3FormatConfig {
 
   Long getPartSize();
 
+  String getFileExtension();
+
   static String withDefault(final JsonNode config, final String property, final String defaultValue) {
     final JsonNode value = config.get(property);
     if (value == null || value.isNull()) {

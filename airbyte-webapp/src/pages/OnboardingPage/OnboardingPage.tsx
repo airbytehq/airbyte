@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
@@ -13,15 +13,15 @@ import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 
 import { RoutePaths } from "../routePaths";
-import useGetStepsConfig from "./useStepsConfig";
-import SourceStep from "./components/SourceStep";
-import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import WelcomeStep from "./components/WelcomeStep";
+import DestinationStep from "./components/DestinationStep";
 import FinalStep from "./components/FinalStep";
 import LetterLine from "./components/LetterLine";
-import { StepType } from "./types";
+import SourceStep from "./components/SourceStep";
 import StepsCounter from "./components/StepsCounter";
+import WelcomeStep from "./components/WelcomeStep";
+import { StepType } from "./types";
+import useGetStepsConfig from "./useStepsConfig";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -93,7 +93,6 @@ const OnboardingPage: React.FC = () => {
       >
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
         <StepsCounter steps={steps} currentStep={currentStep} />
-
         <Suspense fallback={<LoadingPage />}>
           {currentStep === StepType.INSTRUCTION && (
             <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
@@ -115,7 +114,6 @@ const OnboardingPage: React.FC = () => {
           )}
           {currentStep === StepType.FINAl && <FinalStep />}
         </Suspense>
-
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
             {currentStep === StepType.FINAl ? (

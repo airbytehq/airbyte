@@ -1,17 +1,17 @@
 import React, { Suspense, useRef, useState } from "react";
-import styled from "styled-components";
 import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Spinner } from "components";
 
 import { JobInfo, JobListItem, Logs, Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
-import JobLogs from "./components/JobLogs";
-import ContentWrapper from "./components/ContentWrapper";
-import MainInfo from "./components/MainInfo";
-import { LogsDetails } from "./components/LogsDetails";
 import { useAttemptLink } from "./attemptLinkUtils";
+import ContentWrapper from "./components/ContentWrapper";
+import JobLogs from "./components/JobLogs";
+import { LogsDetails } from "./components/LogsDetails";
+import MainInfo from "./components/MainInfo";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};

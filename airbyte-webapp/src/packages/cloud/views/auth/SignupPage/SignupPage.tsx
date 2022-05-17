@@ -1,14 +1,15 @@
-import React from "react";
-import * as yup from "yup";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import * as yup from "yup";
 
 import { H1, LabeledInput, Link, LoadingButton } from "components";
+import HeadTitle from "components/HeadTitle";
 
 import { useConfig } from "config";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CheckBoxControl from "../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
@@ -43,6 +44,7 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
+      <HeadTitle titles={[{ id: "login.signup" }]} />
       <H1 bold>
         <FormattedMessage id="login.activateAccess" />
       </H1>

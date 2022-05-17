@@ -2,8 +2,8 @@ import { useMutation } from "react-query";
 
 import { useConfig } from "config";
 import { GetLogsPayload, LogsService } from "core/domain/logs/LogsService";
-import { useInitService } from "services/useInitService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 
 export const logsKeys = {
   all: ["logs"] as const,

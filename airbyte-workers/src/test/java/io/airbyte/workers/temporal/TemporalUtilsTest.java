@@ -5,7 +5,9 @@
 package io.airbyte.workers.temporal;
 
 import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -13,7 +15,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.workers.WorkerException;
+import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -44,7 +48,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TemporalUtilsTest {
+class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
 
@@ -91,7 +95,7 @@ public class TemporalUtilsTest {
   }
 
   @Test
-  public void testWaitForTemporalServerAndLogThrowsException() {
+  void testWaitForTemporalServerAndLogThrowsException() {
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -109,7 +113,7 @@ public class TemporalUtilsTest {
   }
 
   @Test
-  public void testWaitThatTimesOut() {
+  void testWaitThatTimesOut() {
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -129,7 +133,7 @@ public class TemporalUtilsTest {
   }
 
   @Test
-  public void testRuntimeExceptionOnHeartbeatWrapper() {
+  void testRuntimeExceptionOnHeartbeatWrapper() {
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
     worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
@@ -151,7 +155,7 @@ public class TemporalUtilsTest {
   }
 
   @Test
-  public void testWorkerExceptionOnHeartbeatWrapper() {
+  void testWorkerExceptionOnHeartbeatWrapper() {
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
     worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
@@ -164,12 +168,93 @@ public class TemporalUtilsTest {
         client.newWorkflowStub(TestFailingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
 
     // throws workerexception wrapped in a WorkflowFailedException
-    assertThrows(WorkflowFailedException.class, () -> {
-      workflowStub.run("worker");
-    });
+    assertThrows(WorkflowFailedException.class, () -> workflowStub.run("worker"));
 
     // we should never retry enough to reach the end
     assertEquals(0, timesReachedEnd.get());
+  }
+
+  @Test
+  void testHeartbeatWithContext() throws InterruptedException {
+
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+
+    worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+
+    final CountDownLatch latch = new CountDownLatch(2);
+
+    worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      TemporalUtils.withBackgroundHeartbeat(
+          // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          () -> {
+            latch.await();
+            return new Object();
+          },
+          () -> {
+            latch.countDown();
+            return context;
+          });
+    }));
+
+    testEnv.start();
+
+    final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
+        HeartbeatWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(TASK_QUEUE)
+            .build());
+
+    // use async execution to avoid blocking the test thread
+    WorkflowClient.start(heartbeatWorkflow::execute);
+
+    assertTrue(latch.await(15, TimeUnit.SECONDS));
+
+  }
+
+  @Test
+  void testHeartbeatWithContextAndCallbackRef() throws InterruptedException {
+
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+
+    worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+
+    final CountDownLatch latch = new CountDownLatch(2);
+
+    worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      TemporalUtils.withBackgroundHeartbeat(
+          // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          new AtomicReference<>(() -> {}),
+          () -> {
+            latch.await();
+            return new Object();
+          },
+          () -> {
+            latch.countDown();
+            return context;
+          });
+    }));
+
+    testEnv.start();
+
+    final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
+        HeartbeatWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(TASK_QUEUE)
+            .build());
+
+    // use async execution to avoid blocking the test thread
+    WorkflowClient.start(heartbeatWorkflow::execute);
+
+    assertTrue(latch.await(15, TimeUnit.SECONDS));
+
   }
 
   @WorkflowInterface
@@ -291,20 +376,24 @@ public class TemporalUtilsTest {
 
       public void activity(String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
-        TemporalUtils.withBackgroundHeartbeat(new AtomicReference<>(null), () -> {
-          if (timesReachedEnd.get() == 0) {
-            if (arg.equals("runtime")) {
-              throw new RuntimeException("failed");
-            } else if (arg.equals("timeout")) {
-              Thread.sleep(10000);
-              return null;
-            } else {
-              throw new WorkerException("failed");
-            }
-          } else {
-            return null;
-          }
-        });
+        ActivityExecutionContext context = Activity.getExecutionContext();
+        TemporalUtils.withBackgroundHeartbeat(
+            new AtomicReference<>(null),
+            () -> {
+              if (timesReachedEnd.get() == 0) {
+                if (arg.equals("runtime")) {
+                  throw new RuntimeException("failed");
+                } else if (arg.equals("timeout")) {
+                  Thread.sleep(10000);
+                  return null;
+                } else {
+                  throw new WorkerException("failed");
+                }
+              } else {
+                return null;
+              }
+            },
+            () -> context);
         timesReachedEnd.incrementAndGet();
         LOGGER.info("before: {}", ACTIVITY1);
       }

@@ -3,11 +3,11 @@ import styled from "styled-components";
 
 import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
 
-import DownloadButton from "./DownloadButton";
-import DebugInfoButton from "./DebugInfoButton";
-import LogsTable from "./Logs";
 import AttemptDetails from "./AttemptDetails";
+import DebugInfoButton from "./DebugInfoButton";
+import DownloadButton from "./DownloadButton";
 import { LinkToAttemptButton } from "./LinkToAttemptButton";
+import LogsTable from "./Logs";
 
 const LogHeader = styled.div`
   display: flex;
