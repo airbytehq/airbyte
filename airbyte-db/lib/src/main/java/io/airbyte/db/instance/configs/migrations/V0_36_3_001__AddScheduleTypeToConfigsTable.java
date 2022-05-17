@@ -58,20 +58,15 @@ public class V0_36_3_001__AddScheduleTypeToConfigsTable extends BaseJavaMigratio
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-
-    // Warning: please do not use any jOOQ generated code to write a migration.
-    // As database schema changes, the generated jOOQ code can be deprecated. So
-    // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     addPublicColumn(ctx);
   }
 
   public static void addPublicColumn(final DSLContext ctx) {
     ctx.alterTable("connection")
-        .addColumnIfNotExists(DSL.field("scheduleType", SQLDataType.VARCHAR(256).nullable(false)))
-    ctx.createType("schedule_type").asEnum("manual", "basicSchedule", "cron").execute();
-    ctx.alterTable("connection")
-        .addColumnIfNotExists(DSL.field("schedule_type", SQLDataType.VARCHAR.asEnumDataType(ScheduleType.class).nullable(true)))
+        .addColumnIfNotExists(DSL.field(
+            "schedule_type",
+            SQLDataType.VARCHAR.asEnumDataType(ScheduleType.class).nullable(true)))
         .execute();
   }
 
