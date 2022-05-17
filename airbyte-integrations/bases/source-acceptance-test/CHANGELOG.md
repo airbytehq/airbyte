@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.52
+Add test case for `AirbyteTraceMessage` emission on connector failure: [#12796](https://github.com/airbytehq/airbyte/pull/12796/).
+
 ## 0.1.51
 - Add `threshold_days` option for lookback window support in incremental tests.
 - Update CDK to prevent warnings when encountering new `AirbyteTraceMessage`s.
