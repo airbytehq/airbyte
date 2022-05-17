@@ -54,18 +54,24 @@
         "airbyte_secret": true,
         "order": 5
       },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 6
+      },
       "ssl": {
         "title": "Connect using SSL",
         "description": "Encrypt client/server communications for increased security.",
         "type": "boolean",
         "default": false,
-        "order": 6
+        "order": 7
       },
       "replication_method": {
         "type": "object",
         "title": "Replication Method",
         "description": "Replication method to use for extracting data from the database.",
-        "order": 7,
+        "order": 8,
         "oneOf": [
           {
             "title": "Standard",

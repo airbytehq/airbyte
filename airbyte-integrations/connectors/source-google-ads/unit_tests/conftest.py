@@ -2,15 +2,43 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
-
 import pytest
 
 
 @pytest.fixture(scope="session", name="config")
-def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
-        return json.load(config_file)
+def test_config():
+    config = {
+        "credentials": {
+            "developer_token": "test_token",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+        },
+        "customer_id": "123",
+        "start_date": "2021-01-01",
+        "conversion_window_days": 14,
+        "custom_queries": [
+            {
+                "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+                "primary_key": None,
+                "cursor_field": "campaign.start_date",
+                "table_name": "happytable",
+            },
+            {
+                "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
+                "primary_key": "customer.id",
+                "cursor_field": None,
+                "table_name": "unhappytable",
+            },
+            {
+                "query": "SELECT ad_group.targeting_setting.target_restrictions FROM ad_group",
+                "primary_key": "customer.id",
+                "cursor_field": None,
+                "table_name": "ad_group_custom",
+            },
+        ],
+    }
+    return config
 
 
 @pytest.fixture(autouse=True)

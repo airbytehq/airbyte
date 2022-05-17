@@ -8,7 +8,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import javax.sql.DataSource;
@@ -101,12 +100,10 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     JDBCUtils.safeClose(connection);
     connection = null;
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      try {
-        closeable.close();
-      } catch (final IOException e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
+    try {
+      DataSourceFactory.close(dataSource);
+    } catch (final Exception e) {
+      LOGGER.warn("Unable to close data source.", e);
     }
     super.close();
   }

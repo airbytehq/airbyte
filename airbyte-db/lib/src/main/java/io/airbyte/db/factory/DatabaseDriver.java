@@ -10,6 +10,7 @@ package io.airbyte.db.factory;
 public enum DatabaseDriver {
 
   CLICKHOUSE("ru.yandex.clickhouse.ClickHouseDriver", "jdbc:clickhouse://%s:%d/%s"),
+  DATABRICKS("com.databricks.client.jdbc.Driver", "jdbc:databricks://%s;HttpPath=%s;UserAgentEntry=Airbyte"),
   DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
   MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
   MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s"),
