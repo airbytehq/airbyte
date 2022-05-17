@@ -86,13 +86,16 @@ class TotalFollowerCount(LinkedinPagesStream):
     
         path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
         return path
-
-class UgcPosts(LinkedinPagesStream):
-
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
     
-        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
-        return path
+    """
+    Adding UgcPosts in a later PR. It's not ready as it's currently a duplicate endpoint as the Shares stream
+    """
+# class UgcPosts(LinkedinPagesStream):
+
+#     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    
+#         path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
+#         return path
 
 
 class SourceLinkedinPages(AbstractSource):
@@ -153,7 +156,6 @@ class SourceLinkedinPages(AbstractSource):
             PageStatistics(config),
             ShareStatistics(config),
             Shares(config),
-            TotalFollowerCount(config),
-            UgcPosts(config)
+            TotalFollowerCount(config)
         ]
         
