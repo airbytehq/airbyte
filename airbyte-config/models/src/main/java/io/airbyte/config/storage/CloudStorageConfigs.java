@@ -88,7 +88,7 @@ public class CloudStorageConfigs {
     return gcsConfig;
   }
 
-  public static abstract class S3ApiWorkerStorageConfig {
+  public static class S3ApiWorkerStorageConfig {
 
     private final String bucketName;
     private final String awsAccessKey;

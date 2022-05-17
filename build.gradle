@@ -197,6 +197,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
+    apply plugin: 'pmd'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -214,10 +215,11 @@ subprojects {
 
     pmd {
         consoleOutput = true
-
+        ignoreFailures = false
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
+        toolVersion = '6.43.0'
     }
 
     jacoco {
@@ -313,7 +315,7 @@ subprojects {
         }
         finalizedBy jacocoTestReport
     }
-    
+
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -380,6 +382,10 @@ subprojects {
             xml.required = false
             html.required = true
         }
+
+    tasks.withType(Pmd) {
+        exclude '**/generated/**'
+        exclude '**/jooq/**'
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
