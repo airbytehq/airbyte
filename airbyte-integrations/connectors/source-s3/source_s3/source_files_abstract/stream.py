@@ -397,7 +397,8 @@ class IncrementalFileStream(FileStream, ABC):
 
         # add record to history if record modified date in range delta start from state
         if latest_record_datetime.date() + timedelta(days=self.days) >= self._get_datetime_from_stream_state(state_dict).date():
-            history.setdefault(latest_record_datetime.strftime("%Y-%m-%d"), set()).add(latest_record["_ab_source_file_url"])
+            history_item = set(history.setdefault(latest_record_datetime.strftime("%Y-%m-%d"), set()))
+            history_item.add(latest_record["_ab_source_file_url"])
 
         # reset history to new date state
         if current_parsed_datetime.date() != self._get_datetime_from_stream_state(state_dict).date():
