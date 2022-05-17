@@ -37,13 +37,13 @@ class KyribaStream(HttpStream):
         self,
         gateway_url: str,
         client: KyribaClient,
-        version: str = 1,
-        start_date: str = None,
+        start_date: str,
+        api_version: str = 1,
         end_date: str = None,
     ):
         self.gateway_url = gateway_url
-        self.version = version
-        self.start_date = start_date or date.isoformat(date.today())
+        self.api_version = api_version
+        self.start_date = date.fromisoformat(start_date) or date.today()
         self.end_date = date.fromisoformat(end_date) if end_date else None
         self.client = client
         super().__init__(self.client.login())
@@ -53,7 +53,7 @@ class KyribaStream(HttpStream):
 
     @property
     def url_base(self) -> str:
-        return f"{self.gateway_url}/api/v{self.version}/"
+        return f"{self.gateway_url}/api/v{self.api_version}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         metadata = response.json()["metadata"]
@@ -89,7 +89,9 @@ class KyribaStream(HttpStream):
         return {**data, **nested}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return iter(response.json().get("results"))
+        results = response.json().get("results")
+        for result in results:
+            yield result
 
 
 # Basic incremental stream
@@ -111,7 +113,7 @@ class IncrementalKyribaStream(KyribaStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"sort": self.cursor_field}
-        latest_cursor = stream_state.get(self.cursor_field) or self.start_date + "T00:00:00Z"
+        latest_cursor = stream_state.get(self.cursor_field) or self.start_date.isoformat() + "T00:00:00Z"
         if latest_cursor:
             filter = f"{self.cursor_field}=gt='{latest_cursor}'"
             params["filter"] = filter
@@ -122,6 +124,7 @@ class IncrementalKyribaStream(KyribaStream, ABC):
 
 class Accounts(KyribaStream):
     primary_key = "uuid"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "accounts"
@@ -139,7 +142,7 @@ class AccountSubStream(HttpSubStream, KyribaStream):
         pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return iter([response.json()])
+        yield response.json()
 
 
 class CashBalancesStream(AccountSubStream):
@@ -150,7 +153,7 @@ class CashBalancesStream(AccountSubStream):
         account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
         days_inc = 31
-        start_date = date.fromisoformat(self.start_date)
+        start_date = self.start_date
         end_date = self.end_date or date.today()
         while start_date <= end_date:
             seg_end_date = start_date + timedelta(days=days_inc)
@@ -197,7 +200,7 @@ class BankBalancesStream(AccountSubStream):
         slices = []
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
-        bal_date = date.fromisoformat(self.start_date)
+        bal_date = self.start_date
         end_date = self.end_date or date.today()
         while bal_date <= end_date:
             slices.extend([{**u, "date": bal_date.isoformat()} for u in account_uuids])
@@ -241,7 +244,7 @@ class CashFlows(IncrementalKyribaStream):
             # produce at least one slice with abnormal state
             start = start if start <= end_date else end_date
         else:
-            start = date.fromisoformat(self.start_date)
+            start = self.start_date
         slices = []
         while start <= end_date:
             # cash flow date range has to be less than a year
@@ -262,7 +265,8 @@ class CashFlows(IncrementalKyribaStream):
         # the updatedDateTime is unnecessarily nested under date
         # Airbyte cannot accomodate nested cursors, so this needs to be fixed
         results = response.json().get("results")
-        return iter([self.unnest("date", r) for r in results])
+        for result in results:
+            yield self.unnest("date", result)
 
 
 # Source
@@ -280,7 +284,7 @@ class SourceKyriba(AbstractSource):
         client = KyribaClient(config["username"], config["password"], gateway_url)
         kwargs = {
             "gateway_url": gateway_url,
-            "version": config.get("version"),
+            "api_version": config.get("api_version"),
             "client": client,
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date"),

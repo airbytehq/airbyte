@@ -18,8 +18,8 @@ def test_stream_slices(patch_base_class):
     stream = CashBalancesStream(**config())
     account_uuids = [{"account_uuid": "first"}, {"account_uuid": "second"}]
     stream.get_account_uuids = MagicMock(return_value=account_uuids)
-    stream.start_date = "2022-01-01"
-    stream.end_date = date.fromisoformat("2022-03-01")
+    stream.start_date = date(2022, 1, 1)
+    stream.end_date = date(2022, 3, 1)
     expected = [
         {
             "account_uuid": "first",

@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kyriba Spec",
     "type": "object",
-    "required": ["domain", "username", "password"],
+    "required": ["domain", "username", "password", "start_date"],
     "additionalProperties": false,
     "properties": {
       "domain": {
@@ -14,7 +14,7 @@
         "examples": ["demo.kyriba.com"],
         "pattern":"^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
       },
-      "version": {
+      "api_version": {
         "type": "integer",
         "description": "API version to be used in the URL.",
         "title": "Version",
@@ -40,7 +40,7 @@
       },
       "end_date": {
         "type": "string",
-        "description": "The date the sync should end.",
+        "description": "The date the sync should end. If let empty the sync will run to the current date.",
         "title": "End Date",
         "examples": ["2022-03-01"],
         "pattern": "^(?:(\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01]))|)$"
