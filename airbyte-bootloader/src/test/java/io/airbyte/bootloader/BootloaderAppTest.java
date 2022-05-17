@@ -40,7 +40,6 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.sql.DataSource;
 import lombok.val;
 import org.flywaydb.core.Flyway;
 import org.jooq.SQLDialect;

@@ -8,6 +8,8 @@ import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.Catalog;
 import org.jooq.DSLContext;
+import org.jooq.EnumType;
+import org.jooq.Schema;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.jooq.impl.SchemaImpl;
