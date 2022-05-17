@@ -3,10 +3,11 @@
 #
 
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import requests_mock
 
 import pytest
+from multiprocessing.pool import Pool
 from source_netsuite.source import NetsuiteStream, SourceNetsuite
 from requests_oauthlib import OAuth1
 
@@ -66,9 +67,9 @@ def test_parse_response(patch_base_class):
     response = MagicMock()
     response.json = MagicMock(return_value={"items": [{"id": 1}]})
     inputs = {"response": response}
-    stream.pool.map = MagicMock(return_value=[{"id": 1}])
     expected_parsed_object = {"id": 1}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    with patch.object(Pool, 'map', return_value=[{"id": 1}]):
+        assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 def test_http_method(patch_base_class):
     stream = make_stream()

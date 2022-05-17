@@ -77,7 +77,9 @@ class NetsuiteStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json().get("items")
         with Pool(self.concurrency_limit) as pool:
-            return iter(pool.map(self.fetch_record, records) if records else [])
+            data = pool.map(self.fetch_record, records) if records else []
+            for record in data:
+                yield record
 
 
 # Basic incremental stream
