@@ -21,8 +21,16 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration test
@@ -61,6 +69,42 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final JsonNode invalidConfig = Jsons.clone(config);
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("password", "fake");
+    var destination = new RedshiftDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("username", "");
+    var destination = new RedshiftDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("host", "localhost2");
+    var destination = new RedshiftDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("database", "wrongdatabase");
+    var destination = new RedshiftDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
   }
 
   @Override
