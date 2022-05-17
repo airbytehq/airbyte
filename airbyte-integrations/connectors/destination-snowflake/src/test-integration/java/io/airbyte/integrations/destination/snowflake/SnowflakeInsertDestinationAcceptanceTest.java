@@ -20,7 +20,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-public class SnowflakeInsertDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
 
