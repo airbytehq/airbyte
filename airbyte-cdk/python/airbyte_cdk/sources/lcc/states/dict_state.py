@@ -47,6 +47,7 @@ class DictState(State):
         updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
 
         if prev_state:
+            # FIXME: it's not always max - sometimes we just want the latest?
             next_state = {name: _get_max(name=name, val=value, other_state=prev_state) for name, value in updated_state.items()}
         else:
             next_state = updated_state
