@@ -64,7 +64,7 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   });
 
   return (
-    <Item isFailed={didSucceed} ref={scrollAnchor}>
+    <Item isFailed={!didSucceed} ref={scrollAnchor}>
       <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} />
       <ContentWrapper isOpen={isOpen}>
         <div>
