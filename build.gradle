@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -16,7 +17,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.5'
+    id 'com.github.spotbugs' version '5.0.6'
     id 'version-catalog'
     id 'maven-publish'
 }
@@ -257,6 +258,15 @@ subprojects {
         cloudStorageTestTagName = 'cloud-storage'
     }
 
+    spotbugs {
+        ignoreFailures = false
+        effort = 'max'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
+    }
+
     test {
         jacoco {
             enabled = true
@@ -305,8 +315,12 @@ subprojects {
     }
 
     spotbugs {
-        reportLevel = 'high'
+        ignoreFailures = false
+        effort = 'max'
         excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
     }
 
     dependencies {
@@ -367,6 +381,14 @@ subprojects {
 
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/spotbugs/
+        reports {
+            xml.required = false
+            html.required = true
+        }
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
