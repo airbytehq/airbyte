@@ -16,7 +16,7 @@ const ExpandedFailureContainer = styled.div`
 `;
 
 const getFailureFromAttempt = (attempt: Attempt) => {
-  return attempt.failureSummary && attempt.failureSummary.failures[0];
+  return attempt.failureSummary?.failureSummary.failures[0];
 };
 
 const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
