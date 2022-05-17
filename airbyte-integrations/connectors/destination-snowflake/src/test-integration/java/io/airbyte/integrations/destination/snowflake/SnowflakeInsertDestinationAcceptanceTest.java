@@ -17,18 +17,15 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.Closeable;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class SnowflakeInsertDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
 
@@ -102,7 +99,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       throws Exception {
     return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
   }
 
@@ -139,7 +136,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
     TimeZone timeZone = TimeZone.getTimeZone("UTC");
     TimeZone.setDefault(timeZone);
@@ -157,7 +153,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                 .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
           }
         },
-        JdbcUtils.getDefaultSourceOperations()::rowToJson);
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
