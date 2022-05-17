@@ -61,8 +61,8 @@ class AirbyteEntrypoint(object):
             "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
         required_read_parser.add_argument(
-            "--gen_stream_schema", action="store_true", required=True, help="force generate ONE RAW_RECORD to use as input to "
-                                                                            "tools/schema_generation.py "
+            "--gen_stream_schema", action="store_true", required=False, help="force generate ONE RAW_RECORD to use as input to "
+                                                                             "tools/schema_generation.py "
         )
 
         return main_parser.parse_args(args)
