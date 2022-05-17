@@ -342,7 +342,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       log.info("SOURCE CHECK: Starting");
       final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
-      if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
+      if (sourceCheckResponse.getStatus() == Status.FAILED) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
         checkFailure.setFailureOutput(sourceCheckResponse);
         log.info("SOURCE CHECK: Failed");
@@ -359,7 +359,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       log.info("DESTINATION CHECK: Starting");
       final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
-      if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
+      if (destinationCheckResponse.getStatus() == Status.FAILED) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
         checkFailure.setFailureOutput(destinationCheckResponse);
         log.info("DESTINATION CHECK: Failed");
