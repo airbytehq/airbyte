@@ -6,40 +6,40 @@
       "type": "integer"
     },
     "incidence7Days": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "date": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "fixedCases7Days": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "updatedCases7Days": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "adjustedLowerCases7Days": {
-      "type": "null"
+      "type": ["integer", "null"]
     },
     "adjustedCases7Days": {
-      "type": "null"
+      "type": ["integer", "null"]
     },
     "adjustedUpperCases7Days": {
-      "type": "null"
+      "type": ["integer", "null"]
     },
     "fixedIncidence7Days": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "updatedIncidence7Days": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "adjustedLowerIncidence7Days": {
-      "type": "null"
+      "type": ["number", "null"]
     },
     "adjustedIncidence7Days": {
-      "type": "null"
+      "type": ["number", "null"]
     },
     "adjustedUpperIncidence7Days": {
-      "type": "null"
+      "type": ["number", "null"]
     }
   },
   "required": [

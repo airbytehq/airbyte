@@ -6,37 +6,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
@@ -65,37 +65,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
@@ -124,37 +124,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
@@ -183,37 +183,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
@@ -242,37 +242,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
@@ -301,37 +301,37 @@
       "type": "object",
       "properties": {
         "casesMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsMale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "deathsFemale": {
-          "type": "integer"
+          "type": ["number", "integer"]
         },
         "casesMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
-          "type": "number"
+          "type": ["number", "integer"]
         },
         "hospitalization": {
           "type": "object",
           "properties": {
             "cases7Days": {
-              "type": "integer"
+              "type": ["number", "integer"]
             },
             "incidence7Days": {
-              "type": "number"
+              "type": ["number", "integer"]
             },
             "date": {
               "type": "string"
