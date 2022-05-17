@@ -25,7 +25,7 @@ def config():
     client.login = MagicMock(return_value=TokenAuthenticator("token"))
     return {
         "gateway_url": "https://demo.kyriba.com/gateway",
-        "version": 1,
+        "api_version": 1,
         "client": client,
         "start_date": "2022-01-01",
         "end_date": "2022-03-01",
