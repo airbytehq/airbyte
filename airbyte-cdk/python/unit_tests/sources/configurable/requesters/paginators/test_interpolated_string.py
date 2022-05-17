@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.configurable.interpolation.interpolated_string import InterpolatedString
 
 config = {"start": "1234"}
 kwargs = {"next_page_token": {"next_page_url": "https://airbyte.io"}}
