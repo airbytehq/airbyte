@@ -25,10 +25,10 @@ Databricks supports various cloud storage as the [data source](https://docs.data
 
 | Category | Parameter | Type | Notes |
 | :--- | :--- | :---: | :--- |
-| Databricks | Server Hostname | string | Required. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
-|  | HTTP Path | string | Required. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
+| Databricks | Server Hostname | string | Required. Example: `abc-12345678-wxyz.cloud.databricks.com`. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). Please note that this is the server for the Databricks Cluster. It is different from the SQL Endpoint Cluster. |
+|  | HTTP Path | string | Required. Example: `sql/protocolvx/o/1234567489/0000-1111111-abcd90`. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
 |  | Port | string | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
-|  | Personal Access Token | string | Required. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html). |
+|  | Personal Access Token | string | Required. Example: `dapi0123456789abcdefghij0123456789AB`. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html). |
 | General | Database schema | string | Optional. Default to "public". Each data stream will be written to a table under this database schema. |
 |  | Purge Staging Data | boolean | The connector creates staging files and tables on S3. By default they will be purged when the data sync is complete. Set it to `false` for debugging purpose. |
 | Data Source - S3 | Bucket Name | string | Name of the bucket to sync data into. |
