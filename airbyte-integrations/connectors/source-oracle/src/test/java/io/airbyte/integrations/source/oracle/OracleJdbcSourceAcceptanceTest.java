@@ -369,12 +369,4 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
   }
 
-  @Test
-  public void testCheckIncorrectDataBaseFailure() throws Exception {
-    ((ObjectNode) config).put("database", "wrongdatabase");
-    final AirbyteConnectionStatus actual = source.check(config);
-    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
-  }
-
 }

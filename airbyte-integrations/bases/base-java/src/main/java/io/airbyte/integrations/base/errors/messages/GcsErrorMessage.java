@@ -10,7 +10,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class GCSErrorMessage extends ErrorMessage {
+public class GcsErrorMessage extends ErrorMessage {
 
   {
     CONSTANTS.put("NoSuchBucket", INCORRECT_BUCKET_NAME);

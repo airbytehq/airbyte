@@ -4,10 +4,6 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_SCHEMA_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,7 +12,6 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -67,7 +62,6 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 
 /**
  * Tests that should be run on all Sources that extend the AbstractJdbcSource.
@@ -301,61 +295,6 @@ public abstract class JdbcSourceAcceptanceTest {
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
-
- /* @Test
-  void testCheckIncorrectPasswordFailure() throws Exception {
-      ((ObjectNode) config).put("password", "fake");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus());
-      assertEquals(actual.getMessage(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
-  }
-
-  @Test
-  public void testCheckIncorrectUsernameFailure() throws Exception {
-    if(!source.getConnectorType().equals(ConnectorType.DEFAULT)) {
-      ((ObjectNode) config).put("username", "");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus());
-      assertEquals(actual.getMessage(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
-    }
-  }
-
-  @Test
-  public void testCheckIncorrectHostFailure() throws Exception {
-    if(!source.getConnectorType().equals(ConnectorType.DEFAULT)) {
-      ((ObjectNode) config).put("host", "localhost2");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus());
-      assertEquals(actual.getMessage(), INCORRECT_HOST_OR_PORT.getValue());
-    }
-  }
-
-  @Test
-  public void testCheckIncorrectPortFailure() throws Exception {
-    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT) || source.getConnectorType().equals(ConnectorType.SNOWFLAKE))) {
-      ((ObjectNode) config).put("port", "0000");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
-    }
-  }
-
-  @Test
-  public void testCheckIncorrectDataBaseFailure() throws Exception {
-    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT))) {
-      ((ObjectNode) config).put("database", "wrongdatabase");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
-    }
-  }
-
-  @Test
-  public void testCheckIncorrectSchemaFailure() throws Exception {
-    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT))) {
-      ((ObjectNode) config).putArray("schema").add("wrongschema");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_SCHEMA_NAME.getValue());
-    }
-  }*/
 
   @Test
   void testDiscover() throws Exception {

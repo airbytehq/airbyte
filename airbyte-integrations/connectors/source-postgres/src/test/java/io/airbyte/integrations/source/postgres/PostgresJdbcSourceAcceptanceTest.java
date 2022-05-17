@@ -123,7 +123,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-      ((ObjectNode) config).put("port", "0000");
+      ((ObjectNode) config).put("port", "30000");
       final AirbyteConnectionStatus actual = source.check(config);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
       assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());

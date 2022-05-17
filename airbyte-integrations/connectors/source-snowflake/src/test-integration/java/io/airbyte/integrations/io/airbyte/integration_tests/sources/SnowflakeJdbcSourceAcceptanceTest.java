@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_PASSWORD;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_HOST;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;

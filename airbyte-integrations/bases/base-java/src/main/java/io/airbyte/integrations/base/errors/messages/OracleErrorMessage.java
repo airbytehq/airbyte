@@ -16,7 +16,6 @@ public class OracleErrorMessage extends ErrorMessage {
   {
     CONSTANTS.put("72000", INCORRECT_USERNAME_OR_PASSWORD);
     CONSTANTS.put("08006", INCORRECT_HOST_OR_PORT);
-    CONSTANTS.put("3D000", INCORRECT_SCHEMA_NAME);
   }
 
   @Override

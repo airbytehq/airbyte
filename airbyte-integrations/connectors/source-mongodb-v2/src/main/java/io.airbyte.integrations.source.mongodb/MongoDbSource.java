@@ -92,7 +92,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new ConnectionErrorException("", "Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
       }
@@ -159,7 +159,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       } catch (ConnectionErrorException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new ConnectionErrorException("", e.getMessage());
+        throw new ConnectionErrorException(e.getMessage());
       }
     }
   }

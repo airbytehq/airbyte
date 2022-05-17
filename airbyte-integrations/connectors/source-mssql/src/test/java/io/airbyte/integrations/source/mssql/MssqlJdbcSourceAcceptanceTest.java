@@ -26,9 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
 
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -103,7 +102,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
   }
 
   @Test
@@ -111,7 +110,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("username", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
   }
 
   @Test
@@ -135,6 +134,6 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("database", "wrongdatabase");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
   }
 }

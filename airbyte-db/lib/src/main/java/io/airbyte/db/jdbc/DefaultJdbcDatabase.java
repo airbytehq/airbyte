@@ -9,7 +9,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.exception.ConnectionErrorException;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -81,14 +80,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       conn.close();
       return metaData;
     } catch (SQLException e) {
-      String sqlState = null;
-      if (e.getSQLState() != null) {
-        sqlState = e.getSQLState();
-      } else {
-        SQLException sqlException = (SQLException) e.getCause();
-        sqlState = sqlException.getSQLState();
-      }
-      throw new ConnectionErrorException(sqlState, e.getMessage());
+      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e.getMessage() : e.getCause().getMessage() );
     }
   }
 
