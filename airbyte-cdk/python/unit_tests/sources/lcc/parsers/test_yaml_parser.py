@@ -34,12 +34,15 @@ def preprocess(value, evaluated_config, path):
 
 
 def preprocess_dict(config, evaluated_config, path):
+    d = dict()
     for attribute, value in config.items():
         full_path = resolve_value(attribute, path)
         if full_path in evaluated_config:
             raise Exception(f"Databag already contains attribute={attribute}")
-        evaluated_config[full_path] = preprocess(value, evaluated_config, full_path)
-    return evaluated_config
+        processed_value = preprocess(value, evaluated_config, full_path)
+        evaluated_config[full_path] = processed_value
+        d[attribute] = processed_value
+    return d
 
 
 def parse(config_string: str) -> Mapping[str, Any]:
@@ -116,4 +119,5 @@ def test_refer_to_dict():
     assert config["limit"] == 50
     assert config["offset_request_parameters"]["limit"] == 50
     assert len(config["offset_pagination_request_parameters"]) == 2
-    # assert config["offset_pagination_request_parameters"]["request_parameters"]["limit"] == 50
+    assert config["offset_pagination_request_parameters"]["request_parameters"]["limit"] == 50
+    assert config["offset_pagination_request_parameters"]["request_parameters"]["offset"] == "{{ next_page_token['offset'] }}"
