@@ -22,10 +22,10 @@ import javax.sql.DataSource;
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
+  public static final String JDBC_URL = "jdbc_url";
   private static final String SCHEMA = "schema";
-  private static final String JDBC_URL = "jdbc_url";
 
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",

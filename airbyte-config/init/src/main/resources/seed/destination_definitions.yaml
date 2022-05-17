@@ -70,6 +70,13 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
+- name: Databricks
+  destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
+  dockerRepository: airbyte/destination-databricks
+  dockerImageTag: 0.2.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
+  icon: databricks.svg
+  releaseStage: alpha
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
@@ -218,7 +225,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.33
+  dockerImageTag: 0.3.34
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:

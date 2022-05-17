@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.JDBC_URL;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.PASSWORD;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -73,7 +77,17 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         LOGGER.warn("Unable to close data source.", e);
       }
     }
+  }
 
+  @Override
+  public DataSource getDataSource(final JsonNode config) {
+    final var jdbcConfig = getJdbcConfig(config);
+    return DataSourceFactory.create(
+            jdbcConfig.get(USERNAME).asText(),
+            jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+            RedshiftInsertDestination.DRIVER_CLASS,
+            jdbcConfig.get(JDBC_URL).asText(),
+            SSL_JDBC_PARAMETERS);
   }
 
   @Override
