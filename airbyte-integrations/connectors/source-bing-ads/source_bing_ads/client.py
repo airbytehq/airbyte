@@ -65,13 +65,13 @@ class Client:
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
         auth_creds = {
             "client_id": credentials["client_id"],
-            # the `client_secret` should be provided for `non-public clients` ONLY
-            # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
             "client_secret": None,
             "redirection_uri": redirect_uri,
             "tenant": tenant_id,
         }
         if credentials["auth_method"] == "private_client":
+            # the `client_secret` should be provided for `non-public clients` ONLY
+            # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
             auth_creds["client_secret"] = credentials["client_secret"]
         return OAuthWebAuthCodeGrant(**auth_creds)
 
