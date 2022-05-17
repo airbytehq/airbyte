@@ -1,4 +1,6 @@
 import React from "react";
+import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 import Version from "components/Version";
@@ -13,7 +15,7 @@ const Content = styled.div`
   justify-content: space-between;
 `;
 
-const Img = styled.img`
+const LogoImg = styled.img`
   width: 90px;
   height: 94px;
   margin-bottom: 20px;
@@ -25,12 +27,19 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC = (props) => {
+interface BaseClearViewProps {
+  onBackClick?: React.MouseEventHandler;
+}
+
+const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onBackClick }) => {
+  const { formatMessage } = useIntl();
   return (
     <Content>
       <MainInfo>
-        <Img src="/logo.png" alt="logo" />
-        {props.children}
+        <Link to=".." onClick={onBackClick}>
+          <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
+        </Link>
+        {children}
       </MainInfo>
       <Version />
     </Content>

@@ -19,6 +19,7 @@ from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
+from .formats.avro_parser import AvroParser
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
@@ -39,6 +40,7 @@ class FileStream(Stream, ABC):
         return {
             "csv": CsvParser,
             "parquet": ParquetParser,
+            "avro": AvroParser,
         }
 
     # TODO: make these user configurable in spec.json

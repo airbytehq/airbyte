@@ -131,7 +131,8 @@ The source LinkedIn supports the oAuth2 protocol. Everyone can use it directly v
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
-| :------ | :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.7   | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documenation corrections                                                                                    |
 | 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984)   | Update connector fields title/description                                                                         |
 | 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382)   | Modify log message in rate-limit cases                                                                            |

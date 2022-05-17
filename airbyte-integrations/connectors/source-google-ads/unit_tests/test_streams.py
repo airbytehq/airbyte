@@ -16,26 +16,10 @@ from source_google_ads.streams import ClickView
 from .common import MockGoogleAdsClient as MockGoogleAdsClient
 
 
-@pytest.fixture(scope="module")
-def test_config():
-    config = {
-        "credentials": {
-            "developer_token": "test_token",
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-        },
-        "customer_id": "123",
-        "start_date": "2021-01-01",
-        "conversion_window_days": 14,
-    }
-    return config
-
-
 @pytest.fixture
-def mock_ads_client(mocker):
+def mock_ads_client(mocker, config):
     """Mock google ads library method, so it returns mocked Client"""
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(test_config))
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(config))
 
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
@@ -81,7 +65,7 @@ class MockGoogleAds(GoogleAds):
             return mock_response_2()
 
 
-def test_page_token_expired_retry_succeeds(mock_ads_client, test_config):
+def test_page_token_expired_retry_succeeds(mock_ads_client, config):
     """
     Page token expired while reading records on date 2021-01-03
     The latest read record is {"segments.date": "2021-01-03", "click_view.gclid": "4"}
@@ -90,11 +74,11 @@ def test_page_token_expired_retry_succeeds(mock_ads_client, test_config):
     """
     stream_slice = {"start_date": "2021-01-01", "end_date": "2021-01-15"}
 
-    google_api = MockGoogleAds(credentials=test_config["credentials"], customer_id=test_config["customer_id"])
+    google_api = MockGoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
     incremental_stream_config = dict(
         api=google_api,
-        conversion_window_days=test_config["conversion_window_days"],
-        start_date=test_config["start_date"],
+        conversion_window_days=config["conversion_window_days"],
+        start_date=config["start_date"],
         time_zone="local",
         end_date="2021-04-04",
     )
@@ -139,18 +123,18 @@ class MockGoogleAdsFails(MockGoogleAds):
             return mock_response_fails_2()
 
 
-def test_page_token_expired_retry_fails(mock_ads_client, test_config):
+def test_page_token_expired_retry_fails(mock_ads_client, config):
     """
     Page token has expired while reading records within date "2021-01-03", it should raise error,
     because Google Ads API doesn't allow filter by datetime.
     """
     stream_slice = {"start_date": "2021-01-01", "end_date": "2021-01-15"}
 
-    google_api = MockGoogleAdsFails(credentials=test_config["credentials"], customer_id=test_config["customer_id"])
+    google_api = MockGoogleAdsFails(credentials=config["credentials"], customer_id=config["customer_id"])
     incremental_stream_config = dict(
         api=google_api,
-        conversion_window_days=test_config["conversion_window_days"],
-        start_date=test_config["start_date"],
+        conversion_window_days=config["conversion_window_days"],
+        start_date=config["start_date"],
         time_zone="local",
         end_date="2021-04-04",
     )
@@ -181,7 +165,7 @@ class MockGoogleAdsFailsOneDate(MockGoogleAds):
         return mock_response_fails_one_date()
 
 
-def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, test_config):
+def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, config):
     """
     Page token has expired while reading records within date "2021-01-03",
     it should raise error, because Google Ads API doesn't allow filter by datetime.
@@ -189,11 +173,11 @@ def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, tes
     """
     stream_slice = {"start_date": "2021-01-03", "end_date": "2021-01-04"}
 
-    google_api = MockGoogleAdsFailsOneDate(credentials=test_config["credentials"], customer_id=test_config["customer_id"])
+    google_api = MockGoogleAdsFailsOneDate(credentials=config["credentials"], customer_id=config["customer_id"])
     incremental_stream_config = dict(
         api=google_api,
-        conversion_window_days=test_config["conversion_window_days"],
-        start_date=test_config["start_date"],
+        conversion_window_days=config["conversion_window_days"],
+        start_date=config["start_date"],
         time_zone="local",
         end_date="2021-04-04",
     )

@@ -8,7 +8,6 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -109,18 +108,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
             throw new RuntimeException(e);
           }
         });
-  }
-
-  @Override
-  public void close() throws Exception {
-    // Close the source in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-    if (dataSource instanceof AutoCloseable autoCloseable) {
-      autoCloseable.close();
-    }
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
   }
 
 }

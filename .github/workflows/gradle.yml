@@ -51,11 +51,13 @@ jobs:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
+              - '*.gradle'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
+              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'

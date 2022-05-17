@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -29,7 +30,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
-  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
   public static final String COLUMN_NAME_AB_ID =
       "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
