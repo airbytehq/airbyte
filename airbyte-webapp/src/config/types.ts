@@ -15,6 +15,7 @@ declare global {
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
+    LAUNCHDARKLY_KEY?: string;
     analytics: SegmentAnalytics;
   }
 }
@@ -29,6 +30,7 @@ export type Config = {
   isDemo: boolean;
   version?: string;
   integrationUrl: string;
+  launchDarkly?: string;
 };
 
 export type DeepPartial<T> = {
