@@ -352,7 +352,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
-|                 | 0.2.1 | 2022-05-17 | []() | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
+|                 | 0.2.1 | 2022-05-17 | [\#12924](https://github.com/airbytehq/airbyte/pull/12924) | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
 |                 | 0.2.0 | 2022-05-15 | [\#12745](https://github.com/airbytehq/airbyte/pull/12745) | Snowflake: add datetime without timezone |
 |                 | 0.1.78 | 2022-05-06 | [\#12305](https://github.com/airbytehq/airbyte/pull/12305) | Mssql: use NVARCHAR and datetime2 by default |
 | 0.36.2-alpha    | 0.1.77 | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Add support redshift SUPER type |
