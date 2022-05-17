@@ -156,11 +156,11 @@ class AdAccount(FBMarketingStream):
         if arr_type is dict:
             return createSchema(array_val)
         elif arr_type is int or arr_type is float:
-            return "Number"
+            return "number"
         elif arr_type is bool:
-            return "Boolean"
+            return "boolean"
         elif arr_type is str or arr_type is unicode:
-            return "String"
+            return "string"
 
     def createSchema(self, record):
 
@@ -169,11 +169,11 @@ class AdAccount(FBMarketingStream):
             key_type = type(record[key])
             key = str(key)
             if key_type is int or key_type is float:
-                schema[key] = "Number"
+                schema[key] = "number"
             elif key_type is bool:
-                schema[key] = "Boolean"
+                schema[key] = "boolean"
             elif key_type is str:
-                schema[key] = "String"
+                schema[key] = "string"
             elif key_type is list:
                 ## create array and add to current schema
                 schema[key] = [self.createArraySchema(record[key][0])]
@@ -181,7 +181,7 @@ class AdAccount(FBMarketingStream):
                 ## create object and add to current schema
                 schema[key] = self.createSchema(record[key])
             else:
-                print("unknown type:", key_type)
+                logger.warn(f"unknown type: {key_type}")
 
         return schema
 
