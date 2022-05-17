@@ -234,7 +234,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       throws ConfigNotFoundException {
     if (result.isEmpty()) {
       throw new ConfigNotFoundException(airbyteConfig, configId);
-    } else if (result.size() > 1) {
+    } else if (!result.isEmpty()) {
       throw new IllegalStateException(String.format("Multiple %s configs found for ID %s: %s", airbyteConfig, configId, result));
     }
   }
@@ -1803,7 +1803,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
           writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
           updatedCount++;
-        } else if (newFields.size() == 0) {
+        } else if (newFields.isEmpty()) {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
@@ -1822,7 +1822,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         updatedCount++;
-      } else if (newFields.size() > 0) {
+      } else if (!newFields.isEmpty()) {
         // Add new fields to the connector definition
         final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
         LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));

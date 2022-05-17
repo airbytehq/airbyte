@@ -75,7 +75,7 @@ public class PatchedLogsApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
-      if (localVarResponse.statusCode() / 100 != 2) {
+      if (!isSuccessful(localVarResponse.statusCode())) {
         throw new ApiException(localVarResponse.statusCode(),
             "getLogs call received non-success response",
             localVarResponse.headers(),
@@ -129,6 +129,10 @@ public class PatchedLogsApi {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
     return localVarRequestBuilder;
+  }
+
+  private Boolean isSuccessful(final Integer responseCode) {
+    return responseCode / 100 == 2;
   }
 
 }

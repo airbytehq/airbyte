@@ -384,7 +384,6 @@ subprojects {
         }
 
     tasks.withType(Pmd) {
-        exclude '**/generated/**'
         exclude '**/jooq/**'
     }
 

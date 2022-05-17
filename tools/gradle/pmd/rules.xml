@@ -1,18 +1,145 @@
 <?xml version="1.0"?>
 <ruleset name="Airbyte Rules"
-         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
-
-    <description>PMD Rules for Airbyte</description>
-
+  xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>
+        PMD Rules for Airbyte
+    </description>
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
+    <exclude-pattern>.*/ConfigSchema.java/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-analytics/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-commons/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-config/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-container-orchestrator/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-cli/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-cdk/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-api/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-bootloader/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-commons-cli/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-db/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-json-validation/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-notification/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-oauth/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-queue/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-scheduler/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-schema-validation/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-server/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-temporal/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-test-utils/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-tests/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-webapp/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-webapp-e2e-tests/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-workers/.*</exclude-pattern>
 
-    <!-- https://pmd.github.io/pmd-6.23.0/pmd_rules_java.html -->
-    <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod" />
-    <rule ref="category/java/bestpractices.xml/UseCollectionIsEmpty" />
-    <rule ref="category/java/bestpractices.xml/SystemPrintln" />
-<!--    <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" />-->
-<!--    <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" />-->
+
+    <exclude-pattern>.*/EnvConfigs.java/.*</exclude-pattern>
+    <exclude-pattern>.*/CloudLogs.java/.*</exclude-pattern>
+    <exclude-pattern>.*/GcsLogs.java/.*</exclude-pattern>
+    <exclude-pattern>.*/LifecycledCallable.java/.*</exclude-pattern>
+    <exclude-pattern>.*/VoidCallable.java/.*</exclude-pattern>
+    <exclude-pattern>.*/Enums.java/.*</exclude-pattern>
+    <exclude-pattern>.*/IOs.java/.*</exclude-pattern>
+    <exclude-pattern>.*/LineGobbler.java/.*</exclude-pattern>
+    <exclude-pattern>.*/Archives.java/.*</exclude-pattern>
+    <exclude-pattern>.*/JsonSchemas.java/.*</exclude-pattern>
+    <exclude-pattern>.*/CompositeIterator.java/.*</exclude-pattern>
+    <exclude-pattern>.*/MoreIterators.java/.*</exclude-pattern>
+    <exclude-pattern>.*/AirbyteVersion.java/.*</exclude-pattern>
+    <exclude-pattern>.*/Yamls.java/.*</exclude-pattern>
+    <exclude-pattern>.*/lang/Exceptions.java/.*</exclude-pattern>
+    <exclude-pattern>.*/OnDiskQueue.java/.*</exclude-pattern>
+
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="GuardLogStatement"/>
+        <exclude name="JUnitAssertionsShouldIncludeMessage" />
+        <exclude name="JUnitTestContainsTooManyAsserts" />
+    </rule>
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="CallSuperInConstructor"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="ConfusingTernary"/>
+        <exclude name="FinalParameterInAbstractMethod"/>
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="PrematureDeclaration"/>
+        <exclude name="TooManyStaticImports"/>
+        <exclude name="UselessParentheses"/>
+        <exclude name="UnnecessaryModifier"/>
+        <exclude name="UseUnderscoresInNumericLiterals"/>
+    </rule>
+    <rule ref="category/java/design.xml">
+        <exclude name="AvoidCatchingGenericException"/>
+        <exclude name="CouplingBetweenObjects"/>
+        <exclude name="DataClass"/>
+        <exclude name="ExcessiveImports"/>
+        <exclude name="ExcessivePublicCount"/>
+        <exclude name="GodClass"/>
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="UseObjectForClearerAPI"/>
+        <exclude name="SimplifyBooleanReturns"/>
+        <exclude name="SingularField"/>
+        <exclude name="TooManyFields"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="UseUtilityClass"/>
+    </rule>
+    <rule ref="category/java/documentation.xml">
+        <exclude name="CommentRequired"/>
+        <exclude name="UncommentedEmptyConstructor"/>
+    </rule>
+    <rule ref="category/java/errorprone.xml">
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
+        <exclude name="BeanMembersShouldSerialize"/>
+        <exclude name="DataflowAnomalyAnalysis"/>
+        <exclude name="UseLocaleWithCaseConversions"/>
+    </rule>
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowFor" value="true" />
+            <property name="allowWhile" value="true" />
+        </properties>
+    </rule>
+    <rule ref="category/java/multithreading.xml">
+        <exclude name="DoNotUseThreads"/>
+        <exclude name="UseConcurrentHashMap"/>
+    </rule>
+    <rule ref="category/java/performance.xml"/>
+    <rule ref="category/java/security.xml"/>
+
+    <rule ref="category/java/codestyle.xml/ClassNamingConventions">
+        <properties>
+            <property name="classPattern" value="[A-Z][a-zA-Z0-9_]*"/>
+            <property name="utilityClassPattern" value="[A-Z][a-zA-Z0-9]*"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/FieldNamingConventions">
+        <properties>
+            <property name="exclusions" value="log|logger|serialVersionUID"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/LongVariable">
+        <properties>
+            <property name="minimum" value="42"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts">
+        <properties>
+            <property name="problemDepth" value="5"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/documentation.xml/CommentSize">
+        <properties>
+            <property name="maxLines" value="42"/>
+            <property name="maxLineLength" value="150"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloseResource">
+        <properties>
+            <property name="allowedResourceTypes"
+              value="java.io.ByteArrayOutputStream|java.io.ByteArrayInputStream|java.io.StringWriter|java.io.CharArrayWriter|java.util.stream.Stream|java.util.stream.IntStream|java.util.stream.LongStream|java.util.stream.DoubleStream|okhttp3.Response"/>
+        </properties>
+    </rule>
 </ruleset>
