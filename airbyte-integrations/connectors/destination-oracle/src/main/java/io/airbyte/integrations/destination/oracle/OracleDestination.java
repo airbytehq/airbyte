@@ -44,6 +44,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public static final String ENCRYPTION_KEY = "encryption";
   public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
 
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
   enum Protocol {
     TCP,
     TCPS
@@ -102,6 +104,9 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
+    }
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());
