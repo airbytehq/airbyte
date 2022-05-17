@@ -44,8 +44,13 @@ class IterableStream(HttpStream, ABC):
         """
         return None
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"api_key": self._api_key}
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state=stream_state,
+                                          stream_slice=stream_slice, next_page_token=next_page_token)
+        headers.update({"api-key": self._api_key})
+        return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -103,7 +108,8 @@ class IterableExportStream(IterableStream, ABC):
         elif isinstance(value, str):
             value = pendulum.parse(value, strict=False)
         else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+            raise ValueError(
+                f"Unsupported type of datetime field {type(value)}")
         return value
 
     def get_updated_state(
@@ -121,7 +127,8 @@ class IterableExportStream(IterableStream, ABC):
                 self.cursor_field: str(
                     max(
                         latest_benchmark,
-                        self._field_to_datetime(current_stream_state[self.cursor_field]),
+                        self._field_to_datetime(
+                            current_stream_state[self.cursor_field]),
                     )
                 )
             }
@@ -147,7 +154,8 @@ class IterableExportStream(IterableStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for obj in response.iter_lines():
             record = json.loads(obj)
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            record[self.cursor_field] = self._field_to_datetime(
+                record[self.cursor_field])
             yield record
 
     def request_kwargs(
@@ -262,7 +270,9 @@ class IterableExportStreamAdjustableRange(IterableExportStream):
                     start_time = now
                 break
             except ChunkedEncodingError:
-                self.logger.warn("ChunkedEncodingError occured, decrease days range and try again")
+                self.logger.warn(
+                    "ChunkedEncodingError occured, decrease days range and try again")
                 stream_slice = self._adjustable_generator.reduce_range()
         else:
-            raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
+            raise Exception(
+                f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
