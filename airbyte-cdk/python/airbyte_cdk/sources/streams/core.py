@@ -76,26 +76,6 @@ class Stream(ABC):
         """
         return casing.camel_to_snake(self.__class__.__name__)
 
-    def read_records_with_handler(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from self.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-        except AirbyteTracedException as e:
-            raise e
-        except Exception as e:
-            display_message = self.get_error_display_message(e)
-            if display_message:
-                # TODO check that this doesnt break any other consumers that are expecting the error to be in its original form
-                raise AirbyteTracedException.from_exception(e, message=display_message) from e
-            raise e
-
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         # TODO docstring
         return None

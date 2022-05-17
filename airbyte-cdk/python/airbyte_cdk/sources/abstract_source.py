@@ -28,6 +28,7 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class AbstractSource(Source, ABC):
@@ -118,8 +119,14 @@ class AbstractSource(Source, ABC):
                         connector_state=connector_state,
                         internal_config=internal_config,
                     )
+                except AirbyteTracedException as e:
+                    raise e
                 except Exception as e:
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        # TODO check that this doesnt break any other consumers that are expecting the error to be in its original form
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     timer.finish_event()
@@ -206,7 +213,7 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            records = stream_instance.read_records_with_handler(
+            records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
                 stream_state=stream_state,
@@ -240,7 +247,7 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         total_records_counter = 0
         for slice in slices:
-            records = stream_instance.read_records_with_handler(
+            records = stream_instance.read_records(
                 stream_slice=slice,
                 sync_mode=SyncMode.full_refresh,
                 cursor_field=configured_stream.cursor_field,
