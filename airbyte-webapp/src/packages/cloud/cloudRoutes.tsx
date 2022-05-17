@@ -21,7 +21,6 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
-import { hasFromState } from "utils/stateUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -29,6 +28,7 @@ import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
@@ -106,16 +106,12 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { location } = useRouter();
+  const { query } = useRouter();
 
   return (
     <Routes>
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
-        <Route
-          key={r}
-          path={`${r}/*`}
-          element={hasFromState(location.state) ? <Navigate to={location.state.from} replace /> : <DefaultView />}
-        />
+        <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
       <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
@@ -162,16 +158,18 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
-      <Suspense fallback={<LoadingPage />}>
-        {/* Allow email verification no matter whether the user is logged in or not */}
-        <Routes>
-          <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
-        </Routes>
-        {/* Show the login screen if the user is not logged in */}
-        {!user && <Auth />}
-        {/* Allow all regular routes if the user is logged in */}
-        {user && <MainViewRoutes />}
-      </Suspense>
+      <LDExperimentServiceProvider>
+        <Suspense fallback={<LoadingPage />}>
+          {/* Allow email verification no matter whether the user is logged in or not */}
+          <Routes>
+            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+          </Routes>
+          {/* Show the login screen if the user is not logged in */}
+          {!user && <Auth />}
+          {/* Allow all regular routes if the user is logged in */}
+          {user && <MainViewRoutes />}
+        </Suspense>
+      </LDExperimentServiceProvider>
     </WorkspaceServiceProvider>
   );
 };

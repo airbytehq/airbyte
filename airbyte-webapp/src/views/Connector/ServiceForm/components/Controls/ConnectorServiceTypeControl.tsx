@@ -18,6 +18,7 @@ import { GAIcon } from "components/icons/GAIcon";
 import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
 
@@ -76,13 +77,6 @@ const SingleValueContent = styled(components.SingleValue)`
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
-
-/**
- * Can be used to overwrite the alphabetical order of connectors in the select.
- * A higher positive number will put the given connector to the top of the list
- * a low negative number to the end of it.
- */
-const ORDER_OVERWRITE: Record<string, number> = {};
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -174,6 +168,7 @@ const ConnectorServiceTypeControl: React.FC<{
   onOpenRequestConnectorModal,
 }) => {
   const { formatMessage } = useIntl();
+  const orderOverwrite = useExperiment("connector.orderOverwrite", {});
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
 
@@ -208,8 +203,8 @@ const ConnectorServiceTypeControl: React.FC<{
           releaseStage: item.releaseStage,
         }))
         .sort((a, b) => {
-          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
-          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          const priorityA = orderOverwrite[a.value] ?? 0;
+          const priorityB = orderOverwrite[b.value] ?? 0;
           // If they have different priority use the higher priority first, otherwise use the label
           if (priorityA !== priorityB) {
             return priorityB - priorityA;
@@ -220,7 +215,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices]
+    [availableServices, orderOverwrite]
   );
 
   const getNoOptionsMessage = useCallback(

@@ -2,6 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
-def test_example_method():
+# fixture for the _customIntegrationTest test.
+def test_fixture():
     assert True

@@ -86,6 +86,8 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
+
+    Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
   @VisibleForTesting

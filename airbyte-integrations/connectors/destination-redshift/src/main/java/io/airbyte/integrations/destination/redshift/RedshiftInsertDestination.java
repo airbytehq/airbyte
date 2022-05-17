@@ -13,16 +13,18 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
-  private static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
+  public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
+  public static final String JDBC_URL = "jdbc_url";
   private static final String SCHEMA = "schema";
-  private static final String JDBC_URL = "jdbc_url";
 
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -38,25 +40,24 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(final JsonNode config) {
-    return getJdbcDatabase(config);
+  public DataSource getDataSource(final JsonNode config) {
+    final var jdbcConfig = getJdbcConfig(config);
+    return DataSourceFactory.create(
+        jdbcConfig.get(USERNAME).asText(),
+        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        jdbcConfig.get(JDBC_URL).asText(),
+        SSL_JDBC_PARAMETERS);
+  }
+
+  @Override
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
+    return new DefaultJdbcDatabase(dataSource);
   }
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return SSL_JDBC_PARAMETERS;
-  }
-
-  public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
-    final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    return new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-        jdbcConfig.get(USERNAME).asText(),
-        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-        RedshiftInsertDestination.DRIVER_CLASS,
-        jdbcConfig.get(JDBC_URL).asText(),
-        SSL_JDBC_PARAMETERS)
-    );
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
