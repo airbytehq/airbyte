@@ -88,6 +88,7 @@ class DestinationFirebolt(Destination):
             else:
                 logger.info("Using the SQL writing strategy")
                 writer = FireboltSQLWriter(connection)
+
             for configured_stream in configured_catalog.streams:
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                     writer.delete_table(configured_stream.stream.name)
