@@ -49,8 +49,9 @@ public class RecordSchemaValidator {
     try {
       validator.ensure(matchingSchema, messageData);
     } catch (final JsonValidationException e) {
-      throw new RecordSchemaValidationException(
-          String.format("Record schema validation failed for stream %s. Expected schema: %s", messageStream, matchingSchema));
+      final String streamWithNamespace = message.getNamespace() == null ? message.getStream() : message.getNamespace() + "-" + message.getStream();
+      throw new RecordSchemaValidationException(streamWithNamespace,
+          String.format("Record schema validation failed for %s. Expected schema: %s", streamWithNamespace, matchingSchema));
     }
   }
 
