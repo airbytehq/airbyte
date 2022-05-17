@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.57
+Update protocol models to support per-stream state: [#12829](https://github.com/airbytehq/airbyte/pull/12829).
+
 ## 0.1.56
 - Update protocol models to include `AirbyteTraceMessage`
 - Emit an `AirbyteTraceMessage` on uncaught exceptions
