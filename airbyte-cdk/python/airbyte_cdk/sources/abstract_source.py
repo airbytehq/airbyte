@@ -246,6 +246,11 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field,
             )
             for record in records:
+                if internal_config.gen_stream_schema:
+                    now_millis = int(datetime.now().timestamp() * 1000)
+                    message = AirbyteRecordMessage(stream=configured_stream.stream.name, data=record, emitted_at=now_millis)
+                    print(AirbyteMessage(type=MessageType.RECORD, record=message).json())
+                    return
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
                 total_records_counter += 1
                 if self._limit_reached(internal_config, total_records_counter):

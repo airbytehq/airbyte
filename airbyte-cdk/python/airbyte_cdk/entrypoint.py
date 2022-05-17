@@ -60,6 +60,10 @@ class AirbyteEntrypoint(object):
         required_read_parser.add_argument(
             "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
+        required_read_parser.add_argument(
+            "--gen_stream_schema", action="store_true", required=True, help="force generate ONE RAW_RECORD to use as input to "
+                                                                            "tools/schema_generation.py "
+        )
 
         return main_parser.parse_args(args)
 
@@ -115,6 +119,9 @@ class AirbyteEntrypoint(object):
                     yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
                 elif cmd == "read":
                     config_catalog = self.source.read_catalog(parsed_args.catalog)
+                    if parsed_args.gen_stream_schema:
+                        # Flag to generate only one RAW_RECORD (with no schema applied) to be used on tools/schema_generation.py
+                        config.update({"gen_stream_schema": True})
                     state = self.source.read_state(parsed_args.state)
                     generator = self.source.read(self.logger, config, config_catalog, state)
                     for message in generator:
