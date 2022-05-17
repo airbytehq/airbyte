@@ -36,13 +36,11 @@ class Client:
 
     def __init__(
         self,
+        credentials: dict,
         developer_token: str,
         customer_id: str,
-        client_secret: str,
-        client_id: str,
         tenant_id: str,
         redirect_uri: str,
-        refresh_token: str,
         reports_start_date: str,
         hourly_reports: bool,
         daily_reports: bool,
@@ -51,14 +49,8 @@ class Client:
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
-        self.authentication = OAuthWebAuthCodeGrant(
-            client_id,
-            client_secret,
-            redirect_uri,
-            tenant=tenant_id,
-        )
-
-        self.refresh_token = refresh_token
+        self.authentication = self._get_auth_client(credentials, redirect_uri, tenant_id)
+        self.refresh_token = credentials["refresh_token"]
         self.customer_id = customer_id
         self.developer_token = developer_token
         self.hourly_reports = hourly_reports
@@ -68,6 +60,20 @@ class Client:
 
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
+
+    def _get_auth_client(self, credentials: dict, redirect_uri: str, tenant_id: str) -> OAuthWebAuthCodeGrant:
+        # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
+        auth_creds = {
+            "client_id": credentials["client_id"],
+            # the `client_secret` should be provided for `non-public clients` ONLY
+            # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
+            "client_secret": None,
+            "redirection_uri": redirect_uri,
+            "tenant": tenant_id,
+        }
+        if credentials["auth_method"] == "private_client":
+            auth_creds["client_secret"] = credentials["client_secret"]
+        return OAuthWebAuthCodeGrant(**auth_creds)
 
     @lru_cache(maxsize=None)
     def _get_auth_data(self, account_id: Optional[str] = None) -> AuthorizationData:
