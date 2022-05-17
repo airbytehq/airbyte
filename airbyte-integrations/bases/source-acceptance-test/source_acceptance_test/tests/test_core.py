@@ -19,7 +19,9 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
+    DestinationSyncMode,
     Status,
+    SyncMode,
     TraceType,
     Type,
 )
@@ -421,10 +423,10 @@ class TestBasicRead(BaseTest):
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
-                        supported_sync_modes=["full_refresh"],
+                        supported_sync_modes=[SyncMode.full_refresh],
                     ),
-                    sync_mode="full_refresh",
-                    destination_sync_mode="overwrite",
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
                 )
             ]
         )
