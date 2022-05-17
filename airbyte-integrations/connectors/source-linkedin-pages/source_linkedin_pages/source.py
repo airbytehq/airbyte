@@ -77,7 +77,7 @@ class Shares(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
     
-        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1"
+        path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=50"
         return path
 
 class TotalFollowerCount(LinkedinPagesStream):
@@ -87,15 +87,19 @@ class TotalFollowerCount(LinkedinPagesStream):
         path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
         return path
     
-    """
-    Adding UgcPosts in a later PR. It's not ready as it's currently a duplicate endpoint as the Shares stream
-    """
-# class UgcPosts(LinkedinPagesStream):
+class UgcPosts(LinkedinPagesStream):
 
-#     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
     
-#         path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=1000"
-#         return path
+        path = f"ugcPosts?q=authors&authors=List(urn%3Ali%3Aorganization%3A{self.org})&sortBy=LAST_MODIFIED&count=50"
+        return path
+
+    def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
+        """
+        If org_ids are specified as user's input from configuration,
+        we must use MODIFIED header: {'X-RestLi-Protocol-Version': '2.0.0'}
+        """
+        return {"X-RestLi-Protocol-Version": "2.0.0"} if self.org else {}
 
 
 class SourceLinkedinPages(AbstractSource):
@@ -156,6 +160,7 @@ class SourceLinkedinPages(AbstractSource):
             PageStatistics(config),
             ShareStatistics(config),
             Shares(config),
-            TotalFollowerCount(config)
+            TotalFollowerCount(config),
+            UgcPosts(config)
         ]
         
