@@ -105,6 +105,12 @@ class Locations(HydroVuStream):
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
+    
+    #def __init__(self, authenticator, *args, **kw):
+    def __init__(self, *args, **kw):
+        super(Locations, self).__init__(*args, **kw)
+        #self.count = 0
+
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -116,16 +122,69 @@ class Locations(HydroVuStream):
         return "locations/list"
     
 
+    #def request_params(
+    def request_headers(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+
+        #if next_page_token and self.count < 5:
+        if next_page_token:
+            #print ("yes next_page_token")
+            #print ("next_page_token")
+            #print (next_page_token)
+
+            #self.count += 1
+            #print (self.count)
+            #print ("##########")
+
+            #return {}
+            return {"X-ISI-Start-Page": next_page_token}
+            
+        else:
+            #print ("no next_page_token")
+            return {}
+            #StopIteration
+            #pass
+
+
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            r = next(self._pages)
+            #r = next(self._pages)
+            print ("location response.headers")
+            print (response.headers)
+
+            print ("---------------------------------")
+
+            r = response.headers['X-ISI-Next-Page']
+
+            #print (r)
+
+            #print ("2---------------------------------")
+
 
             return r
-        except StopIteration:
+
+        #except StopIteration:
+        except:
             pass
 
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+
+        print ("parse location response.headers")
+        #print (response.headers)
+
+        print ("locations response.json()")
+        print (response.json())
+        #print ("3---------------------------------")
+
 
         def format_record(r):
 
@@ -155,6 +214,10 @@ class Readings(HydroVuStream):
 
         self.location_and_param_id_latest_timestamps = {} 
 
+        self.continue_to_next_location_reading = False
+
+        self.next_location_page = ""
+
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -164,20 +227,128 @@ class Readings(HydroVuStream):
         should return "customers". Required.
         """
 
+
+
+
         # next_page_token is the location id
         if not next_page_token:
-            next_page_token = next(self._pages)
+            self.next_location_page = next(self._pages)
 
-        return f"locations/{next_page_token}/data"
+
+
+        elif len(str(next_page_token[1])) > 0:
+
+            print ("len(next_page_token[1])")
+            print (len(str(next_page_token[1])))
+
+            self.next_location_page = next_page_token[1]
+
+        
+
+        print ("self.next_location_page")
+        print (self.next_location_page)
+        print ("=============")
+
+
+
+        return f"locations/{self.next_location_page}/data"
+
+
+
+
+
+        #return f"locations/{next_page_token}/data"
+
+        '''
+        try:
+            next_page = next(self._pages)
+
+            return f"locations/{next_page}/data"
+        except StopIteration:
+            pass
+
+        '''
+
+    def request_headers(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+
+        #if next_page_token and self.count < 5:
+        if next_page_token and len(next_page_token[0]) > 0:
+            print ("len(next_page_token[0])")
+            print (len(next_page_token[0]))
+            #print ("yes next_page_token")
+            #print ("next_page_token")
+            #print (next_page_token)
+
+            #self.count += 1
+            #print (self.count)
+            print ("##########")
+
+            #return {}
+            return {"X-ISI-Start-Page": next_page_token[0]}
+            #return {"X-ISI-Start-Page": next_page_token}
+            
+        else:
+            #print ("no next_page_token")
+            return {}
+            #StopIteration
+            #pass
+
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # If no X-ISI-Next-Page, then the next page token will be the next of self._pages to iterate
+        # over the 
+
+        # set the next page request to a class variable
+
+        print ("readings response.headers")
+        print (response.headers)
+        print (response.json())
+        print ("^^^^^^^^^^^^^^")
+
+        isi_next_page = ""
+
+        next_location_page = ""
+
+        try:
+
+            isi_next_page = response.headers['X-ISI-Next-Page']
+            #r = response.headers['X-ISI-Next-Page']
+           
+            #self.continue_to_next_location_reading = False
+
+            return (isi_next_page, next_location_page)
+
+        except:
+
+            try:
+                next_location_page = next(self._pages)
+
+                return (isi_next_page, next_location_page)
+
+            except StopIteration:
+                pass
+
+
+        '''
         try:
             r = next(self._pages)
+
+            self.continue_to_next_location_reading = True
 
             return r
         except StopIteration:
             pass
+        '''
+
+
+
 
 
 
@@ -229,6 +400,11 @@ class Readings(HydroVuStream):
         stream_state: Mapping[str, Any],
         **kwargs) -> Iterable[Mapping]:
 
+        print ("readings response.headers")
+        print (response.headers)
+
+        print ("---------------------------------")
+
 
         # parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
 
@@ -276,6 +452,9 @@ class Readings(HydroVuStream):
                 if timestamp > cursor_timestamp:
 
                     value = reading['value']
+
+                    print ("value")
+                    print (value)
 
                     flat_reading = {}
 
