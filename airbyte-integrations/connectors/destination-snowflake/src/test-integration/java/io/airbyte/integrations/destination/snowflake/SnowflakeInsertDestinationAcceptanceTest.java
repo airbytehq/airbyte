@@ -22,6 +22,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -31,10 +32,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Disabled;
@@ -60,6 +58,26 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected JsonNode getConfig() {
     return config;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new SnowflakeTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   public JsonNode getStaticConfig() {
@@ -118,29 +136,14 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       throws Exception {
     final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
     final String schema = NAME_TRANSFORMER.getNamespace(namespace);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // tableName = "\"" + tableName + "\"";
-    // }
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = NAME_TRANSFORMER.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
+    TimeZone timeZone = TimeZone.getTimeZone("UTC");
+    TimeZone.setDefault(timeZone);
+
     return database.bufferedResultSetQuery(
         connection -> {
           try (final ResultSet tableInfo = connection.createStatement()
@@ -149,6 +152,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
             // check that we're creating permanent tables. DBT defaults to transient tables, which have
             // `TRANSIENT` as the value for the `kind` column.
             assertEquals("TABLE", tableInfo.getString("kind"));
+            connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
                 .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
           }
