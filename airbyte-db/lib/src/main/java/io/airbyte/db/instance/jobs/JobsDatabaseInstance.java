@@ -19,8 +19,8 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseInstance.class);
 
-  private static final String DATABASE_LOGGING_NAME = "airbyte jobs";
-  private static final String SCHEMA_PATH = "jobs_database/schema.sql";
+  public static final String DATABASE_LOGGING_NAME = "airbyte jobs";
+  public static final String SCHEMA_PATH = "jobs_database/schema.sql";
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if jobs database is ready...");

@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
 public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance.class);
-  private static final Set<String> INITIAL_EXPECTED_TABLES = Collections.singleton("airbyte_configs");
-  private static final String DATABASE_LOGGING_NAME = "airbyte configs";
-  private static final String SCHEMA_PATH = "configs_database/schema.sql";
+  public static final Set<String> INITIAL_EXPECTED_TABLES = Collections.singleton("airbyte_configs");
+  public static final String DATABASE_LOGGING_NAME = "airbyte configs";
+  public static final String SCHEMA_PATH = "configs_database/schema.sql";
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if airbyte_configs has been created and seeded...");
