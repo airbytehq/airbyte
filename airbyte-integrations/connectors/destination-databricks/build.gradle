@@ -32,8 +32,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
-    // Spark JDBC is not checked into the repo for legal reason
-    implementation files("lib/SparkJDBC42.jar")
+    implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25'
 
     // parquet
     implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.0'
@@ -45,19 +44,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
 }
-
-task downloadJdbcDriverZip(type: Download) {
-    src 'https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.21/SimbaSparkJDBC42-2.6.21.1039.zip'
-    dest new File(buildDir, 'SimbaSparkJDBC42-2.6.21.1039.zip')
-    overwrite false
-}
-
-task extractJdbcDriverFile(dependsOn: downloadJdbcDriverZip, type: Copy) {
-    from {
-        zipTree(downloadJdbcDriverZip.dest)
-    }
-    into 'lib/'
-    include 'SparkJDBC42.jar'
-}
-
-compileJava.dependsOn tasks.extractJdbcDriverFile

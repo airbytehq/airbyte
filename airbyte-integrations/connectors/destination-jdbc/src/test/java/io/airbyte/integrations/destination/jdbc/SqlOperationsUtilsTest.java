@@ -14,7 +14,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -46,11 +48,14 @@ class SqlOperationsUtilsTest {
 
     final JsonNode config = createConfig();
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            config.get("jdbc_url").asText()
+        )
+    );
 
     uuidSupplier = mock(Supplier.class);
   }

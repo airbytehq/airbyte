@@ -28,6 +28,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
 public class ConfigurationApiTest {
@@ -59,7 +60,9 @@ public class ConfigurationApiTest {
         Path.of(""),
         mock(HttpClient.class),
         mock(FeatureFlags.class),
-        mock(EventRunner.class));
+        mock(EventRunner.class),
+        mock(Flyway.class),
+        mock(Flyway.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 

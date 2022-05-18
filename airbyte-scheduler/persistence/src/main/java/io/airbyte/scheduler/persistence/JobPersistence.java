@@ -161,6 +161,8 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
+  List<Job> listJobsForConnectionWithStatuses(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Set<JobStatus> statuses) throws IOException;
+
   /**
    * @param connectionId The ID of the connection
    * @param configTypes The types of jobs
@@ -235,5 +237,15 @@ public interface JobPersistence {
    * Purges job history while ensuring that the latest saved-state information is maintained.
    */
   void purgeJobHistory();
+
+  /**
+   * Check if the secret has been migrated to a new secret store from a plain text values
+   */
+  boolean isSecretMigrated() throws IOException;
+
+  /**
+   * Set that the secret migration has been performed.
+   */
+  void setSecretMigrationDone() throws IOException;
 
 }
