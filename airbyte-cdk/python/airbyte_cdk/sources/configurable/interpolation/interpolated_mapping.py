@@ -17,9 +17,12 @@ class InterpolatedMapping:
 
     def eval(self, config, **kwargs):
         interpolated_values = {
-            self._interpolation.eval(name, config, **kwargs): self._interpolation.eval(value, config, **kwargs)
-            for name, value in self._mapping.items()
+            self._interpolation.eval(name, config, **kwargs): self._eval(value, config, **kwargs) for name, value in self._mapping.items()
         }
+        return interpolated_values
 
-        non_null_values = {k: v for k, v in interpolated_values.items() if v}
-        return non_null_values
+    def _eval(self, value, config, **kwargs):
+        if type(value) == str:
+            return self._interpolation.eval(value, config, **kwargs)
+        else:
+            return value

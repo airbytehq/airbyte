@@ -28,4 +28,6 @@ class InterpolatedPaginator(Paginator):
             self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
         )
 
-        return interpolated_values if interpolated_values else None
+        non_null_tokens = {k: v for k, v in interpolated_values.items() if v}
+
+        return non_null_tokens if non_null_tokens else None

@@ -28,7 +28,7 @@ class JinjaInterpolation(Interpolation):
                     return result
             else:
                 # If input is not a string, return it as is
-                return input_str
+                raise Exception(f"Expected a string. got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
