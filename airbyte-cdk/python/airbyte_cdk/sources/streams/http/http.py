@@ -337,8 +337,15 @@ class HttpStream(Stream, ABC):
             return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
-        # default logic to grab error from common fields
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
 
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
+        # default logic to grab error from common fields
         def _try_get_error(value):
             if isinstance(value, str):
                 return value
@@ -362,7 +369,17 @@ class HttpStream(Stream, ABC):
         except requests.exceptions.JSONDecodeError:
             return None
 
-    def get_error_display_message(self, exception) -> Optional[str]:
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
+        The method should be overriden as needed to handle any additional exception types.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
         if isinstance(exception, requests.HTTPError):
             return self.parse_response_error_message(exception.response)
         return None
