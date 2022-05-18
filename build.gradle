@@ -313,16 +313,7 @@ subprojects {
         }
         finalizedBy jacocoTestReport
     }
-
-    spotbugs {
-        ignoreFailures = false
-        effort = 'max'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
-        reportLevel = 'high'
-        showProgress = false
-        toolVersion = '4.6.0'
-    }
-
+    
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
