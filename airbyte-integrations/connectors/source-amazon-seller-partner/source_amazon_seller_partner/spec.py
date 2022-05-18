@@ -96,5 +96,15 @@ advanced_auth = AdvancedAuth(
                 "client_secret": {"type": "string", "path_in_connector_config": ["lwa_client_secret"]},
             },
         },
+        oauth_user_input_from_connector_config_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "lwa_app_id": {
+                    "type": "string",
+                    "path_in_connector_config": ["credentials", "lwa_app_id"]
+                }
+            }
+        },
     ),
 )
