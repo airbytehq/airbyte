@@ -1170,7 +1170,6 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
   }
 
-  @RetryingTest(3)
   @Order(22)
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
