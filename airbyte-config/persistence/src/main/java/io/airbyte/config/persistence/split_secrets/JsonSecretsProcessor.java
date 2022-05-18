@@ -20,18 +20,19 @@ import java.util.Set;
 import lombok.Builder;
 
 @Builder
+@SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
 public class JsonSecretsProcessor {
 
   @Builder.Default
-  private boolean maskSecrets = true;
+  final private boolean maskSecrets = true;
 
   @Builder.Default
-  private boolean copySecrets = true;
+  final private boolean copySecrets = true;
 
   protected static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
   @VisibleForTesting
-  static String SECRETS_MASK = "**********";
+  static final String SECRETS_MASK = "**********";
 
   static final String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   static final String PROPERTIES_FIELD = "properties";
@@ -76,7 +77,7 @@ public class JsonSecretsProcessor {
         schema,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> field.getKey().equals(AIRBYTE_SECRET_FIELD)));
+            .anyMatch(field -> AIRBYTE_SECRET_FIELD.equals(field.getKey())));
 
     JsonNode copy = Jsons.clone(json);
     for (final String path : pathsWithSecrets) {
@@ -121,7 +122,7 @@ public class JsonSecretsProcessor {
         final JsonNode fieldSchema = properties.get(key);
         // We only copy the original secret if the destination object isn't attempting to overwrite it
         // I.e. if the destination object's value is set to the mask, then we can copy the original secret
-        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
+        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && SECRETS_MASK.equals(dst.get(key).asText())) {
           dstCopy.set(key, src.get(key));
         } else if (dstCopy.has(key)) {
           // If the destination has this key, then we should consider copying it

@@ -18,9 +18,10 @@ import org.jooq.DSLContext;
  */
 public interface SecretPersistence extends ReadOnlySecretPersistence {
 
+  @Override
   Optional<String> read(final SecretCoordinate coordinate);
 
-  void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
+  void write(final SecretCoordinate coordinate, final String payload);
 
   static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
