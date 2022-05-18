@@ -57,10 +57,10 @@ class BabelforceStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
+        Babelforce calls are sorted in reverse order. To process the calls in ascending order an in-memory sort is performed
+
         :return an iterable containing each record in the response
         """
-        # Babelforce calls are sorted in reverse order. To process the calls in ascending order an
-        # in-memory sort is performed
         items = response.json().get("items")
         items.sort(key=operator.itemgetter("dateCreated"))
         keys = self.get_json_schema().get("properties").keys()
