@@ -32,14 +32,14 @@
       "date_created_from": {
         "type": "integer",
         "title": "Date Created from",
-        "description": "Timestamp in Unix the replication from Babelfoce API will start from.",
+        "description": "Timestamp in Unix the replication from Babelforce API will start from.",
         "pattern": "^$|^[0-9]{10,}$",
         "order": 4
       },
       "date_created_to": {
         "type": "integer",
         "title": "Date Created to",
-        "description": "Timestamp in Unix the replication from Babelfoce will be up to.",
+        "description": "Timestamp in Unix the replication from Babelforce will be up to.",
         "examples": ["2021-12-01T00:00:00"],
         "pattern": "^$|^[0-9]{10,}$",
         "order": 5
