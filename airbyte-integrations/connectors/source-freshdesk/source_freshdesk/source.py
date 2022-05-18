@@ -3,18 +3,29 @@
 #
 
 import logging
-from urllib.parse import urljoin
-import requests
 from typing import Any, List, Mapping, Optional, Tuple
-from requests.auth import HTTPBasicAuth
+from urllib.parse import urljoin
 
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Surveys, Tickets, TimeEntries
+from requests.auth import HTTPBasicAuth
+from source_freshdesk.streams import (
+    Agents,
+    Companies,
+    Contacts,
+    Conversations,
+    Groups,
+    Roles,
+    SatisfactionRatings,
+    Skills,
+    Surveys,
+    Tickets,
+    TimeEntries,
+)
 
 
 class FreshdeskAuth(HTTPBasicAuth):
-
     def __init__(self, api_key: str) -> None:
         """
         Freshdesk expects the user to provide an api_key. Any string can be used as password:
@@ -24,7 +35,6 @@ class FreshdeskAuth(HTTPBasicAuth):
 
 
 class SourceFreshdesk(AbstractSource):
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         alive = True
         error_msg = None
@@ -41,7 +51,7 @@ class SourceFreshdesk(AbstractSource):
             error_msg = repr(error)
 
         return alive, error_msg
-    
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = FreshdeskAuth(config["api_key"])
         stream_kwargs = {"authenticator": authenticator, "config": config}
@@ -56,5 +66,5 @@ class SourceFreshdesk(AbstractSource):
             Surveys(**stream_kwargs),
             TimeEntries(**stream_kwargs),
             Tickets(**stream_kwargs),
-            SatisfactionRatings(**stream_kwargs)
+            SatisfactionRatings(**stream_kwargs),
         ]

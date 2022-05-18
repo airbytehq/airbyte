@@ -3,17 +3,14 @@
 #
 
 import logging
+
 from source_freshdesk import SourceFreshdesk
 
 logger = logging.getLogger("test_source")
 
 
 def test_check_connection_ok(requests_mock, config):
-    json_resp = {
-        "primary_language": "en",
-        "supported_languages": [],
-        "portal_languages": []
-    }
+    json_resp = {"primary_language": "en", "supported_languages": [], "portal_languages": []}
 
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", json=json_resp)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
@@ -22,13 +19,9 @@ def test_check_connection_ok(requests_mock, config):
 
 
 def test_check_connection_invalid_api_key(requests_mock, config):
-    responses = [{
-        "json": {
-            "code": "invalid_credentials",
-            "message": "You have to be logged in to perform this action."
-        },
-        "status_code": 401
-    }]
+    responses = [
+        {"json": {"code": "invalid_credentials", "message": "You have to be logged in to perform this action."}, "status_code": 401}
+    ]
 
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)

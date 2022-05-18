@@ -3,12 +3,23 @@
 #
 
 import random
-import pytest
 from typing import Any, MutableMapping
 
-from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Tickets, TimeEntries
+import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from source_freshdesk.streams import (
+    Agents,
+    Companies,
+    Contacts,
+    Conversations,
+    Groups,
+    Roles,
+    SatisfactionRatings,
+    Skills,
+    Tickets,
+    TimeEntries,
+)
 
 
 def _read_full_refresh(stream_instance: Stream):
@@ -52,7 +63,7 @@ def test_full_refresh(stream, resource, authenticator, config, requests_mock):
 
 
 def test_full_refresh_conversations(authenticator, config, requests_mock):
-    requests_mock.register_uri("GET", f"/api/tickets", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
+    requests_mock.register_uri("GET", "/api/tickets", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
     for i in range(5):
         requests_mock.register_uri("GET", f"/api/tickets/{i}/conversations", json=[{"id": x} for x in range(10)])
 
@@ -77,7 +88,7 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     requests_mock.register_uri(
         "GET",
         f"/api/{resource}",
-        json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)]
+        json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)],
     )
 
     stream = stream(authenticator=authenticator, config=config)

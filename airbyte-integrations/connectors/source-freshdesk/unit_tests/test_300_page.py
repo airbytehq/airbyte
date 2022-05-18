@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from airbyte_cdk.models import SyncMode
 from source_freshdesk.streams import Tickets
 
@@ -14,57 +13,74 @@ def responses_fixtures():
         {
             "url": "/api/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
             "json": [{"id": 1, "updated_at": "2018-01-02T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'}
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'}
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
-            "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00>; rel="next"'
+            },
         },
         {
             "url": "/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
-            "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}]
-        }
+            "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}],
+        },
     ]
-    
+
 
 class Test300PageLimit:
-    
     def test_not_all_records(self, requests_mock, authenticator, config, responses):
         """
         TEST 1 - not all records are retrieved
@@ -110,7 +126,9 @@ class Test300PageLimit:
 
         # Mocking Request
         for response in responses:
-            requests_mock.register_uri("GET", response["url"],
+            requests_mock.register_uri(
+                "GET",
+                response["url"],
                 json=response["json"],
                 headers=response.get("headers", {}),
             )
