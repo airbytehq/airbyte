@@ -19,6 +19,7 @@ fi
 
 diff_output="$(git --no-pager diff)"
 
+set +o xtrace
 if test -n "$diff_output"; then
   echo -e "$red_text""File changes were detected! Lame!""$default_text"
   echo -e "$red_text""This is usually do to forgetting to run a command locally before committing""$default_text"
