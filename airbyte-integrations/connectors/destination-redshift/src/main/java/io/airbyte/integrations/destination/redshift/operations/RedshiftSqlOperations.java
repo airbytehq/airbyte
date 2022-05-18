@@ -94,18 +94,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   public boolean isValidData(final JsonNode data) {
-    boolean isValid = true;
-
     // check overall size of the SUPER data
     final String stringData = Jsons.serialize(data);
     final int dataSize = stringData.getBytes(StandardCharsets.UTF_8).length;
-    isValid = dataSize <= REDSHIFT_SUPER_MAX_BYTE_SIZE;
+    boolean isValid = dataSize <= REDSHIFT_SUPER_MAX_BYTE_SIZE;
 
     // check VARCHAR limits for VARCHAR fields within the SUPER object
     Map<String, Object> dataMap = Jsons.flatten(data);
     for (Object value : dataMap.values()) {
-      if (value instanceof String) {
-        String stringValue = (String) value;
+      if (value instanceof String stringValue) {
         final int stringDataSize = stringValue.getBytes(StandardCharsets.UTF_8).length;
         isValid = stringDataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
         if (!isValid) {
