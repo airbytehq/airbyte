@@ -122,11 +122,11 @@ public class BootloaderAppTest {
 
       val jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.36.3.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.36.3.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(version, jobsPersistence.getVersion().get());

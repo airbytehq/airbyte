@@ -60,7 +60,6 @@ public class V0_36_3_001__AddScheduleTypeToConfigsTable extends BaseJavaMigratio
     @Override
     public Schema getSchema() {
       return new SchemaImpl(DSL.name("public"), null);
-
     }
 
     @Override
