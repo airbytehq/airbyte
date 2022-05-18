@@ -3,32 +3,26 @@
   "type": "object",
   "properties": {
     "id": {
-       "title": "id",
        "maxLength": 32,
        "type": "string"
     },
     "parentId": {
-      "title": "parentId",
       "maxLength": 32,
        "type": ["string", "null"]
     },
     "sessionId": {
-      "title": "sessionId",
       "maxLength": 32,
       "type": "string"
     },
     "conversationId": {
-      "title": "conversationId",
       "maxLength": 32,
       "type": "string"
     },
     "dateCreated": {
-      "title": "dateCreated",
       "type": "string",
       "format": "date-time"
     },
     "dateEstablished": {
-      "title": "dateEstablished",
       "format": "date-time",
       "type": [
         "string",
@@ -36,7 +30,6 @@
       ]
     },
     "dateFinished": {
-      "title": "dateFinished",
       "format": "date-time",
       "type": [
         "string",
@@ -44,132 +37,108 @@
       ]
     },
     "lastUpdated": {
-      "title": "lastUpdated",
       "type": "string",
       "format": "date-time"
     },
     "state": {
-      "title": "state",
       "maxLength": 256,
       "type": "string"
     },
     "finishReason": {
-      "title": "finishReason",
       "maxLength": 256,
       "type": "string"
     },
     "from": {
-      "title": "from",
       "type": [
         "string",
         "null"
       ]
     },
     "to": {
-      "title": "to",
       "type": [
         "string",
         "null"
       ]
     },
     "type": {
-      "title": "type",
       "maxLength": 256,
       "type": "string"
     },
     "source": {
-      "title": "source",
       "maxLength": 256,
       "type": "string"
     },
     "domain": {
-      "title": "domain",
       "maxLength": 256,
       "type": "string"
     },
     "duration": {
-      "title": "duration",
       "type": [
         "integer",
         "null"
       ]
     },
     "anonymous": {
-      "title": "anonymous",
       "type": [
         "boolean",
         "null"
       ]
     },
     "recordings": {
-      "title": "Recordings",
       "type": ["array", "null"],
       "items": {
-        "title": "CallRecording",
         "type": "object",
         "properties": {
            "id": {
-              "title": "id",
               "maxLength": 32,
               "type": "string"
            },
            "dateCreated": {
-              "title": "dateCreated",
               "type": "string",
               "format": "date-time"
            },
            "lastUpdated": {
-              "title": "lastUpdated",
               "type": "string",
               "format": "date-time"
            },
            "duration": {
-              "title": "duration",
               "type": "integer"
            },
            "url": {
-              "title": "url",
               "type": "string"
            },
            "tags": {
-              "title": "tags",
               "type": "array",
               "items": {
                  "type": "string"
               }
            },
            "file": {
-              "title": "file",
               "type": ["object", "null"],
               "properties": {
                  "id": {
-                    "title": "id",
                     "maxLength": 32,
                     "type": "string"
                  },
                  "state": {
-                    "title": "state",
                     "type": [
                        "string",
                        "null"
                     ]
                  },
                  "name": {
-                    "title": "name",
                     "type": [
                        "string",
                        "null"
                     ]
                  },
                  "size": {
-                    "title": "size",
                     "type": [
                        "integer",
                        "null"
                     ]
                  },
                  "contentType": {
-                    "title": "contentType",
                     "type": [
                        "string",
                        "null"
@@ -178,30 +147,25 @@
               }
            },
            "state": {
-              "title": "state",
               "maxLength": 256,
               "type": "string"
            },
            "agent": {
-              "title": "agent",
               "type": "object",
               "properties": {
                  "id": {
-                    "title": "id",
                     "type": [
                        "string",
                        "null"
                     ]
                  },
                  "name": {
-                    "title": "name",
                     "type": [
                        "string",
                        "null"
                     ]
                  },
                  "number": {
-                    "title": "number",
                     "type": [
                        "string",
                        "null"
@@ -213,25 +177,21 @@
       }
     },
     "bridged": {
-      "title": "bridged",
       "type": ["object", "null"],
       "properties": {
         "id": {
-          "title": "id",
           "type": [
              "string",
              "null"
           ]
         },
         "name": {
-          "title": "name",
           "type": [
              "string",
              "null"
           ]
         },
         "number": {
-          "title": "number",
           "type": [
              "string",
              "null"
