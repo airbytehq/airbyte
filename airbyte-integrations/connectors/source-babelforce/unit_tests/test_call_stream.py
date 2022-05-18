@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from source_babelforce.source import Calls
+from source_babelforce.source import Calls, InvalidStartAndEndDateException
 
 
 @pytest.fixture
@@ -19,6 +19,22 @@ def test_request_params(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": 1}}
     expected_params = {"max": 100, "page": 1}
     assert stream.request_params(**inputs) == expected_params
+
+
+def test_date_created_from_less_than_date_created_to_not_raise_exception(patch_base_class):
+    try:
+        stream = Calls(region="services", date_created_from=1, date_created_to=2)
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": 1}}
+        stream.request_params(**inputs)
+    except InvalidStartAndEndDateException as exception:
+        assert False, exception
+
+
+def test_date_created_from_less_than_date_created_to_raise_exception(patch_base_class):
+    with pytest.raises(InvalidStartAndEndDateException):
+        stream = Calls(region="services", date_created_from=2, date_created_to=1)
+        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": 1}}
+        stream.request_params(**inputs)
 
 
 def test_parse_response(patch_base_class):

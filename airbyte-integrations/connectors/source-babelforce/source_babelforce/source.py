@@ -18,6 +18,10 @@ from dateutil.tz import tzutc
 DEFAULT_CURSOR = "dateCreated"
 
 
+class InvalidStartAndEndDateException(Exception):
+    pass
+
+
 # Basic full refresh stream
 class BabelforceStream(HttpStream, ABC):
     page_size = 100
@@ -87,7 +91,7 @@ class IncrementalBabelforceStream(BabelforceStream, ABC):
 class Calls(IncrementalBabelforceStream):
     primary_key = "id"
 
-    def __init__(self, date_created_from: str = None, date_created_to: str = None, **args):
+    def __init__(self, date_created_from: int = None, date_created_to: int = None, **args):
         super(Calls, self).__init__(**args)
 
         self.date_created_from = date_created_from
@@ -108,6 +112,9 @@ class Calls(IncrementalBabelforceStream):
         if stream_state:
             cursor_value = parser.parse(stream_state[self.cursor_field])
             self.date_created_from = int(mktime(cursor_value.timetuple()))
+
+        if self.date_created_from and self.date_created_to and self.date_created_from > self.date_created_to:
+            raise InvalidStartAndEndDateException("`date_created_from` should be less than or equal to `date_created_to`")
 
         if self.date_created_from:
             params.update({"filters.dateCreated.from": self.date_created_from})
