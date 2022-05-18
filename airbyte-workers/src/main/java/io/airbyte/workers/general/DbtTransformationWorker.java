@@ -6,13 +6,12 @@ package io.airbyte.workers.general;
 
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

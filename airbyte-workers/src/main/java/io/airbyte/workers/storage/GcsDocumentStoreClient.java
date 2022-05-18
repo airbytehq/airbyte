@@ -11,7 +11,6 @@ import com.google.cloud.storage.Storage;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.DefaultGcsClientFactory;
 import io.airbyte.workers.DocumentStoreClient;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;

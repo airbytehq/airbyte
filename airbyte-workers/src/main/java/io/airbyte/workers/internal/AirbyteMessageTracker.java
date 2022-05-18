@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
