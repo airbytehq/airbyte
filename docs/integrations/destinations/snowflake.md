@@ -236,6 +236,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.26  | 2022-05-18 | [\#12952](https://github.com/airbytehq/airbyte/pull/12952) | Apply buffering strategy on GCS staging |
 | 0.4.25  | 2022-05-03 | [\#12452](https://github.com/airbytehq/airbyte/pull/12452) | Add support for encrypted staging on S3; fix the purge_staging_files option |
 | 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support (Compatible with Airbyte Version 0.35.60+)|
 | 0.4.22  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |

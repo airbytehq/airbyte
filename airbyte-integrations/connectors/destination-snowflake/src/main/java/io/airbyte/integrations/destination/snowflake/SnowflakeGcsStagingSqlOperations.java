@@ -35,7 +35,7 @@ public class SnowflakeGcsStagingSqlOperations  extends SnowflakeSqlOperations im
 
     private final NamingConventionTransformer nameTransformer;
     private final Storage storageClient;
-    private final  GcsConfig gcsConfig;
+    private final GcsConfig gcsConfig;
     private final Set<String> fullObjectKeys = new HashSet<>();
 
     public SnowflakeGcsStagingSqlOperations(NamingConventionTransformer nameTransformer, GcsConfig gcsConfig)  {
@@ -90,7 +90,6 @@ public class SnowflakeGcsStagingSqlOperations  extends SnowflakeSqlOperations im
 
     private boolean doesBucketExist(String bucket) {
         return storageClient.get(bucket, Storage.BucketGetOption.fields()) != null;
-
     }
 
     @Override
@@ -150,7 +149,6 @@ public class SnowflakeGcsStagingSqlOperations  extends SnowflakeSqlOperations im
 
     private String generateBucketPath(String stagingPath) {
         return "gcs://" + gcsConfig.getBucketName() + "/" + stagingPath;
-
     }
 
     @Override
