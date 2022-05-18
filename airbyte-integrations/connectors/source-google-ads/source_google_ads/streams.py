@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v9.errors.types.request_error import RequestErrorEnum
 from google.ads.googleads.v9.services.services.google_ads_service.pagers import SearchPager
@@ -72,7 +72,7 @@ def chunk_date_range(
     start_date = start_date.subtract(days=conversion_window)
 
     while start_date < end_date:
-        start, end = get_date_params(start_date.to_date_string(), time_zone=time_zone, range_days=range_days)
+        start, end = get_date_params(start_date.to_date_string(), time_zone=time_zone, range_days=range_days, end_date=end_date)
         intervals.append(
             {
                 "start_date": start,
@@ -84,7 +84,7 @@ def chunk_date_range(
 
 
 class GoogleAdsStream(Stream, ABC):
-    IGNORE_API_ERRORS = False
+    CATCH_API_ERRORS = True
 
     def __init__(self, api: GoogleAds, customers: List[Customer]):
         self.google_ads_client = api
@@ -112,14 +112,10 @@ class GoogleAdsStream(Stream, ABC):
             for response in response_records:
                 yield from self.parse_response(response)
         except GoogleAdsException as exc:
-            if not self.IGNORE_API_ERRORS:
+            if not self.CATCH_API_ERRORS:
                 raise
             for error in exc.failure.errors:
-                if (
-                    error.error_code.authentication_error or
-                    error.error_code.authorization_error or
-                    error.error_code.query_error
-                ):
+                if error.error_code.authentication_error or error.error_code.authorization_error or error.error_code.query_error:
                     self.logger.error(error.message)
                     continue
                 # log and ignore only auth and query errors, otherwise - raise further
@@ -181,11 +177,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 yield chunk
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: MutableMapping[str, Any] = None,
-        **kwargs
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         """
         This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
@@ -254,7 +246,7 @@ class ServiceAccounts(GoogleAdsStream):
     This stream is intended to be used as a service class, not exposed to a user
     """
 
-    IGNORE_API_ERRORS = True
+    CATCH_API_ERRORS = False
     primary_key = ["customer.id"]
 
 

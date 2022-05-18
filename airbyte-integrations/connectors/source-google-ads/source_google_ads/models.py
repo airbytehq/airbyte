@@ -1,5 +1,10 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Union
+
 from pendulum import timezone
 from pendulum.tz.timezone import Timezone
 
@@ -18,9 +23,7 @@ class Customer:
                 time_zone_name = account.get("customer.time_zone")
                 tz = Timezone(time_zone_name) if time_zone_name else "local"
 
-                data_objects.append(cls(
-                    id=str(account["customer.id"]),
-                    time_zone=tz,
-                    is_manager_account=bool(account.get("customer.manager"))
-                ))
+                data_objects.append(
+                    cls(id=str(account["customer.id"]), time_zone=tz, is_manager_account=bool(account.get("customer.manager")))
+                )
         return data_objects

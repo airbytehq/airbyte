@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
-from pendulum import parse, timezone, today
+from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery
 from .google_ads import GoogleAds
@@ -19,7 +19,6 @@ from .models import Customer
 from .streams import (
     AccountPerformanceReport,
     Accounts,
-    ServiceAccounts,
     AdGroupAdLabels,
     AdGroupAdReport,
     AdGroupAds,
@@ -32,6 +31,7 @@ from .streams import (
     DisplayTopicsPerformanceReport,
     GeographicReport,
     KeywordReport,
+    ServiceAccounts,
     ShoppingPerformanceReport,
     UserLocationReport,
 )
@@ -103,7 +103,7 @@ class SourceGoogleAds(AbstractSource):
         except GoogleAdsException as exception:
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {error_messages}"
+            return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config))
