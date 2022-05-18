@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from airbyte_cdk.sources.lcc.create_partial import create
+from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
 
 
 class AClass:
@@ -36,28 +37,8 @@ def test_overwrite_param():
     assert object.another_param == "B"
 
 
-def test_interpolation_from_another_parameter():
-    object = create(AClass, parameter="A")(another_param="{{ kwargs['parameter'] }}")
-    assert object.parameter == "A"
-    assert object.another_param == "A"
-
-
-def test_propagate_kwargs():
-    inner_object = create(AClass, parameter="I", another_param="{{ kwargs['name'] }}")
-    object = create(OuterClass, some_field="A", inner_param=inner_object)(kwargs={"name": "AIRBYTE"})
-    assert object.name == "AIRBYTE"
-    assert object.some_field == "A"
-    assert object.inner_param.parameter == "I"
-    assert object.inner_param.another_param == "AIRBYTE"
-
-
-def test_propagate_kwargs_2_levels_down():
-    inner_object = create(AClass, parameter="I", another_param="{{ kwargs['name'] }}")
-    object = create(OuterClass, some_field="A", inner_param=inner_object)
-    outer_object = create(OuterOuterClass, inner_class=object)(kwargs={"name": "AIRBYTE", "param": "param"})
-    assert outer_object.inner_class.name == "AIRBYTE"
-    assert outer_object.inner_class.some_field == "A"
-    assert outer_object.inner_class.inner_param.parameter == "I"
-    assert outer_object.inner_class.inner_param.another_param == "AIRBYTE"
-    assert outer_object.name == "AIRBYTE"
-    assert outer_object.param == "param"
+def test_string_interpolation():
+    s = "{{ next_page_token['next_page_url'] }}"
+    partial = create(InterpolatedString, string=s)
+    interpolated_string = partial()
+    assert interpolated_string._string == s
