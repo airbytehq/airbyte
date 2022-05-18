@@ -2503,7 +2503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.29"
+- dockerImage: "airbyte/source-github:0.2.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2688,7 +2688,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.37"
+- dockerImage: "airbyte/source-google-ads:0.1.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2715,6 +2715,7 @@
             developer_token:
               type: "string"
               title: "Developer Token"
+              order: 0
               description: "Developer token granted by Google to use their APIs. More\
                 \ instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
@@ -2722,27 +2723,31 @@
             client_id:
               type: "string"
               title: "Client ID"
+              order: 1
               description: "The Client ID of your Google Ads developer application.\
                 \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
             client_secret:
               type: "string"
               title: "Client Secret"
+              order: 2
               description: "The Client Secret of your Google Ads developer application.\
                 \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
-                >docs</a>"
-              airbyte_secret: true
-            access_token:
-              type: "string"
-              title: "Access Token"
-              description: "Access Token for making authenticated requests. More instruction\
-                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
             refresh_token:
               type: "string"
               title: "Refresh Token"
+              order: 3
               description: "The token for obtaining a new access token. More instruction\
+                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
+                >docs</a>"
+              airbyte_secret: true
+            access_token:
+              type: "string"
+              title: "Access Token (Optional)"
+              order: 4
+              description: "Access Token for making authenticated requests. More instruction\
                 \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
@@ -3536,7 +3541,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.58"
+- dockerImage: "airbyte/source-hubspot:0.1.59"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6336,7 +6341,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pipedrive:0.1.10"
+- dockerImage: "airbyte/source-pipedrive:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -6540,7 +6545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.14"
+- dockerImage: "airbyte/source-postgres:0.4.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6596,17 +6601,24 @@
           type: "string"
           airbyte_secret: true
           order: 5
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 6
         ssl:
           title: "Connect using SSL"
           description: "Encrypt client/server communications for increased security."
           type: "boolean"
           default: false
-          order: 6
+          order: 7
         replication_method:
           type: "object"
           title: "Replication Method"
           description: "Replication method to use for extracting data from the database."
-          order: 7
+          order: 8
           oneOf:
           - title: "Standard"
             additionalProperties: false
@@ -7144,7 +7156,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.11"
+- dockerImage: "airbyte/source-s3:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -7314,6 +7326,15 @@
                   \ your data is particularly wide."
                 default: 2
                 type: "integer"
+          - title: "Avro"
+            description: "This connector utilises <a href=\"https://fastavro.readthedocs.io/en/latest/\"\
+              \ target=\"_blank\">fastavro</a> for Avro parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "avro"
+                type: "string"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\

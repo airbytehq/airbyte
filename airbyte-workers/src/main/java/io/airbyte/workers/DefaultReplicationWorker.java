@@ -22,6 +22,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -233,10 +235,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      // only .setFailures() if a failure occurred
+      // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
       final FailureReason sourceFailure = replicationRunnableFailureRef.get();
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
+      final FailureReason traceMessageFailure = messageTracker.errorTraceMessageFailure(Long.valueOf(jobId), attempt);
+
       final List<FailureReason> failures = new ArrayList<>();
+
+      if (traceMessageFailure != null) {
+        failures.add(traceMessageFailure);
+      }
+
       if (sourceFailure != null) {
         failures.add(sourceFailure);
       }
@@ -282,6 +291,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
+      final Map<String, ImmutablePair<String, Integer>> validationErrors = new HashMap<String, ImmutablePair<String, Integer>>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -295,7 +305,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               try {
                 recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
               } catch (final RecordSchemaValidationException e) {
-                LOGGER.warn(e.getMessage());
+                final ImmutablePair<String, Integer> exceptionWithCount = validationErrors.get(e.stream);
+                if (exceptionWithCount == null) {
+                  if (validationErrors.size() < 100) {
+                    validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), 1));
+                  }
+                } else {
+                  final Integer currentCount = exceptionWithCount.getRight();
+                  validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), currentCount + 1));
+                }
               }
             }
 
@@ -322,6 +340,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        if (!validationErrors.isEmpty()) {
+          validationErrors.forEach((stream, errorPair) -> {
+            LOGGER.warn("{} schema validation errors found for stream {}. Error message: {}", errorPair.getRight(), stream, errorPair.getLeft());
+          });
+        }
+
         try {
           destination.notifyEndOfStream();
         } catch (final Exception e) {

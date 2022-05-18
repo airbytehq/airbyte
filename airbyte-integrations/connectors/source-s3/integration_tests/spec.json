@@ -148,6 +148,18 @@
                 "type": "integer"
               }
             }
+          },
+          {
+            "title": "Avro",
+            "description": "This connector utilises <a href=\"https://fastavro.readthedocs.io/en/latest/\" target=\"_blank\">fastavro</a> for Avro parsing.",
+            "type": "object",
+            "properties": {
+              "filetype": {
+                "title": "Filetype",
+                "const": "avro",
+                "type": "string"
+              }
+            }
           }
         ]
       },
