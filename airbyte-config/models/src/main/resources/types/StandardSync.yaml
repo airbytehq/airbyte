@@ -11,6 +11,7 @@ required:
   - catalog
   - manual
   - namespaceDefinition
+  - scheduleType
 additionalProperties: false
 properties:
   namespaceDefinition:
@@ -46,6 +47,10 @@ properties:
       - active
       - inactive
       - deprecated
+  # ------------ schedule_type
+  # schedule field will be deprecated!
+  # see comments for scheduleType
+  # ------------- schedule and manual should be a union
   # Ideally schedule and manual should be a union, but java
   # codegen does not handle the union type properly.
   # When schedule is defined, manual should be false.
@@ -66,6 +71,26 @@ properties:
           - months
       units:
         type: integer
+  # current state 5.18.22:
+  # schedule field double writes to schedule_type
+  # schedule_type will eventually cover all schedules
+  # as of writing schedule_type just writes to db and isn't used
+  ScheduleType:
+    type: string
+    enum:
+      - manual
+      - basicSchedule
+      - cron
+    scheduleCron:
+      required: [cronExpression, cronTimeZone]
+      properties:
+        cronExpression: string
+        crontTimeZone: string
+    scheduleBasic:
+      required: [timeUnits, units]
+    properties:
+      timeUnits: TimeUnit
+      units: number
   # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean
