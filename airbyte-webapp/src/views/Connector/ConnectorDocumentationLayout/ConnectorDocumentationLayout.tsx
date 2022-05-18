@@ -39,7 +39,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div>{children}</div>
+      <div className={width < 550 ? `${styles.noScroll}` : undefined}>{children}</div>
     </>
   );
 };
