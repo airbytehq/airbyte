@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics V4 Spec",
     "type": "object",
-    "required": ["view_id", "start_date"],
+    "required": ["view_id", "start_date", "credentials"],
     "additionalProperties": true,
     "properties": {
       "view_id": {
@@ -33,14 +33,17 @@
         "title": "Custom Reports (Optional)",
         "description": "A JSON array describing the custom reports you want to sync from GA. Check out the docs to get more information about this field: https://go.estuary.dev/6PgxMK"
       },
-      "credentials": {
+      "auth_type": {
         "type": "string",
+        "const": "Service",
+        "format":"hidden",
+      },
+      "credentials": {
+        "type": "object",
         "title": "Credentials",
         "description": "The JSON key of the service account to use for authorization",
-                "examples": [
-                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                ],
-                "airbyte_secret": true
+        "examples": ["{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"],
+        "airbyte_secret": true
       }
     }
   }
