@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -18,7 +18,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -132,7 +132,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
       }
-    } catch (final StateDeltaTrackerException e) {
+    } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);
@@ -151,7 +151,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
       }
-    } catch (final StateDeltaTrackerException e) {
+    } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
       log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
       log.warn(e.getMessage(), e);

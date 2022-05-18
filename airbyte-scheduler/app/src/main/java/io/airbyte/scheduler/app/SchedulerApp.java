@@ -43,7 +43,7 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;

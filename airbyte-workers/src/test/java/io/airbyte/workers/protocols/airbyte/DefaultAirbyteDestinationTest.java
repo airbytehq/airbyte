@@ -42,6 +42,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
+
+import io.airbyte.workers.internal.AirbyteDestination;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.workers.internal.NamespacingMapper;
 import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {

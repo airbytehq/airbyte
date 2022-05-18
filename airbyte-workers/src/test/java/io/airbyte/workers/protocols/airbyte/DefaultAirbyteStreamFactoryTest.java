@@ -25,6 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.workers.internal.AirbyteProtocolPredicate;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

@@ -13,7 +13,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.generalworkers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;

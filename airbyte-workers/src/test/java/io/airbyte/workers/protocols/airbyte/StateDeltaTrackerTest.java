@@ -4,7 +4,8 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.StateDeltaTracker;
+import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

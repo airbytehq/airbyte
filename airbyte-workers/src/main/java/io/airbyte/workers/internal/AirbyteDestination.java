@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.config.WorkerDestinationConfig;

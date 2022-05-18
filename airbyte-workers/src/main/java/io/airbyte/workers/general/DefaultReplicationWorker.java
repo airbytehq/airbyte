@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.generalworkers;
+package io.airbyte.workers.general;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -17,10 +17,10 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.*;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.MessageTracker;
+import io.airbyte.workers.internal.AirbyteDestination;
+import io.airbyte.workers.internal.AirbyteMapper;
+import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;

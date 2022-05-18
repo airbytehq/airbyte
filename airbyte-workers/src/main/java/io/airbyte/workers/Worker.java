@@ -4,7 +4,7 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.workers.generalworkers.DefaultReplicationWorker;
+import io.airbyte.workers.general.DefaultReplicationWorker;
 
 import java.nio.file.Path;
 

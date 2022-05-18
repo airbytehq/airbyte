@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.generalworkers;
+package io.airbyte.workers.general;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -15,8 +15,8 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;

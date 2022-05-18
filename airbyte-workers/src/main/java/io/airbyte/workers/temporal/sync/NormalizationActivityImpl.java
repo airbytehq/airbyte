@@ -16,7 +16,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.generalworkers.DefaultNormalizationWorker;
+import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
