@@ -20,10 +20,30 @@ public class V0_36_3_001__AddScheduleTypeToConfigsTable extends BaseJavaMigratio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_36_3_001__AddScheduleTypeToConfigsTable.class);
 
+  @Override
+  public void migrate(final Context context) throws Exception {
+    LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
+    final DSLContext ctx = DSL.using(context.getConnection());
+    createScheduleTypeEnum(ctx);
+    addPublicColumn(ctx);
+  }
+
+  private static void createScheduleTypeEnum(final DSLContext ctx) {
+    ctx.createType("schedule_type").asEnum("manual", "basic_schedule", "cron").execute();
+  }
+
+  private static void addPublicColumn(final DSLContext ctx) {
+    ctx.alterTable("connection")
+        .addColumnIfNotExists(DSL.field(
+            "schedule_type",
+            SQLDataType.VARCHAR.asEnumDataType(ScheduleType.class).nullable(true)))
+        .execute();
+  }
+
   public enum ScheduleType implements EnumType {
 
     manual("manual"),
-    basicSchedule("basicSchedule"),
+    basicSchedule("basic_schedule"),
     cron("cron"),;
 
     private final String literal;
@@ -53,21 +73,6 @@ public class V0_36_3_001__AddScheduleTypeToConfigsTable extends BaseJavaMigratio
       return literal;
     }
 
-  }
-
-  @Override
-  public void migrate(final Context context) throws Exception {
-    LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-    final DSLContext ctx = DSL.using(context.getConnection());
-    addPublicColumn(ctx);
-  }
-
-  public static void addPublicColumn(final DSLContext ctx) {
-    ctx.alterTable("connection")
-        .addColumnIfNotExists(DSL.field(
-            "schedule_type",
-            SQLDataType.VARCHAR.asEnumDataType(ScheduleType.class).nullable(true)))
-        .execute();
   }
 
 }
