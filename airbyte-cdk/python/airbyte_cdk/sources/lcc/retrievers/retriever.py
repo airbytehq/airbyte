@@ -19,7 +19,6 @@ class Retriever(ABC):
     ) -> Iterable[Mapping[str, Any]]:
         pass
 
-    # FIXME: this method is only needed for the adapter
     @abstractmethod
     def stream_slices(self, *, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
         pass
