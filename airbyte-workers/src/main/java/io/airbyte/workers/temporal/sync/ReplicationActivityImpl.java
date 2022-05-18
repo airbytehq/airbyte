@@ -20,7 +20,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultReplicationWorker;
+import io.airbyte.workers.general_workers.DefaultReplicationWorker;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;

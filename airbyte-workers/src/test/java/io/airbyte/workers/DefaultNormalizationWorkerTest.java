@@ -18,6 +18,8 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import io.airbyte.workers.general_workers.DefaultNormalizationWorker;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

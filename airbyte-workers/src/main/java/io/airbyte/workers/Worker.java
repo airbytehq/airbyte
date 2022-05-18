@@ -4,6 +4,8 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.workers.general_workers.DefaultReplicationWorker;
+
 import java.nio.file.Path;
 
 public interface Worker<InputType, OutputType> {

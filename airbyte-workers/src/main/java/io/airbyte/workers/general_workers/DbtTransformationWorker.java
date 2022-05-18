@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.general_workers;
 
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
@@ -10,6 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

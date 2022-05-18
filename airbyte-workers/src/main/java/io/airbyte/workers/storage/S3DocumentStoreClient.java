@@ -11,6 +11,8 @@ import io.airbyte.config.storage.MinioS3ClientFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
+
+import io.airbyte.workers.DocumentStoreClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseBytes;

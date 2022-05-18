@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.helper;
+package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -11,6 +11,8 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.scheduler.models.JobRunConfig;
 import java.util.List;
+
+import io.airbyte.workers.helper.FailureHelper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

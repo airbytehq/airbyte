@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.DocumentStoreClient;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

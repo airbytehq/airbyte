@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.general_workers;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -11,6 +11,7 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.*;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;

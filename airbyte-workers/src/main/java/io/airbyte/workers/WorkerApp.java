@@ -47,7 +47,6 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;

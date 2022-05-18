@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.general_workers;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -15,6 +15,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.workers.*;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
