@@ -32,16 +32,15 @@
       "date_created_from": {
         "type": "integer",
         "title": "Date Created from",
-        "description": "Timestamp in Unix the replication from Babelforce API will start from.",
-        "pattern": "^$|^[0-9]{10,}$",
+        "description": "Timestamp in Unix the replication from Babelforce API will start from. For example 1651363200 which corresponds to 2022-05-01 00:00:00.",
+        "examples": [1651363200],
         "order": 4
       },
       "date_created_to": {
         "type": "integer",
         "title": "Date Created to",
-        "description": "Timestamp in Unix the replication from Babelforce will be up to.",
-        "examples": ["2021-12-01T00:00:00"],
-        "pattern": "^$|^[0-9]{10,}$",
+        "description": "Timestamp in Unix the replication from Babelforce will be up to. For example 1651363200 which corresponds to 2022-05-01 00:00:00.",
+        "examples": [1651363200],
         "order": 5
       }
     }
