@@ -126,8 +126,8 @@ public class BootloaderAppTest {
 
       val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-//      this line should change with every new migration
-//      to show that you meant to make a new migration to the prod database
+      // this line should change with every new migration
+      // to show that you meant to make a new migration to the prod database
       assertEquals("0.36.3.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
