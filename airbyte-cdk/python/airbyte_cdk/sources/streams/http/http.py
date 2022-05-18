@@ -340,11 +340,11 @@ class HttpStream(Stream, ABC):
         # default logic to grab error from common fields
 
         def _try_get_error(value):
-            if type(value) is str:
+            if isinstance(value, str):
                 return value
-            elif type(value) is list:
+            elif isinstance(value, list):
                 return ", ".join(_try_get_error(v) for v in value)
-            elif type(value) is dict:
+            elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
                     or value.get("messages")
