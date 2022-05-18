@@ -36,7 +36,7 @@
 
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": ["credentials_json"],
+            "required": ["credentials_json", "auth_type"],
             "properties": {
               "auth_type": {
                 "type": "string",
