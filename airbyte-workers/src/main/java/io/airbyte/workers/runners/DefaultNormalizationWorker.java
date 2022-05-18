@@ -2,13 +2,12 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.general;
+package io.airbyte.workers.runners;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
-import io.airbyte.workers.NormalizationWorker;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;

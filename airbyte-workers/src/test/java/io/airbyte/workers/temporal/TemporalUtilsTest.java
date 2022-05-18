@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityExecutionContext;
@@ -187,7 +187,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
@@ -228,7 +228,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
@@ -374,9 +374,9 @@ class TemporalUtilsTest {
         this.timesReachedEnd = timesReachedEnd;
       }
 
-      public void activity(String arg) {
+      public void activity(final String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
-        ActivityExecutionContext context = Activity.getExecutionContext();
+        final ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {

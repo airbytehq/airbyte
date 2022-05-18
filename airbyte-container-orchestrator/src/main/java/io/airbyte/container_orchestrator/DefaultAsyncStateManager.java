@@ -4,7 +4,7 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.workers.DocumentStoreClient;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import java.util.List;

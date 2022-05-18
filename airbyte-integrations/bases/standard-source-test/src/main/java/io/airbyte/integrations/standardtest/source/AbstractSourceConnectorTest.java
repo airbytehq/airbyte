@@ -23,16 +23,16 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.general.DefaultCheckConnectionWorker;
-import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
-import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.runners.DefaultCheckConnectionWorker;
+import io.airbyte.workers.runners.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.runners.DefaultGetSpecWorker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -140,7 +140,7 @@ public abstract class AbstractSourceConnectorTest {
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
-  protected String runCheckAndGetStatusAsString(JsonNode config) throws Exception {
+  protected String runCheckAndGetStatusAsString(final JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
@@ -205,10 +205,10 @@ public abstract class AbstractSourceConnectorTest {
     source.start(sourceConfig, jobRoot);
 
     while (!source.isFinished()) {
-      Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
+      final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
       if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
-        AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
-        AirbyteRecordMessage record = airbyteMessage.getRecord();
+        final AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
+        final AirbyteRecordMessage record = airbyteMessage.getRecord();
 
         final String streamName = record.getStream();
         mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
@@ -218,16 +218,16 @@ public abstract class AbstractSourceConnectorTest {
     return mapOfExpectedRecordsCount;
   }
 
-  protected ResourceRequirements prepareResourceRequirements(Map<String, String> mapOfResourceRequirementsParams) {
+  protected ResourceRequirements prepareResourceRequirements(final Map<String, String> mapOfResourceRequirementsParams) {
     return new ResourceRequirements().withCpuRequest(mapOfResourceRequirementsParams.get(CPU_REQUEST_FIELD_NAME))
         .withCpuLimit(mapOfResourceRequirementsParams.get(CPU_LIMIT_FIELD_NAME))
         .withMemoryRequest(mapOfResourceRequirementsParams.get(MEMORY_REQUEST_FIELD_NAME))
         .withMemoryLimit(mapOfResourceRequirementsParams.get(MEMORY_LIMIT_FIELD_NAME));
   }
 
-  private AirbyteSource prepareAirbyteSource(ResourceRequirements resourceRequirements) {
-    var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    var integrationLauncher = resourceRequirements == null
+  private AirbyteSource prepareAirbyteSource(final ResourceRequirements resourceRequirements) {
+    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    final var integrationLauncher = resourceRequirements == null
         ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements())
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements);
     return new DefaultAirbyteSource(workerConfigs, integrationLauncher);
@@ -236,7 +236,7 @@ public abstract class AbstractSourceConnectorTest {
   private static Map<String, String> prepareResourceRequestMapBySystemProperties() {
     var cpuLimit = System.getProperty(CPU_LIMIT_FIELD_NAME);
     var memoryLimit = System.getProperty(MEMORY_LIMIT_FIELD_NAME);
-    var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     if (cpuLimit.isBlank() || cpuLimit.isEmpty()) {
       cpuLimit = workerConfigs.getResourceRequirements().getCpuLimit();
     }
@@ -245,7 +245,7 @@ public abstract class AbstractSourceConnectorTest {
     }
     LOGGER.info("Container CPU Limit = {}", cpuLimit);
     LOGGER.info("Container Memory Limit = {}", memoryLimit);
-    Map<String, String> result = new HashMap<>();
+    final Map<String, String> result = new HashMap<>();
     result.put(CPU_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getCpuRequest());
     result.put(CPU_LIMIT_FIELD_NAME, cpuLimit);
     result.put(MEMORY_REQUEST_FIELD_NAME, workerConfigs.getResourceRequirements().getMemoryRequest());

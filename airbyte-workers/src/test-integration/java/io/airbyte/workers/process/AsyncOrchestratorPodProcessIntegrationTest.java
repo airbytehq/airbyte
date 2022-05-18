@@ -10,7 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
-import io.airbyte.workers.DocumentStoreClient;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.storage.S3DocumentStoreClient;

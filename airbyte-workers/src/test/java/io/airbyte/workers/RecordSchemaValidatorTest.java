@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.internal.AirbyteMessageUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;

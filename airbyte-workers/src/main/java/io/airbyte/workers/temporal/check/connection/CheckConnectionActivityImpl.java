@@ -13,12 +13,12 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.runners.DefaultCheckConnectionWorker;
+import io.airbyte.workers.runners.Worker;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;
@@ -54,7 +54,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public StandardCheckConnectionOutput run(CheckConnectionInput args) {
+  public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()

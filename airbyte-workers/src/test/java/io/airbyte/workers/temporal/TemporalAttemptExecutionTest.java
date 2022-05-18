@@ -21,7 +21,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
-import io.airbyte.workers.Worker;
+import io.airbyte.workers.runners.Worker;
 import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
