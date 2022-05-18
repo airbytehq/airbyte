@@ -36,7 +36,7 @@
       "auth_type": {
         "type": "string",
         "const": "Service",
-        "format":"hidden",
+        "options": {"hidden": true}
       },
       "credentials": {
         "type": "object",
