@@ -258,6 +258,13 @@ class IncrementalMixin(SemiIncrementalMixin):
             params["since"] = since_params
         return params
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """
+        Since request_params() depends on the stream state, we avoid mutating the state object directly,
+        to ensure that only version of the state object at the beginning of read_records() is used to determine request params
+        """
+        return super().get_updated_state(current_stream_state=deepcopy(current_stream_state), latest_record=latest_record)
+
 
 # Below are full refresh streams
 
@@ -601,12 +608,13 @@ class Commits(IncrementalMixin, GithubStream):
         return record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        new_stream_state = deepcopy(current_stream_state) or {}
         state_value = latest_cursor_value = latest_record.get(self.cursor_field)
         current_repository = latest_record["repository"]
         current_branch = latest_record["branch"]
 
-        if current_stream_state.get(current_repository):
-            repository_commits_state = current_stream_state[current_repository]
+        if new_stream_state.get(current_repository):
+            repository_commits_state = new_stream_state[current_repository]
             if repository_commits_state.get(self.cursor_field):
                 # transfer state from old source version to per-branch version
                 if current_branch == self.default_branches[current_repository]:
@@ -615,11 +623,11 @@ class Commits(IncrementalMixin, GithubStream):
             elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
                 state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
 
-        if current_repository not in current_stream_state:
-            current_stream_state[current_repository] = {}
+        if current_repository not in new_stream_state:
+            new_stream_state[current_repository] = {}
 
-        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
-        return current_stream_state
+        new_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        return new_stream_state
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         repository = stream_slice["repository"]
