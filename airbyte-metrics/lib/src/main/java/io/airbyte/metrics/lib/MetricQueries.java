@@ -103,7 +103,7 @@ public class MetricQueries {
     return duration.get(0).longValue();
   }
 
-  public static List<Long> numberOfActiveConnPerWorkspace(final DSLContext ctx) {
+  public static List<Long> numberOfActiveConnPerWorkspace(DSLContext ctx) {
     final var countField = "num_conn";
     final var query = String.format("""
                                     SELECT workspace_id, count(c.id) as %s
@@ -117,7 +117,7 @@ public class MetricQueries {
     return ctx.fetch(query).getValues(countField, long.class);
   }
 
-  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(final DSLContext ctx) {
+  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
     final var statusField = "status";
     final var timeField = "sec";
     final var query =

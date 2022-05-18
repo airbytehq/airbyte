@@ -23,7 +23,6 @@
     <exclude-pattern>.*/airbyte-metrics/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-notification/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-oauth/.*</exclude-pattern>
-    <exclude-pattern>.*/airbyte-protocol/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-queue/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-scheduler/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-schema-validation/.*</exclude-pattern>

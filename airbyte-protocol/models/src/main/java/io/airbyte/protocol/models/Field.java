@@ -14,7 +14,7 @@ public class Field extends CommonField<JsonSchemaType> {
     super(name, type);
   }
 
-  public Field(final String name, final JsonSchemaType type, final List<Field> subFields) {
+  public Field(final String name, final JsonSchemaType type, List<Field> subFields) {
     super(name, type);
     this.subFields = subFields;
   }
@@ -23,7 +23,7 @@ public class Field extends CommonField<JsonSchemaType> {
     return new Field(name, type);
   }
 
-  public static Field of(final String name, final JsonSchemaType type, final List<Field> properties) {
+  public static Field of(final String name, final JsonSchemaType type, List<Field> properties) {
     return new Field(name, type, properties);
   }
 

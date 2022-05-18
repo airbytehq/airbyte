@@ -20,7 +20,7 @@ public class CommonField<T> {
     this.properties = null;
   }
 
-  public CommonField(final String name, final T type, final List<CommonField<T>> properties) {
+  public CommonField(final String name, final T type, List<CommonField<T>> properties) {
     this.name = name;
     this.type = type;
     this.properties = properties;
@@ -35,17 +35,17 @@ public class CommonField<T> {
   }
 
   @Override
-  public boolean equals(final Object object) {
-    if (this == object) {
+  public boolean equals(final Object o) {
+    if (this == o) {
       return true;
     }
-    if (object == null || getClass() != object.getClass()) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
 
-    final CommonField<T> field = (CommonField<T>) object;
+    final CommonField<T> field = (CommonField<T>) o;
     return name.equals(field.name) &&
-        type.equals(field.type) && Objects.equals(properties, field.properties);
+        type == field.type && Objects.equals(properties, field.properties);
   }
 
   @Override
