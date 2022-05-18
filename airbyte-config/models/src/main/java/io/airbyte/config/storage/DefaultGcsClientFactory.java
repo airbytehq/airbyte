@@ -18,7 +18,6 @@ import java.util.function.Supplier;
  * Takes in the constructor our standard format for gcs configuration and provides a factory that
  * uses that configuration to create a GCS client (Storage).
  */
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class DefaultGcsClientFactory implements Supplier<Storage> {
 
   private final GcsConfig config;
@@ -39,7 +38,7 @@ public class DefaultGcsClientFactory implements Supplier<Storage> {
       final var credentialsByteStream = new ByteArrayInputStream(Files.readAllBytes(Path.of(config.getGoogleApplicationCredentials())));
       final var credentials = ServiceAccountCredentials.fromStream(credentialsByteStream);
       return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-    } catch (final Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

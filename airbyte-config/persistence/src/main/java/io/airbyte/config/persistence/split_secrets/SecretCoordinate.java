@@ -27,7 +27,6 @@ import lombok.ToString;
  * other secret storage backends as well.
  */
 @ToString
-@SuppressWarnings("PMD.ShortVariable")
 public class SecretCoordinate {
 
   private final String coordinateBase;
@@ -69,12 +68,10 @@ public class SecretCoordinate {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) {
+    if (this == o)
       return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || getClass() != o.getClass())
       return false;
-    }
     final SecretCoordinate that = (SecretCoordinate) o;
     return toString().equals(that.toString());
   }

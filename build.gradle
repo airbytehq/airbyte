@@ -382,7 +382,6 @@ subprojects {
             xml.required = false
             html.required = true
         }
-    }
 
     tasks.withType(Pmd) {
         exclude '**/jooq/**'

@@ -22,12 +22,11 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.AvoidFileStream", "PMD.ShortVariable", "PMD.CloseResource"})
 public class GcsLogs implements CloudLogs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsLogs.class);
 
-  private static Storage gcs;
+  private static Storage GCS;
   private final Supplier<Storage> gcsClientFactory;
 
   public GcsLogs(final Supplier<Storage> gcsClientFactory) {
@@ -87,11 +86,9 @@ public class GcsLogs implements CloudLogs {
     int linesRead = 0;
 
     LOGGER.debug("Start getting GCS objects.");
-    Blob poppedBlob;
-    final ByteArrayOutputStream inMemoryData = new ByteArrayOutputStream();
     while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
-      poppedBlob = descendingTimestampBlobs.remove(0);
-      try (inMemoryData) {
+      final var poppedBlob = descendingTimestampBlobs.remove(0);
+      try (final var inMemoryData = new ByteArrayOutputStream()) {
         poppedBlob.downloadTo(inMemoryData);
         final var currFileLines = inMemoryData.toString(StandardCharsets.UTF_8).split("\n");
         final List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
@@ -123,10 +120,10 @@ public class GcsLogs implements CloudLogs {
   }
 
   private Storage getOrCreateGcsClient() {
-    if (gcs == null) {
-      gcs = gcsClientFactory.get();
+    if (GCS == null) {
+      GCS = gcsClientFactory.get();
     }
-    return gcs;
+    return GCS;
   }
 
 }

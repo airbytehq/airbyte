@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
  * that path 2) log files names start with timestamps, making it possible extract the time the file
  * was written from it's name.
  */
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public interface CloudLogs {
 
   Logger LOGGER = LoggerFactory.getLogger(CloudLogs.class);

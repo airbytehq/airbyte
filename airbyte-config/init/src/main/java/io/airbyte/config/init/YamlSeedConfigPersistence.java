@@ -33,9 +33,8 @@ import java.util.stream.Stream;
  * This config persistence contains all seed definitions according to the yaml files. It is
  * read-only.
  */
-final public class YamlSeedConfigPersistence implements ConfigPersistence {
+public class YamlSeedConfigPersistence implements ConfigPersistence {
 
-  private static final String PERSISTENCE_READ_ONLY_ERROR_MSG = "The seed config persistence is read only.";
   public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
 
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
@@ -179,22 +178,22 @@ final public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
   @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
   @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
   @Override
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
   @Override
@@ -206,7 +205,7 @@ final public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
 }

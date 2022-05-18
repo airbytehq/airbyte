@@ -12,7 +12,6 @@ import com.google.common.base.Preconditions;
  * wherever that cloud storage is used and then, based on the configuration, spin up the correct
  * client. This configuration object allows us to do that.
  */
-@SuppressWarnings("PMD.ShortMethodName")
 public class CloudStorageConfigs {
 
   public enum WorkerStorageType {
