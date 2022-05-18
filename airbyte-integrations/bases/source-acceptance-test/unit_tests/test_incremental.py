@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pendulum
 import pytest
@@ -428,26 +428,27 @@ def test_config_skip_test():
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = []
     t = _TestIncremental()
-    t.test_read_sequential_slices(
-        inputs=IncrementalConfig(skip_comprehensive_incremental_tests=True),
-        connector_config=MagicMock(),
-        configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
-            streams=[
-                ConfiguredAirbyteStream(
-                    stream=AirbyteStream(
-                        name="test_stream",
-                        json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
-                        supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-                    ),
-                    sync_mode=SyncMode.incremental,
-                    destination_sync_mode=DestinationSyncMode.overwrite,
-                    cursor_field=["date"],
-                )
-            ]
-        ),
-        cursor_paths={},
-        docker_runner=docker_runner_mock,
-    )
+    with patch.object(pytest, "skip", return_value=None):
+        t.test_read_sequential_slices(
+            inputs=IncrementalConfig(skip_comprehensive_incremental_tests=True),
+            connector_config=MagicMock(),
+            configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream(
+                            name="test_stream",
+                            json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
+                            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                        ),
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.overwrite,
+                        cursor_field=["date"],
+                    )
+                ]
+            ),
+            cursor_paths={},
+            docker_runner=docker_runner_mock,
+        )
 
     # This is guaranteed to fail when the test gets executed
     docker_runner_mock.call_read.assert_not_called()
