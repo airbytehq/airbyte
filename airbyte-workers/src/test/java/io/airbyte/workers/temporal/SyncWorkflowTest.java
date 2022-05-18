@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,9 @@ import io.airbyte.workers.temporal.sync.ReplicationActivity;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
+import io.temporal.api.workflowservice.v1.WorkflowServiceGrpc.WorkflowServiceBlockingStub;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
@@ -142,7 +146,7 @@ class SyncWorkflowTest {
 
   @Test
   void testReplicationFailure() {
-    doThrow(new RuntimeException("induced exception")).when(replicationActivity).replicate(
+    doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
@@ -164,7 +168,7 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         syncInput);
 
-    doThrow(new RuntimeException("induced exception")).when(normalizationActivity).normalize(
+    doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
         normalizationInput);
@@ -175,6 +179,66 @@ class SyncWorkflowTest {
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testCancelDuringReplication() {
+    doAnswer(ignored -> {
+      cancelWorkflow();
+      return replicationSuccessOutput;
+    }).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
+    verifyNoInteractions(persistStateActivity);
+    verifyNoInteractions(normalizationActivity);
+    verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testCancelDuringNormalization() {
+    doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    doAnswer(ignored -> {
+      cancelWorkflow();
+      return replicationSuccessOutput;
+    }).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
+    verifyNormalize(normalizationActivity, normalizationInput);
+    verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private void cancelWorkflow() {
+    final WorkflowServiceBlockingStub temporalService = testEnv.getWorkflowService().blockingStub();
+    // there should only be one execution running.
+    final String workflowId = temporalService.listOpenWorkflowExecutions(null).getExecutionsList().get(0).getExecution().getWorkflowId();
+
+    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
+        .setWorkflowId(workflowId)
+        .build();
+
+    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
+        .setWorkflowExecution(workflowExecution)
+        .build();
+
+    testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput, final UUID connectionId) {
