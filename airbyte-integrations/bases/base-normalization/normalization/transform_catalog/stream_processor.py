@@ -1102,18 +1102,17 @@ where 1 = 1
                 if do_deletions:
                     deletion_hook = Template(
                         """
-with partitioned_data as (
-    select row_number() over (
-        partition by _airbyte_unique_key
-        order by _airbyte_active_row desc, _airbyte_ab_id
-    ) as _airbyte_row_num,
-    {{ scd_table }}.*
-    from {{ scd_table }}
-    where 1=1
-    {{ incremental_clause }}
-)
 delete from {{ '{{ this }}' }} where _airbyte_unique_key in (
-    select _airbyte_unique_key from partitioned_data
+    select _airbyte_unique_key from (
+        select row_number() over (
+            partition by _airbyte_unique_key
+            order by _airbyte_active_row desc, _airbyte_ab_id
+        ) as _airbyte_row_num,
+        {{ scd_table }}.*
+        from {{ scd_table }}
+        where 1=1
+        {{ incremental_clause }}
+    ) partitioned_data
     where _airbyte_active_row = 0 and _airbyte_row_num = 1
 )
 """
