@@ -51,7 +51,7 @@ class BabelforceStream(HttpStream, ABC):
         pagination = response.json().get("pagination")
 
         if pagination.get("current"):
-            return {"page": response.json().get("pagination").get("current") + 1}
+            return {"page": pagination.get("current", 0) + 1}
         else:
             return None
 
