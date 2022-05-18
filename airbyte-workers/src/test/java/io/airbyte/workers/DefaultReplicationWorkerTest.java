@@ -42,7 +42,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.general_workers.DefaultReplicationWorker;
+import io.airbyte.workers.generalworkers.DefaultReplicationWorker;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;

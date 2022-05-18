@@ -25,7 +25,7 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.general_workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.generalworkers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import java.io.ByteArrayInputStream;

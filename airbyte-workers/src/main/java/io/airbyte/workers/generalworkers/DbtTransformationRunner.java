@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.general_workers;
+package io.airbyte.workers.generalworkers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;

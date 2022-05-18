@@ -20,7 +20,7 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.general_workers.DefaultGetSpecWorker;
+import io.airbyte.workers.generalworkers.DefaultGetSpecWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

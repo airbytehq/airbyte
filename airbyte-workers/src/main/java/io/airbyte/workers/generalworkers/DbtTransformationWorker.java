@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.general_workers;
+package io.airbyte.workers.generalworkers;
 
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;

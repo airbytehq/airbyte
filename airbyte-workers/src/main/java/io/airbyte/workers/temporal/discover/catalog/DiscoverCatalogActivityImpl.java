@@ -14,7 +14,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.general_workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.generalworkers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;

@@ -25,7 +25,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.workers.general_workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.generalworkers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import java.io.ByteArrayInputStream;
