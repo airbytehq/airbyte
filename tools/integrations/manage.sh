@@ -199,6 +199,7 @@ cmd_publish() {
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
+  local build_arch="linux/amd64,linux/arm64"
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
@@ -214,21 +215,32 @@ cmd_publish() {
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
 
+  docker buildx create --use --name "connector_publisher_buildx"
+
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
-    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
-    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
-  else
-    docker tag "$image_name:dev" "$versioned_image"
-    docker tag "$image_name:dev" "$latest_image"
 
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION  docker buildx bake        \
+      --set "*.platform=$build_arch"                                             \
+      -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml \
+      --push
+
+    VERSION=latest GIT_REVISION=$GIT_REVISION  docker buildx bake                \
+      --set "*.platform=$build_arch"                                             \
+      -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml \
+      --push
+  else
     echo "Publishing new version ($versioned_image)"
-    docker push "$versioned_image"
-    docker push "$latest_image"
+    docker buildx build       \
+      -t $versioned_image     \
+      -t $latest_image        \
+      --platform $build_arch  \
+      --push                  \
+      $path
   fi
+
+  docker buildx rm "connector_publisher_buildx"
 
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
