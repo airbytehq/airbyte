@@ -7,12 +7,12 @@ from datetime import datetime
 from time import mktime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from dateutil import parser
 from dateutil.tz import tzutc
 
 DEFAULT_CURSOR = "dateCreated"
@@ -67,16 +67,13 @@ class IncrementalBabelforceStream(BabelforceStream, ABC):
     cursor_field = DEFAULT_CURSOR
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        current_updated_at = datetime(1970, 1, 1)
-
-        if current_stream_state:
-            try:
-                current_updated_at = parser.parse(current_stream_state.get(self.cursor_field))
-            except ValueError:
-                pass
+        if current_stream_state and current_stream_state.get(self.cursor_field):
+            current_updated_at = pendulum.parse(current_stream_state.get(self.cursor_field))
+        else:
+            current_updated_at = datetime(1970, 1, 1)
 
         current_updated_at = current_updated_at.replace(tzinfo=tzutc())
-        latest_record_updated_at = parser.parse(latest_record.get(self.cursor_field)).replace(tzinfo=tzutc())
+        latest_record_updated_at = pendulum.parse(latest_record.get(self.cursor_field)).replace(tzinfo=tzutc())
 
         return {self.cursor_field: max(latest_record_updated_at, current_updated_at).isoformat(timespec="seconds")}
 
@@ -103,7 +100,7 @@ class Calls(IncrementalBabelforceStream):
         params = {"page": page, "max": self.page_size}
 
         if stream_state:
-            cursor_value = parser.parse(stream_state[self.cursor_field])
+            cursor_value = pendulum.parse(stream_state[self.cursor_field])
             self.date_created_from = int(mktime(cursor_value.timetuple()))
 
         if self.date_created_from and self.date_created_to and self.date_created_from > self.date_created_to:
