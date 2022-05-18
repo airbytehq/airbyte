@@ -11,9 +11,9 @@ class AmazonSellerPartnerConfig(BaseModel):
     class Config:
         title = "Amazon Seller Partner Spec"
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=0)
+    lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LWA App Id", airbyte_secret=True, order=0)
 
-    lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LWA App Id", airbyte_secret=True, order=1)
+    auth_type: str = Field(default="oauth2.0", const=True, order=1)
 
     lwa_client_id: str = Field(None, description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
