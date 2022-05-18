@@ -70,6 +70,13 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
+- name: Databricks
+  destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
+  dockerRepository: airbyte/destination-databricks
+  dockerImageTag: 0.2.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
+  icon: databricks.svg
+  releaseStage: alpha
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
@@ -120,7 +127,7 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
   releaseStage: alpha
