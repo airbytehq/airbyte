@@ -419,14 +419,15 @@ class TestBasicRead(BaseTest):
 
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
-                ConfiguredAirbyteStream(
+                # create ConfiguredAirbyteStream without validation
+                ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
                     ),
-                    sync_mode="INVALID",  # type: ignore
-                    destination_sync_mode=DestinationSyncMode.overwrite,
+                    sync_mode="INVALID",
+                    destination_sync_mode="INVALID",
                 )
             ]
         )
