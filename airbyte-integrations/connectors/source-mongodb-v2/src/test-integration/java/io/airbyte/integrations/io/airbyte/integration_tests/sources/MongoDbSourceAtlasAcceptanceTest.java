@@ -5,10 +5,14 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
@@ -25,6 +29,7 @@ import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.junit.jupiter.api.Test;
 
 public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -109,6 +114,36 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     assertEquals(1, streams.size());
     final AirbyteStream actualStream = streams.get(0);
     assertEquals(CatalogHelpers.fieldsToJsonSchema(FIELDS), actualStream.getJsonSchema());
+  }
+
+  @Test
+  public void testCheckIncorrectUsername() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("user", "fake");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPassword() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("password", "");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectHost() throws Exception {
+    JsonNode conf = ((ObjectNode) config.get("instance_type")).put("host", "localhost2");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPort() throws Exception {
+    JsonNode conf = ((ObjectNode) config.get("instance_type")).put("post", "0000");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBase() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("database", "wrongdatabase");
+    testCheckErrorMessageConnection(conf, INCORRECT_DB_NAME.getValue());
   }
 
 }
