@@ -43,8 +43,9 @@ public interface DatabaseInitializer {
    * Initializes the configured database by using the following steps:
    *
    * <ol>
-   *   <li>Verify that the database is available and accepting connections</li>
-   *   <li>Verify that the database is populated with the initial schema.  If not, create the initial schema.</li>
+   * <li>Verify that the database is available and accepting connections</li>
+   * <li>Verify that the database is populated with the initial schema. If not, create the initial
+   * schema.</li>
    * </ol>
    *
    * @throws IOException if unable to perform the initial schema check/creation.
@@ -53,10 +54,10 @@ public interface DatabaseInitializer {
   default void initialize() throws IOException, InterruptedException {
     // Verify that the database is up and reachable first
     final Optional<DatabaseAvailabilityCheck> availabilityCheck = getDatabaseAvailabilityCheck();
-    if(availabilityCheck.isPresent()) {
+    if (availabilityCheck.isPresent()) {
       availabilityCheck.get().check();
       final Optional<DSLContext> dslContext = getDslContext();
-      if(dslContext.isPresent()) {
+      if (dslContext.isPresent()) {
         final Database database = new Database(dslContext.get());
         new ExceptionWrappingDatabase(database).transaction(ctx -> {
           // Verify that all the required tables are present
@@ -136,6 +137,8 @@ public interface DatabaseInitializer {
    *
    * @return The collection of database table names.
    */
-  default Collection<String> getTableNames() { return List.of(); }
+  default Collection<String> getTableNames() {
+    return List.of();
+  }
 
 }

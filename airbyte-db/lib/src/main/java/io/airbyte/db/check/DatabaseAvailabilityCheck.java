@@ -42,7 +42,7 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
 
       final Optional<DSLContext> dslContext = getDslContext();
 
-      if(dslContext.isPresent()) {
+      if (dslContext.isPresent()) {
         final Database database = new Database(dslContext.get());
         initialized = isDatabaseConnected(getDatabaseName()).apply(database);
         if (!initialized) {

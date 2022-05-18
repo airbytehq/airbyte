@@ -76,4 +76,5 @@ public class ConfigsDatabaseMigrationCheckTest {
     final var check = new ConfigsDatabaseMigrationCheck(null, minimumVersion, 2000L);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
+
 }

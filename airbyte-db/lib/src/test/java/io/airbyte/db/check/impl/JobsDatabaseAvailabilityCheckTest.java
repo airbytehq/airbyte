@@ -38,4 +38,5 @@ public class JobsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvailabil
     final var check = new JobsDatabaseAvailabilityCheck(null, 2000L);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
+
 }

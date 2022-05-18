@@ -76,4 +76,5 @@ public class JobsDatabaseMigrationCheckTest {
     final var check = new JobsDatabaseMigrationCheck(null, minimumVersion, 2000L);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
+
 }

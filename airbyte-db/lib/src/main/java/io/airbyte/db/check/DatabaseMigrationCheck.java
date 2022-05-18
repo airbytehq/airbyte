@@ -30,7 +30,7 @@ public interface DatabaseMigrationCheck {
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
     final Optional<Flyway> flywayOptional = getFlyway();
 
-    if(flywayOptional.isPresent()) {
+    if (flywayOptional.isPresent()) {
       final var flyway = flywayOptional.get();
       var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
       getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
