@@ -78,10 +78,7 @@ const ConnectionItemPage: React.FC = () => {
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
-          <Route
-            path={ConnectionSettingsRoutes.STATUS}
-            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
-          />
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<StatusView connection={connection} />} />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
             element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}

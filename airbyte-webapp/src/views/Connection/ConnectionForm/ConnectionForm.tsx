@@ -138,9 +138,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
-  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
-
+  const isEditMode: boolean = mode !== "create";
+  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
+
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
@@ -192,36 +193,38 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
-          <Section title={null}>
-            <Field name="name">
-              {({ field, meta }: FieldProps<string>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ConnectorLabel
-                      nextLine
-                      error={!!meta.error && meta.touched}
-                      label={formatMessage({
-                        id: "form.connectionName",
-                      })}
-                      message={formatMessage({
-                        id: "form.connectionName.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol>
-                    <Input
-                      {...field}
-                      disabled={mode === "readonly"}
-                      error={!!meta.error}
-                      placeholder={formatMessage({
-                        id: "form.connectionName.placeholder",
-                      })}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
-          </Section>
+          {!isEditMode && (
+            <StyledSection>
+              <Field name="name">
+                {({ field, meta }: FieldProps<string>) => (
+                  <FlexRow>
+                    <LeftFieldCol>
+                      <ConnectorLabel
+                        nextLine
+                        error={!!meta.error && meta.touched}
+                        label={formatMessage({
+                          id: "form.connectionName",
+                        })}
+                        message={formatMessage({
+                          id: "form.connectionName.message",
+                        })}
+                      />
+                    </LeftFieldCol>
+                    <RightFieldCol>
+                      <Input
+                        {...field}
+                        disabled={mode === "readonly"}
+                        error={!!meta.error}
+                        placeholder={formatMessage({
+                          id: "form.connectionName.placeholder",
+                        })}
+                      />
+                    </RightFieldCol>
+                  </FlexRow>
+                )}
+              </Field>
+            </StyledSection>
+          )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
               {({ field, meta }: FieldProps<ConnectionSchedule>) => (
