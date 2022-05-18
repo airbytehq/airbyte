@@ -50,8 +50,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
-            client_secret=config.lwa_client_secret,
-            client_id=config.lwa_app_id,
+            client_secret=config.client_secret,
+            client_id=config.app_id,
             refresh_token=config.refresh_token,
             host=endpoint.replace("https://", ""),
         )
