@@ -807,7 +807,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getContainerOrchestratorEnabled() {
-    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, true, Boolean::valueOf);
   }
 
   @Override
