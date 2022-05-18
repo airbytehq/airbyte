@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.google.common.collect.Lists;
+import io.airbyte.config.*;
 import org.junit.jupiter.api.Test;
 
 class JobTest {
@@ -42,8 +44,8 @@ class JobTest {
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
     final List<Attempt> attempts = Arrays.stream(attemptStatuses)
-        .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, null, 0L, 0L, null))
-        .collect(Collectors.toList());
+            .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, null, 0L, 0L, null))
+            .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }
 
@@ -59,4 +61,37 @@ class JobTest {
     assertEquals(job.getAttempts().get(1), job.getSuccessfulAttempt().get());
   }
 
+  // Create a non-empty new JobOutput of sync type
+  private static final JobOutput JOB_OUTPUT = new JobOutput()
+          .withOutputType(JobOutput.OutputType.SYNC)
+          .withSync(new StandardSyncOutput()
+                  .withStandardSyncSummary(new StandardSyncSummary()
+                          .withRecordsSynced(15L)
+                          .withBytesSynced(100L)
+                          .withTotalStats(new SyncStats()
+                                  .withRecordsEmitted(10L)
+                                  .withBytesEmitted(100L)
+                                  .withStateMessagesEmitted(2L)
+                                  .withRecordsCommitted(10L))
+                          .withStreamStats(Lists.newArrayList(new StreamSyncStats()
+                                  .withStreamName("Job Output")
+                                  .withStats(new SyncStats()
+                                          .withRecordsEmitted(15L)
+                                          .withBytesEmitted(100L)
+                                          .withStateMessagesEmitted(2L)
+                                          .withRecordsCommitted(10L))))));
+
+  private static Job jobWithAttemptWithStatusWithOutput(final AttemptStatus... attemptStatuses) {
+    final List<Attempt> attempts = Arrays.stream(attemptStatuses)
+            .map(attemptStatus -> new Attempt(1L, 1L, null, JOB_OUTPUT, attemptStatus, null, 0L, 0L, null))
+            .collect(Collectors.toList());
+    return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
+  }
+
+  @Test
+  void TestGetSuccessOutput() {
+    final Job job = jobWithAttemptWithStatusWithOutput(AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
+    System.out.println("OUR TEST: " + job.getSuccessOutput().toString());
+    assertFalse(job.getSuccessOutput().isEmpty());
+  }
 }
