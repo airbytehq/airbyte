@@ -189,6 +189,15 @@ public class WorkerApp {
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
+        new CheckConnectionActivityImpl(
+            checkWorkerConfigs,
+            checkProcessFactory,
+            secretsHydrator,
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            jobPersistence,
+            airbyteVersion),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 

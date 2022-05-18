@@ -11,12 +11,16 @@ package io.airbyte.workers;
 
 public class RecordSchemaValidationException extends Exception {
 
-  public RecordSchemaValidationException(final String message) {
+  public final String stream;
+
+  public RecordSchemaValidationException(final String stream, final String message) {
     super(message);
+    this.stream = stream;
   }
 
-  public RecordSchemaValidationException(final String message, final Throwable cause) {
+  public RecordSchemaValidationException(final String stream, final String message, final Throwable cause) {
     super(message, cause);
+    this.stream = stream;
   }
 
 }

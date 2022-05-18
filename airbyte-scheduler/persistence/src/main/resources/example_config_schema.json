@@ -44,6 +44,10 @@
     "const_null": {
       "const": null
     },
+    "enum_string": {
+      "type": "string",
+      "enum": ["foo", "bar"]
+    },
     "additionalPropertiesUnset": {
       "type": "object"
     },
@@ -62,6 +66,10 @@
       "additionalProperties": {
         "const": 42
       }
+    },
+    "additionalPropertiesEnumString": {
+      "type": "string",
+      "enum": ["foo", "bar"]
     }
   }
 }
