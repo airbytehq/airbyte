@@ -163,14 +163,6 @@
         "description": "Bing Ads User ID. See the \"Getting Started\" section in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads\">the docs</a> for information on how to obtain this ID",
         "order": 5
       },
-      "redirect_uri": {
-        "type": "string",
-        "title": "Redirect URI (Optional)",
-        "description": "The Redirect URI of your Microsoft Advertising developer application. Leave this empty unless you know that you need it.",
-        "airbyte_secret": true,
-        "default": "",
-        "order": 6
-      },
       "reports_start_date": {
         "type": "string",
         "title": "Reports replication start date",

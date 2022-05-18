@@ -66,7 +66,7 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 
 | Version | Date | Pull Request                                             | Subject |
 |:--------| :--- |:---------------------------------------------------------| :--- |
-| 0.1.7   | 2022-05-17 | [12937](https://github.com/airbytehq/airbyte/pull/12937) | Added OAuth2.0 authentication method
+| 0.1.7   | 2022-05-17 | [12937](https://github.com/airbytehq/airbyte/pull/12937) | Added OAuth2.0 authentication method, removed `redirect_uri` from input configuration
 | 0.1.6   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
 | 0.1.5   | 2022-01-01 | [11652](https://github.com/airbytehq/airbyte/pull/11652) | Rebump attempt after DockerHub failure at registring the 0.1.4 |
 | 0.1.4   | 2022-03-22 | [11311](https://github.com/airbytehq/airbyte/pull/11311) | Added optional Redirect URI & Tenant ID to spec |

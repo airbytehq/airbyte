@@ -40,7 +40,6 @@ class Client:
         developer_token: str,
         customer_id: str,
         tenant_id: str,
-        redirect_uri: str,
         reports_start_date: str,
         hourly_reports: bool,
         daily_reports: bool,
@@ -49,7 +48,7 @@ class Client:
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
-        self.authentication = self._get_auth_client(credentials, redirect_uri, tenant_id)
+        self.authentication = self._get_auth_client(credentials, tenant_id)
         self.refresh_token = credentials["refresh_token"]
         self.customer_id = customer_id
         self.developer_token = developer_token
@@ -61,12 +60,12 @@ class Client:
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
-    def _get_auth_client(self, credentials: dict, redirect_uri: str, tenant_id: str) -> OAuthWebAuthCodeGrant:
+    def _get_auth_client(self, credentials: dict, tenant_id: str) -> OAuthWebAuthCodeGrant:
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
         auth_creds = {
             "client_id": credentials["client_id"],
             "client_secret": None,
-            "redirection_uri": redirect_uri,
+            "redirection_uri": "", # should be empty string
             "tenant": tenant_id,
         }
         if credentials["auth_method"] == "private_client":
