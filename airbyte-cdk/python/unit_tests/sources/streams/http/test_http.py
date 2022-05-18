@@ -476,3 +476,14 @@ def test_default_parse_response_error_message_not_json():
 
     message = stream.parse_response_error_message(response)
     assert message is None
+
+
+def test_default_get_error_display_message_handles_http_error(mocker):
+    stream = StubBasicReadHttpStream()
+    mocker.patch.object(stream, "parse_response_error_message", return_value="my custom message")
+
+    non_http_err_msg = stream.get_error_display_message(RuntimeError("not me"))
+    assert non_http_err_msg is None
+
+    http_err_msg = stream.get_error_display_message(requests.HTTPError())
+    assert http_err_msg == "my custom message"

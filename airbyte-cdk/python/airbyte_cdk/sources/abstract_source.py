@@ -125,7 +125,6 @@ class AbstractSource(Source, ABC):
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
-                        # TODO check that this doesnt break any other consumers that are expecting the error to be in its original form
                         raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
