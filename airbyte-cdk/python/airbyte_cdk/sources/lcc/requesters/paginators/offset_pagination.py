@@ -5,17 +5,26 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.lcc.states.dict_state import DictState
 
 
 class OffsetPagination(Paginator):
-    def __init__(self, page_size: int, tag: str = "offset"):
+    def __init__(self, page_size: int, state: DictState, tag: str = "offset"):
         self._limit = page_size
+        self._state: DictState = state
         self._tag = tag
-        self._offset = 0
+        self._update_state_with_offset(0)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         if len(last_records) < self._limit:
             return None
+        offset = self._get_offset() + self._limit
+        token_map = {self._tag: offset}
+        self._update_state_with_offset(offset)
+        return token_map
 
-        self._offset += self._limit
-        return {self._tag: self._offset}
+    def _update_state_with_offset(self, offset):
+        self._state.update_state(**{self._tag: offset})
+
+    def _get_offset(self):
+        return self._state.get_context()[self._tag]

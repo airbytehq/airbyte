@@ -14,7 +14,7 @@ from airbyte_cdk.sources.lcc.types import Record
 class JqExtractor(HttpExtractor):
     default_transform = "."
 
-    def __init__(self, decoder: Decoder, transform: str, config, kwargs=None):
+    def __init__(self, transform: str, decoder: Decoder, config, kwargs=None):
         if kwargs is None:
             kwargs = dict()
         self._vars = vars
