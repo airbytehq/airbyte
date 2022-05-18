@@ -5,11 +5,60 @@
     "title": "Amazon Seller Partner Spec",
     "type": "object",
     "properties": {
+      "auth_type": {
+        "title": "Auth Type",
+        "const": "oauth2.0",
+        "order": 0,
+        "type": "string"
+      },
+      "lwa_app_id": {
+        "title": "LWA App Id",
+        "description": "Amazon Application Id.",
+        "airbyte_secret": true,
+        "order": 1,
+        "type": "string"
+      },
+      "lwa_client_id": {
+        "title": "LWA Client Id",
+        "description": "Amazon Client Id.",
+        "airbyte_secret": true,
+        "order": 2,
+        "type": "string"
+      },
+      "lwa_client_secret": {
+        "title": "LWA Client Secret",
+        "description": "Amazon Client Secret.",
+        "airbyte_secret": true,
+        "order": 3,
+        "type": "string"
+      },
+      "refresh_token": {
+        "title": "Refresh Token",
+        "description": "The Refresh Token obtained via OAuth flow authorization.",
+        "airbyte_secret": true,
+        "order": 4,
+        "type": "string"
+      },
+      "aws_access_key": {
+        "title": "AWS Access Key",
+        "description": "Specifies the AWS access key used as part of the credentials to authenticate the user.",
+        "airbyte_secret": true,
+        "order": 5,
+        "type": "string"
+      },
+      "aws_secret_key": {
+        "title": "AWS Secret Access Key",
+        "description": "Specifies the AWS secret key used as part of the credentials to authenticate the user.",
+        "airbyte_secret": true,
+        "order": 6,
+        "type": "string"
+      },
       "replication_start_date": {
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
+        "order": 7,
         "type": "string"
       },
       "period_in_days": {
@@ -17,6 +66,7 @@
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         "examples": ["30", "365"],
         "type": "integer",
+        "order": 8,
         "default": 30
       },
       "report_options": {
@@ -26,6 +76,7 @@
           "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
+        "order": 9,
         "type": "string"
       },
       "max_wait_seconds": {
@@ -33,48 +84,21 @@
         "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
         "examples": ["500", "1980"],
         "type": "integer",
+        "order": 10,
         "default": 500
-      },
-      "refresh_token": {
-        "title": "Refresh Token",
-        "description": "The Refresh Token obtained via OAuth flow authorization.",
-        "airbyte_secret": true,
-        "type": "string"
-      },
-      "lwa_app_id": {
-        "title": "LwA App Id",
-        "description": "Your Login with Amazon App ID",
-        "airbyte_secret": true,
-        "type": "string"
-      },
-      "lwa_client_secret": {
-        "title": "LwA Client Secret",
-        "description": "Your Login with Amazon Client Secret.",
-        "airbyte_secret": true,
-        "type": "string"
-      },
-      "aws_access_key": {
-        "title": "AWS Access Key",
-        "description": "Specifies the AWS access key used as part of the credentials to authenticate the user.",
-        "airbyte_secret": true,
-        "type": "string"
-      },
-      "aws_secret_key": {
-        "title": "AWS Secret Access Key",
-        "description": "Specifies the AWS secret key used as part of the credentials to authenticate the user.",
-        "airbyte_secret": true,
-        "type": "string"
       },
       "role_arn": {
         "title": "Role ARN",
         "description": "Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         "airbyte_secret": true,
+        "order": 11,
         "type": "string"
       },
       "aws_environment": {
         "title": "AWSEnvironment",
         "description": "An enumeration.",
         "enum": ["PRODUCTION", "SANDBOX"],
+        "order": 12,
         "type": "string"
       },
       "region": {
@@ -103,6 +127,7 @@
           "MX",
           "GB"
         ],
+        "order": 13,
         "type": "string"
       }
     },
