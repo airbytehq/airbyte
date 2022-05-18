@@ -39,10 +39,8 @@ You can remove the examples bellow and fill out with your information.
 
 ## Logs
 <!--
-If applicable: Please upload the complete logs files from the failing operation. 
-We ask the complete file log because the team will read the full stacktrace of error and not only the error message 
-which sometimes won't give the complete picture. For a sync failure you can download the log in the sync page and for other errors
-please download the server and scheduler logs in the Settings Page -> Configuration.
+If applicable: Please upload the complete log files from the failing operation. 
+We ask for complete log files because these files capture essential metadata about your environment. The team will read the full stack trace of errors and try to find the root cause of the error. For a sync failure, you can download the log in the sync page, and for other errors please download the server and scheduler logs in the Settings Page -> Configuration.
 You can remove this after uploading the file.
 -->
 
