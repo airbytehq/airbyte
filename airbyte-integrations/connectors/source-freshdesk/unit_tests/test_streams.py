@@ -43,7 +43,7 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
     ],
 )
 def test_full_refresh(stream, resource, authenticator, config, requests_mock):
-    requests_mock.register_uri("GET", f"/api/{resource}", json=[{"id": x} for x in range(25)])
+    requests_mock.register_uri("GET", f"/api/{resource}", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(25)])
 
     stream = stream(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)

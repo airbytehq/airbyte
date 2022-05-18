@@ -11,6 +11,7 @@ import pendulum
 import requests
 import re
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.auth import AuthBase
@@ -27,14 +28,13 @@ class FreshdeskStream(HttpStream, ABC):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
         requests_per_minute = config["requests_per_minute"]
-        start_date = config["start_date"]
         self.domain = config["domain"]
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
         # By default, only tickets that have been created within the past 30 days will be returned.
         # Since this logic rely not on updated tickets, it can break tickets dependant streams - conversations.
         # So updated_since parameter will be always used in tickets streams. And start_date will be used too
         # with default value 30 days look back.
-        self.start_date = pendulum.parse(start_date) if start_date else pendulum.now() - pendulum.duration(days=30)
+        self.start_date = pendulum.parse(config.get("start_date")) if config.get("start_date") else pendulum.now() - pendulum.duration(days=30)
     
     @property
     def url_base(self) -> str:
@@ -42,22 +42,19 @@ class FreshdeskStream(HttpStream, ABC):
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
-            return float(response.headers.get("Retry-After"))
+            return float(response.headers.get("Retry-After", 0))
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        try:
-            link_header = response.headers.get("Link")
-            if not link_header:
-                return {}
-            match = self.link_regex.search(link_header)
-            next_url = match.group(1)
-            params = parse.parse_qs(parse.urlparse(next_url).query)
-            return self.parse_link_params(link_query_params=params)
-        except Exception as e:
-            raise KeyError(f"error parsing next_page token: {e}")
+        link_header = response.headers.get("Link")
+        if not link_header:
+            return {}
+        match = self.link_regex.search(link_header)
+        next_url = match.group(1)
+        params = parse.parse_qs(parse.urlparse(next_url).query)
+        return self.parse_link_params(link_query_params=params)
     
     def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
-        return {"per_page": link_query_params['per_page'][0], "page": link_query_params['page'][0]}
+        return {"per_page": link_query_params["per_page"][0], "page": link_query_params["page"][0]}
     
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -84,19 +81,17 @@ class FreshdeskStream(HttpStream, ABC):
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
-        if not data:
-            return []
-        for element in data:
-            yield element
+        return data if data else []
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
 
-    state_filter = "updated_since"  # Name of filter that corresponds to the state
+    cursor_filter = "updated_since"  # Name of filter that corresponds to the state
+    state_checkpoint_interval = 100
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator, config=config, *args, **kwargs)
-        self._state = None
+        self._cursor_value = ""
 
     @property
     def cursor_field(self) -> str:
@@ -104,21 +99,17 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
     
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {"updated_at": self._state} if self._state else {}
+        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        if "updated_at" in value:
-            self._state = value["updated_at"]
+        self._cursor_value = value.get(self.cursor_field, self.start_date)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if "updated_at" in stream_state:
-            params[self.state_filter] = stream_state["updated_at"]
-        else:
-            params[self.state_filter] = self.start_date
+        params[self.cursor_filter] = stream_state.get(self.cursor_field, self.start_date)
         return params
     
     def read_records(
@@ -130,8 +121,7 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             yield record
-            if not self.state or self.state["updated_at"] < record[self.cursor_field]:
-                self.state = record
+            self._cursor_value = max(record[self.cursor_field], self._cursor_value)
 
 
 class Agents(FreshdeskStream):
@@ -147,8 +137,7 @@ class Companies(FreshdeskStream):
 
 
 class Contacts(IncrementalFreshdeskStream):
-    state_filter = "_updated_since"
-    state_checkpoint_interval = 100
+    cursor_filter = "_updated_since"
 
     def path(self, **kwargs) -> str:
         return "contacts"
@@ -186,7 +175,8 @@ class Surveys(FreshdeskStream):
 
 class Tickets(IncrementalFreshdeskStream):
     ticket_paginate_limit = 300
-    state_checkpoint_interval = 100
+    call_credit = 3  # each include consumes 2 additional credits
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "tickets"
@@ -195,18 +185,20 @@ class Tickets(IncrementalFreshdeskStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        includes = ["description", "requester", "stats"]
         params.update({
             "order_type": "asc",  # ASC order, to get the old records first
-            "order_by": "updated_at",
+            "order_by": self.cursor_field,
+            "include": ",".join(includes)
         })
-        if next_page_token and "updated_since" in next_page_token:
-            params["updated_since"] = next_page_token["updated_since"]
+        if next_page_token and self.cursor_filter in next_page_token:
+            params[self.cursor_filter] = next_page_token[self.cursor_filter]
         return params
     
     def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
         params = super().parse_link_params(link_query_params)
-        if "updated_since" in link_query_params:
-            params["updated_since"] = link_query_params["updated_since"][0]
+        if self.cursor_filter in link_query_params:
+            params[self.cursor_filter] = link_query_params[self.cursor_filter][0]
         return params
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -222,8 +214,8 @@ class Tickets(IncrementalFreshdeskStream):
             last_record_updated_at = response.json()[-1]["updated_at"]
             last_record_updated_at = pendulum.parse(last_record_updated_at)
             # updating request parameters with last_record state
-            next_page_token["updated_since"] = last_record_updated_at
-            del next_page_token["page"]
+            next_page_token[self.cursor_filter] = last_record_updated_at
+            next_page_token.pop("page")
 
         return next_page_token
 
@@ -247,8 +239,8 @@ class Conversations(FreshdeskStream):
 
 
 class SatisfactionRatings(IncrementalFreshdeskStream):
-    state_filter = "created_since"
-    state_checkpoint_interval = 100
+    cursor_filter = "created_since"
+    
 
     def path(self, **kwargs) -> str:
         return "surveys/satisfaction_ratings"

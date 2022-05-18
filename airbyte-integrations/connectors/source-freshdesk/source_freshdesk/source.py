@@ -6,42 +6,36 @@ import logging
 from urllib.parse import urljoin
 import requests
 from typing import Any, List, Mapping, Optional, Tuple
-from requests.auth import AuthBase, HTTPBasicAuth
+from requests.auth import HTTPBasicAuth
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Surveys, Tickets, TimeEntries
 
 
-class HTTPBasicAuthNoPassword(HTTPBasicAuth):
+class FreshdeskAuth(HTTPBasicAuth):
 
-    def __init__(self, username: str) -> None:
+    def __init__(self, api_key: str) -> None:
         """
         Freshdesk expects the user to provide an api_key. Any string can be used as password:
         https://developers.freshdesk.com/api/#authentication
         """
-        super().__init__(username=username, password="unused_with_api_key")
+        super().__init__(username=api_key, password="unused_with_api_key")
 
 
 class SourceFreshdesk(AbstractSource):
-
-    def _create_authenticator(self, api_key: str) -> AuthBase:
-        return HTTPBasicAuthNoPassword(username=api_key)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         alive = True
         error_msg = None
         try:
             url = urljoin(f"https://{config['domain'].rstrip('/')}", "/api/v2/settings/helpdesk")
-            response = requests.get(url=url, auth=self._create_authenticator(config["api_key"]))
+            response = requests.get(url=url, auth=FreshdeskAuth(config["api_key"]))
             response.raise_for_status()
         except requests.HTTPError as error:
             alive = False
-            try:
-                body = error.response.json()
-                error_msg = f"{body.get('code')}: {body['message']}"
-            except ValueError:
-                error_msg = "Invalid credentials"
+            body = error.response.json()
+            error_msg = f"{body.get('code')}: {body.get('message')}"
         except Exception as error:
             alive = False
             error_msg = repr(error)
@@ -49,7 +43,7 @@ class SourceFreshdesk(AbstractSource):
         return alive, error_msg
     
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self._create_authenticator(config["api_key"])
+        authenticator = FreshdeskAuth(config["api_key"])
         stream_kwargs = {"authenticator": authenticator, "config": config}
         return [
             Agents(**stream_kwargs),
