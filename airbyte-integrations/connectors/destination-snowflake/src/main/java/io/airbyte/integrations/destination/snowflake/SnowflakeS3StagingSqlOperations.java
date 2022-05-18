@@ -122,8 +122,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         dstTableName,
         generateBucketPath(stagingPath),
         credentialConfig.getAccessKeyId(),
-        credentialConfig.getSecretAccessKey()
-    );
+        credentialConfig.getSecretAccessKey());
   }
 
   private String generateBucketPath(final String stagingPath) {
