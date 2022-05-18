@@ -19,7 +19,6 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
-    DestinationSyncMode,
     Status,
     SyncMode,
     TraceType,
