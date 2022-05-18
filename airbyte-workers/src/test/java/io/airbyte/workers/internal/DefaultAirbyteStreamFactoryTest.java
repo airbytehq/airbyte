@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,8 +17,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.internal.AirbyteProtocolPredicate;
-import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

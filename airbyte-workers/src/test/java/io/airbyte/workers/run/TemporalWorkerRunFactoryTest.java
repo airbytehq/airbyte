@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.worker_run;
+package io.airbyte.workers.run;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,8 +22,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.run.TemporalWorkerRunFactory;
-import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;

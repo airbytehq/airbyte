@@ -2,14 +2,13 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.internal.HeartbeatMonitor;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

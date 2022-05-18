@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.general;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -15,7 +15,8 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.workers.general.DefaultNormalizationWorker;
+import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;

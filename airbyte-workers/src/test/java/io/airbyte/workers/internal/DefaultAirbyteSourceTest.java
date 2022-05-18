@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,10 +34,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.AirbyteStreamFactory;
-import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

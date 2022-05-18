@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,8 +13,6 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.internal.AirbyteMessageTracker;
-import io.airbyte.workers.internal.StateDeltaTracker;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
 import java.util.Map;

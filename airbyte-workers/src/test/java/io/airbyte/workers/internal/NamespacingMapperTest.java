@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.protocols.airbyte;
+package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,7 +13,6 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.workers.internal.NamespacingMapper;
 import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {

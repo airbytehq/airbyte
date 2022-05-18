@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.general;
 
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,13 +41,13 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.workers.general.DefaultReplicationWorker;
+import io.airbyte.workers.*;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
+import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

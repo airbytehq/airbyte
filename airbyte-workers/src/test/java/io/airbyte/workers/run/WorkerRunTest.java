@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.worker_run;
+package io.airbyte.workers.run;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
