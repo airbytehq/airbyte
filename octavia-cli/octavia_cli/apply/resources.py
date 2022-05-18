@@ -356,7 +356,6 @@ class BaseResource(abc.ABC):
 
 
 class SourceAndDestination(BaseResource):
-
     @property
     @abc.abstractmethod
     def definition(
@@ -375,8 +374,6 @@ class SourceAndDestination(BaseResource):
     @property
     def definition_version(self):
         return self.raw_configuration["definition_version"]
-
-
 
     def _get_remote_comparable_configuration(self) -> dict:
         return self.remote_resource.connection_configuration
@@ -443,6 +440,7 @@ class Source(SourceAndDestination):
             source_definition_id=self.definition_id,
         )
         return api_instance.get_source_definition(source_definition_id_request_body)
+
 
 class Destination(SourceAndDestination):
     api = destination_api.DestinationApi
