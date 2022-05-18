@@ -83,22 +83,4 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
     return ACCESS_TOKEN_URL;
   }
 
-  @Override
-  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
-    final Map<String, Object> result = new HashMap<>();
-    // getting out access_token
-    if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
-    }
-    // getting out refresh_token
-    if (data.has("refresh_token")) {
-      result.put("refresh_token", data.get("refresh_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
-    }
-    return result;
-  }
-
 }
