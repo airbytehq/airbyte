@@ -28,11 +28,10 @@ class DictState(State):
         self._context = dict()
         self._config = config
 
-    def update_state(self, stream_slice, stream_state, last_response, last_record):
+    def update_state(self, **kwargs):
+        stream_state = kwargs.get("stream_state")
         prev_state = self.get_state() or stream_state
-        self._context.update(
-            {"stream_slice": stream_slice, "stream_state": stream_state, "last_response": last_response, "last_record": last_record}
-        )
+        self._context.update(**kwargs)
 
         self._context["stream_state"] = self._compute_state(prev_state)
 

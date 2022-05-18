@@ -212,11 +212,13 @@ class SimpleRetriever(Retriever, HttpStream):
     ) -> Iterable[Mapping[str, Any]]:
         records = [r for r in HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)]
         for r in records:
-            self._state.update_state(stream_slice, stream_state, self._last_response, r)
+            self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
         if records:
             yield from records
         else:
-            self._state.update_state(stream_slice, stream_state, self._last_response, None)
+            self._state.update_state(
+                stream_slice=stream_slice, stream_state=stream_state, last_reponse=self._last_response, last_record=None
+            )
             yield from []
 
     def stream_slices(

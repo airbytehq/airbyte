@@ -24,7 +24,7 @@ def test_update_initial_state():
     stream_state = None
     last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
     last_record = {"id": "1234", "updated_at": "2021-01-01"}
-    state.update_state(stream_slice, stream_state, last_response, last_record)
+    state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=last_response, last_record=last_record)
     actual_state = state.get_state()
     expected_state = {"date": "2021-01-01"}
     assert expected_state == actual_state
@@ -36,7 +36,7 @@ def test_update_state_with_recent_cursor():
     stream_state = {"date": "2020-12-31"}
     last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
     last_record = {"id": "1234", "updated_at": "2021-01-01"}
-    state.update_state(stream_slice, stream_state, last_response, last_record)
+    state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=last_response, last_record=last_record)
     actual_state = state.get_state()
     expected_state = {"date": "2021-01-01"}
     assert expected_state == actual_state
@@ -48,7 +48,7 @@ def test_update_state_with_old_cursor():
     stream_state = {"date": "2021-01-02"}
     last_response = {"data": {"id": "1234", "updated_at": "2021-01-01"}, "last_refresh": "2020-01-01"}
     last_record = {"id": "1234", "updated_at": "2021-01-01"}
-    state.update_state(stream_slice, stream_state, last_response, last_record)
+    state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=last_response, last_record=last_record)
     actual_state = state.get_state()
     expected_state = {"date": "2021-01-02"}
     assert expected_state == actual_state
@@ -60,13 +60,15 @@ def test_update_state_with_older_state():
     stream_state = {"date": "2021-01-02"}
     last_response = {"data": {"id": "1234", "updated_at": "2021-01-02"}, "last_refresh": "2020-01-01"}
     last_record = {"id": "1234", "updated_at": "2021-01-02"}
-    state.update_state(stream_slice, stream_state, last_response, last_record)
+    state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=last_response, last_record=last_record)
     actual_state = state.get_state()
     expected_state = {"date": "2021-01-02"}
 
     out_of_order_response = {"data": {"id": "1234", "updated_at": "2021-01-02"}, "last_refresh": "2020-01-01"}
     out_of_order_record = {"id": "1234", "updated_at": "2021-01-01"}
-    state.update_state(stream_slice, stream_state, out_of_order_response, out_of_order_record)
+    state.update_state(
+        stream_slice=stream_slice, stream_state=stream_state, last_response=out_of_order_response, last_record=out_of_order_record
+    )
     assert expected_state == actual_state
 
 
@@ -76,7 +78,7 @@ def test_state_is_a_timestamp():
     stream_state = {"date": 12345}
     last_response = {"data": {"id": "1234", "updated_at": 123456}, "last_refresh": "2020-01-01"}
     last_record = {"id": "1234", "updated_at": 123456}
-    state.update_state(stream_slice, stream_state, last_response, last_record)
+    state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=last_response, last_record=last_record)
     actual_state = state.get_state()
     expected_state = {"date": 123456}
     assert expected_state == actual_state
