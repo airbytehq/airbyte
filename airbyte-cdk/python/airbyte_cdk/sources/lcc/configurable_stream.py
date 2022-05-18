@@ -8,10 +8,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
 from airbyte_cdk.sources.lcc.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.streams.core import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.core import Stream
 
 
-class ConfigurableStream(Stream, IncrementalMixin):
+class ConfigurableStream(Stream):
     """
     ConfigurableStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
@@ -37,11 +37,6 @@ class ConfigurableStream(Stream, IncrementalMixin):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._retriever.get_state()
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        """This method is only needed to interface with AbstractSource..."""
-        pass
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
