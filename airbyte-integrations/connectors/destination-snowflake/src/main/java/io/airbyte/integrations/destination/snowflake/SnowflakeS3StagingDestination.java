@@ -136,7 +136,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     return S3DestinationConfig.getS3DestinationConfig(loadingMethod);
   }
 
-  private static boolean isPurgeStagingData(final JsonNode config) {
+  public static boolean isPurgeStagingData(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
     if (!loadingMethod.has("purge_staging_data")) {
       return true;
