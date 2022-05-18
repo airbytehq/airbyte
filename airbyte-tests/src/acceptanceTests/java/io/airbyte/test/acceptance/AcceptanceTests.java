@@ -829,7 +829,7 @@ public class AcceptanceTests {
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
         Charset.defaultCharset());
 
-    assertTrue(!serverLogLines.isEmpty());
+    assertTrue(serverLogLines.size() > 0);
 
     boolean hasRedacted = false;
 

@@ -130,9 +130,9 @@ public class Yamls {
     }
 
     @Override
-    public void accept(final T acceptInput) {
+    public void accept(final T t) {
       try {
-        sequenceWriter.write(acceptInput);
+        sequenceWriter.write(t);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }

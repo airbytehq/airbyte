@@ -16,15 +16,10 @@ import org.junit.jupiter.api.Test;
 
 class ClisTest {
 
-  public String optionAName = "a";
-  public String optionBName = "b";
-  public String optionADesc = "alpha";
-  public String optionBDesc = "beta";
-
   @Test
   void testCreateOptionGroup() {
-    final Option optionA = new Option(optionAName, optionADesc);
-    final Option optionB = new Option(optionBName, optionBDesc);
+    final Option optionA = new Option("a", "alpha");
+    final Option optionB = new Option("b", "beta");
     final OptionGroup optionGroupExpected = new OptionGroup();
     optionGroupExpected.addOption(optionA);
     optionGroupExpected.addOption(optionB);
@@ -40,42 +35,42 @@ class ClisTest {
 
   @Test
   void testParse() {
-    final Option optionA = Option.builder(optionAName).required(true).hasArg(true).build();
-    final Option optionB = Option.builder(optionBName).required(true).hasArg(true).build();
+    final Option optionA = Option.builder("a").required(true).hasArg(true).build();
+    final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
-    final String[] args = {"-a", optionADesc, "-b", optionBDesc};
+    final String[] args = {"-a", "alpha", "-b", "beta"};
     final CommandLine parsed = Clis.parse(args, options, new DefaultParser());
-    assertEquals(optionADesc, parsed.getOptions()[0].getValue());
-    assertEquals(optionBDesc, parsed.getOptions()[1].getValue());
+    assertEquals("alpha", parsed.getOptions()[0].getValue());
+    assertEquals("beta", parsed.getOptions()[1].getValue());
   }
 
   @Test
   void testParseNonConforming() {
-    final Option optionA = Option.builder(optionAName).required(true).hasArg(true).build();
-    final Option optionB = Option.builder(optionBName).required(true).hasArg(true).build();
+    final Option optionA = Option.builder("a").required(true).hasArg(true).build();
+    final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
-    final String[] args = {"-a", optionADesc, "-b", optionBDesc, "-c", "charlie"};
+    final String[] args = {"-a", "alpha", "-b", "beta", "-c", "charlie"};
     assertThrows(IllegalArgumentException.class, () -> Clis.parse(args, options, new DefaultParser()));
   }
 
   @Test
   void testParseNonConformingWithSyntax() {
-    final Option optionA = Option.builder(optionAName).required(true).hasArg(true).build();
-    final Option optionB = Option.builder(optionBName).required(true).hasArg(true).build();
+    final Option optionA = Option.builder("a").required(true).hasArg(true).build();
+    final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
-    final String[] args = {"-a", optionADesc, "-b", optionBDesc, "-c", "charlie"};
+    final String[] args = {"-a", "alpha", "-b", "beta", "-c", "charlie"};
     assertThrows(IllegalArgumentException.class, () -> Clis.parse(args, options, new DefaultParser(), "search"));
   }
 
   @Test
   void testRelaxedParser() {
-    final Option optionA = Option.builder(optionAName).required(true).hasArg(true).build();
-    final Option optionB = Option.builder(optionBName).required(true).hasArg(true).build();
+    final Option optionA = Option.builder("a").required(true).hasArg(true).build();
+    final Option optionB = Option.builder("b").required(true).hasArg(true).build();
     final Options options = new Options().addOption(optionA).addOption(optionB);
-    final String[] args = {"-a", optionADesc, "-b", optionBDesc, "-c", "charlie"};
+    final String[] args = {"-a", "alpha", "-b", "beta", "-c", "charlie"};
     final CommandLine parsed = Clis.parse(args, options, Clis.getRelaxedParser());
-    assertEquals(optionADesc, parsed.getOptions()[0].getValue());
-    assertEquals(optionBDesc, parsed.getOptions()[1].getValue());
+    assertEquals("alpha", parsed.getOptions()[0].getValue());
+    assertEquals("beta", parsed.getOptions()[1].getValue());
   }
 
 }
