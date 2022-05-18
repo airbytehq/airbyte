@@ -79,7 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength",
-    "PMD.AvoidThrowingRawExceptionTypes", "PMD.ShortVariable", "PMD.LongVariable", "PMD.ExcessiveClassLength"})
+  "PMD.AvoidThrowingRawExceptionTypes", "PMD.ShortVariable", "PMD.LongVariable", "PMD.ExcessiveClassLength"})
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
@@ -87,6 +87,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
   private static final String UNKNOWN_CONFIG_TYPE = "Unknown Config Type ";
   private static final String NOT_FOUND = " not found";
+
   /**
    * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without
    * it being decorated with validation classes.
