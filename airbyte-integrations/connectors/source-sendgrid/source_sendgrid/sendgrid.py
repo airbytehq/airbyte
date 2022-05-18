@@ -41,6 +41,9 @@ class SendgridSource(ConfigurableSource):
         # Decoder
         decoder = JsonDecoder()
 
+        # State
+        cursor_state = DictState({"created": "{{ last_record['created'] }}"}, state_type=int)
+
         # Pagination
         metadata_paginator = NextPageUrlPaginator(
             interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, decoder, config),
@@ -75,9 +78,6 @@ class SendgridSource(ConfigurableSource):
             datetime_format="%Y-%m-%d",
             config=config,
         )
-
-        # State
-        cursor_state = DictState("created", "{{ last_record['created'] }}", state_type=int)
 
         # Next page url
         next_page_url_from_token_partial = create_partial.create(InterpolatedString, string="{{ next_page_token['next_page_url'] }}")
@@ -191,7 +191,7 @@ class SendgridSource(ConfigurableSource):
                         request_parameters_provider=offset_pagination_request_parameters,
                     ),
                     extractor=jq(transform=".[]"),
-                    paginator=OffsetPagination(limit),
+                    paginator=OffsetPagination(limit, cursor_state),
                 ),
             ),
             configurable_stream(
@@ -211,7 +211,7 @@ class SendgridSource(ConfigurableSource):
                         request_parameters_provider=offset_pagination_request_parameters,
                     ),
                     extractor=jq(transform=".[]"),
-                    paginator=OffsetPagination(limit),
+                    paginator=OffsetPagination(limit, cursor_state),
                 ),
             ),
             configurable_stream(
