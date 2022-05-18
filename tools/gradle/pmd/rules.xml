@@ -8,16 +8,19 @@
     </description>
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
-    <exclude-pattern>.*/airbyte-config/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-analytics/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-container-orchestrator/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-cli/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-cdk/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-api/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-bootloader/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-commons/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-commons-cli/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-commons-docker/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-db/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-json-validation/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-metrics/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-notification/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-oauth/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-queue/.*</exclude-pattern>
@@ -30,24 +33,6 @@
     <exclude-pattern>.*/airbyte-webapp/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-webapp-e2e-tests/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-workers/.*</exclude-pattern>
-
-
-    <exclude-pattern>.*/EnvConfigs.java/.*</exclude-pattern>
-    <exclude-pattern>.*/CloudLogs.java/.*</exclude-pattern>
-    <exclude-pattern>.*/GcsLogs.java/.*</exclude-pattern>
-    <exclude-pattern>.*/LifecycledCallable.java/.*</exclude-pattern>
-    <exclude-pattern>.*/VoidCallable.java/.*</exclude-pattern>
-    <exclude-pattern>.*/Enums.java/.*</exclude-pattern>
-    <exclude-pattern>.*/IOs.java/.*</exclude-pattern>
-    <exclude-pattern>.*/LineGobbler.java/.*</exclude-pattern>
-    <exclude-pattern>.*/Archives.java/.*</exclude-pattern>
-    <exclude-pattern>.*/JsonSchemas.java/.*</exclude-pattern>
-    <exclude-pattern>.*/CompositeIterator.java/.*</exclude-pattern>
-    <exclude-pattern>.*/MoreIterators.java/.*</exclude-pattern>
-    <exclude-pattern>.*/AirbyteVersion.java/.*</exclude-pattern>
-    <exclude-pattern>.*/Yamls.java/.*</exclude-pattern>
-    <exclude-pattern>.*/lang/Exceptions.java/.*</exclude-pattern>
-    <exclude-pattern>.*/OnDiskQueue.java/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
         <exclude name="GuardLogStatement"/>

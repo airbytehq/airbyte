@@ -7,6 +7,7 @@ package io.airbyte.config.helpers;
 import io.airbyte.config.Schedule;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class ScheduleHelpers {
 
   public static Long getSecondsInUnit(final Schedule.TimeUnit timeUnitEnum) {
