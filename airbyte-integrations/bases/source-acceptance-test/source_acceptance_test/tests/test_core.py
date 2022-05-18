@@ -425,7 +425,7 @@ class TestBasicRead(BaseTest):
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
                     ),
-                    sync_mode=SyncMode.full_refresh,
+                    sync_mode="INVALID",  # type: ignore
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
             ]
