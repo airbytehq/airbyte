@@ -34,7 +34,8 @@ export const LogsDetails: React.FC<{
   jobDebugInfo?: JobDebugInfoRead;
   showAttemptStats: boolean;
   logs?: string[];
-}> = ({ path, id, currentAttempt, jobDebugInfo, showAttemptStats, logs }) => (
+  logTimestamp?: number;
+}> = ({ path, id, currentAttempt, jobDebugInfo, showAttemptStats, logs, logTimestamp }) => (
   <>
     {currentAttempt && showAttemptStats && (
       <AttemptDetailsSection>
@@ -51,6 +52,6 @@ export const LogsDetails: React.FC<{
         </>
       )}
     </LogHeader>
-    <LogsTable logsArray={logs} />
+    <LogsTable logsArray={logs} logTimestamp={logTimestamp} />
   </>
 );

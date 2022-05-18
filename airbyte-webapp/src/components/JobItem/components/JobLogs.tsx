@@ -16,6 +16,7 @@ import Tabs, { TabsData } from "./Tabs";
 type JobLogsProps = {
   jobIsFailed?: boolean;
   job: SynchronousJobReadWithStatus | JobsWithJobs;
+  logTimestamp?: number;
 };
 
 const isPartialSuccess = (attempt: AttemptRead) => {
@@ -28,7 +29,7 @@ const jobIsSynchronousJobRead = (
   return !!(job as SynchronousJobReadWithStatus)?.logs?.logLines;
 };
 
-const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
+const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job, logTimestamp }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
   const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobReadWithStatus).id;
@@ -85,6 +86,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
         jobDebugInfo={debugInfo}
         showAttemptStats={attempts > 1}
         logs={debugInfo?.attempts[attemptNumber].logs.logLines}
+        logTimestamp={logTimestamp}
       />
     </>
   );

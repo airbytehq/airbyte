@@ -1,10 +1,13 @@
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
+import { Button } from "components/base";
+
 import { Attempt, Failure } from "core/domain/job/Job";
 
 type IProps = {
   attempts?: Attempt[];
+  setLogTimestamp: (t: number) => void;
 };
 
 const ExpandedFailureContainer = styled.div`
@@ -19,7 +22,7 @@ const getFailureFromAttempt = (attempt: Attempt) => {
   return attempt.failureSummary?.failures[0];
 };
 
-const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
+const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
   const { formatMessage } = useIntl();
 
   if (!attempts || attempts.length === 0) {
@@ -40,8 +43,25 @@ const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
     return null;
   }
 
+  const jumpToLogTimestamp = () => {
+    if (failure.timestamp) {
+      setLogTimestamp(failure.timestamp);
+    }
+  };
+
   const internalMessage = getInternalFailureMessage(failure);
-  return <ExpandedFailureContainer>{internalMessage}</ExpandedFailureContainer>;
+  return (
+    <ExpandedFailureContainer>
+      {failure.timestamp ? (
+        <>
+          <Button size="m" secondary onClick={() => jumpToLogTimestamp()}>
+            view
+          </Button>{" "}
+        </>
+      ) : null}
+      {internalMessage}
+    </ExpandedFailureContainer>
+  );
 };
 
 export default ErrorDetails;
