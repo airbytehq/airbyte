@@ -59,6 +59,7 @@
     String
 {%- endmacro -%}
 
+{# TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/airbytehq/airbyte/issues/12775) #}
 {%- macro postgres__type_string() -%}
     text
 {%- endmacro -%}
