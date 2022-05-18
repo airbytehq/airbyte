@@ -8,6 +8,7 @@ from airbyte_cdk.sources.lcc import create_partial
 from airbyte_cdk.sources.lcc.checks.check_stream import CheckStream
 from airbyte_cdk.sources.lcc.configurable_source import ConfigurableSource
 from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
+from airbyte_cdk.sources.lcc.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.lcc.extractors.jq import JqExtractor
 from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.lcc.requesters.http_requester import HttpMethod, HttpRequester
@@ -37,9 +38,12 @@ class SendgridSource(ConfigurableSource):
         # Define some shared constants
         limit = 50
 
+        # Decoder
+        decoder = JsonDecoder()
+
         # Pagination
         metadata_paginator = NextPageUrlPaginator(
-            interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, config),
+            interpolated_paginator=InterpolatedPaginator({"next_page_url": "{{ decoded_response['_metadata']['next'] }}"}, decoder, config),
         )
 
         # Request parameters
@@ -103,7 +107,7 @@ class SendgridSource(ConfigurableSource):
             retrier=DefaultRetrier(),
         )
 
-        jq = create_partial.create(JqExtractor, config=config)
+        jq = create_partial.create(JqExtractor, decoder=decoder, config=config)
 
         # Define the streams
         streams = [
