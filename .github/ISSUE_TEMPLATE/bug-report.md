@@ -38,22 +38,13 @@ You can remove the examples bellow and fill out with your information.
 *Tell us what should happen.*
 
 ## Logs
-*If applicable, please upload the logs from the failing operation. 
-For sync jobs, you can download the full logs from the UI by going to the sync attempt page and 
-clicking the download logs button at the top right of the logs display window.*
-
-<details>
-<summary>LOG</summary> 
-
-```
-
-replace this with
-your long log
-output here
-
-```
-
-</details>
+<!--
+If applicable: Please upload the complete logs files from the failing operation. 
+We ask the complete file log because the team will read the full stacktrace of error and not only the error message 
+which sometimes won't give the complete picture. For a sync failure you can download the log in the sync page and for other errors
+please download the server and scheduler logs in the Settings Page -> Configuration.
+You can remove this after uploading the file.
+-->
 
 ## Steps to Reproduce
 1.
