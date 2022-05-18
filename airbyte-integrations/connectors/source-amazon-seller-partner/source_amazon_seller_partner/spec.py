@@ -1,6 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
 from pydantic import BaseModel, Field
-
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion
 
 
@@ -12,46 +15,35 @@ class AmazonSellerPartnerConfig(BaseModel):
 
     lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LWA App Id", airbyte_secret=True, order=1)
 
-    lwa_client_id: str = Field(
-        description="Your Login with Amazon Client ID.",
-        title="LWA Client Id",
-        airbyte_secret=True,
-        order=2
-    )
+    lwa_client_id: str = Field(None, description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
     lwa_client_secret: str = Field(
-        description="Your Login with Amazon Client Secret.",
-        title="LWA Client Secret",
-        airbyte_secret=True,
-        order=3
+        description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3
     )
 
     refresh_token: str = Field(
-        description="The Refresh Token obtained via OAuth flow authorization.",
-        title="Refresh Token",
-        airbyte_secret=True,
-        order=4
+        description="The Refresh Token obtained via OAuth flow authorization.", title="Refresh Token", airbyte_secret=True, order=4
     )
 
     aws_access_key: str = Field(
         description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
         title="AWS Access Key",
         airbyte_secret=True,
-        order=5
+        order=5,
     )
 
     aws_secret_key: str = Field(
         description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
         title="AWS Secret Access Key",
         airbyte_secret=True,
-        order=6
+        order=6,
     )
 
     role_arn: str = Field(
         description="Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
-        order=7
+        order=7,
     )
 
     replication_start_date: str = Field(
