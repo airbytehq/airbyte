@@ -47,6 +47,7 @@ Helm charts for Airbyte.
 | `webapp.readinessProbe.successThreshold`    | Success threshold for readinessProbe                             | `1`              |
 | `webapp.service.type`                       | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`                       | The service port to expose the webapp on                         | `80`             |
+| `webapp.service.annotations`                | Service annotations done as key:value pairs                      | `{}`             |
 | `webapp.resources.limits`                   | The resources limits for the Web container                       | `{}`             |
 | `webapp.resources.requests`                 | The requested resources for the Web container                    | `{}`             |
 | `webapp.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |

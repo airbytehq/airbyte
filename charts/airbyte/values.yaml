@@ -92,6 +92,7 @@ webapp:
   service:
     type: ClusterIP
     port: 80
+    annotations: {}
 
   ## Web app resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
