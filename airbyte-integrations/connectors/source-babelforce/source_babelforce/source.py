@@ -118,11 +118,10 @@ class Calls(IncrementalBabelforceStream):
         return params
 
 
-# Source
 class SourceBabelforce(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            authenticator = self.authenticator(access_key_id=config.get("access_key_id"), access_token=config.get("access_token"))
+            authenticator = BabelforceAuthenticator(access_key_id=config.get("access_key_id"), access_token=config.get("access_token"))
             calls = Calls(region=config.get("region"), authenticator=authenticator)
 
             test_url = f"{calls.url_base}{calls.path()}?max=1"
@@ -140,12 +139,8 @@ class SourceBabelforce(AbstractSource):
         date_created_to = config.get("date_created_to")
         region = config.get("region")
 
-        auth = self.authenticator(access_key_id=config.get("access_key_id"), access_token=config.get("access_token"))
+        auth = BabelforceAuthenticator(access_key_id=config.get("access_key_id"), access_token=config.get("access_token"))
         return [Calls(authenticator=auth, region=region, date_created_from=date_created_from, date_created_to=date_created_to)]
-
-    @staticmethod
-    def authenticator(access_key_id: str, access_token: str) -> HttpAuthenticator:
-        return BabelforceAuthenticator(access_key_id=access_key_id, access_token=access_token)
 
 
 class BabelforceAuthenticator(HttpAuthenticator):
