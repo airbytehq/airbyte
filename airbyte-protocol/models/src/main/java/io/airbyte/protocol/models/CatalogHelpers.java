@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
  */
 public class CatalogHelpers {
 
+  private static final String PROPERTIES = "properties";
+
   public static AirbyteCatalog createAirbyteCatalog(final String streamName, final Field... fields) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
@@ -96,7 +98,7 @@ public class CatalogHelpers {
   public static JsonNode fieldsToJsonSchema(final List<Field> fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
-        .put("properties", fields
+        .put(PROPERTIES, fields
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
@@ -119,7 +121,7 @@ public class CatalogHelpers {
   @SuppressWarnings("unchecked")
   public static Set<String> getTopLevelFieldNames(final ConfiguredAirbyteStream stream) {
     // it is json, so the key has to be a string.
-    final Map<String, Object> object = Jsons.object(stream.getStream().getJsonSchema().get("properties"), Map.class);
+    final Map<String, Object> object = Jsons.object(stream.getStream().getJsonSchema().get(PROPERTIES), Map.class);
     return object.keySet();
   }
 
@@ -131,7 +133,7 @@ public class CatalogHelpers {
   protected static Set<String> getAllFieldNames(final JsonNode node) {
     final Set<String> allFieldNames = new HashSet<>();
 
-    if (node.has("properties")) {
+    if (node.has(PROPERTIES)) {
       final JsonNode properties = node.get("properties");
       final Iterator<String> fieldNames = properties.fieldNames();
       while (fieldNames.hasNext()) {
@@ -147,8 +149,8 @@ public class CatalogHelpers {
     return allFieldNames;
   }
 
-  private static boolean isObjectWithSubFields(Field field) {
-    return field.getType() == JsonSchemaType.OBJECT && field.getSubFields() != null && !field.getSubFields().isEmpty();
+  private static boolean isObjectWithSubFields(final Field field) {
+    return field.getType().equals(JsonSchemaType.OBJECT) && field.getSubFields() != null && !field.getSubFields().isEmpty();
   }
 
 }

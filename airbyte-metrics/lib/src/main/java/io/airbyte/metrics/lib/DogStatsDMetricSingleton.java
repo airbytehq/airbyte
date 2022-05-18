@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DogStatsDMetricSingleton {
 
-  private static boolean instancePublish = false;
+  private static boolean instancePublish;
   private static StatsDClient statsDClient;
 
   /**

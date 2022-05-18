@@ -8,9 +8,6 @@
     </description>
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
-    <exclude-pattern>.*/ConfigSchema.java/.*</exclude-pattern>
-    <exclude-pattern>.*/airbyte-analytics/.*</exclude-pattern>
-    <exclude-pattern>.*/airbyte-commons/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-config/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-container-orchestrator/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-cli/.*</exclude-pattern>
@@ -23,6 +20,7 @@
     <exclude-pattern>.*/airbyte-json-validation/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-notification/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-oauth/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-protocol/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-queue/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-scheduler/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-schema-validation/.*</exclude-pattern>
