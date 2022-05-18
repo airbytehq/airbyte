@@ -1,16 +1,38 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.storage.CloudStorageConfigs;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-//import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
+
+import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StagingDestination.isPurgeStagingData;
+
 
 public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination implements Destination {
 
@@ -26,37 +48,75 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
 
     @Override
     public AirbyteConnectionStatus check(final JsonNode config) {
-        CloudStorageConfigs.GcsConfig vs;
-//        GcsDestination fdb;
-        S3DestinationConfig jghs;
+        GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+        final NamingConventionTransformer nameTransformer = getNamingResolver();
+        final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
+                new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
+        try (final JdbcDatabase database = getDatabase(config)) {
+            final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
+            AirbyteSentry.executeWithTracing("CreateAndDropTable",
+                    () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations));
+            AirbyteSentry.executeWithTracing("CreateAndDropStage",
+                    () -> attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema));
 
-        final GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
-//
-////        final S3DestinationConfig s3Config = getS3DestinationConfig(config);
-//        final NamingConventionTransformer nameTransformer = getNamingResolver();
-//        final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
-//                new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
-//        try (final JdbcDatabase database = getDatabase(config)) {
-//            final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-//            AirbyteSentry.executeWithTracing("CreateAndDropTable",
-//                    () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations));
-//            AirbyteSentry.executeWithTracing("CreateAndDropStage",
-//                    () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations));
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-//        } catch (final Exception e) {
-//            LOGGER.error("Exception while checking connection: ", e);
-//            return new AirbyteConnectionStatus()
-//                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-//                    .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-//        }
+        } catch (final Exception e) {
+            LOGGER.error("Exception while checking connection: ", e);
+            return new AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                    .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+        }
     }
+    private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
+        final var storage = getStorageClient(gcsConfig);
+        final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
+        final var blobInfo = BlobInfo.newBuilder(blobId).build();
+
+        storage.create(blobInfo, "".getBytes(StandardCharsets.UTF_8));
+        storage.delete(blobId);
+    }
+
+    public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
+        final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
+        final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
+        return StorageOptions.newBuilder()
+                .setCredentials(credentials)
+                .setProjectId(gcsConfig.getProjectId())
+                .build()
+                .getService();
+    }
+
+    @Override
+    protected JdbcDatabase getDatabase(final JsonNode config) {
+        return SnowflakeDatabase.getDatabase(config);
+    }
+
     @Override
     protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
-        return null;
+        return Collections.emptyMap();
+    }
+
+    // this is a no op since we override getDatabase.
+    @Override
+    public JsonNode toJdbcConfig(final JsonNode config) {
+        return Jsons.emptyObject();
     }
 
     @Override
-    public JsonNode toJdbcConfig(JsonNode config) {
-        return null;
+    public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                              ConfiguredAirbyteCatalog catalog,
+                                              Consumer<AirbyteMessage> outputRecordCollector) {
+        GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+        return new StagingConsumerFactory().create(
+                outputRecordCollector,
+                getDatabase(config),
+                new SnowflakeGcsStagingSqlOperations(getNamingResolver(),gcsConfig),
+                getNamingResolver(),
+                CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
+                config,
+                catalog,
+                isPurgeStagingData(config));
+
     }
+
 }
