@@ -17,7 +17,7 @@
       "api_version": {
         "type": "integer",
         "description": "API version to be used in the URL.",
-        "title": "Version",
+        "title": "API Version",
         "examples": [1, 2]
       },
       "username": {
