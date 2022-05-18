@@ -31,7 +31,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "http://localhost:8000/api"
+  - url: "https://cloud.airbyte.io/api"
 tags:
   - name: workspace
     description: Workspace related resources.
