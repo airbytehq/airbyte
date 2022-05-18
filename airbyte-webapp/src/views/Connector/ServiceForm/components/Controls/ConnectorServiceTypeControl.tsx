@@ -21,7 +21,7 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
-import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import { WarningMessage } from "../WarningMessage";
 import { DocumentationLink } from "./DocumentationLink";

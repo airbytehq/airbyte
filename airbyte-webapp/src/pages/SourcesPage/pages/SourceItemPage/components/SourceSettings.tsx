@@ -11,7 +11,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
-import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 const Content = styled.div`
   max-width: 813px;

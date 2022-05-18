@@ -19,7 +19,7 @@ import Markdown from "components/Markdown/Markdown";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
-import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 export const DocumentationContainer = styled.div`
   padding: 0px 0px 20px;

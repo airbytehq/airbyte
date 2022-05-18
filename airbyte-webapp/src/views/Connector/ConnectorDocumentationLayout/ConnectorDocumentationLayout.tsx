@@ -6,8 +6,8 @@ import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import styled from "styled-components";
 
 import { DocumentationPanel } from "../../../components/DocumentationPanel/DocumentationPanel";
-import { useDocumentationPanelContext } from "./ConnectorDocumentationContext";
 import styles from "./ConnectorDocumentationLayout.module.css";
+import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 
 const PanelGrabber = styled.div`
   height: 100vh;

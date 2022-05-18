@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -6,6 +6,7 @@ import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 interface ConnectionCreateDestinationFormProps {
   afterSubmit: () => void;
@@ -43,6 +44,14 @@ export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinati
       afterSubmit();
     }, 2000);
   };
+
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   return (
     <DestinationForm

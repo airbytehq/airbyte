@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // @ts-expect-error Default value provided at implementation
 const DocumentationPanelContext = createContext<ReturnType<typeof useDocumentationPanelState>>();
@@ -13,6 +13,14 @@ export const useDocumentationPanelState = () => {
     documentationUrl,
     setDocumentationUrl,
   };
+};
+
+export const useCloseDocumentationPanelEffect = () => {
+  const { setDocumentationPanelOpen } = useDocumentationPanelState();
+  useEffect(() => {
+    console.log("I'm here");
+    return setDocumentationPanelOpen(false);
+  }, [setDocumentationPanelOpen]);
 };
 
 export const useDocumentationPanelContext = () => useContext(DocumentationPanelContext);
