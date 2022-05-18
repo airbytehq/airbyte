@@ -217,6 +217,7 @@ class BaseResource(abc.ABC):
 
         self.raw_configuration = raw_configuration
         self.configuration = self._deserialize_raw_configuration()
+        self.api_client = api_client
         self.api_instance = self.api(api_client)
         self.resource_name = raw_configuration["resource_name"]
 
@@ -355,6 +356,14 @@ class BaseResource(abc.ABC):
 
 
 class SourceAndDestination(BaseResource):
+
+    @property
+    @abc.abstractmethod
+    def definition(
+        self,
+    ):  # pragma: no cover
+        pass
+
     @property
     def definition_id(self):
         return self.raw_configuration["definition_id"]
@@ -366,6 +375,8 @@ class SourceAndDestination(BaseResource):
     @property
     def definition_version(self):
         return self.raw_configuration["definition_version"]
+
+
 
     def _get_remote_comparable_configuration(self) -> dict:
         return self.remote_resource.connection_configuration
@@ -425,9 +436,17 @@ class Source(SourceAndDestination):
         schema = self.api_instance.discover_schema_for_source(self.source_discover_schema_request_body)
         return schema.catalog
 
+    @property
+    def definition(self) -> Union[SourceDefinitionSpecificationRead]:
+        api_instance = source_definition_api.SourceDefinitionApi(self.api_client)
+        source_definition_id_request_body = SourceDefinitionIdRequestBody(
+            source_definition_id=self.definition_id,
+        )
+        return api_instance.get_source_definition(source_definition_id_request_body)
 
 class Destination(SourceAndDestination):
     api = destination_api.DestinationApi
+    definition_api = destination_definition_api.DestinationDefinitionApi
     create_function_name = "create_destination"
     resource_id_field = "destination_id"
     get_function_name = "get_destination"
