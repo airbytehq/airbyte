@@ -41,9 +41,6 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 
 ## Getting started (Airbyte Open Source)
 ### Requirements 
-* A Microsoft User account with access to at least one Microsoft Advertising account
-* A Microsoft Ads Customer ID
-* Your Microsoft User ID
 * A developer application with access to: 
   * client ID 
   * client secret 
@@ -56,8 +53,6 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * Create a developer application using the instructions for [registering an application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in Azure portal
 * Perform [these steps](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get auth code, and use that to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13). For reference, the full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Be aware that the refresh token will expire in 90 days. You need to repeat the auth process to get a new refresh token.
 * Find your Microsoft developer token by following [these instructions](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token)
-* Find your customer ID and User ID by visiting the following URL: https://ui.ads.microsoft.com/campaign/Campaigns.m then copying the CID & UID parameters from the URL in the address bar. For example, once you visit the URL above, you'll notice it will have changed to an address of the form https://ui.ads.microsoft.com/campaign/vnext/overview?uid=USER_ID&cid=CUSTOMER_ID&aid=180534868 -- the customer ID is the value in the part of the URL that looks like `cid=THIS_IS_THE_CUSTOMER_ID&`, and the user ID is the value in front of `uid` e.g: `uid=THIS_IS_THE_USER_ID&`. 
-* Optionally, if you want to replicate data from specific ad account IDs (you can configure the Bing Ads connector to replicate data from all accounts you have access to, or only from some), then also grab the account IDs you want by visiting the [Accounts Summary](https://ui.ads.microsoft.com/campaign/vnext/accounts/performance) page, clicking on each of the accounts you want under the `Account name` column, then repeating the process described earlier to get the `aid` parameter in the URL that looks like `aid=ACCOUNT_ID&`. You'll need to do this process once for each account from which you want to replicate data. 
 * Optionally, if your oauth app lives under a custom tenant which cannot use Microsoft's recommended `common` tenant, make sure to get the tenant ID ready for input when configuring the connector. The tenant will be used in the auth URL e.g: `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize`.
 
 

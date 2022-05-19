@@ -37,8 +37,6 @@ class Client:
     def __init__(
         self,
         credentials: dict,
-        developer_token: str,
-        customer_id: str,
         tenant_id: str,
         reports_start_date: str,
         hourly_reports: bool,
@@ -50,8 +48,7 @@ class Client:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.authentication = self._get_auth_client(credentials, tenant_id)
         self.refresh_token = credentials["refresh_token"]
-        self.customer_id = customer_id
-        self.developer_token = developer_token
+        self.developer_token = credentials["developer_token"]
         self.hourly_reports = hourly_reports
         self.daily_reports = daily_reports
         self.weekly_reports = weekly_reports
@@ -75,10 +72,10 @@ class Client:
         return OAuthWebAuthCodeGrant(**auth_creds)
 
     @lru_cache(maxsize=None)
-    def _get_auth_data(self, account_id: Optional[str] = None) -> AuthorizationData:
+    def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
-            customer_id=self.customer_id,
+            customer_id=customer_id,
             developer_token=self.developer_token,
             authentication=self.authentication,
         )
@@ -129,6 +126,7 @@ class Client:
         self,
         service_name: Optional[str],
         operation_name: str,
+        customer_id: Optional[str],
         account_id: Optional[str],
         params: Mapping[str, Any],
         is_report_service: bool = False,
@@ -140,9 +138,9 @@ class Client:
             self.oauth = self._get_access_token()
 
         if is_report_service:
-            service = self._get_reporting_service(account_id=account_id)
+            service = self._get_reporting_service(customer_id=customer_id, account_id=account_id)
         else:
-            service = self.get_service(service_name=service_name, account_id=account_id)
+            service = self.get_service(service_name=service_name, customer_id=customer_id, account_id=account_id)
 
         return getattr(service, operation_name)(**params)
 
@@ -150,22 +148,24 @@ class Client:
     def get_service(
         self,
         service_name: str,
+        customer_id: str = None,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ServiceClient(
             service=service_name,
             version=self.api_version,
-            authorization_data=self._get_auth_data(account_id),
+            authorization_data=self._get_auth_data(customer_id, account_id),
             environment=self.environment,
         )
 
     @lru_cache(maxsize=None)
     def _get_reporting_service(
         self,
+        customer_id: Optional[str] = None,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ReportingServiceManager(
-            authorization_data=self._get_auth_data(account_id),
+            authorization_data=self._get_auth_data(customer_id, account_id),
             poll_interval_in_milliseconds=self.report_poll_interval,
             environment=self.environment,
         )
