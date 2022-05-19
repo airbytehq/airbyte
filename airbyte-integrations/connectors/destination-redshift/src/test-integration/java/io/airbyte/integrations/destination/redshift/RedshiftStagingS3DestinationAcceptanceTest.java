@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
-  protected static final int GENERATE_BIG_STRING_ADD_EXTRA_CHARS = 1;
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
@@ -178,6 +177,11 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  }
+
+  @Override
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 1;
   }
 
 }

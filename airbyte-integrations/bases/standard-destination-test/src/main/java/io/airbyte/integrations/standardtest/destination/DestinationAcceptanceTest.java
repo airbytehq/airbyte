@@ -93,8 +93,6 @@ public abstract class DestinationAcceptanceTest {
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
-  protected static final int GENERATE_BIG_STRING_ADD_EXTRA_CHARS = 0;
-
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationAcceptanceTest.class);
 
   private TestDestinationEnv testEnv;
@@ -711,7 +709,7 @@ public abstract class DestinationAcceptanceTest {
             .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 3)
-                .put("currency", generateBigString(GENERATE_BIG_STRING_ADD_EXTRA_CHARS))
+                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
                 .put("date", "2020-10-10T00:00:00Z")
                 .put("HKD", 10.5)
                 .put("NZD", 1.14)
@@ -732,6 +730,10 @@ public abstract class DestinationAcceptanceTest {
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
+  }
+
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 0;
   }
 
   /**
