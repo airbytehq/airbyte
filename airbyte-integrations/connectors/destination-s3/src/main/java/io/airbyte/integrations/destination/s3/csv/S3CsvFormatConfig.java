@@ -112,13 +112,12 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     }
     final S3CsvFormatConfig that = (S3CsvFormatConfig) o;
     return flattening == that.flattening
-        && Objects.equals(partSize, that.partSize)
         && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(flattening, partSize, compressionType);
+    return Objects.hash(flattening, compressionType);
   }
 
 }
