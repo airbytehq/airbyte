@@ -32,6 +32,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.jooq.enums.ScheduleType;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -192,6 +193,15 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
+  }
+
+  @Test
+  public void testWriteReadScheduleType() throws IOException {
+    final var id = MockData.standardSyncs().get(0).getConnectionId();
+    final var scheduleType = ScheduleType.basic_schedule;
+    configRepository.writeScheduleType(id, scheduleType);
+    final var resType = configRepository.getScheduleType(id);
+    assertEquals(resType, scheduleType);
   }
 
   @Test

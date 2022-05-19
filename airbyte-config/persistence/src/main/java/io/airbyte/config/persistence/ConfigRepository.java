@@ -23,25 +23,12 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
-import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StandardSyncState;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.State;
-import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.*;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.enums.ScheduleType;
 import io.airbyte.db.instance.configs.jooq.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -597,6 +584,16 @@ public class ConfigRepository {
 
   public void writeStandardSync(final StandardSync standardSync) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
+  }
+
+  public ScheduleType getScheduleType(final UUID connId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTION.SCHEDULE_TYPE).from(CONNECTION)
+        .where(CONNECTION.ID.eq(connId)).fetchOne()).value1();
+  }
+
+  public void writeScheduleType(final UUID connId, final ScheduleType type) throws IOException {
+    database.transaction(ctx -> ctx.update(CONNECTION).set(CONNECTION.SCHEDULE_TYPE, type)
+        .where(CONNECTION.ID.eq(connId)).execute());
   }
 
   public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
