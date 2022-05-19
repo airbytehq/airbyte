@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.58
+`TypeTransformer.default_convert` catch `TypeError`
+
 ## 0.1.57
 Update protocol models to support per-stream state: [#12829](https://github.com/airbytehq/airbyte/pull/12829).
 
