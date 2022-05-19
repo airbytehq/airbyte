@@ -121,4 +121,3 @@ list_stream:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._requester._request_parameters_provider.request_params(None, None, None) == ""
