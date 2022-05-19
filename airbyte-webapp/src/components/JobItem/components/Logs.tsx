@@ -65,32 +65,34 @@ const Logs: React.FC<LogsProps> = ({ logsArray, logTimestamp }) => {
  * Matching the log's line number by time makes the following assumptions:
  * 1. The log's lines are already ordered by time
  * 2. The timestamps used are in the same timezone
+ * 3. The error is closer to the end of the log file than the beginning
+ * 4. Lines are matched by the start of a line with "YYYY-MM-DD HH:mm:ss" format, like "2022-05-17 23:00:19 DEBUG I am a log message"
+ *
+ * TODO: it appears that LazyLog only highlights the first 2 lines in the array.  Can this be fixed?
  */
 const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: string[] | undefined) => {
+  if (!matchTimestamp || !lines || lines.length === 0) {
+    return [];
+  }
+
   const matchingLineNumbers: number[] = [];
-  if (!matchTimestamp || !lines) {
-    return matchingLineNumbers;
-  }
+  const matcher = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
 
-  let lineCounter = 0;
-  if (matchTimestamp && lines && lines.length > 0) {
-    for (const line of lines) {
-      // matches the the start of a line like "2022-05-17 23:00:19 DEBUG I am a log message"
-      const timeString = line.match(
-        /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/
-      );
-      if (timeString) {
-        const datetime = Date.parse(`${timeString[0].replace(" ", "T")}Z`);
-        if (datetime - 1000 <= matchTimestamp && datetime + 1000 >= matchTimestamp) {
-          // TODO: it appears that LazyLog only highlights the first 2 lines in the array
-          matchingLineNumbers.push(lineCounter + 1);
-        }
+  let lineCounter = lines.length - 1;
+  while (lineCounter >= 0) {
+    const timeString = lines[lineCounter].match(matcher);
+    if (timeString) {
+      const datetime = Date.parse(`${timeString[0].replace(" ", "T")}Z`);
+      if (datetime - 1000 <= matchTimestamp && datetime + 1000 >= matchTimestamp) {
+        matchingLineNumbers.push(lineCounter + 1);
+      } else if (datetime - 2001 <= matchTimestamp) {
+        break; // Once we've reached a timestamp earlier than our search, we can stop seeking
       }
-      lineCounter++;
     }
+    lineCounter--;
   }
 
-  return matchingLineNumbers;
+  return matchingLineNumbers.sort();
 };
 
 export default Logs;
