@@ -288,8 +288,16 @@ class StreamProcessor(object):
                 is_intermediate=True,
                 suffix="stg",
             )
+
+            scd_new_data_table = self.add_to_outputs(
+                self.generate_scd_new_data_model(from_table, column_names),
+                materialization_mode=forced_materialization_type,
+                is_intermediate=True,
+                suffix="scd_new_data",
+            )
+
             from_table = self.add_to_outputs(
-                self.generate_scd_type_2_model(from_table, column_names),
+                self.generate_scd_type_2_model(from_table, scd_new_data_table, column_names),
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
                 is_intermediate=False,
                 suffix="scd",
@@ -300,7 +308,8 @@ class StreamProcessor(object):
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
-                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
+                self.generate_final_model(from_table, column_names, scd_new_data_table=scd_new_data_table, unique_key=self.get_unique_key())
+                + where_clause,
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
@@ -669,7 +678,31 @@ where 1 = 1
 
         return col
 
-    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+    def generate_scd_new_data_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+        jinja_variables = {
+            "from_table": from_table,
+            "quoted_col_emitted_at": self.get_emitted_at(in_jinja=True),
+            "sql_table_comment": self.sql_table_comment(include_from_table=True),
+        }
+        sql = Template(
+            """
+-- depends_on: {{ from_table }}
+{{ '{% if is_incremental() %}' }}
+-- retrieve incremental "new" data
+select
+    *
+from {{'{{'}} {{ from_table }}  {{'}}'}}
+{{ sql_table_comment }}
+where 1 = 1
+{{'{{'}} incremental_clause({{ quoted_col_emitted_at }}, this) {{'}}'}}
+{{ '{% else %}' }}
+select * from {{'{{'}} {{ from_table }}  {{'}}'}} where 1 = 0 -- create an empty table just to get the columns
+{{ '{% endif %}' }}
+"""
+        ).render(jinja_variables)
+        return sql
+
+    def generate_scd_type_2_model(self, from_table: str, new_data_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         cursor_field = self.get_cursor_field(column_names)
         order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
@@ -764,6 +797,7 @@ where 1 = 1
             "input_data_table": input_data_table,
             "lag_begin": lag_begin,
             "lag_end": lag_end,
+            "new_data_table": new_data_table,
             "order_null": order_null,
             "parent_hash_id": self.parent_hash_id(),
             "primary_key_partition": self.get_primary_key_partition(column_names),
@@ -822,17 +856,9 @@ input_data_with_active_row_num as (
         sql = Template(
             """
 -- depends_on: {{ from_table }}
+-- depends on: {{ '{{' }} {{ new_data_table }} {{ '}}' }}
 with
 {{ '{% if is_incremental() %}' }}
-new_data as (
-    -- retrieve incremental "new" data
-    select
-        *
-    from {{'{{'}} {{ from_table }}  {{'}}'}}
-    {{ sql_table_comment }}
-    where 1 = 1
-    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}, this) {{'}}'}}
-),
 new_data_ids as (
     -- build a subset of {{ unique_key }} from rows that are new
     select distinct
@@ -841,11 +867,11 @@ new_data_ids as (
             {{ primary_key }},
 {%- endfor %}
         ]) {{ '}}' }} as {{ unique_key }}
-    from new_data
+    from {{ '{{' }} {{ new_data_table }} {{ '}}' }}
 ),
 empty_new_data as (
     -- build an empty table to only keep the table's column types
-    select * from new_data where 1 = 0
+    select * from {{ '{{' }} {{ new_data_table }} {{ '}}' }} where 1 = 0
 ),
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
@@ -859,7 +885,7 @@ previous_active_scd_data as (
     where {{ active_row }} = 1
 ),
 input_data as (
-    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from new_data
+    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from {{ '{{' }} {{ new_data_table }} {{ '}}' }}
     union all
     select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from previous_active_scd_data
 ),
@@ -995,7 +1021,9 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
+    def generate_final_model(
+        self, from_table: str, column_names: Dict[str, Tuple[str, str]], scd_new_data_table: str = None, unique_key: str = ""
+    ) -> Any:
         template = Template(
             """
 -- Final base SQL model
