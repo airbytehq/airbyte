@@ -43,7 +43,7 @@ interface AuthContextApi {
   isLoading: boolean;
   loggedOut: boolean;
   login: AuthLogin;
-  signInWithEmailLink: (email: string) => Promise<void>;
+  signUpWithEmailLink: (form: { name: string; email: string; password: string }) => Promise<void>;
   signUp: AuthSignUp;
   setPassword: (password: string) => Promise<void>;
   updatePassword: AuthUpdatePassword;
@@ -140,11 +140,19 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
       },
-      async signInWithEmailLink(email: string): Promise<void> {
-        await authService.signInWithEmailLink(email);
-      },
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
+      },
+      async signUpWithEmailLink(form: { name: string; email: string; password: string }): Promise<void> {
+        const { user: firebaseUser } = await authService.signInWithEmailLink(form.email);
+        try {
+          await authService.updatePassword(form.password);
+          // TODO: Update name
+          await onAfterAuth(firebaseUser);
+        } catch (e) {
+          await authService.signOut();
+          throw e;
+        }
       },
       async signUp(form: {
         email: string;

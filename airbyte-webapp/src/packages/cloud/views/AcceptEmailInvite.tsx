@@ -1,6 +1,7 @@
 import { Field, FieldProps, Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useCounter } from "react-use";
+import * as yup from "yup";
 
 import { LabeledInput, LoadingButton } from "components";
 
@@ -12,19 +13,27 @@ interface StepProps {
   onStepComplete: () => void;
 }
 
-export const EnterEmailStep: React.FC<StepProps> = ({ onStepComplete }) => {
+const ValidationSchema = yup.object().shape({
+  email: yup.string().email("form.email.error").required("form.empty.error"),
+  password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
+  name: yup.string().required("form.empty.error"),
+});
+
+export const EnterEmailStep: React.FC<StepProps> = () => {
   const { formatMessage } = useIntl();
   const authService = useAuthService();
 
   return (
     <Formik
       initialValues={{
+        name: "",
         email: "",
+        password: "",
       }}
-      onSubmit={async ({ email }, { setFieldError, setStatus }) => {
+      validationSchema={ValidationSchema}
+      onSubmit={async ({ email, password }, { setFieldError, setStatus }) => {
         try {
-          await authService.signInWithEmailLink(email);
-          onStepComplete();
+          await authService.signUpWithEmailLink({ name: "", email, password });
         } catch (err) {
           if (err instanceof FieldError) {
             setFieldError(err.field, err.message);
@@ -36,6 +45,22 @@ export const EnterEmailStep: React.FC<StepProps> = ({ onStepComplete }) => {
     >
       {({ isSubmitting, status }) => (
         <Form>
+          <FieldItem>
+            <Field name="name">
+              {({ field, meta }: FieldProps<string>) => (
+                <LabeledInput
+                  {...field}
+                  label={<FormattedMessage id="login.fullName" />}
+                  placeholder={formatMessage({
+                    id: "login.fullName.placeholder",
+                  })}
+                  type="text"
+                  error={!!meta.error && meta.touched}
+                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                />
+              )}
+            </Field>
+          </FieldItem>
           <FieldItem>
             <Field name="email">
               {({ field, meta }: FieldProps<string>) => (
@@ -52,9 +77,25 @@ export const EnterEmailStep: React.FC<StepProps> = ({ onStepComplete }) => {
               )}
             </Field>
           </FieldItem>
+          <FieldItem>
+            <Field name="password">
+              {({ field, meta }: FieldProps<string>) => (
+                <LabeledInput
+                  {...field}
+                  label={<FormattedMessage id="login.createPassword" />}
+                  placeholder={formatMessage({
+                    id: "login.password.placeholder",
+                  })}
+                  type="password"
+                  error={!!meta.error && meta.touched}
+                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                />
+              )}
+            </Field>
+          </FieldItem>
           <BottomBlock>
             <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
-              <FormattedMessage id="form.continue" />
+              <FormattedMessage id="login.signup" />
             </LoadingButton>
             {status ?? <div className="message">{status}</div>}
           </BottomBlock>

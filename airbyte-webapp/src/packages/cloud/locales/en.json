@@ -6,7 +6,7 @@
   "login.loginTitle": "Sign in to Airbyte",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
-  "login.inviteEmail": "For security, enter your invite email:",
+  "login.inviteEmail": "For security, re-enter your invite email",
   "login.yourEmail.placeholder": "work.email@example.com",
   "login.yourEmail.notFound": "User not found",
   "login.unknownError": "An unknown error has occurred",
