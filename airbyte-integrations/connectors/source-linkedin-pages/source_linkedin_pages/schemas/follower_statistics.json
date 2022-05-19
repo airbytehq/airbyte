@@ -1,0 +1,201 @@
+{
+  "type": "object",
+  "properties": {
+    "paging": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "links": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "followerCountsByAssociationType": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "associationType": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsByRegion": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsBySeniority": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "seniority": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsByIndustry": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "industry": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsByFunction": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "function": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsByStaffCountRange": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "staffCountRange": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "followerCountsByCountry": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "followerCounts": {
+                      "type": "object",
+                      "properties": {
+                        "organicFollowerCount": {
+                          "type": "integer"
+                        },
+                        "paidFollowerCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "country": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "organizationalEntity": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
