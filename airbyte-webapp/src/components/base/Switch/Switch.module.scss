@@ -1,11 +1,21 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
+@mixin knobTransform($position, $small: false) {
+  @if $position == left {
+    transform: translateX(0);
+  } @else if $small {
+    transform: translateX(10px);
+  } @else {
+    transform: translateX(18px);
+  }
+}
+
 .switch {
   position: relative;
   display: inline-block;
   width: 42px;
-  height: 24px;
+  height: 26px;
 
   &.small {
     width: 28px;
@@ -18,23 +28,49 @@
     height: 0;
 
     &:checked + .slider {
-      background: colors.$primaryColor;
+      background-color: colors.$primaryColor;
 
       &:before {
-        transform: translateX(18px);
+        @include knobTransform(right, false);
       }
 
       &.small:before {
-        transform: translateX(10px);
+        @include knobTransform(right, true);
       }
 
       &.loading {
-        background: url("./ProgressReverse.svg");
+        background-image: url("./ProgressReverse.svg");
+
+        &:before {
+          @include knobTransform(left, false);
+        }
+
+        &.small:before {
+          @include knobTransform(left, true);
+        }
       }
     }
 
-    &:not(:checked) + .slider.loading {
-      background: url("./Progress.svg");
+    &:not(:checked) + .slider {
+      &:before {
+        @include knobTransform(left, false);
+      }
+
+      &.small:before {
+        @include knobTransform(left, true);
+      }
+
+      &.loading {
+        background-image: url("./Progress.svg");
+
+        &:before {
+          @include knobTransform(right, false);
+        }
+
+        &.small:before {
+          @include knobTransform(right, true);
+        }
+      }
     }
 
     &:disabled + .slider {
@@ -52,7 +88,8 @@
     bottom: 0;
     background: colors.$greyColor20;
     transition: variables.$transition;
-    border-radius: 19px;
+    border-radius: 20px;
+    border: 1px solid colors.$greyColor30;
 
     &.small:before {
       height: 16px;
@@ -63,13 +100,14 @@
       position: absolute;
       z-index: 1;
       content: "";
-      height: 22px;
-      width: 22px;
-      left: 1px;
-      top: 1px;
+      height: 24px;
+      width: 24px;
+      left: -1px;
+      top: -1px;
       background: colors.$whiteColor;
       transition: variables.$transition;
       border-radius: 50%;
+      border: 1px solid colors.$greyColor30;
     }
   }
 }
