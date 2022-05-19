@@ -246,7 +246,7 @@ class Bans(IdIncrementalStream):
 
     def get_stream_data(self, response_data) -> List[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]
-        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.min)
+        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
         return bans
 
 
