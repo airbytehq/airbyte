@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.util.Collections;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +25,13 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final JsonNode config) {
-    return SnowflakeDatabase.getDatabase(config);
+  protected DataSource getDataSource(final JsonNode config) {
+    return SnowflakeDatabase.createDataSource(config);
+  }
+
+  @Override
+  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+    return SnowflakeDatabase.getDatabase(dataSource);
   }
 
   @Override

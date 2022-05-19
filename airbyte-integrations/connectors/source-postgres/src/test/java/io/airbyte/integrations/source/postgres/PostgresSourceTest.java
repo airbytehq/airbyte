@@ -34,6 +34,7 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -357,6 +358,23 @@ class PostgresSourceTest {
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertTrue(PostgresSource.isCdc(config));
+  }
+
+  @Test
+  void testGetUsername() {
+    final String username = "airbyte-user";
+
+    // normal host
+    final JsonNode normalConfig = Jsons.jsonNode(Map.of(
+        "username", username,
+        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
+    assertEquals(username, PostgresSource.getUsername(normalConfig));
+
+    // azure host
+    final JsonNode azureConfig = Jsons.jsonNode(Map.of(
+        "username", username + "@airbyte",
+        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
+    assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 
 }

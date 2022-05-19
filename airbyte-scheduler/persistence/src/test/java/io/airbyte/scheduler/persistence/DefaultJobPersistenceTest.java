@@ -32,6 +32,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
@@ -43,7 +44,6 @@ import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -189,11 +189,9 @@ class DefaultJobPersistenceTest {
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() throws Exception {
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
   private void resetDb() throws SQLException {
@@ -514,11 +512,20 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
-  void testMigrationMetadata() throws IOException {
+  void testSecretMigrationMetadata() throws IOException {
     boolean isMigrated = jobPersistence.isSecretMigrated();
     assertFalse(isMigrated);
     jobPersistence.setSecretMigrationDone();
     isMigrated = jobPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
+  }
+
+  @Test
+  void testSchedulerMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSchedulerMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSchedulerMigrationDone();
+    isMigrated = jobPersistence.isSchedulerMigrated();
     assertTrue(isMigrated);
   }
 
@@ -1166,6 +1173,45 @@ class DefaultJobPersistenceTest {
 
       assertEquals(1, incompleteJobs.size());
       assertEquals(expectedIncompleteJob, actualIncompleteJob);
+    }
+
+    @Test
+    @DisplayName("Should only list jobs for the requested connection and with the requested statuses and config types")
+    public void testListJobsWithStatusesAndConfigTypesForConnection() throws IOException, InterruptedException {
+      final UUID desiredConnectionId = UUID.randomUUID();
+      final UUID otherConnectionId = UUID.randomUUID();
+
+      // desired connection, statuses, and config types
+      final long desiredJobId1 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(desiredJobId1, jobPersistence.createAttempt(desiredJobId1, LOG_PATH));
+      final long desiredJobId2 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      final long desiredJobId3 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(desiredJobId3, jobPersistence.createAttempt(desiredJobId3, LOG_PATH));
+      final long desiredJobId4 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+
+      // right connection id and status, wrong config type
+      final long otherJobId1 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SPEC_JOB_CONFIG).orElseThrow();
+      // right config type and status, wrong connection id
+      final long otherJobId2 = jobPersistence.enqueueJob(otherConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      // right connection id and config type, wrong status
+      final long otherJobId3 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+      jobPersistence.failAttempt(otherJobId3, jobPersistence.createAttempt(otherJobId3, LOG_PATH));
+
+      final List<Job> actualJobs = jobPersistence.listJobsForConnectionWithStatuses(desiredConnectionId,
+          Set.of(ConfigType.SYNC, ConfigType.CHECK_CONNECTION_DESTINATION), Set.of(JobStatus.PENDING, JobStatus.SUCCEEDED));
+
+      final Job expectedDesiredJob1 = createJob(desiredJobId1, SYNC_JOB_CONFIG, JobStatus.SUCCEEDED,
+          Lists.newArrayList(createAttempt(0L, desiredJobId1, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob2 =
+          createJob(desiredJobId2, SYNC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob3 = createJob(desiredJobId3, CHECK_JOB_CONFIG, JobStatus.SUCCEEDED,
+          Lists.newArrayList(createAttempt(0L, desiredJobId3, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob4 =
+          createJob(desiredJobId4, CHECK_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());
+
+      assertEquals(Sets.newHashSet(expectedDesiredJob1, expectedDesiredJob2, expectedDesiredJob3, expectedDesiredJob4), Sets.newHashSet(actualJobs));
     }
 
   }

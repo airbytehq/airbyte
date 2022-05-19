@@ -106,22 +106,23 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             db.getHost(),
             db.getFirstMappedPort(),
-            db.getDatabaseName()), SQLDialect.MYSQL);
-    return new Database(dslContext).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+            db.getDatabaseName()), SQLDialect.MYSQL)) {
+      return new Database(dslContext).query(
+          ctx -> ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList()));
+    }
   }
 
   @Override
@@ -166,15 +167,14 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    try {
-      final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
           "root",
           "test",
           db.getDriverClassName(),
           String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
               db.getHost(),
               db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.MYSQL);
+              db.getDatabaseName()), SQLDialect.MYSQL)) {
       new Database(dslContext).query(
               ctx -> ctx
                   .execute(query));
