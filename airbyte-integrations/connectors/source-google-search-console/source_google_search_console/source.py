@@ -39,7 +39,6 @@ class SourceGoogleSearchConsole(AbstractSource):
             return True, None
 
         except Exception as error:
-            print(error)
             return (
                 False,
                 f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}",
