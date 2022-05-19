@@ -11,13 +11,15 @@ class AmazonSellerPartnerConfig(BaseModel):
     class Config:
         title = "Amazon Seller Partner Spec"
 
-    app_id: str = Field(description="Your Amazon App ID", title="App Id", airbyte_secret=True, order=0)
+    app_id: str = Field(None, description="Your Amazon App ID", title="App Id", airbyte_secret=True, order=0)
 
     auth_type: str = Field(default="oauth2.0", const=True, order=1)
 
-    lwa_app_id: str = Field(None, description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
+    lwa_app_id: str = Field(description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
-    lwa_client_secret: str = Field(description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3)
+    lwa_client_secret: str = Field(
+        description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3
+    )
 
     refresh_token: str = Field(
         description="The Refresh Token obtained via OAuth flow authorization.", title="Refresh Token", airbyte_secret=True, order=4
