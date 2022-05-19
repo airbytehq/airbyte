@@ -18,6 +18,16 @@
   padding: 400px 30px 30px 30px;
 }
 
+.noScroll {
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.fullHeight {
+  height: 100%;
+  overflow: scroll;
+}
+
 .lightOverlay {
   height: 100%;
   width: 100%;
@@ -31,9 +41,4 @@
 .rotatedHeader {
   transform: rotate(-90deg);
   white-space: nowrap;
-}
-
-.noScroll {
-  overflow: hidden;
-  max-height: 100%;
 }

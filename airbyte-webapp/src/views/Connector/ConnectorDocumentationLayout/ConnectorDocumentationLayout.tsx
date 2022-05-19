@@ -39,7 +39,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div className={width < 550 ? `${styles.noScroll}` : undefined}>{children}</div>
+      <div className={width < 550 ? `${styles.noScroll}` : `${styles.fullHeight}`}>{children}</div>
     </>
   );
 };
@@ -49,7 +49,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
   return (
     <>
       {width < 350 ? (
-        <div className={styles.lightOverlay}>
+        <div className={`${styles.lightOverlay}`}>
           <h2 className={styles.rotatedHeader}>Setup Guide</h2>
         </div>
       ) : (
