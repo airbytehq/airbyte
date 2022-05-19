@@ -99,14 +99,16 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     final int dataSize = stringData.getBytes(StandardCharsets.UTF_8).length;
     boolean isValid = dataSize <= REDSHIFT_SUPER_MAX_BYTE_SIZE;
 
-    // check VARCHAR limits for VARCHAR fields within the SUPER object
-    Map<String, Object> dataMap = Jsons.flatten(data);
-    for (Object value : dataMap.values()) {
-      if (value instanceof String stringValue) {
-        final int stringDataSize = stringValue.getBytes(StandardCharsets.UTF_8).length;
-        isValid = stringDataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
-        if (!isValid) {
-          break;
+    // check VARCHAR limits for VARCHAR fields within the SUPER object, if overall object is valid
+    if (isValid) {
+      Map<String, Object> dataMap = Jsons.flatten(data);
+      for (Object value : dataMap.values()) {
+        if (value instanceof String stringValue) {
+          final int stringDataSize = stringValue.getBytes(StandardCharsets.UTF_8).length;
+          isValid = stringDataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+          if (!isValid) {
+            break;
+          }
         }
       }
     }
