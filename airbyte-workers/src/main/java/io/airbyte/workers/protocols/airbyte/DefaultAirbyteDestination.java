@@ -79,7 +79,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
-        .filter(message -> message.getType() == Type.STATE)
+        .filter(message -> message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .iterator();
   }
 

@@ -24,6 +24,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -38,7 +39,9 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
@@ -75,7 +78,10 @@ class DefaultReplicationWorkerTest {
   private static final String FIELD_NAME = "favorite_color";
   private static final AirbyteMessage RECORD_MESSAGE1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
   private static final AirbyteMessage RECORD_MESSAGE2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+  private static final AirbyteMessage RECORD_MESSAGE3 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, 3);
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
+  private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE =
+      AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Double.valueOf(123));
 
   private Path jobRoot;
   private AirbyteSource source;
@@ -85,6 +91,7 @@ class DefaultReplicationWorkerTest {
   private WorkerSourceConfig sourceConfig;
   private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker messageTracker;
+  private RecordSchemaValidator recordSchemaValidator;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -103,6 +110,7 @@ class DefaultReplicationWorkerTest {
     mapper = mock(NamespacingMapper.class);
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
+    recordSchemaValidator = mock(RecordSchemaValidator.class);
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
@@ -111,6 +119,7 @@ class DefaultReplicationWorkerTest {
     when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
+    when(mapper.mapMessage(RECORD_MESSAGE3)).thenReturn(RECORD_MESSAGE3);
   }
 
   @AfterEach
@@ -126,7 +135,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     worker.run(syncInput, jobRoot);
 
@@ -136,11 +146,13 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(source, atLeastOnce()).close();
     verify(destination).close();
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord());
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord());
   }
 
   @Test
-  void testSourceNonZeroExitValue() throws Exception {
-    when(source.getExitValue()).thenReturn(1);
+  void testInvalidSchema() throws Exception {
+    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(RECORD_MESSAGE2), Optional.of(RECORD_MESSAGE3));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -148,8 +160,33 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
+    worker.run(syncInput, jobRoot);
+
+    verify(source).start(sourceConfig, jobRoot);
+    verify(destination).start(destinationConfig, jobRoot);
+    verify(destination).accept(RECORD_MESSAGE1);
+    verify(destination).accept(RECORD_MESSAGE2);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord());
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord());
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord());
+    verify(source).close();
+    verify(destination).close();
+  }
+
+  @Test
+  void testSourceNonZeroExitValue() throws Exception {
+    when(source.getExitValue()).thenReturn(1);
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -167,7 +204,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -187,12 +225,33 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableDestinationFailureViaTraceMessage() throws Exception {
+    final FailureReason failureReason = FailureHelper.destinationFailure(ERROR_TRACE_MESSAGE, Long.valueOf(JOB_ID), JOB_ATTEMPT);
+    when(messageTracker.errorTraceMessageFailure(Long.valueOf(JOB_ID), JOB_ATTEMPT)).thenReturn(failureReason);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION)
+            && f.getExternalMessage().contains(ERROR_TRACE_MESSAGE.getError().getMessage())));
   }
 
   @Test
@@ -207,7 +266,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -225,7 +285,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -244,7 +305,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -264,7 +326,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -285,7 +348,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     worker.run(syncInput, jobRoot);
 
@@ -324,7 +388,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -364,7 +429,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -416,7 +482,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -433,7 +500,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -458,7 +526,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -493,7 +562,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -511,7 +581,8 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

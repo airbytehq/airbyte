@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
 import { LoadingButton, LabeledInput, Link } from "components";
+import HeadTitle from "components/HeadTitle";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -23,6 +24,7 @@ const ResetPasswordPage: React.FC = () => {
 
   return (
     <div>
+      <HeadTitle titles={[{ id: "login.resetPassword" }]} />
       <FormTitle bold>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
