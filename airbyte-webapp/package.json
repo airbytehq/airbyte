@@ -39,6 +39,7 @@
     "react-markdown": "^7.0.1",
     "react-pose": "^4.0.10",
     "react-query": "^3.34.19",
+    "react-reflex": "^4.0.6",
     "react-router-dom": "^6.3.0",
     "react-select": "^4.3.1",
     "react-table": "^7.7.0",
