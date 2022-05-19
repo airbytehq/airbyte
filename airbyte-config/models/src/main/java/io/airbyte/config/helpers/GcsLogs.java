@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.AvoidFileStream", "PMD.ShortVariable", "PMD.CloseResource"})
+@SuppressWarnings({"PMD.AvoidFileStream", "PMD.ShortVariable", "PMD.CloseResource", "PMD.AvoidInstantiatingObjectsInLoops"})
 public class GcsLogs implements CloudLogs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsLogs.class);
@@ -87,11 +87,9 @@ public class GcsLogs implements CloudLogs {
     int linesRead = 0;
 
     LOGGER.debug("Start getting GCS objects.");
-    Blob poppedBlob;
-    final ByteArrayOutputStream inMemoryData = new ByteArrayOutputStream();
     while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
-      poppedBlob = descendingTimestampBlobs.remove(0);
-      try (inMemoryData) {
+      final var poppedBlob = descendingTimestampBlobs.remove(0);
+      try (final var inMemoryData = new ByteArrayOutputStream()) {
         poppedBlob.downloadTo(inMemoryData);
         final var currFileLines = inMemoryData.toString(StandardCharsets.UTF_8).split("\n");
         final List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
