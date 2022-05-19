@@ -57,6 +57,8 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         time_interval_schedule = ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
       } else if (standardSync.getScheduleType() != null){
         // i don't understand how to detect the enum type here
+        // psuedo-code, check enum type, if type is schedule then set time_interval_schedule
+        // currently ignore use cases that other enum types here (manual and cron)
         time_interval_schedule = ScheduleHelpers.getIntervalInSecond(standardSync.getScheduleType());
       }
 
