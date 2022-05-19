@@ -2616,6 +2616,7 @@ components:
           enum: ["oauth2.0"] # Future auth types should be added here
         oauth2Specification:
           "$ref": "#/components/schemas/OAuth2Specification"
+      nullable: true
     OAuth2Specification:
       description: An object containing any metadata needed to describe this connector's Oauth flow
       type: object
@@ -4129,6 +4130,7 @@ components:
           type: string
         oauthConfigSpecification:
           "$ref": "#/components/schemas/OAuthConfigSpecification"
+      nullable: true
     OAuthConfigSpecification:
       type: object
       properties:
