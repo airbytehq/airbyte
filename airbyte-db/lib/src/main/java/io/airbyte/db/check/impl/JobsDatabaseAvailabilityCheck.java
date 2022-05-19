@@ -5,6 +5,7 @@
 package io.airbyte.db.check.impl;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.util.Optional;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -16,8 +17,6 @@ import org.slf4j.LoggerFactory;
 public class JobsDatabaseAvailabilityCheck implements DatabaseAvailabilityCheck {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseAvailabilityCheck.class);
-
-  private static final String DATABASE_NAME = "airbyte jobs";
 
   // TODO inject via dependency injection framework
   private final DSLContext dslContext;
@@ -32,7 +31,7 @@ public class JobsDatabaseAvailabilityCheck implements DatabaseAvailabilityCheck 
 
   @Override
   public String getDatabaseName() {
-    return DATABASE_NAME;
+    return DatabaseConstants.JOBS_DATABASE_LOGGING_NAME;
   }
 
   @Override

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
   @Test
   void testInitializingSchema() throws IOException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(ConfigsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
     Assertions.assertDoesNotThrow(() -> initializer.init());
@@ -33,7 +33,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
   @Test
   void testInitializingSchemaAlreadyExists() throws IOException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(ConfigsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
     dslContext.execute(initialSchema);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
@@ -44,7 +44,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
   @Test
   void testInitializationException() throws IOException, InterruptedException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(ConfigsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
 
     doThrow(new InterruptedException("test")).when(databaseAvailabilityCheck).check();
 

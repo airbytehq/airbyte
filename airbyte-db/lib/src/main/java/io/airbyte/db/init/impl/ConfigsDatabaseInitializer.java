@@ -6,7 +6,7 @@ package io.airbyte.db.init.impl;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import io.airbyte.db.init.DatabaseInitializer;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.util.Collection;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -45,7 +45,7 @@ public class ConfigsDatabaseInitializer implements DatabaseInitializer {
 
   @Override
   public String getDatabaseName() {
-    return ConfigsDatabaseInstance.DATABASE_LOGGING_NAME;
+    return DatabaseConstants.CONFIGS_DATABASE_LOGGING_NAME;
   }
 
   @Override
@@ -65,7 +65,7 @@ public class ConfigsDatabaseInitializer implements DatabaseInitializer {
 
   @Override
   public Collection<String> getTableNames() {
-    return ConfigsDatabaseInstance.INITIAL_EXPECTED_TABLES;
+    return DatabaseConstants.CONFIGS_INITIAL_EXPECTED_TABLES;
   }
 
 }

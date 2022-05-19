@@ -5,7 +5,7 @@
 package io.airbyte.db.check.impl;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.util.Optional;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class ConfigsDatabaseAvailabilityCheck implements DatabaseAvailabilityChe
 
   @Override
   public String getDatabaseName() {
-    return ConfigsDatabaseInstance.DATABASE_LOGGING_NAME;
+    return DatabaseConstants.CONFIGS_DATABASE_LOGGING_NAME;
   }
 
   @Override

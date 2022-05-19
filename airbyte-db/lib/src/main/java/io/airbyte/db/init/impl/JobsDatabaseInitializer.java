@@ -6,8 +6,7 @@ package io.airbyte.db.init.impl;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import io.airbyte.db.init.DatabaseInitializer;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.util.Collection;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -46,7 +45,7 @@ public class JobsDatabaseInitializer implements DatabaseInitializer {
 
   @Override
   public String getDatabaseName() {
-    return JobsDatabaseInstance.DATABASE_LOGGING_NAME;
+    return DatabaseConstants.JOBS_DATABASE_LOGGING_NAME;
   }
 
   @Override
@@ -66,7 +65,7 @@ public class JobsDatabaseInitializer implements DatabaseInitializer {
 
   @Override
   public Collection<String> getTableNames() {
-    return JobsDatabaseSchema.getTableNames();
+    return DatabaseConstants.JOBS_INITIAL_EXPECTED_TABLES;
   }
 
 }

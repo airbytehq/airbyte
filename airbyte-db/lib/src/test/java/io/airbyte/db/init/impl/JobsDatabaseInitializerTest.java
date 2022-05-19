@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class JobsDatabaseInitializerTest extends AbstractDatabaseInitializerTest
   @Test
   void testInitializingSchema() throws IOException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(JobsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
     final var initializer = new JobsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
     Assertions.assertDoesNotThrow(() -> initializer.init());
@@ -33,7 +33,7 @@ public class JobsDatabaseInitializerTest extends AbstractDatabaseInitializerTest
   @Test
   void testInitializingSchemaAlreadyExists() throws IOException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(JobsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
     dslContext.execute(initialSchema);
     final var initializer = new JobsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
@@ -44,7 +44,7 @@ public class JobsDatabaseInitializerTest extends AbstractDatabaseInitializerTest
   @Test
   void testInitializationException() throws IOException, InterruptedException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(JobsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
 
     doThrow(new InterruptedException("test")).when(databaseAvailabilityCheck).check();
 
@@ -54,7 +54,7 @@ public class JobsDatabaseInitializerTest extends AbstractDatabaseInitializerTest
 
   @Test
   void testInitializationNullAvailabilityCheck() throws IOException {
-    final var initialSchema = MoreResources.readResource(JobsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
     final var initializer = new JobsDatabaseInitializer(null, dslContext, initialSchema);
     Assertions.assertThrows(InterruptedException.class, () -> initializer.init());
   }
@@ -62,7 +62,7 @@ public class JobsDatabaseInitializerTest extends AbstractDatabaseInitializerTest
   @Test
   void testInitializationNullDslContext() throws IOException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(JobsDatabaseInstance.SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
     final var initializer = new JobsDatabaseInitializer(databaseAvailabilityCheck, null, initialSchema);
     Assertions.assertThrows(InterruptedException.class, () -> initializer.init());
   }
