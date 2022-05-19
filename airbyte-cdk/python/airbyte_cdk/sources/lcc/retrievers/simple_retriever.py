@@ -17,7 +17,14 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class SimpleRetriever(Retriever, HttpStream):
     def __init__(
-        self, name, primary_key, requester: Requester, paginator: Paginator, extractor: HttpExtractor, iterator: StreamSlicer, state: State
+        self,
+        name,
+        primary_key,
+        requester: Requester,
+        paginator: Paginator,
+        extractor: HttpExtractor,
+        stream_slicer: StreamSlicer,
+        state: State,
     ):
         self._name = name
         self._primary_key = primary_key
@@ -25,7 +32,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
-        self._iterator: StreamSlicer = iterator
+        self._iterator: StreamSlicer = stream_slicer
         self._state: State = state.deep_copy()
         self._last_response = None
         self._last_records = None
