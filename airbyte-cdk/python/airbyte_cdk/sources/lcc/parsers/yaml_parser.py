@@ -11,6 +11,7 @@ from airbyte_cdk.sources.lcc.parsers.config_parser import ConfigParser
 class YamlParser(ConfigParser):
     def parse(self, config_str: str) -> Mapping[str, Any]:
         config = yaml.safe_load(config_str)
+        print(f"parsed_config: {config}")
         evaluated_config = dict()
         return self.preprocess_dict(config, evaluated_config, "")
 
@@ -53,5 +54,7 @@ class YamlParser(ConfigParser):
                 return evaluated_config[ref_key]
         elif type(value) == dict:
             return self.preprocess_dict(value, evaluated_config, path)
+        elif type(value) == list:
+            return [self.preprocess(v, evaluated_config, path) for v in value]
         else:
             return value

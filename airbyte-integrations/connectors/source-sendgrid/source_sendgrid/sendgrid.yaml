@@ -1,0 +1,112 @@
+limit: 50
+
+decoder:
+  class_name: "airbyte_cdk.sources.lcc.decoders.json_decoder.JsonDecoder"
+
+cursor_state:
+  class_name: "airbyte_cdk.sources.lcc.states.dict_state.DictState"
+  d:
+    created: "{{ last_record['created'] }}"
+  state_type: int
+
+metadata_paginator:
+  class_name: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
+  interpolated_paginator:
+    class_name: "airbyte_cdk.sources.lcc.requesters.paginators.interpolated_paginator.InterpolatedPaginator"
+    next_page_token_template:
+      next_page_url: "{{ decoded_response['_metadata']['next'] }}"
+    decoder: "*ref(decoder)"
+
+offset_request_parameters:
+  "offset": "{{ next_page_token['offset'] }}"
+  "limit": "*ref(limit)"
+
+offset_pagination_request_parameters:
+  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  request_parameters: "*ref(offset_request_parameters)"
+
+cursor_request_parameters:
+  start_time: "{{ stream_state['created'] }}"
+  end_time: "{{ utc_now() }}"
+
+cursor_request_parameter_provider:
+  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  request_parameters: "*ref(cursor_request_parameters)"
+
+  # TODO: this one needs duplication or merging a dict
+  # cursor_request_parameter_provider:
+
+request_parameters_provider:
+  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+
+stream_slicer:
+  class_name: "airbyte_cdk.sources.lcc.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer"
+  start_time:
+    class_name: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
+    string: "{{ stream_state['created'] }}"
+    default: "{{ config['start_time'] }}"
+  end_time: "{{ today_utc() }}"
+  step: "1000d"
+  cursor_value: "{{ stream_state['created'] }}"
+  datetime_format: "%Y-%m-%d"
+
+next_page_url_from_token_partial:
+  class_name: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
+  string: "{{ next_page_token['next_page_url'] }}"
+
+retriever:
+  class_name: "airbyte_cdk.sources.lcc.retrievers.simple_retriever.SimpleRetriever"
+  name: "{{ kwargs['name'] }}"
+  state:
+    class_name: airbyte_cdk.sources.lcc.states.no_state.NoState
+  stream_slicer:
+    class_name: airbyte_cdk.sources.lcc.stream_slicers.single_slice.SingleSlice
+  paginator:
+    class_name: airbyte_cdk.sources.lcc.requesters.paginators.no_pagination.NoPagination
+  primary_key: "{{ kwargs['primary_key'] }}"
+
+partial_stream:
+  class_name: "airbyte_cdk.sources.lcc.configurable_stream.ConfigurableStream"
+  schema_loader:
+    class_name: airbyte_cdk.sources.lcc.schema.json_schema.JsonSchema
+    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.json"
+  cursor_field: []
+
+requester:
+  class_name: airbyte_cdk.sources.lcc.requesters.http_requester.HttpRequester
+  name: "{{ kwargs['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+  authenticator:
+    class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
+    token: "{{ config['apikey'] }}"
+  request_parameters_provider: "*ref(request_parameters_provider)"
+  retrier:
+    class_name: airbyte_cdk.sources.lcc.requesters.retriers.default_retrier.DefaultRetrier
+
+extractor:
+  class_name: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
+  decoder: "*ref(decoder)"
+
+streams:
+  - partial: "*ref(partial_stream)"
+    kwargs:
+      name: "lists"
+      primary_key: "id"
+    retriever:
+      partial: "*ref(retriever)"
+      requester:
+        partial: "*ref(requester)"
+        path:
+          partial: "*ref(next_page_url_from_token_partial)"
+          default: "marketing/lists"
+      paginator:
+        partial: "*ref(metadata_paginator)"
+      extractor:
+        partial: "*ref(extractor)"
+        transform: ".result[]"
+source:
+  class_name: airbyte_cdk.sources.lcc.YamlConfigurableSource.YamlConfigurableSource
+  connection_checker:
+    class_name: airbyte_cdk.sources.lcc.checks.check_stream.CheckStream
+  streams: "*ref(streams)"

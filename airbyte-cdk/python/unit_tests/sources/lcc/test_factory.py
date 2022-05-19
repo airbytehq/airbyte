@@ -46,6 +46,8 @@ authenticator:
 
 
 def test_full_config():
+    # FIXME: some objects need to be checked
+    # FIXME: the ones with class: instead of class_name!
     content = """
 decoder:
   class: "airbyte_cdk.sources.lcc.decoders.json_decoder.JsonDecoder"
@@ -119,3 +121,4 @@ list_stream:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._requester._request_parameters_provider.request_params(None, None, None) == ""

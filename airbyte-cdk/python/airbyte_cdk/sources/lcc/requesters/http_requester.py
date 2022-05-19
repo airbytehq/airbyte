@@ -53,7 +53,8 @@ class HttpRequester(Requester):
 
     def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return self._path.eval(self._config, **kwargs)
+        path = self._path.eval(self._config, **kwargs)
+        return path
 
     def get_method(self):
         return self._method
