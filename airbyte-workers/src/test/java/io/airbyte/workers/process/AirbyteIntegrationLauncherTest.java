@@ -11,7 +11,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
