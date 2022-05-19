@@ -2,17 +2,16 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+import logging
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote_plus
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_google_search_console.streams import ROW_LIMIT, SearchAnalyticsByDate
+from source_google_search_console.streams import ROW_LIMIT, SearchAnalyticsByDate, GoogleSearchConsole
 from source_google_search_console.source import SourceGoogleSearchConsole
 
-logger = AirbyteLogger()
+logger = logging.getLogger('airbyte')
 
 
 class MockResponse:
@@ -32,7 +31,7 @@ class MockResponse:
     ],
 )
 def test_pagination(count, expected):
-    stream = SearchAnalyticsByDate(NoAuth(), ["https://example.com"], "start_date", "end_date")
+    stream = SearchAnalyticsByDate(None, ["https://example.com"], "start_date", "end_date")
     response = MockResponse(stream.data_field, count)
     stream.next_page_token(response)
     assert stream.start_row == expected
@@ -48,7 +47,7 @@ def test_pagination(count, expected):
     ],
 )
 def test_slice(site_urls, sync_mode):
-    stream = SearchAnalyticsByDate(NoAuth(), site_urls, "2021-09-01", "2021-09-07")
+    stream = SearchAnalyticsByDate(None, site_urls, "2021-09-01", "2021-09-07")
 
     search_types = stream.search_types
     stream_slice = stream.stream_slices(sync_mode=sync_mode)
@@ -90,14 +89,14 @@ def test_slice(site_urls, sync_mode):
     ],
 )
 def test_state(current_stream_state, latest_record, expected):
-    stream = SearchAnalyticsByDate(NoAuth(), ["https://example.com"], "start_date", "end_date")
+    stream = SearchAnalyticsByDate(None, ["https://example.com"], "start_date", "end_date")
 
     value = stream.get_updated_state(current_stream_state, latest_record)
     assert value == expected
 
 
 def test_updated_state():
-    stream = SearchAnalyticsByDate(NoAuth(), ["https://domain1.com", "https://domain2.com"], "start_date", "end_date")
+    stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "start_date", "end_date")
 
     state = {}
     record = {"site_url": "https://domain1.com", "search_type": "web", "date": "2022-01-01"}
@@ -112,8 +111,22 @@ def test_updated_state():
     }
 
 
-def test_parse_response():
-    stream = SearchAnalyticsByDate(NoAuth(), ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
+@pytest.mark.parametrize(
+    "stream_class, expected",
+    [
+        (
+            GoogleSearchConsole,
+            {'keys': ['keys']},
+        ),
+        (
+            SearchAnalyticsByDate,
+            {"date": "keys", "search_type": "web", "site_url": "https://domain1.com"}
+        )
+    ],
+)
+@patch.multiple(GoogleSearchConsole, __abstractmethods__=set())
+def test_parse_response(stream_class, expected):
+    stream = stream_class(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
 
     stream.data_field = "data_field"
     stream_slice = next(stream.stream_slices(sync_mode=SyncMode.full_refresh))
@@ -121,7 +134,6 @@ def test_parse_response():
     response.json = MagicMock(return_value={"data_field": [{"keys": ["keys"]}]})
 
     record = next(stream.parse_response(response, stream_state={}, stream_slice=stream_slice))
-    expected = {'date': 'keys', 'search_type': 'web', 'site_url': 'https://domain1.com'}
 
     assert record == expected
 
@@ -154,3 +166,11 @@ def test_streams(config):
     streams = SourceGoogleSearchConsole().streams(config)
 
     assert len(streams) == 8
+
+
+def test_get_start_date():
+    stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
+    date = "2021-09-07"
+    state_date = stream._get_start_date(stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web")
+
+    assert date == str(state_date)
