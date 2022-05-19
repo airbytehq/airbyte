@@ -31,9 +31,9 @@ export const EnterEmailStep: React.FC<StepProps> = () => {
         password: "",
       }}
       validationSchema={ValidationSchema}
-      onSubmit={async ({ email, password }, { setFieldError, setStatus }) => {
+      onSubmit={async ({ name, email, password }, { setFieldError, setStatus }) => {
         try {
-          await authService.signUpWithEmailLink({ name: "", email, password });
+          await authService.signUpWithEmailLink({ name, email, password });
         } catch (err) {
           if (err instanceof FieldError) {
             setFieldError(err.field, err.message);

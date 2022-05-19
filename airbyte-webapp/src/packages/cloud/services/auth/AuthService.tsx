@@ -68,8 +68,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const authService = useInitService(() => new GoogleAuthService(() => auth), [auth]);
 
   const onAfterAuth = useCallback(
-    async (currentUser: FbUser) => {
-      const user = await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
+    async (currentUser: FbUser, user?: User) => {
+      user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
       loggedIn({ user, emailVerified: currentUser.emailVerified });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -147,8 +147,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         const { user: firebaseUser } = await authService.signInWithEmailLink(form.email);
         try {
           await authService.updatePassword(form.password);
-          // TODO: Update name
-          await onAfterAuth(firebaseUser);
+
+          const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
+          await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name: form.name });
+          user.name = form.name;
+
+          await onAfterAuth(firebaseUser, user);
         } catch (e) {
           await authService.signOut();
           throw e;

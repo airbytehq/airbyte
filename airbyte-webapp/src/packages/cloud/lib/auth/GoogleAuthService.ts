@@ -162,7 +162,7 @@ export class GoogleAuthService implements AuthService {
     } catch (e) {
       switch (e?.code) {
         case AuthErrorCodes.INVALID_EMAIL:
-          throw new Error("The email provided does not match the email address sent to this invite.");
+          throw new FieldError("email", "This email does not match the email address sent to this invite.");
         case AuthErrorCodes.INVALID_OOB_CODE:
           // Maybe they already activated the link?
           throw new Error("This invite link is no longer valid.");

@@ -20,6 +20,10 @@ export class UserService extends AirbyteRequestService {
     });
   }
 
+  public async updateName(params: { userId: string; authUserId: string; name: string }): Promise<void> {
+    return this.fetch<void>(`${this.url}/update`, params);
+  }
+
   public async changeEmail(email: string): Promise<void> {
     return this.fetch<void>(`${this.url}/update`, {
       email,
