@@ -178,7 +178,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [ClickHouse](destinations/clickhouse.md)                   | Alpha                | Yes                 |
 | [Databricks](destinations/databricks.md)                   | Alpha                | Yes                 |
 | [DynamoDB](sources/dynamodb.md)                            | Alpha                | Yes                 |
-| [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | Yes                 |
+| [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | No                 |
 | [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
