@@ -10,10 +10,12 @@ from airbyte_api_client import ApiException
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.connection_schedule import ConnectionSchedule
 from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
 from airbyte_api_client.model.operation_create import OperationCreate
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
 from octavia_cli.apply import resources, yaml_loaders
 
@@ -315,6 +317,15 @@ class TestSource:
         assert catalog == source.api_instance.discover_schema_for_source.return_value.catalog
         source.api_instance.discover_schema_for_source.assert_called_with(source.source_discover_schema_request_body)
 
+    def test_definition(self, mocker, mock_api_client, local_configuration):
+        mocker.patch.object(resources.source_definition_specification_api, "SourceDefinitionSpecificationApi")
+        mock_api_instance = resources.source_definition_specification_api.SourceDefinitionSpecificationApi.return_value
+        source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert source.definition == mock_api_instance.get_source_definition_specification.return_value
+        resources.source_definition_specification_api.SourceDefinitionSpecificationApi.assert_called_with(mock_api_client)
+        expected_payload = SourceDefinitionIdWithWorkspaceId(source_definition_id=source.definition_id, workspace_id=source.workspace_id)
+        mock_api_instance.get_source_definition_specification.assert_called_with(expected_payload)
+
 
 class TestDestination:
     @pytest.mark.parametrize(
@@ -342,6 +353,17 @@ class TestDestination:
             assert destination.get_payload is None
         else:
             assert destination.get_payload == resources.DestinationIdRequestBody(state.resource_id)
+
+    def test_definition(self, mocker, mock_api_client, local_configuration):
+        mocker.patch.object(resources.destination_definition_specification_api, "DestinationDefinitionSpecificationApi")
+        mock_api_instance = resources.destination_definition_specification_api.DestinationDefinitionSpecificationApi.return_value
+        destination = resources.Destination(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert destination.definition == mock_api_instance.get_destination_definition_specification.return_value
+        resources.destination_definition_specification_api.DestinationDefinitionSpecificationApi.assert_called_with(mock_api_client)
+        expected_payload = DestinationDefinitionIdWithWorkspaceId(
+            destination_definition_id=destination.definition_id, workspace_id=destination.workspace_id
+        )
+        mock_api_instance.get_destination_definition_specification.assert_called_with(expected_payload)
 
 
 class TestConnection:
