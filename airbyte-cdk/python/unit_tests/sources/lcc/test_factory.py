@@ -40,7 +40,7 @@ decoder:
 extractor:
   class: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
-  metadata_paginator:
+metadata_paginator:
   class: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
   next_page_token_template:
     "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
