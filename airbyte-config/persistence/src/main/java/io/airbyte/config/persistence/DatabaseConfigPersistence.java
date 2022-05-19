@@ -51,6 +51,8 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.enums.ScheduleType;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -1090,6 +1092,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 : Enums.toEnum(standardSync.getStatus().value(),
                     io.airbyte.db.instance.configs.jooq.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
+            .set(CONNECTION.SCHEDULE_TYPE, standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), ScheduleType.class).orElseThrow())
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)

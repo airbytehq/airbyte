@@ -75,22 +75,22 @@ properties:
   # schedule field double writes to schedule_type
   # schedule_type will eventually cover all schedules
   # as of writing schedule_type just writes to db and isn't used
-  ScheduleType:
+  scheduleType:
     type: string
     enum:
       - manual
       - basicSchedule
       - cron
-    scheduleCron:
-      required: [cronExpression, cronTimeZone]
-      properties:
-        cronExpression: string
-        crontTimeZone: string
-    scheduleBasic:
-      required: [timeUnits, units]
-    properties:
-      timeUnits: TimeUnit
-      units: number
+#    scheduleCron:
+#      required: [cronExpression, cronTimeZone]
+#      properties:
+#        cronExpression: string
+#        crontTimeZone: string
+#    scheduleBasic:
+#      required: [timeUnits, units]
+#    properties:
+#      timeUnits: TimeUnit
+#      units: number
   # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean
