@@ -198,7 +198,7 @@ cmd_publish() {
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
-  local latest_image=$image_name:latest
+  local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
 
   echo "image_name $image_name"
@@ -221,15 +221,21 @@ cmd_publish() {
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
 
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION  docker buildx bake        \
-      --set "*.platform=$build_arch"                                             \
-      -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml \
+    # Note: "buildx bake" needs to be run within the right directory
+    local original_pwd=$PWD
+    cd airbyte-integrations/bases/base-normalization
+
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION  docker buildx bake \
+      --set "*.platform=$build_arch"                                      \
+      -f docker-compose.build.yaml                                        \
       --push
 
-    VERSION=latest GIT_REVISION=$GIT_REVISION  docker buildx bake                \
-      --set "*.platform=$build_arch"                                             \
-      -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml \
+    VERSION=latest GIT_REVISION=$GIT_REVISION  docker buildx bake \
+      --set "*.platform=$build_arch"                              \
+      -f docker-compose.build.yaml                                \
       --push
+
+    cd $original_pwd
   else
     echo "Publishing new version ($versioned_image)"
     docker buildx build       \
