@@ -21,7 +21,7 @@ public abstract class JdbcDestinationAcceptanceTest extends DestinationAcceptanc
       var value = record.get(field);
 
       switch (field.getDataType().getTypeName()) {
-        case "varchar", "nvarchar", "jsonb", "other":
+        case "varchar", "nvarchar", "jsonb", "json", "other":
           var stringValue = (value != null ? value.toString() : null);
           DestinationAcceptanceTestUtils.putStringIntoJson(stringValue, field.getName(), node);
           break;
