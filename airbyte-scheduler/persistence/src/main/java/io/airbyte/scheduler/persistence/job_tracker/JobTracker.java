@@ -209,8 +209,8 @@ public class JobTracker {
    * array) then returns a map of {null: toMetadataValue(config)}.
    */
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
-    if (schema.hasNonNull("const")) {
-      // If this schema is a const, then just dump it into a map:
+    if (schema.hasNonNull("const") || schema.hasNonNull("enum")) {
+      // If this schema is a const or an enum, then just dump it into a map:
       // * If it's an object, flatten it
       // * Otherwise, do some basic conversions to value-ish data.
       // It would be a weird thing to declare const: null, but in that case we don't want to report null
