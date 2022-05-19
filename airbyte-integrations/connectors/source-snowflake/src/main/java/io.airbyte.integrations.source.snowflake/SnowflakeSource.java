@@ -48,10 +48,17 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    final var dataSource = createDataSource(config);
     final var database = new StreamingJdbcDatabase(dataSource, new SnowflakeSourceOperations(), AdaptiveStreamingQueryConfig::new);
     quoteString = database.getMetaData().getIdentifierQuoteString();
     return database;
+  }
+
+  @Override
+  protected DataSource createDataSource(final JsonNode config) {
+    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    dataSources.add(dataSource);
+    return dataSource;
   }
 
   @Override
