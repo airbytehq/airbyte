@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinition, SourceDefinitionSpecification } from "core/domain/connector";
+import { SourceDefinition } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
@@ -12,7 +12,7 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
-type SourceFormProps = {
+interface SourceFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -23,11 +23,7 @@ type SourceFormProps = {
   sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  setSourceDefinitionId: React.Dispatch<React.SetStateAction<string | null>> | null;
-  sourceDefinitionSpecification: SourceDefinitionSpecification | undefined;
-  sourceDefinitionError: Error | null;
-  isLoading: boolean;
-};
+}
 
 const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
   return (

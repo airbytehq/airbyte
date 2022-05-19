@@ -25,20 +25,4 @@
 
 .fullHeight {
   height: 100%;
-  overflow: scroll;
-}
-
-.lightOverlay {
-  height: 100%;
-  width: 100%;
-  background-color: #ffffff;
-  text-align: center;
-  vertical-align: middle;
-  overflow: hidden;
-  padding-top: 80px;
-}
-
-.rotatedHeader {
-  transform: rotate(-90deg);
-  white-space: nowrap;
 }

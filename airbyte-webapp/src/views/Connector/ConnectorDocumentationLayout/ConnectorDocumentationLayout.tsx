@@ -39,24 +39,13 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div className={width < 550 ? `${styles.noScroll}` : `${styles.fullHeight}`}>{children}</div>
+      <div className={styles.fullHeight}>{children}</div>
     </>
   );
 };
 
-const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
-  const width = dimensions?.width ?? 0;
-  return (
-    <>
-      {width < 350 ? (
-        <div className={`${styles.lightOverlay}`}>
-          <h2 className={styles.rotatedHeader}>Setup Guide</h2>
-        </div>
-      ) : (
-        <div>{children}</div>
-      )}
-    </>
-  );
+const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children }) => {
+  return <div>{children}</div>;
 };
 //NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
