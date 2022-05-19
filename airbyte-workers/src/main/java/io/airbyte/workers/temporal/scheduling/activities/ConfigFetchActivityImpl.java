@@ -32,25 +32,35 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
+    final boolean noSchedule;
+
     try {
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
-
-      if (standardSync.getSchedule() == null || standardSync.getStatus() == Status.INACTIVE) {
+      // Schedule and Schedule may overlap while transitioning the code to ScheduleType
+      noSchedule = standardSync.getSchedule() == null && standardSync.getScheduleType() == null;
+      if (noSchedule || (standardSync.getStatus() == Status.INACTIVE)) {
         // Manual syncs wait for their first run
         return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }
 
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(input.getConnectionId());
 
-      if (previousJobOptional.isEmpty() && standardSync.getSchedule() != null) {
+      if (previousJobOptional.isEmpty() && noSchedule) {
         // Non-manual syncs don't wait for their first run
         return new ScheduleRetrieverOutput(Duration.ZERO);
       }
 
       final Job previousJob = previousJobOptional.get();
       final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+      long time_interval_schedule = 0;
+      if (standardSync.getSchedule() != null) {
+        time_interval_schedule = ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
+      } else if (standardSync.getScheduleType() != null){
+        // i don't understand how to detect the enum type here
+        time_interval_schedule = ScheduleHelpers.getIntervalInSecond(standardSync.getScheduleType());
+      }
 
-      final long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
+      final long nextRunStart = prevRunStart + time_interval_schedule;
 
       final Duration timeToWait = Duration.ofSeconds(
           Math.max(0, nextRunStart - currentSecondsSupplier.get()));
