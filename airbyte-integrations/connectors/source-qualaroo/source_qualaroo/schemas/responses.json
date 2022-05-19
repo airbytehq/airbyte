@@ -35,14 +35,14 @@
     "answered_questions": {
       "type": "array",
       "items": {
-        "type": "object"
+        "type":["null",  "object"]
       }
     },
     "properties": {
-      "type": "object"
+      "type":["null",  "object"]
     },
     "nps": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "score": {
           "type": ["null", "integer"]
