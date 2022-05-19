@@ -62,7 +62,7 @@ class Client:
         auth_creds = {
             "client_id": credentials["client_id"],
             "client_secret": None,
-            "redirection_uri": "", # should be empty string
+            "redirection_uri": "",  # should be empty string
             "tenant": tenant_id,
         }
         if credentials["auth_method"] == "private_client":

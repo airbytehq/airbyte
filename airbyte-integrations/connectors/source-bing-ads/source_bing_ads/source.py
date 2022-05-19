@@ -6,17 +6,15 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from requests import request
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from bingads.service_client import ServiceClient
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from source_bing_ads.reports import ReportsMixin
-from bingads.service_client import ServiceClient
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -68,11 +66,10 @@ class BingAdsStream(Stream, ABC):
     @property
     def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
         return self.client.get_service(service_name=self.service_name)
-    
+
     @property
     def _user_id(self) -> int:
         return self._service.GetUser().User.Id
-    
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
@@ -101,7 +98,6 @@ class BingAdsStream(Stream, ABC):
         else:
             return request
 
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -116,9 +112,9 @@ class BingAdsStream(Stream, ABC):
 
         while True:
             params = self.request_params(
-                stream_state=stream_state, 
-                stream_slice=stream_slice, 
-                next_page_token=next_page_token, 
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
                 account_id=account_id,
             )
             response = self.send_request(params, customer_id=customer_id, account_id=account_id)
@@ -251,7 +247,9 @@ class AdGroups(BingAdsStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}):
+            for campaign in campaigns.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+            ):
                 yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
@@ -580,8 +578,6 @@ class SourceBingAds(AbstractSource):
                 raise Exception("You don't have accounts assigned to this user.")
         except Exception as error:
             return False, error
-
-        
 
     def get_report_streams(self, aggregation_type: str) -> List[Stream]:
         return [
