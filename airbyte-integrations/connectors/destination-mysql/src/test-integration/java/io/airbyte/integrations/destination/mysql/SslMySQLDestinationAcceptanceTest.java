@@ -9,14 +9,11 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
@@ -93,7 +90,8 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
         String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
-            db.getDatabaseName()), SQLDialect.DEFAULT);
+            db.getDatabaseName()),
+        SQLDialect.DEFAULT);
 
     setLocalInFileToTrue();
     revokeAllPermissions();
@@ -109,12 +107,12 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return new Database(dslContext).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(this::getJsonFromRecord)
-                .collect(Collectors.toList()));
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(this::getJsonFromRecord)
+            .collect(Collectors.toList()));
   }
 
   private void setLocalInFileToTrue() {
@@ -131,16 +129,17 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   private void executeQuery(final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
-          "root",
-          "test",
-          db.getDriverClassName(),
-          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.DEFAULT)) {
+        "root",
+        "test",
+        db.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()),
+        SQLDialect.DEFAULT)) {
       new Database(dslContext).query(
-              ctx -> ctx
-                  .execute(query));
+          ctx -> ctx
+              .execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
