@@ -221,18 +221,18 @@ cmd_publish() {
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
 
-    # Note: "buildx bake" needs to be run within the right directory
+    # Note: "buildx bake" needs to be run within the directory
     local original_pwd=$PWD
     cd airbyte-integrations/bases/base-normalization
 
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION  docker buildx bake \
-      --set "*.platform=$build_arch"                                      \
-      -f docker-compose.build.yaml                                        \
+    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker buildx bake \
+      --set "*.platform=$build_arch"                                     \
+      -f docker-compose.build.yaml                                       \
       --push
 
-    VERSION=latest GIT_REVISION=$GIT_REVISION  docker buildx bake \
-      --set "*.platform=$build_arch"                              \
-      -f docker-compose.build.yaml                                \
+    VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
+      --set "*.platform=$build_arch"                             \
+      -f docker-compose.build.yaml                               \
       --push
 
     cd $original_pwd
