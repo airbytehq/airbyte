@@ -405,7 +405,9 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = xmltodict.parse(document, dict_constructor=dict)
+        parsed = xmltodict.parse(
+            document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
+        )
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
