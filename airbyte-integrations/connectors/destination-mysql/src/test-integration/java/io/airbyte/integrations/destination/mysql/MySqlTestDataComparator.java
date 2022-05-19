@@ -24,6 +24,10 @@ public class MySqlTestDataComparator extends AdvancedTestDataComparator {
 
     @Override
     protected boolean compareBooleanValues(String firstBooleanValue, String secondBooleanValue) {
-        return super.compareBooleanValues(firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
+        if (secondBooleanValue.equalsIgnoreCase("true") || secondBooleanValue.equalsIgnoreCase("false")) {
+            return super.compareBooleanValues(firstBooleanValue, secondBooleanValue);
+        } else {
+            return super.compareBooleanValues(firstBooleanValue, String.valueOf(secondBooleanValue.equals("1")));
+        }
     }
 }
