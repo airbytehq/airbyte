@@ -657,8 +657,7 @@ class Orders(IncrementalAmazonSPStream):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
         if rate_limit:
-            backoff_time = 1 / float(rate_limit)
-            return backoff_time
+            return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
 
