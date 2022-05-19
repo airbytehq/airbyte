@@ -46,7 +46,7 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
       throws IOException {
 
     // getting application_id value from user's config
-    final String application_id = getConfigValueUnsafe(inputOAuthConfiguration, "lwa_app_id");
+    final String application_id = getConfigValueUnsafe(inputOAuthConfiguration, "app_id");
 
     try {
       return new URIBuilder(AUTHORIZE_URL)
