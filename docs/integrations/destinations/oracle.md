@@ -108,7 +108,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 | 0.1.3   | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                           |
 | 0.1.2   | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | Require `sid` instead of `database` in connector specification                                      |
 
-### Changelog (Strict Encrypt)
+### Changelog (Strict Encrypt) 
 
 | Version | Date       | Pull Request                                            | Subject                                                                                             |
 |:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
