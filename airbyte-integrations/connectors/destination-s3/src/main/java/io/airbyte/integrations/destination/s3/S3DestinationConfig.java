@@ -33,6 +33,7 @@ public class S3DestinationConfig {
   private final String bucketRegion;
   private final String pathFormat;
   private final S3CredentialConfig credentialConfig;
+  @Deprecated
   private final Integer partSize;
   private final S3FormatConfig formatConfig;
 
