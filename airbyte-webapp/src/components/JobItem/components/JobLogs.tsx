@@ -66,7 +66,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
       name: <FormattedMessage id="sources.attemptNum" values={{ number: index + 1 }} />,
     })) ?? [];
 
-  const attempts = job.attempts ?? 0;
+  const attempts = job.attempts?.length ?? 0;
 
   return (
     <>
@@ -78,7 +78,13 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
           isFailed={jobIsFailed}
         />
       ) : null}
-      <LogsDetails id={job.job.id} path={path} currentAttempt={currentAttempt} jobDebugInfo={debugInfo} />
+      <LogsDetails
+        id={job.job.id}
+        path={path}
+        currentAttempt={currentAttempt}
+        jobDebugInfo={debugInfo}
+        showAttemptStats={attempts > 1}
+      />
     </>
   );
 };

@@ -7,7 +7,7 @@ import { Spinner } from "components";
 import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import { JobStatus } from "../../core/request/AirbyteClient";
+import { AttemptRead, JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import JobLogs from "./components/JobLogs";
@@ -43,6 +43,10 @@ export const getJobStatus: (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
   return (job as JobsWithJobs).job?.status ?? (job as SynchronousJobReadWithStatus).status;
 };
 
+export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) => {
+  return "attempts" in job ? job.attempts : undefined;
+};
+
 export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
   (job as SynchronousJobReadWithStatus).id ?? (job as JobsWithJobs).job.id;
 
@@ -65,7 +69,14 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
 
   return (
     <Item isFailed={!didSucceed} ref={scrollAnchor}>
-      <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} />
+      <MainInfo
+        shortInfo={shortInfo}
+        isOpen={isOpen}
+        isFailed={!didSucceed}
+        onExpand={onExpand}
+        job={job}
+        attempts={getJobAttemps(job)}
+      />
       <ContentWrapper isOpen={isOpen}>
         <div>
           <Suspense

@@ -32,9 +32,10 @@ export const LogsDetails: React.FC<{
   path: string;
   currentAttempt?: AttemptRead;
   jobDebugInfo?: JobDebugInfoRead;
-}> = ({ path, id, currentAttempt, jobDebugInfo }) => (
+  showAttemptStats: boolean;
+}> = ({ path, id, currentAttempt, jobDebugInfo, showAttemptStats }) => (
   <>
-    {currentAttempt && (
+    {currentAttempt && showAttemptStats && (
       <AttemptDetailsSection>
         <AttemptDetails attempt={currentAttempt} />
       </AttemptDetailsSection>
