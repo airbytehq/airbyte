@@ -163,6 +163,21 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testDeploymentMode() {
+    envMap.put(EnvConfigs.DEPLOYMENT_MODE, null);
+    assertEquals(Configs.DeploymentMode.OSS, config.getDeploymentMode());
+
+    envMap.put(EnvConfigs.DEPLOYMENT_MODE, "CLOUD");
+    assertEquals(Configs.DeploymentMode.CLOUD, config.getDeploymentMode());
+
+    envMap.put(EnvConfigs.DEPLOYMENT_MODE, "oss");
+    assertEquals(Configs.DeploymentMode.OSS, config.getDeploymentMode());
+
+    envMap.put(EnvConfigs.DEPLOYMENT_MODE, "OSS");
+    assertEquals(Configs.DeploymentMode.OSS, config.getDeploymentMode());
+  }
+
+  @Test
   void testworkerKubeTolerations() {
     envMap.put(EnvConfigs.JOB_KUBE_TOLERATIONS, null);
     assertEquals(config.getJobKubeTolerations(), List.of());
