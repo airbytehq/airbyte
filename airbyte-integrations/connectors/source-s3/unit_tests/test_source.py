@@ -3,7 +3,7 @@
 #
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
@@ -40,8 +40,8 @@ def test_check_connection_exception(config):
 
 def test_check_connection(config):
     instance = SourceS3()
-    instance.stream_class.filepath_iterator = MagicMock()
-    ok, error_msg = instance.check_connection(logger, config=config)
+    with patch.object(instance.stream_class, "filepath_iterator", MagicMock()):
+        ok, error_msg = instance.check_connection(logger, config=config)
 
     assert ok
     assert not error_msg
