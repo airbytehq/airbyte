@@ -18,6 +18,7 @@ class YamlConfigurableSource(ConfigurableSource):
 
     @property
     def connection_checker(self):
+        # FIXME: this is hardcoded :(
         return CheckStream(self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
