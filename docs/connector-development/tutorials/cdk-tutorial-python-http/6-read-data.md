@@ -81,7 +81,12 @@ class ExchangeRates(HttpStream):
         return None
 ```
 
-This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code: 1. Added a constructor `__init__` which stores the `base` currency to query for and the `access_key` used for authentication. 2. `return {'access_key': self.access_key}` to add the `?access_key=<access-key-string>` query parameter to the request based on the `access_key` input by the user. 3. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file. 4. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
+This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code: 
+
+1. Added a constructor `__init__` which stores the `base` currency to query for and the `access_key` used for authentication.
+2. `return {'access_key': self.access_key}` to add the `?access_key=<access-key-string>` query parameter to the request based on the `access_key` input by the user.
+3. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file.
+4. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
 
 Let's also pass the config specified by the user to the stream class:
 
