@@ -9,7 +9,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;

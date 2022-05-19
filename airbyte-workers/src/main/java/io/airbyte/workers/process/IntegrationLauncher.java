@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 
 /**
