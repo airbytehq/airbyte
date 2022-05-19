@@ -15,15 +15,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class YamlListToStandardDefinitionsTest {
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+class YamlListToStandardDefinitionsTest {
 
-  private static final String goodDesDefYaml =
+  private static final String GOOD_DES_DEF_YAML =
       "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
           + "  name: Local JSON\n"
           + "  dockerRepository: airbyte/destination-local-json\n"
           + "  dockerImageTag: 0.1.4\n"
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-  private static final String duplicateId =
+  private static final String DUPLICATE_ID =
       "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
           + "  name: Local JSON\n"
           + "  dockerRepository: airbyte/destination-local-json\n"
@@ -34,7 +35,7 @@ public class YamlListToStandardDefinitionsTest {
           + "  dockerRepository: airbyte/destination-local-json\n"
           + "  dockerImageTag: 0.1.4\n"
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-  private static final String duplicateName =
+  private static final String DUPLICATE_NAME =
       "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
           + "  name: Local JSON\n"
           + "  dockerRepository: airbyte/destination-local-json\n"
@@ -45,7 +46,7 @@ public class YamlListToStandardDefinitionsTest {
           + "  dockerRepository: airbyte/destination-csv\n"
           + "  dockerImageTag: 0.1.8\n"
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv";
-  private static final String badData =
+  private static final String BAD_DATA =
       "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
           + "  name: Local JSON\n"
           + "  dockerRepository: airbyte/destination-local-json\n"
@@ -54,7 +55,7 @@ public class YamlListToStandardDefinitionsTest {
 
   @Nested
   @DisplayName("vertifyAndConvertToJsonNode")
-  public class VerifyAndConvertToJsonNode {
+  class VerifyAndConvertToJsonNode {
 
     private static final String ID_NAME = "destinationDefinitionId";
 
@@ -62,8 +63,8 @@ public class YamlListToStandardDefinitionsTest {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyReadTest() throws JsonProcessingException {
-      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
+    void correctlyReadTest() throws JsonProcessingException {
+      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, GOOD_DES_DEF_YAML);
       final var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
       assertEquals("Local JSON", defList[0].getName());
@@ -71,69 +72,69 @@ public class YamlListToStandardDefinitionsTest {
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateIdTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateId));
+    void duplicateIdTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, DUPLICATE_ID));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateNameTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateName));
+    void duplicateNameTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, DUPLICATE_NAME));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFileTest() {
+    void emptyFileTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badDataTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, badData));
+    void badDataTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, BAD_DATA));
     }
 
   }
 
   @Nested
   @DisplayName("verifyAndConvertToModelList")
-  public class VerifyAndConvertToModelList {
+  class VerifyAndConvertToModelList {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyReadTest() {
+    void correctlyReadTest() {
       final var defs = YamlListToStandardDefinitions
-          .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
+          .verifyAndConvertToModelList(StandardDestinationDefinition.class, GOOD_DES_DEF_YAML);
       assertEquals(1, defs.size());
       assertEquals("Local JSON", defs.get(0).getName());
     }
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateIdTest() {
+    void duplicateIdTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateId));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, DUPLICATE_ID));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateNameTest() {
+    void duplicateNameTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateName));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, DUPLICATE_NAME));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFileTest() {
+    void emptyFileTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badDataTest() {
+    void badDataTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, badData));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, BAD_DATA));
     }
 
   }

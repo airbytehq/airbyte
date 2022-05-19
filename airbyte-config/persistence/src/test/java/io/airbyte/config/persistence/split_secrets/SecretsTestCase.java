@@ -21,6 +21,9 @@ import java.util.function.Consumer;
  */
 public interface SecretsTestCase {
 
+  String PREFIX = "airbyte_workspace_";
+  String SECRET = "_secret_";
+
   String getName();
 
   Map<SecretCoordinate, String> getFirstSecretMap();

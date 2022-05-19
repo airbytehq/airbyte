@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.NullAssignment"})
 class EnvConfigsTest {
 
   private Map<String, String> envMap;
@@ -302,7 +303,7 @@ class EnvConfigsTest {
 
   @Nested
   @DisplayName("CheckJobResourceSettings")
-  public class CheckJobResourceSettings {
+  class CheckJobResourceSettings {
 
     @Test
     @DisplayName("should default to JobMainCpuRequest if not set")

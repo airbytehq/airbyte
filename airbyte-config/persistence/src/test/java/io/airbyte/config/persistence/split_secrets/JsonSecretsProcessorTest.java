@@ -21,7 +21,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class JsonSecretsProcessorTest {
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.CloseResource", "PMD.UseProperClassLoader", "PMD.JUnitTestsShouldIncludeAssert"})
+class JsonSecretsProcessorTest {
 
   private static final JsonNode SCHEMA_ONE_LAYER = Jsons.deserialize(
       """
@@ -30,30 +31,6 @@ public class JsonSecretsProcessorTest {
           "secret1": {
             "type": "string",
             "airbyte_secret": true
-          },
-          "secret2": {
-            "type": "string",
-            "airbyte_secret": "true"
-          },
-          "field1": {
-            "type": "string"
-          },
-          "field2": {
-            "type": "number"
-          }
-        }
-      }
-      """);
-
-  private static final JsonNode SCHEMA_WITH_ARRAY = Jsons.deserialize(
-      """
-      {
-        "type": "object",  "properties": {
-          "secret1": {
-            "type": "array",      "items": {
-              "type": "string",
-              "airbyte_secret": true
-            }
           },
           "secret2": {
             "type": "string",
@@ -202,7 +179,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecrets() {
+  void testCopySecrets() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
@@ -231,7 +208,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecretsNotInSrc() {
+  void testCopySecretsNotInSrc() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
@@ -251,7 +228,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecretInnerObject() {
+  void testCopySecretInnerObject() {
     final JsonNode srcOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
         .put("secret_access_key", "secret")
@@ -282,7 +259,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecretNotInSrcInnerObject() {
+  void testCopySecretNotInSrcInnerObject() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house").build());
 
@@ -319,7 +296,7 @@ public class JsonSecretsProcessorTest {
         "client_id", "whatever",
         "format", parquetConfig));
 
-    final JsonNode actual = processor.copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+    processor.copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
   private static Stream<Arguments> scenarioProvider() {
@@ -393,7 +370,7 @@ public class JsonSecretsProcessorTest {
   // }
 
   @Test
-  public void copiesSecrets_inNestedNonCombinationNode() throws JsonProcessingException {
+  void copiesSecretsInNestedNonCombinationNode() throws JsonProcessingException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     final JsonNode source = objectMapper.readTree(
@@ -444,7 +421,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void doesNotCopySecrets_inNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
+  void doesNotCopySecretsInNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     final JsonNode source = objectMapper.readTree(
@@ -504,7 +481,7 @@ public class JsonSecretsProcessorTest {
     }
 
     @Test
-    public void testCopySecrets() {
+    void testCopySecrets() {
       final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
           .put("field1", "value1")
           .put("field2", 2)
