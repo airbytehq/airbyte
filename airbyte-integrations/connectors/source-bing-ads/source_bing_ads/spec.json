@@ -5,7 +5,6 @@
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
-      "credentials",
       "reports_start_date",
       "hourly_reports",
       "daily_reports",

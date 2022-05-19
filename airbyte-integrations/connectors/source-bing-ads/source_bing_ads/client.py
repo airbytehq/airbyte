@@ -36,28 +36,46 @@ class Client:
 
     def __init__(
         self,
-        credentials: dict,
         tenant_id: str,
         reports_start_date: str,
         hourly_reports: bool,
         daily_reports: bool,
         weekly_reports: bool,
         monthly_reports: bool,
+        credentials: dict = None,
+        client_id: str = None, # deprecated
+        client_secret: str = None, # deprecated
+        developer_token: str = None, # deprecated
+        refresh_token: str = None, # deprecated
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
-        self.authentication = self._get_auth_client(credentials, tenant_id)
-        self.refresh_token = credentials["refresh_token"]
-        self.developer_token = credentials["developer_token"]
+        self.refresh_token = credentials["refresh_token"] if credentials else refresh_token
+        self.developer_token = credentials["developer_token"] if credentials else developer_token
         self.hourly_reports = hourly_reports
         self.daily_reports = daily_reports
         self.weekly_reports = weekly_reports
         self.monthly_reports = monthly_reports
-
+        
+        self.client_id = client_id # deprecated
+        self.client_secret = client_secret # deprecated
+        
+        self.authentication = self._get_auth_client(credentials, tenant_id)
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
     def _get_auth_client(self, credentials: dict, tenant_id: str) -> OAuthWebAuthCodeGrant:
+        
+        # support the deprecated old input configuration
+        if self.client_id or self.client_secret:
+            auth_creds = {
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "redirection_uri": "",  # should be empty string
+                "tenant": tenant_id,
+            }
+            return OAuthWebAuthCodeGrant(**auth_creds)
+        
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
         auth_creds = {
             "client_id": credentials["client_id"],
