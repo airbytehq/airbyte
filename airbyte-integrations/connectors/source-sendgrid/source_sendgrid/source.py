@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from asyncio import streams
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
@@ -9,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
+from .streams import (  # MessagesTemplate,
     Blocks,
     Bounces,
     Campaigns,
@@ -19,7 +20,6 @@ from .streams import (
     Lists,
     Messages,
     MessagesDetails,
-    MessagesTemplate,
     Scopes,
     Segments,
     SingleSends,
@@ -32,6 +32,11 @@ from .streams import (
 
 
 class SourceSendgrid(AbstractSource):
+
+    # @staticmethod
+    # def _get_authenticator(config: Mapping[str, Any]): 
+    #     return TokenAuthenticator(config["apikey"])
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(config["apikey"])
@@ -53,8 +58,8 @@ class SourceSendgrid(AbstractSource):
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
             Messages(authenticator=authenticator, start_time=config["start_time"]),
-            MessagesDetails(authenticator=authenticator, parent=Messages, start_time=config["start_time"]),
-            MessagesTemplate(authenticator=authenticator, parent=MessagesDetails),
+            MessagesDetails(authenticator=authenticator,start_time=config["start_time"], parent=Messages),
+            # MessagesTemplate(authenticator=authenticator),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
