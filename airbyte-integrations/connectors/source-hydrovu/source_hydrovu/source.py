@@ -213,6 +213,9 @@ class Readings(HydroVuStream):
         self._cursor_value = None
 
         self.location_and_param_id_latest_timestamps = {} 
+        self.location_latest_timestamps = {} 
+
+        self.state_location_timestamps = {} 
 
         self.continue_to_next_location_reading = False
 
@@ -281,9 +284,9 @@ class Readings(HydroVuStream):
         if next_page_token and len(next_page_token[0]) > 0:
             print ("len(next_page_token[0])")
             print (len(next_page_token[0]))
-            #print ("yes next_page_token")
-            #print ("next_page_token")
-            #print (next_page_token)
+            print ("yes next_page_token")
+            print ("next_page_token")
+            print (next_page_token)
 
             #self.count += 1
             #print (self.count)
@@ -294,11 +297,101 @@ class Readings(HydroVuStream):
             #return {"X-ISI-Start-Page": next_page_token}
             
         else:
-            #print ("no next_page_token")
+            print ("no next_page_token")
             return {}
             #StopIteration
             #pass
 
+
+
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        #if not next_page_token:
+        #    next_page_token = next(self._pages)
+
+        #self._active_page = next_page_token
+        
+        #td = datetime.timedelta(days=1)
+        #params = {'id': next_page_token}
+      
+        # Check to see if self.location_latest_timestamps is an empty dictionary.
+        # It is only empty on the first overall call to request_params
+        if not bool(self.location_latest_timestamps):
+            self.location_latest_timestamps = stream_state
+            #self.state_location_timestamps = stream_state
+       
+            # Dictionary copy makes a shallow copy of the dictionary
+            self.state_location_timestamps = self.location_latest_timestamps.copy()
+
+            print ("Set dicts")
+
+
+        print ("state ts:") 
+        for key, value in self.state_location_timestamps.items():
+            print (key)
+            print (value)
+            print ("----")
+
+
+        print ("latest ts:") 
+        for key, value in self.location_latest_timestamps.items():
+            print (key)
+            print (value)
+            print ("----")
+
+
+
+        '''
+        try:
+            print ("self.location_latest_timestamps[self.next_location_page]")
+            print (self.location_latest_timestamps[str(self.next_location_page)])
+
+            params = {'startTime': self.location_latest_timestamps[str(self.next_location_page)]}
+            print ("1CCCCCCCCCCCCCCCCCCCCC")
+
+        except:
+            #pass
+            params = {}
+        '''
+
+
+        print ("CCCCCCCCCCCCCCCCCCCCC")
+        print ("self.next_location_page")
+        print (self.next_location_page)
+
+        try:
+            print ("self.state_location_timestamps[self.next_location_page]")
+            print (self.state_location_timestamps[str(self.next_location_page)])
+
+            params = {'startTime': self.state_location_timestamps[str(self.next_location_page)]}
+
+
+            print ("1CCCCCCCCCCCCCCCCCCCCC")
+
+
+
+        except:
+            #pass
+            params = {}
+
+        
+        
+        print ("2CCCCCCCCCCCCCCCCCCCCC")
+
+
+        #params = {'startTime': self.location_latest_timestamps[self.next_location_page]}
+
+        #params = {'id': next_page_token,
+        #          'start': 0,
+        #          'end': int((datetime.datetime.now() - td).timestamp() * 1000)}
+
+        #self._request_params_hook(params)
+        return params
+   
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -348,37 +441,11 @@ class Readings(HydroVuStream):
         '''
 
 
-
-
-
-
-    '''
-    def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-
-        if not next_page_token:
-            next_page_token = next(self._pages)
-
-        self._active_page = next_page_token
-        
-        #td = datetime.timedelta(days=1)
-        
-        params = {'id': next_page_token}
-
-        #params = {'id': next_page_token,
-        #          'start': 0,
-        #          'end': int((datetime.datetime.now() - td).timestamp() * 1000)}
-
-        self._request_params_hook(params)
-        return params
-    '''
-    
     @property
     def state(self) -> Mapping[str, Any]:
 
-        return self.location_and_param_id_latest_timestamps
+        #return self.location_and_param_id_latest_timestamps
+        return self.location_latest_timestamps
 
 
     @state.setter
@@ -386,11 +453,16 @@ class Readings(HydroVuStream):
 
        self._cursor_value = self.cursor_field
 
+       # Dictionary copy makes a shallow copy of the dictionary
+       #self.state_location_timestamps = self.location_latest_timestamps.copy()
+
+
 
     # Original update state method but not currently used. Leave in here in case needed in future.
     def update_state(self):
         "sends an update of the state variable to stdout"
-        output_message = {"type":"STATE","state":{"data":self.location_and_param_id_latest_timestamps}}
+        #output_message = {"type":"STATE","state":{"data":self.location_and_param_id_latest_timestamps}}
+        output_message = {"type":"STATE","state":{"data":self.location_latest_timestamps}}
         
         print(json.dumps(output_message))
 
@@ -411,8 +483,15 @@ class Readings(HydroVuStream):
         #self.update_state(stream_state)
 
         # Check to see if self.location_and_param_id_latest_timestamps is an empty dictionary
-        if not bool(self.location_and_param_id_latest_timestamps):
-            self.location_and_param_id_latest_timestamps = stream_state
+        #if not bool(self.location_and_param_id_latest_timestamps):
+        #    self.location_and_param_id_latest_timestamps = stream_state
+
+        # Check to see if self.location_latest_timestamps is an empty dictionary.
+        # It is only empty on the first overall call to parse_response
+        #if not bool(self.location_latest_timestamps):
+        #    self.location_latest_timestamps = stream_state
+        #    self.state_location_timestamps = stream_state
+
 
         response_json = response.json() 
 
@@ -424,9 +503,17 @@ class Readings(HydroVuStream):
 
         parameters = r['parameters']
 
+        try:
+            #cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
+            cursor_timestamp = self.location_latest_timestamps[str(locationId)]
+        except:
+            cursor_timestamp = 0
 
-        if str(locationId) not in self.location_and_param_id_latest_timestamps.keys():
-            self.location_and_param_id_latest_timestamps[str(locationId)] = {}
+        #if str(locationId) not in self.location_and_param_id_latest_timestamps.keys():
+        #    self.location_and_param_id_latest_timestamps[str(locationId)] = {}
+
+        #if str(locationId) not in self.location_latest_timestamps.keys():
+        #    self.location_timestamps[str(locationId)] = {}
 
         for param in parameters:
 
@@ -444,11 +531,17 @@ class Readings(HydroVuStream):
 
                 timestamp = reading['timestamp']
 
+
+                '''
                 try:
-                    cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
+                    #cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
+                    cursor_timestamp = self.location_latest_timestamps[str(locationId)]
                 except:
                     cursor_timestamp = 0
+                '''
 
+
+                #if timestamp > cursor_timestamp:
                 if timestamp > cursor_timestamp:
 
                     value = reading['value']
@@ -472,14 +565,28 @@ class Readings(HydroVuStream):
                     # The records thus far have been read in sequential order by increasing
                     # timestamps, but this will ensure the latest timestamp if they are read
                     # out of order from the API.
+                    '''
                     if timestamp > previous_timestamp:
-                        self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = timestamp
+                        #self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = timestamp
+                        self.location_latest_timestamps[str(locationId)] = timestamp
 
                     else:
-                        self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = previous_timestamp
+                        #self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = previous_timestamp
+                        self.location_latest_timestamps[str(locationId)] = previous_timestamp
 
                     previous_timestamp = timestamp
-                
+                    '''
+
+
+
+
+        # Sets to latest timestamp to save to state
+        self.location_latest_timestamps[str(locationId)] = timestamp
+
+        print ("latest timestamp")
+        print (timestamp)
+        print ("$$$$$$$$$$")
+
 
         yield from flat_readings_list
 
