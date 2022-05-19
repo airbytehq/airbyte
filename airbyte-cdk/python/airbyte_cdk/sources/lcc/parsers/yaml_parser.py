@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from copy import deepcopy
 from typing import Any, Mapping
 
 import yaml
@@ -15,13 +16,20 @@ class YamlParser(ConfigParser):
 
     def preprocess_dict(self, config, evaluated_config, path):
         d = dict()
+        if "partial" in config:
+            partial_ref_string = config["partial"]
+            d = deepcopy(self.preprocess(partial_ref_string, evaluated_config, path))
+
         for attribute, value in config.items():
+            if attribute == "partial":
+                continue
             full_path = self.resolve_value(attribute, path)
             if full_path in evaluated_config:
                 raise Exception(f"Databag already contains attribute={attribute}")
             processed_value = self.preprocess(value, evaluated_config, full_path)
             evaluated_config[full_path] = processed_value
             d[attribute] = processed_value
+
         return d
 
     def get_ref_key(self, s: str) -> str:
