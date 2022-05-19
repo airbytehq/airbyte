@@ -152,6 +152,25 @@
       "sync_mode": "full_refresh",
       "cursor_field": ["last_event_time"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "messages_details",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "last_event_time"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [
+        "last_event_time"
+      ],
+      "destination_sync_mode": "append"
     }
   ]
 }

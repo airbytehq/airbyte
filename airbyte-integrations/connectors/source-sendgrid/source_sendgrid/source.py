@@ -49,6 +49,7 @@ class SourceSendgrid(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["apikey"])
 
+        messages = Messages(authenticator=authenticator, start_time=config["start_time"])
         streams = [
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
@@ -57,8 +58,8 @@ class SourceSendgrid(AbstractSource):
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
-            Messages(authenticator=authenticator, start_time=config["start_time"]),
-            MessagesDetails(authenticator=authenticator,start_time=config["start_time"], parent=Messages),
+            messages,
+            MessagesDetails(authenticator=authenticator,start_time=config["start_time"], parent=messages),
             # MessagesTemplate(authenticator=authenticator),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),

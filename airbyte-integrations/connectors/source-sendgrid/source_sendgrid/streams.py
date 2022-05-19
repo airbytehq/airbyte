@@ -9,7 +9,7 @@ from asyncio import streams
 from asyncio.log import logger
 from cgi import parse_multipart
 from distutils.command.config import config
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
@@ -23,6 +23,7 @@ class SendgridStream(HttpStream, ABC):
     primary_key = "id"
     limit = 50
     data_field = None
+    returns_list = True
     
     # def backoff_time(self, response: requests.Response) -> Optional[float]:
     #     """This method is called if we run into the rate limit.
@@ -49,8 +50,11 @@ class SendgridStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
 
         if records is not None:
-            for record in records:
-                yield record
+            if not self.returns_list:
+                yield records
+            else:
+                for record in records:
+                    yield record
         else:
             # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
             #  log statements to help reproduce and prevent the connector from failing.
@@ -87,6 +91,17 @@ class SendgridStreamOffsetPagination(SendgridStream):
         self.offset += self.limit
         return {"offset": self.offset}
 
+class SendgridSubStream(HttpSubStream):
+    returns_list = False
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_records = self.parent.read_records(sync_mode=sync_mode)
+
+        # iterate over all parent records with current stream_slice
+        for record in parent_records:
+            yield {"id": record["msg_id"]}
 
 class ChildStreamMixin(HttpSubStream):
     # parent_stream_class: Optional[SendgridStream] = None
@@ -100,7 +115,7 @@ class ChildStreamMixin(HttpSubStream):
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for item in self._parent(authenticator=self._authenticator, start_time=self._start_time).read_records(sync_mode=sync_mode):
-            print (item)
+            print (f"item retrieved: {item}")
             yield {"id": item["msg_id"]}    
 
 
@@ -290,7 +305,7 @@ class Messages(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "messages"
 
-class MessagesDetails(SendgridStreamOffsetPagination, ChildStreamMixin):
+class MessagesDetails(SendgridSubStream, SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     """
     https://docs.sendgrid.com/api-reference/e-mail-activity/filter-messages-by-message-id
     """
@@ -300,13 +315,13 @@ class MessagesDetails(SendgridStreamOffsetPagination, ChildStreamMixin):
    # filter_field = 'msg_id'
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        print (stream_slice)
+        print(f"stream_slice: {stream_slice}")
         return f'messages/{stream_slice["id"]}'
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
-        params["msg_id"] = stream_slice["id"]
-        return params["msg_id"]
+    # def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    #     params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
+    #     params["msg_id"] = stream_slice["id"]
+    #     return params["msg_id"]
 
     # def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
     #     stream_instance = self.parent_stream_class(authenticator=self.parent_stream_class._authenticator, start_time=self.parent_stream_class.cursor_field)
