@@ -32,6 +32,11 @@ def simple_state_fixture():
     }
 
 
+@pytest.fixture(name="none_state")
+def none_state_fixture():
+    return {"my_stream": None}
+
+
 @pytest.fixture(name="nested_state")
 def nested_state_fixture(simple_state):
     return {"my_stream": {"some_account_id": simple_state["my_stream"]}}
@@ -102,15 +107,6 @@ def test_nested_path(records, stream_mapping, nested_state):
     assert state_value == pendulum.datetime(2015, 1, 1, 22, 3, 11), "state value must be correctly found"
 
 
-def test_nested_path_unknown(records, stream_mapping, simple_state):
-    stream_mapping["my_stream"].cursor_field = ["ts_created"]
-    paths = {"my_stream": ["unknown", "ts_created"]}
-
-    result = records_with_state(records=records, state=simple_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    with pytest.raises(KeyError):
-        next(result)
-
-
 def test_absolute_path(records, stream_mapping, singer_state):
     stream_mapping["my_stream"].cursor_field = ["ts_created"]
     paths = {"my_stream": ["bookmarks", "my_stream", "ts_created"]}
@@ -120,6 +116,14 @@ def test_absolute_path(records, stream_mapping, singer_state):
 
     assert record_value == pendulum.datetime(2015, 11, 1, 22, 3, 11), "record value must be correctly found"
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"
+
+
+def test_none_state(records, stream_mapping, none_state):
+    stream_mapping["my_stream"].cursor_field = ["ts_created"]
+    paths = {"my_stream": ["unknown", "ts_created"]}
+
+    result = records_with_state(records=records, state=none_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
+    assert next(result, None) is None
 
 
 def test_json_schema_helper_pydantic_generated():

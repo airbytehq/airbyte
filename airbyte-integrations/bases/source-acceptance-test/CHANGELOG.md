@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.54
+Fixed `AirbyteTraceMessage` test case to make connectors fail more reliably.
+
+## 0.1.53
+Add more granular incremental testing that walks through syncs and verifies records according to cursor value.
+
 ## 0.1.52
 Add test case for `AirbyteTraceMessage` emission on connector failure: [#12796](https://github.com/airbytehq/airbyte/pull/12796/).
 
