@@ -155,6 +155,9 @@ public class ConnectionsHandler {
 
     configRepository.writeStandardSync(standardSync);
 
+    // depending on connectionSchedule, we want to write to the scheduleType column.
+    // configRepository.writeScheduleType();
+
     trackNewConnection(standardSync);
 
     if (featureFlags.usesNewScheduler()) {
@@ -222,6 +225,9 @@ public class ConnectionsHandler {
         new HashSet<>(connectionUpdate.getOperationIds()));
 
     configRepository.writeStandardSync(newConnection);
+
+    // depending on connectionSchedule, we want to write to the scheduleType column.
+    // configRepository.writeScheduleType();
 
     if (featureFlags.usesNewScheduler()) {
       eventRunner.update(connectionUpdate.getConnectionId());
