@@ -10,7 +10,6 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
-
 import java.util.Map;
 import java.util.Objects;
 
