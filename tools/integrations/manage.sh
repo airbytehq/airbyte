@@ -237,7 +237,7 @@ cmd_publish() {
 
     cd $original_pwd
   else
-    echo "Publishing new version ($versioned_image)"
+    echo "Publishing new version ($versioned_image) from $path"
     docker buildx build       \
       -t $versioned_image     \
       -t $latest_image        \
