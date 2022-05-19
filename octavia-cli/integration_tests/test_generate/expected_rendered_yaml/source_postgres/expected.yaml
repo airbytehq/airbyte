@@ -11,7 +11,7 @@ configuration:
   host: # REQUIRED | string | Hostname of the database.
   port: 5432 # REQUIRED | integer | Port of the database. | Example: 5432
   database: # REQUIRED | string | Name of the database.
-  schemas: ["public"] # OPTIONAL | array | The list of schemas to sync from. Defaults to user. Case sensitive.
+  schemas: ["public"] # OPTIONAL | array | The list of schemas to sync from. Defaults to 'public'. Case sensitive.
   username: # REQUIRED | string | Username to use to access the database.
   password: ${PASSWORD} # SECRET (please store in environment variables) | OPTIONAL | string | Password associated with the username.
   ssl: # OPTIONAL | boolean | Encrypt client/server communications for increased security.
