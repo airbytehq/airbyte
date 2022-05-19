@@ -41,6 +41,7 @@ class AmazonSPStream(HttpStream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
+        replication_end_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
@@ -52,6 +53,7 @@ class AmazonSPStream(HttpStream, ABC):
 
         self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
+        self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self._session.auth = aws_signature
 
@@ -76,6 +78,11 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
     @property
     @abstractmethod
+    def replication_end_date_field(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def next_page_token_field(self) -> str:
         pass
 
@@ -96,9 +103,14 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
             return dict(next_page_token)
 
         params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
+
         if self._replication_start_date and self.cursor_field:
             start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
             params.update({self.replication_start_date_field: start_date})
+
+        if is_valid_replication_end_date(self._replication_end_date):
+            params[self.replication_end_date_field] = self._replication_end_date
+
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -149,6 +161,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
+        replication_end_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
@@ -160,6 +173,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._url_base = url_base.rstrip("/") + "/"
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
+        self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = period_in_days
         self._report_options = report_options
@@ -222,11 +236,17 @@ class ReportsAmazonSPStream(Stream, ABC):
     ) -> Mapping[str, Any]:
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
 
-        return {
+        params = {
             "reportType": self.name,
             "marketplaceIds": [self.marketplace_id],
             "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
+
+        if is_valid_replication_end_date(self._replication_end_date):
+            params["dataEndTime"] = self._replication_end_date
+            params["dataStartTime"] = self._replication_start_date
+
+        return params
 
     def _create_report(
         self,
@@ -528,6 +548,8 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now()
+        if is_valid_replication_end_date(self._replication_end_date):
+            end_date = pendulum.parse(self._replication_end_date)
 
         if stream_state:
             state = stream_state.get(self.cursor_field)
@@ -637,6 +659,7 @@ class Orders(IncrementalAmazonSPStream):
     primary_key = "AmazonOrderId"
     cursor_field = "LastUpdateDate"
     replication_start_date_field = "LastUpdatedAfter"
+    replication_end_date_field = "LastUpdatedBefore"
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
 
@@ -667,6 +690,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     name = "VendorDirectFulfillmentShipping"
     primary_key = None
     replication_start_date_field = "createdAfter"
+    replication_end_date_field = "createdBefore"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
     time_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -685,8 +709,23 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
-            params.update({"createdBefore": pendulum.now("utc").strftime(self.time_format)})
+            end_date = pendulum.now("utc").strftime(self.time_format)
+            if is_valid_replication_end_date(self._replication_end_date):
+                end_date = self._replication_end_date
+            params.update({self.replication_end_date_field: end_date})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
+
+
+def is_valid_replication_end_date(custom_date: str) -> bool:
+    """
+    validates if the user provided custom end date is before current date-time.
+    returns True if valid, else returns False.
+    """
+    if custom_date and custom_date != "default":
+        if pendulum.parse(custom_date) < pendulum.now("utc"):
+            return True
+
+    return False
