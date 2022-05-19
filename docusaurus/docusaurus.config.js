@@ -75,13 +75,18 @@ const config = {
                         position: 'left',
                     },
                     {
-                        href: 'https://airbyte.io/recipes',
-                        label: 'Recipes',
+                        href: 'https://airbyte.com/tutorials',
+                        label: 'Tutorials',
                         position: 'left',
                     },
                     {
                         href: 'https://discuss.airbyte.io/',
                         label: 'Discourse',
+                        position: 'left',
+                    },
+                    {
+                        href: 'https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar',
+                        label: 'Try Airbyte Cloud',
                         position: 'left',
                     },
                 ],
