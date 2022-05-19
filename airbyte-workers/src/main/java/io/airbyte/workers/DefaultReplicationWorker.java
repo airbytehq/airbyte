@@ -22,6 +22,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -68,13 +70,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
+  private final RecordSchemaValidator recordSchemaValidator;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
                                   final AirbyteSource source,
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
-                                  final MessageTracker messageTracker) {
+                                  final MessageTracker messageTracker,
+                                  final RecordSchemaValidator recordSchemaValidator) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -82,6 +86,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.destination = destination;
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
+    this.recordSchemaValidator = recordSchemaValidator;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -142,7 +147,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -230,10 +235,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      // only .setFailures() if a failure occurred
+      // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
       final FailureReason sourceFailure = replicationRunnableFailureRef.get();
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
+      final FailureReason traceMessageFailure = messageTracker.errorTraceMessageFailure(Long.valueOf(jobId), attempt);
+
       final List<FailureReason> failures = new ArrayList<>();
+
+      if (traceMessageFailure != null) {
+        failures.add(traceMessageFailure);
+      }
+
       if (sourceFailure != null) {
         failures.add(sourceFailure);
       }
@@ -273,11 +285,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AtomicBoolean cancelled,
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
-                                                 final Map<String, String> mdc) {
+                                                 final Map<String, String> mdc,
+                                                 final RecordSchemaValidator recordSchemaValidator) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
+      final Map<String, ImmutablePair<String, Integer>> validationErrors = new HashMap<String, ImmutablePair<String, Integer>>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -287,6 +301,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             throw new SourceException("Source process read attempt failed", e);
           }
           if (messageOptional.isPresent()) {
+            if (messageOptional.get().getRecord() != null) {
+              try {
+                recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
+              } catch (final RecordSchemaValidationException e) {
+                final ImmutablePair<String, Integer> exceptionWithCount = validationErrors.get(e.stream);
+                if (exceptionWithCount == null) {
+                  if (validationErrors.size() < 100) {
+                    validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), 1));
+                  }
+                } else {
+                  final Integer currentCount = exceptionWithCount.getRight();
+                  validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), currentCount + 1));
+                }
+              }
+            }
+
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
             messageTracker.acceptFromSource(message);
@@ -310,6 +340,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        if (!validationErrors.isEmpty()) {
+          validationErrors.forEach((stream, errorPair) -> {
+            LOGGER.warn("{} schema validation errors found for stream {}. Error message: {}", errorPair.getRight(), stream, errorPair.getLeft());
+          });
+        }
+
         try {
           destination.notifyEndOfStream();
         } catch (final Exception e) {

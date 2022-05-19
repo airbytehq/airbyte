@@ -8,12 +8,14 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.AbstractDatabaseTest;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import java.io.IOException;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 
 public abstract class AbstractJobsDatabaseTest extends AbstractDatabaseTest {
 
   @Override
-  public Database getDatabase() throws IOException {
-    return new TestDatabaseProviders(container).turnOffMigration().createNewJobsDatabase();
+  public Database getDatabase(final DataSource dataSource, final DSLContext dslContext) throws IOException {
+    return new TestDatabaseProviders(dataSource, dslContext).turnOffMigration().createNewJobsDatabase();
   }
 
 }

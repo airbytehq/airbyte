@@ -28,7 +28,10 @@ class OctaviaCommand(click.Command):
             return super().make_context(info_name, args, parent, **extra)
         except Exception as e:
             telemetry_client = parent.obj["TELEMETRY_CLIENT"]
-            telemetry_client.send_command_telemetry(parent, error=e, extra_info_name=info_name)
+            if isinstance(e, click.exceptions.Exit) and e.exit_code == 0:  # Click raises Exit(0) errors when running --help commands
+                telemetry_client.send_command_telemetry(parent, extra_info_name=info_name, is_help=True)
+            else:
+                telemetry_client.send_command_telemetry(parent, error=e, extra_info_name=info_name)
             raise e
 
     def invoke(self, ctx: click.Context) -> t.Any:

@@ -17,6 +17,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -51,7 +52,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
-  static final String DRIVER_CLASS = "org.postgresql.Driver";
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -77,6 +78,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
+
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
+    }
 
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
@@ -331,7 +336,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                 WHERE t.grpid = m.oid AND t.userid = r.oid)
                  AND             privilege_type = 'SELECT';
           """);
-      final String username = database.getDatabaseConfig().get("username").asText();
+      final String username = getUsername(database.getDatabaseConfig());
       ps.setString(1, username);
       ps.setString(2, username);
       ps.setString(3, username);
@@ -346,6 +351,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .tableName(e.get("table_name").asText())
             .build())
         .collect(toSet());
+  }
+
+  @VisibleForTesting
+  static String getUsername(final JsonNode databaseConfig) {
+    final String jdbcUrl = databaseConfig.get("jdbc_url").asText();
+    final String username = databaseConfig.get("username").asText();
+
+    // Azure Postgres server has this username pattern: <username>@<host>.
+    // Inside Postgres, the true username is just <username>.
+    // The jdbc_url is constructed in the toDatabaseConfigStatic method.
+    if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
+      final String[] tokens = username.split("@");
+      final String postgresUsername = tokens[0];
+      LOGGER.info("Azure username \"{}\" is detected; use \"{}\" to check permission", username, postgresUsername);
+      return postgresUsername;
+    }
+
+    return username;
   }
 
   @Override

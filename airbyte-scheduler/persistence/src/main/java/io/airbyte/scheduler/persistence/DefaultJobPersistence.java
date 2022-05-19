@@ -387,6 +387,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<Job> listJobsForConnectionWithStatuses(final UUID connectionId, final Set<ConfigType> configTypes, final Set<JobStatus> statuses)
+      throws IOException {
+    return jobDatabase.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "scope = ? AND " +
+            "config_type IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "jobs.status IN " + Sqls.toSqlInFragment(statuses) + " " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
+            connectionId.toString())));
+  }
+
+  @Override
   public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
                                                                                  final Set<ConfigType> configTypes,
                                                                                  final Instant jobCreatedAtTimestamp)
@@ -556,6 +568,32 @@ public class DefaultJobPersistence implements JobPersistence {
         METADATA_KEY_COL,
         METADATA_VAL_COL,
         SECRET_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
+  }
+
+  private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
+
+  @Override
+  public boolean isSchedulerMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SCHEDULER_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSchedulerMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SCHEDULER_MIGRATION_STATUS,
         true,
         METADATA_KEY_COL,
         METADATA_VAL_COL,
