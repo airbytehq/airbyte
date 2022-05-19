@@ -14,10 +14,10 @@ factory = LowCodeComponentFactory()
 
 parser = YamlParser()
 
-input_config = dict()
+input_config = {"apikey": "verysecrettoken"}
 
 
-def test():
+def test_factory():
     content = """
     limit: 50
     offset_request_parameters:
@@ -31,6 +31,18 @@ def test():
     offset_pagination_request_parameters = factory.create_component(config["offset_pagination_request_parameters"], input_config)()
     assert type(offset_pagination_request_parameters) == InterpolatedRequestParameterProvider
     assert offset_pagination_request_parameters._config == input_config
+    assert offset_pagination_request_parameters._interpolation._mapping["offset"] == "{{ next_page_token['offset'] }}"
+
+
+def test_interpolate_config():
+    content = """
+authenticator:
+  class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
+  token: "{{ config['apikey'] }}"
+    """
+    config = parser.parse(content)
+    authenticator = factory.create_component(config["authenticator"], input_config)()
+    assert authenticator._tokens == ["verysecrettoken"]
 
 
 def test_full_config():
@@ -106,3 +118,4 @@ list_stream:
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
+    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]

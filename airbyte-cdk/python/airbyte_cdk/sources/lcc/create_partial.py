@@ -40,6 +40,7 @@ def create(func, /, *args, **keywords):
 
         # interpolate the parameters
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": {**fully_created, **kwargs}})
+
         all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
@@ -47,7 +48,8 @@ def create(func, /, *args, **keywords):
             all_keywords["config"] = config
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, kwargs)
-        ret = func(*args, *fargs, **{**all_keywords, **kwargs_to_pass_down})
+        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+        ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
         return ret
 
     newfunc.func = func
@@ -58,8 +60,10 @@ def create(func, /, *args, **keywords):
 
 
 def _get_kwargs_to_pass_to_func(func, kwargs):
+    kwargs_to_pass_down = set(inspect.getfullargspec(func).kwonlyargs)
     args_to_pass_down = set(inspect.getfullargspec(func).args)
-    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in args_to_pass_down}
+    all_args = args_to_pass_down.union(kwargs_to_pass_down)
+    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
     return kwargs_to_pass_down
 
 
