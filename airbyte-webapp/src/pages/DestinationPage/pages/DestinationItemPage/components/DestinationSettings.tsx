@@ -10,7 +10,6 @@ import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDe
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 const Content = styled.div`
   max-width: 813px;
@@ -48,24 +47,22 @@ const DestinationsSettings: React.FC<IProps> = ({ currentDestination, connection
     });
 
   return (
-    <ConnectorDocumentationWrapper>
-      <Content>
-        <ConnectorCard
-          isEditMode
-          onSubmit={onSubmitForm}
-          formType="destination"
-          availableServices={[destinationDefinition]}
-          formValues={{
-            ...currentDestination,
-            serviceType: Connector.id(destinationDefinition),
-          }}
-          connector={currentDestination}
-          selectedConnectorDefinitionSpecification={destinationSpecification}
-          title={<FormattedMessage id="destination.destinationSettings" />}
-        />
-        <DeleteBlock type="destination" onDelete={onDelete} />
-      </Content>
-    </ConnectorDocumentationWrapper>
+    <Content>
+      <ConnectorCard
+        isEditMode
+        onSubmit={onSubmitForm}
+        formType="destination"
+        availableServices={[destinationDefinition]}
+        formValues={{
+          ...currentDestination,
+          serviceType: Connector.id(destinationDefinition),
+        }}
+        connector={currentDestination}
+        selectedConnectorDefinitionSpecification={destinationSpecification}
+        title={<FormattedMessage id="destination.destinationSettings" />}
+      />
+      <DeleteBlock type="destination" onDelete={onDelete} />
+    </Content>
   );
 };
 

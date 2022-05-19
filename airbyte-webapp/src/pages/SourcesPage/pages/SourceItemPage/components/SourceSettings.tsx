@@ -10,7 +10,6 @@ import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 const Content = styled.div`
@@ -52,24 +51,22 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
-    <ConnectorDocumentationWrapper>
-      <Content>
-        <ConnectorCard
-          title={<FormattedMessage id="sources.sourceSettings" />}
-          isEditMode
-          onSubmit={onSubmit}
-          formType="source"
-          connector={currentSource}
-          availableServices={[sourceDefinition]}
-          formValues={{
-            ...currentSource,
-            serviceType: currentSource.sourceDefinitionId,
-          }}
-          selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-        />
-        <DeleteBlock type="source" onDelete={onDelete} />
-      </Content>
-    </ConnectorDocumentationWrapper>
+    <Content>
+      <ConnectorCard
+        title={<FormattedMessage id="sources.sourceSettings" />}
+        isEditMode
+        onSubmit={onSubmit}
+        formType="source"
+        connector={currentSource}
+        availableServices={[sourceDefinition]}
+        formValues={{
+          ...currentSource,
+          serviceType: currentSource.sourceDefinitionId,
+        }}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      />
+      <DeleteBlock type="source" onDelete={onDelete} />
+    </Content>
   );
 };
 
