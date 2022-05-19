@@ -27,7 +27,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;

@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import java.nio.file.Path;
 

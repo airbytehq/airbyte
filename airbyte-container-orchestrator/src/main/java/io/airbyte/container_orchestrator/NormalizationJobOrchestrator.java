@@ -10,7 +10,7 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.NormalizationWorker;
+import io.airbyte.workers.normalization.NormalizationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultNormalizationWorker;

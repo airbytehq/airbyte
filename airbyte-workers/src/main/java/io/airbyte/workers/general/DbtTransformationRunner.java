@@ -15,7 +15,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;

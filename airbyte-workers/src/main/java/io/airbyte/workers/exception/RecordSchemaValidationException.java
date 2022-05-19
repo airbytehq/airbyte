@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers;
+package io.airbyte.workers.exception;
 
 /**
  * Exception thrown by the RecordSchemaValidator during a sync when AirbyteRecordMessage data does

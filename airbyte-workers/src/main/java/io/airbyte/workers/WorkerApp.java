@@ -41,6 +41,7 @@ import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;

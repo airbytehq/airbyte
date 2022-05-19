@@ -23,7 +23,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;

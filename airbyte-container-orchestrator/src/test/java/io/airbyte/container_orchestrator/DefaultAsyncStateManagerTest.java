@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import java.util.Optional;

@@ -21,7 +21,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

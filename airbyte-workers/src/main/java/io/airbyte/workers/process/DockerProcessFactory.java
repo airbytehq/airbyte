@@ -14,7 +14,7 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;

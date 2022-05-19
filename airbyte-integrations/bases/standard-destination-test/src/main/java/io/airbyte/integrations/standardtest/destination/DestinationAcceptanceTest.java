@@ -44,7 +44,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;

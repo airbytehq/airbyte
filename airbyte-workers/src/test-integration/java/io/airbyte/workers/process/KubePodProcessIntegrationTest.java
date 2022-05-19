@@ -17,7 +17,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;

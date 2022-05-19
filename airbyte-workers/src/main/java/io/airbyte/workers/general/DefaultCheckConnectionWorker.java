@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.*;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;

@@ -16,6 +16,8 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.*;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;

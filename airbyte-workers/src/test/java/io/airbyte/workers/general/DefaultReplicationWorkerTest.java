@@ -42,6 +42,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.*;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMessageTracker;

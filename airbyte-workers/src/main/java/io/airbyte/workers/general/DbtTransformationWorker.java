@@ -7,7 +7,7 @@ package io.airbyte.workers.general;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;

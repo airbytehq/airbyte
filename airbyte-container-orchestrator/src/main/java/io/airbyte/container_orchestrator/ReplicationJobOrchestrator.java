@@ -11,7 +11,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
-import io.airbyte.workers.ReplicationWorker;
+import io.airbyte.workers.general.ReplicationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
