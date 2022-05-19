@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -33,7 +36,7 @@ import org.jooq.SQLDialect;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
-public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
   private final List<String> HOST_KEY = List.of(MySQLDestination.HOST_KEY);
@@ -73,7 +76,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -93,6 +96,26 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MySqlTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
                                                      final String streamName,
                                                      final String namespace)
@@ -100,19 +123,6 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     final var tableName = namingResolver.getIdentifier(streamName);
     final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
@@ -138,8 +148,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                     .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(),
                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
-                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                    .map(Jsons::deserialize)
+                    .map(this::getJsonFromRecord)
                     .collect(Collectors.toList())));
   }
 
@@ -165,15 +174,6 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });
-  }
-
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
-    if (expectedValue.isBoolean()) {
-      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
-      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
-    } else {
-      assertEquals(expectedValue, actualValue);
-    }
   }
 
 }

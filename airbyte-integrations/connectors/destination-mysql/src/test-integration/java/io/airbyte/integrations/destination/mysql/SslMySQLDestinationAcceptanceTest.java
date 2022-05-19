@@ -60,7 +60,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -113,8 +113,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
+                .map(this::getJsonFromRecord)
                 .collect(Collectors.toList()));
   }
 

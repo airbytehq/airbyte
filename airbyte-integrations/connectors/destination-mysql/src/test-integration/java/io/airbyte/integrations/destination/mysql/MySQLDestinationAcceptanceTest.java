@@ -17,6 +17,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -34,7 +35,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
@@ -119,7 +120,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -137,8 +138,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
               .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                   JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
               .stream()
-              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-              .map(Jsons::deserialize)
+              .map(this::getJsonFromRecord)
               .collect(Collectors.toList()));
     }
   }
