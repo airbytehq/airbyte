@@ -586,16 +586,6 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
   }
 
-  public ScheduleType getScheduleType(final UUID connId) throws IOException {
-    return database.query(ctx -> ctx.select(CONNECTION.SCHEDULE_TYPE).from(CONNECTION)
-        .where(CONNECTION.ID.eq(connId)).fetchOne()).value1();
-  }
-
-  public void writeScheduleType(final UUID connId, final ScheduleType type) throws IOException {
-    database.transaction(ctx -> ctx.update(CONNECTION).set(CONNECTION.SCHEDULE_TYPE, type)
-        .where(CONNECTION.ID.eq(connId)).execute());
-  }
-
   public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }

@@ -196,15 +196,6 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testWriteReadScheduleType() throws IOException {
-    final var id = MockData.standardSyncs().get(0).getConnectionId();
-    final var scheduleType = ScheduleType.basic_schedule;
-    configRepository.writeScheduleType(id, scheduleType);
-    final var resType = configRepository.getScheduleType(id);
-    assertEquals(resType, scheduleType);
-  }
-
-  @Test
   public void testListWorkspaceStandardSync() throws IOException {
 
     final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
