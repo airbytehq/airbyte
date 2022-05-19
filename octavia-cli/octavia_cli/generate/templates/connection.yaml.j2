@@ -18,21 +18,18 @@ configuration:
   schedule: # OPTIONAL | object
     time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
     units: 1 # REQUIRED | integer
-  {%- if enable_normalization %}
-  operations:
-    - name: "Normalization"
-      operator_configuration:
-        normalization:
-          option: "basic"
-        operator_type: "normalization"
-  {%- else %}
+  {%- if supports_normalization or supports_dbt%}
   # operations:
+  {%- endif %}
+  {%- if supports_normalization %}
   ## -------- Uncomment and edit the block below if you want to enable Airbyte normalization --------
   #   - name: "Normalization"
   #     operator_configuration:
   #       normalization:
   #         option: "basic"
   #       operator_type: "normalization"
+  {%- endif %}
+  {%- if supports_dbt %}
   ## -------- Uncomment and edit the block below if you want to declare a custom transformation --------
   #   - name: "My dbt transformations" # REQUIRED | string
   #     operator_configuration:

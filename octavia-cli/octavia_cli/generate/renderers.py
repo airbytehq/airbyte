@@ -229,21 +229,17 @@ class ConnectionRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
     definition = ConnectionDefinition
 
-    def __init__(
-        self, connection_name: str, source: resources.Source, destination: resources.Destination, enable_normalization: bool
-    ) -> None:
+    def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor.
 
         Args:
             connection_name (str): Name of the connection to render.
             source (resources.Source): Connection's source.
             destination (resources.Destination): Connections's destination.
-            enable_normalization (bool): Whether the normalization should be enabled or not
         """
         super().__init__(connection_name)
         self.source = source
         self.destination = destination
-        self.enable_normalization = enable_normalization
 
     @staticmethod
     def catalog_to_yaml(catalog: AirbyteCatalog) -> str:
@@ -265,6 +261,7 @@ class ConnectionRenderer(BaseRenderer):
                 "source_id": self.source.resource_id,
                 "destination_id": self.destination.resource_id,
                 "catalog": yaml_catalog,
-                "enable_normalization": self.enable_normalization,
+                "supports_normalization": self.destination.definition.supports_normalization,
+                "supports_dbt": self.destination.definition.supports_dbt,
             }
         )

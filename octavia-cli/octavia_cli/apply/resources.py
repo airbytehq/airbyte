@@ -11,7 +11,7 @@ from typing import Callable, List, Optional, Set, Type, Union
 
 import airbyte_api_client
 import yaml
-from airbyte_api_client.api import destination_api, source_api, web_backend_api
+from airbyte_api_client.api import destination_api, destination_definition_api, source_api, source_definition_api, web_backend_api
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.airbyte_stream import AirbyteStream
 from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
@@ -20,6 +20,8 @@ from airbyte_api_client.model.connection_read import ConnectionRead
 from airbyte_api_client.model.connection_schedule import ConnectionSchedule
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.destination_create import DestinationCreate
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+from airbyte_api_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
@@ -32,6 +34,8 @@ from airbyte_api_client.model.operator_normalization import OperatorNormalizatio
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+from airbyte_api_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
 from airbyte_api_client.model.source_discover_schema_request_body import SourceDiscoverSchemaRequestBody
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
@@ -434,7 +438,7 @@ class Source(SourceAndDestination):
         return schema.catalog
 
     @property
-    def definition(self) -> Union[SourceDefinitionSpecificationRead]:
+    def definition(self) -> SourceDefinitionSpecificationRead:
         api_instance = source_definition_api.SourceDefinitionApi(self.api_client)
         source_definition_id_request_body = SourceDefinitionIdRequestBody(
             source_definition_id=self.definition_id,
@@ -481,6 +485,14 @@ class Destination(SourceAndDestination):
             connection_configuration=self.configuration,
             name=self.resource_name,
         )
+
+    @property
+    def definition(self) -> DestinationDefinitionSpecificationRead:
+        api_instance = destination_definition_api.DestinationDefinitionApi(self.api_client)
+        destination_definition_id_request_body = DestinationDefinitionIdRequestBody(
+            destination_definition_id=self.definition_id,
+        )
+        return api_instance.get_destination_definition(destination_definition_id_request_body)
 
 
 class Connection(BaseResource):
