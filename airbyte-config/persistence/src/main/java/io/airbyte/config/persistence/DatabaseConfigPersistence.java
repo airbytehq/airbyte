@@ -1094,6 +1094,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.SCHEDULE_TYPE, standardSync.getScheduleType() == null ? null
                     : Enums.toEnum(standardSync.getScheduleType().value(), ScheduleType.class).orElseThrow())
+                // create another column schedule_type_schedule
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)

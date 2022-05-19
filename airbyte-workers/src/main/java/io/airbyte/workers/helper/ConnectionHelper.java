@@ -85,12 +85,17 @@ public class ConnectionHelper {
 
     // update sync schedule
     if (update.getSchedule() != null) {
+      // topher
       final Schedule newSchedule = new Schedule()
           .withTimeUnit(update.getSchedule().getTimeUnit())
           .withUnits(update.getSchedule().getUnits());
       newConnection.withManual(false).withSchedule(newSchedule);
+      newConnection.withScheduleType(StandardSync.ScheduleType.BASIC_SCHEDULE);
     } else {
+      // topher
       newConnection.withManual(true).withSchedule(null);
+      newConnection.withScheduleType(StandardSync.ScheduleType.MANUAL);
+      // add the new column
     }
 
     return newConnection;

@@ -120,6 +120,7 @@ public class ConnectionsHandler {
     final UUID connectionId = uuidGenerator.get();
 
     // persist sync
+    // topher - write to new sync columns
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
@@ -154,9 +155,6 @@ public class ConnectionsHandler {
     }
 
     configRepository.writeStandardSync(standardSync);
-
-    // depending on connectionSchedule, we want to write to the scheduleType column.
-    // configRepository.writeScheduleType();
 
     trackNewConnection(standardSync);
 
@@ -225,9 +223,6 @@ public class ConnectionsHandler {
         new HashSet<>(connectionUpdate.getOperationIds()));
 
     configRepository.writeStandardSync(newConnection);
-
-    // depending on connectionSchedule, we want to write to the scheduleType column.
-    // configRepository.writeScheduleType();
 
     if (featureFlags.usesNewScheduler()) {
       eventRunner.update(connectionUpdate.getConnectionId());
