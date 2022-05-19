@@ -6,8 +6,6 @@ import inspect
 from airbyte_cdk.sources.lcc.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 
-# from airbyte_cdk.sources.lcc.parsers.factory import LowCodeComponentFactory
-
 """
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
@@ -24,7 +22,6 @@ from airbyte_cdk.sources.lcc.interpolation.jinja import JinjaInterpolation
 
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
-        print(f"creating {func}")
         interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
@@ -40,7 +37,7 @@ def create(func, /, *args, **keywords):
 
         # create object's partial parameters
         fully_created = _create_inner_objects(all_keywords, kwargs)
-        print(f"fully_created: {fully_created}")
+
         # interpolate the parameters
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": {**fully_created, **kwargs}})
         all_keywords.update(interpolated_keywords)
@@ -69,12 +66,8 @@ def _get_kwargs_to_pass_to_func(func, kwargs):
 def _create_inner_objects(keywords, kwargs):
     fully_created = dict()
     for k, v in keywords.items():
-        print(f"v: {v}")
         if type(v) == type(create):
             fully_created[k] = v(kwargs=kwargs)
-        # elif type(v) == dict and "class_name" in v:
-        #    factory = LowCodeComponentFactory()
-        #    fully_created[k] = factory.create_component(v, kwargs.get("config", dict()))
         else:
             fully_created[k] = v
     return fully_created
