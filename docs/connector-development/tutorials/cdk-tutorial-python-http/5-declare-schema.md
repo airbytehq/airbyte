@@ -63,7 +63,7 @@ Having created this stream in code, we'll put a file `exchange_rates.json` in th
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 
 ```text
-python main.py discover --config secrets/config.json
+python main.py discover --config schema/exchange_rates.json
 ```
 
 you should see some output like:
