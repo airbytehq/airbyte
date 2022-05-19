@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from pprint import pprint
 
 from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
 from airbyte_cdk.sources.lcc.parsers.factory import LowCodeComponentFactory
 from airbyte_cdk.sources.lcc.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
+from airbyte_cdk.sources.lcc.requesters.requester import HttpMethod
 from airbyte_cdk.sources.lcc.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.lcc.schema.json_schema import JsonSchema
 
@@ -53,7 +53,7 @@ requester:
   class_name: airbyte_cdk.sources.lcc.requesters.http_requester.HttpRequester
   name: "{{ kwargs['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
-  http_method: "HttpMethod.GET"
+  http_method: "GET"
   authenticator:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
@@ -98,15 +98,11 @@ list_stream:
 
     stream_config = config["list_stream"]
     assert stream_config["class_name"] == "airbyte_cdk.sources.lcc.configurable_stream.ConfigurableStream"
-    print(f"kwargs: {stream_config['kwargs']}")
-    print(f"keys: {stream_config.keys()}")
-    pprint(f"stream_config:\n{stream_config}")
-    pprint(f"schema_loader:\n{stream_config['schema_loader']}")
     assert stream_config["cursor_field"] == []
     stream = factory.create_component(stream_config, input_config)()
     assert type(stream) == ConfigurableStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    print(f"schema_loader: {stream._schema_loader}")
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
+    assert stream._retriever._requester._method == HttpMethod.GET
