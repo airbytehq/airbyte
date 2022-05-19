@@ -244,7 +244,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -253,7 +253,7 @@
         resourceRequirements:
           memory_limit: "1Gi"
           memory_request: "1Gi"
-  releaseStage: beta
+  releaseStage: generally_available
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
