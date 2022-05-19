@@ -1,4 +1,5 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .switch {
   position: relative;
@@ -28,12 +29,12 @@
       }
 
       &.loading {
-        background: url("../../../../public/images/ProgressReverse.svg");
+        background: url("./ProgressReverse.svg");
       }
     }
 
     &:not(:checked) + .slider.loading {
-      background: url("../../../../public/images/Progress.svg");
+      background: url("./Progress.svg");
     }
 
     &:disabled + .slider {
@@ -50,7 +51,7 @@
     right: 0;
     bottom: 0;
     background: colors.$greyColor20;
-    transition: 0.3s;
+    transition: variables.$transition;
     border-radius: 19px;
 
     &.small:before {
@@ -67,7 +68,7 @@
       left: 1px;
       top: 1px;
       background: colors.$whiteColor;
-      transition: 0.3s;
+      transition: variables.$transition;
       border-radius: 50%;
     }
   }
