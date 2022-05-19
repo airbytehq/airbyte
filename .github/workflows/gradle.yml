@@ -51,11 +51,13 @@ jobs:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
+              - '*.gradle'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
+              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'
@@ -134,7 +136,7 @@ jobs:
         run: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+        run: ./tools/bin/check_for_file_changes
 
       - name: Build
         run: |

@@ -1,27 +1,28 @@
 import React, { useMemo } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
-import MainView from "views/layout/MainView";
-import { CompleteOauthRequest } from "views/CompleteOauthRequest";
-import { useNotificationService } from "hooks/services/Notification";
+import { Workspace } from "core/domain/workspace/Workspace";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
-import { useListWorkspaces } from "services/workspaces/WorkspacesService";
+import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { Workspace } from "core/domain/workspace/Workspace";
+import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
+import MainView from "views/layout/MainView";
 
-import SettingsPage from "./SettingsPage";
 import ConnectionPage from "./ConnectionPage";
+import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
-import DestinationPage from "./DestinationPage";
-import SourcesPage from "./SourcesPage";
 import { RoutePaths } from "./routePaths";
+import SettingsPage from "./SettingsPage";
+import SourcesPage from "./SourcesPage";
 
 function useDemo() {
   const { formatMessage } = useIntl();
@@ -55,7 +56,6 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
 const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
   return (
     <MainView>
-      <TrackPageAnalytics />
       <Routes>
         <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
@@ -96,6 +96,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
+  useTrackPageAnalytics();
   useApiHealthPoll();
   useDemo();
 

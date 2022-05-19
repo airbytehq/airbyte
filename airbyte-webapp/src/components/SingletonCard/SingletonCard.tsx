@@ -1,7 +1,7 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Button, H5 } from "components";
 
@@ -30,6 +30,7 @@ const Singleton = styled.div<{ hasError?: boolean }>`
   bottom: 49px;
   left: 50%;
   transform: translate(-50%, 0);
+  z-index: 20;
 
   padding: 25px 25px 22px;
 

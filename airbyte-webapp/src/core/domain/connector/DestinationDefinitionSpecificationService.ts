@@ -7,9 +7,10 @@ class DestinationDefinitionSpecificationService extends AirbyteRequestService {
     return "destination_definition_specifications";
   }
 
-  public get(destinationDefinitionId: string): Promise<DestinationDefinitionSpecification> {
+  public get(destinationDefinitionId: string, workspaceId: string): Promise<DestinationDefinitionSpecification> {
     return this.fetch<DestinationDefinitionSpecification>(`${this.url}/get`, {
       destinationDefinitionId,
+      workspaceId,
     });
   }
 }

@@ -10,11 +10,15 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.util.UUID;
-import org.jooq.SQLDialect;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -61,27 +65,23 @@ public class CockroachDBContainerHelper {
         .build());
   }
 
-  public static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
+  public static DataSource getDataSourceFromConfig(final JsonNode config) {
+    return DataSourceFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("port").asInt(),
+            config.get("database").asText()));
   }
 
-  public static JdbcDatabase getJdbcDatabaseFromConfig(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+  public static Database getDatabaseFromConfig(final DSLContext dslContext) {// final JsonNode config) {
+    return new Database(dslContext);
+  }
+
+  public static JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) { // final JsonNode config) {
+    return new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
 }

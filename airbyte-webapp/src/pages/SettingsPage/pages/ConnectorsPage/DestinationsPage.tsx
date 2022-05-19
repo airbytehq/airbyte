@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
-import useConnector from "hooks/services/useConnector";
 import { DestinationDefinition } from "core/domain/connector";
+import useConnector from "hooks/services/useConnector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,

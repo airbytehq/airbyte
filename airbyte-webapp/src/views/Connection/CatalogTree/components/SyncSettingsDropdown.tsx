@@ -1,12 +1,12 @@
 import React from "react";
-import { components, ControlProps } from "react-select";
 import { FormattedMessage } from "react-intl";
+import { components, ControlProps } from "react-select";
 import styled from "styled-components";
 
 import { DropDown, DropdownProps } from "components";
-import Text from "components/base/DropDown/components/Text";
-import { IProps } from "components/base/DropDown/components/SingleValue";
 import { IDataItem, OptionView } from "components/base/DropDown/components/Option";
+import { IProps } from "components/base/DropDown/components/SingleValue";
+import Text from "components/base/DropDown/components/Text";
 
 const ValueView = styled(components.SingleValue)`
   display: flex;

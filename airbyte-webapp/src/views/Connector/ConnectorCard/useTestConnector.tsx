@@ -1,9 +1,9 @@
 import { useRef } from "react";
 
-import { ServiceFormValues } from "views/Connector/ServiceForm";
 import { ConnectorHelper, Scheduler } from "core/domain/connector";
 import { ConnectorT } from "core/domain/connector/types";
 import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
+import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 export const useTestConnector = (
   props: {

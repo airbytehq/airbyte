@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -176,7 +177,10 @@ public class S3StreamCopierTest {
   }
 
   private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
-    assertEquals(S3DestinationConfig.create(S3_CONFIG).withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE)).get(), args.config);
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(S3_CONFIG)
+        .withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE, CompressionType.NO_COMPRESSION))
+        .get();
+    assertEquals(s3Config, args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);
     assertEquals(UPLOAD_TIME, args.uploadTime);
     assertEquals(UPLOAD_THREADS, args.uploadThreads);

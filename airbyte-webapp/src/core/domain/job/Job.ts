@@ -1,5 +1,5 @@
-import Status from "core/statuses";
 import { SourceDefinition, DestinationDefinition } from "core/domain/connector";
+import Status from "core/statuses";
 
 export interface JobMeta {
   id: number | string;

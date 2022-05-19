@@ -5,11 +5,11 @@ import styled from "styled-components";
 import DeleteBlock from "components/DeleteBlock";
 
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Connector, Destination } from "core/domain/connector";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 const Content = styled.div`
   max-width: 813px;

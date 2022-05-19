@@ -1,17 +1,17 @@
+import { User as FbUser } from "firebase/auth";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
-import { User as FbUser } from "firebase/auth";
 import { useEffectOnce } from "react-use";
 
-import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { getUtmFromStorage } from "utils/utmStorage";
 import { useInitService } from "services/useInitService";
+import { getUtmFromStorage } from "utils/utmStorage";
 
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
 
@@ -36,11 +36,12 @@ export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => void;
 
-type AuthContextApi = {
+interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
+  loggedOut: boolean;
   login: AuthLogin;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
@@ -50,7 +51,7 @@ type AuthContextApi = {
   sendEmailVerification: AuthSendEmailVerification;
   verifyEmail: AuthVerifyEmail;
   logout: AuthLogout;
-};
+}
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
@@ -96,6 +97,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       inited: state.inited,
       isLoading: state.loading,
       emailVerified: state.emailVerified,
+      loggedOut: state.loggedOut,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
@@ -105,8 +107,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       async logout(): Promise<void> {
         await authService.signOut();
+        queryClient.removeQueries();
         loggedOut();
-        await queryClient.invalidateQueries();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);

@@ -3,8 +3,8 @@
  */
 import type { FirebaseApp, FirebaseOptions } from "firebase/app";
 
-import * as React from "react";
 import { getApps, initializeApp, registerVersion } from "firebase/app";
+import * as React from "react";
 
 import { equal } from "utils/objects";
 

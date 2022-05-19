@@ -3,11 +3,11 @@ import { FormattedMessage } from "react-intl";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
 
-import { useSourceList } from "hooks/services/useSourceHook";
 import { useDestinationList } from "hooks/services/useDestinationHook";
+import { useSourceList } from "hooks/services/useSourceHook";
 
-import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 
 type IProps = {
   onNextStep: () => void;

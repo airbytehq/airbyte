@@ -17,6 +17,17 @@ else
   exit 1
 fi
 
+# if a string
+if $(git remote get-url origin | grep --quiet "http"); then
+  set +o xtrace
+  echo -e "$red_text""This program requires a ssh-based github repo""$default_text"
+  echo -e "$red_text""https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account""$default_text"
+  echo -e "$red_text""You will need to change your remote to continue.  Yell @topher for help""$default_text"
+  echo -e "$red_text""change your remote command:""$default_text"
+  echo -e "$red_text""git remote set-url origin git@github.com:airbytehq/airbyte.git""$default_text"
+  exit 1
+fi
+
 
 # ------------- Start Main
 set +o xtrace
@@ -32,10 +43,18 @@ pwd
 
 # Yarn check (which is commonly used to check for program existance)
 # -s/--silent doesn't exist in cloud's Ubuntu
-if ! which yarn > /dev/null; then
-  echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
+if ! which brew > /dev/null; then
+  echo -e "$red_text""homebrew not found HALP!!\n\n""$default_text"
+  echo -e "$red_text""try this:  https://brew.sh\n\n""$default_text"
   exit 1
 fi
+
+if ! which yarn > /dev/null; then
+  echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
+  echo -e "$red_text""try this:  brew install yarn\n\n""$default_text"
+  exit 1
+fi
+
 
 set -o xtrace
 
@@ -103,10 +122,11 @@ echo "docs.airbyte.com" > CNAME
 
 git add CNAME
 
-git commit --message "Adds CNAME to deploy for $revision"
+# Skip pre-commit hooks fire_elmo.jpg
+PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
 # non functional. for debugging
-git branch
+git rev-parse --abbrev-ref HEAD
 
 if test "$(tty)" == "not a tty"; then
   # note that this is NOT airbyte repo

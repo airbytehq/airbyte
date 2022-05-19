@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
@@ -38,7 +37,8 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue()));
+        "flattening", Flattening.ROOT_LEVEL.getValue(),
+        "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
   /**
@@ -84,9 +84,9 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     return json;
   }
 
-  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+  private static void addNoTypeValue(final ObjectNode json, final String key, final String value) {
     if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
-      var newNode = Jsons.deserialize(value);
+      final var newNode = Jsons.deserialize(value);
       json.set(key, newNode);
     } else {
       json.put(key, value);
@@ -106,7 +106,7 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-          final Reader in = new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8)) {
+          final Reader in = getReader(object)) {
         final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
@@ -117,6 +117,10 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     }
 
     return jsonRecords;
+  }
+
+  protected Reader getReader(final S3Object s3Object) throws IOException {
+    return new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8);
   }
 
 }

@@ -1,10 +1,11 @@
 import { QueryObserverResult, useQuery } from "react-query";
 
-import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { SCOPE_WORKSPACE } from "../Scope";
@@ -28,17 +29,19 @@ function useGetService(): DestinationDefinitionSpecificationService {
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecification => {
   const service = useGetService();
+  const { workspaceId } = useCurrentWorkspace();
 
-  return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id));
+  return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
 
 export const useGetDestinationDefinitionSpecificationAsync = (
   id: string | null
 ): QueryObserverResult<DestinationDefinitionSpecification, Error> => {
   const service = useGetService();
+  const { workspaceId } = useCurrentWorkspace();
 
   const escapedId = id ?? "";
-  return useQuery(destinationDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId), {
+  return useQuery(destinationDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId, workspaceId), {
     enabled: isDefined(id),
   });
 };

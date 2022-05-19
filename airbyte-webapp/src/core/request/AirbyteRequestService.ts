@@ -1,8 +1,8 @@
 import merge from "lodash/merge";
 
 import { CommonRequestError } from "./CommonRequestError";
-import { VersionError } from "./VersionError";
 import { RequestMiddleware } from "./RequestMiddleware";
+import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
   constructor(protected rootUrl: string, private middlewares: RequestMiddleware[] = []) {}

@@ -1,18 +1,18 @@
 import type { FormikErrors } from "formik/dist/types";
 
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
 import { getIn, useFormik, useFormikContext } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
+import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { equal } from "utils/objects";
+import { OperationService } from "core/domain/connection";
 import { Transformation } from "core/domain/connection/operation";
 import { useGetService } from "core/servicesProvider";
-import { OperationService } from "core/domain/connection";
+import { equal } from "utils/objects";
 
 const Content = styled.div`
   display: flex;
