@@ -3,6 +3,7 @@
 #
 
 from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
+from airbyte_cdk.sources.lcc.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.lcc.parsers.factory import LowCodeComponentFactory
 from airbyte_cdk.sources.lcc.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
@@ -50,16 +51,16 @@ def test_full_config():
     # FIXME: the ones with class: instead of class_name!
     content = """
 decoder:
-  class: "airbyte_cdk.sources.lcc.decoders.json_decoder.JsonDecoder"
+  class_name: "airbyte_cdk.sources.lcc.decoders.json_decoder.JsonDecoder"
 extractor:
-  class: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
 metadata_paginator:
-  class: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
+  class_name: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
   next_page_token_template:
     "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
 next_page_url_from_token_partial:
-  class: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
+  class_name: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
 request_parameters_provider:
   class_name: airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
@@ -121,3 +122,5 @@ list_stream:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert type(stream._retriever._extractor._decoder) == JsonDecoder
+    assert stream._retriever._extractor._transform == ".result[]"

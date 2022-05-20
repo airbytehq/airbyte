@@ -25,7 +25,6 @@ class YamlConfigurableSource(ConfigurableSource):
         with open(self._path_to_yaml, "r") as f:
             config_content = f.read()
             source_config = self._parser.parse(config_content)
-        print(source_config["streams"])
         streams_config = source_config["streams"]
         streams = []
         for stream_config in streams_config:

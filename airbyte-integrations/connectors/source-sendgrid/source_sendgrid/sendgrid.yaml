@@ -7,7 +7,7 @@ cursor_state:
   class_name: "airbyte_cdk.sources.lcc.states.dict_state.DictState"
   d:
     created: "{{ last_record['created'] }}"
-  state_type: int
+  state_type: INT
 
 metadata_paginator:
   class_name: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
@@ -16,6 +16,11 @@ metadata_paginator:
     next_page_token_template:
       next_page_url: "{{ decoded_response['_metadata']['next'] }}"
     decoder: "*ref(decoder)"
+
+offset_paginator:
+  class_name: "airbyte_cdk.sources.lcc.requesters.paginators.offset_pagination.OffsetPagination"
+  page_size: "*ref(limit)"
+  state: "*ref(cursor_state)"
 
 offset_request_parameters:
   "offset": "{{ next_page_token['offset'] }}"
@@ -33,8 +38,13 @@ cursor_request_parameter_provider:
   class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters: "*ref(cursor_request_parameters)"
 
-  # TODO: this one needs duplication or merging a dict
-  # cursor_request_parameter_provider:
+cursor_offset_request_parameter_provider:
+  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  request_parameters:
+    offset: "{{ next_page_token['offset'] }}"
+    limit: "*ref(limit)"
+    start_time: "{{ stream_state['created'] }}"
+    end_time: "{{ utc_now() }}"
 
 request_parameters_provider:
   class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
@@ -88,23 +98,255 @@ extractor:
   class_name: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
 
+lists_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "lists"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/lists"
+    paginator:
+      partial: "*ref(metadata_paginator)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".result[]"
+campaigns_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "campaigns"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/campaigns"
+    paginator:
+      partial: "*ref(metadata_paginator)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".result[]"
+contacts_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "contacts"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/contacts"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".result[]"
+stats_automations_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "stats_automations"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/stats/automations"
+    paginator:
+      partial: "*ref(metadata_paginator)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".results[]"
+segments_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "segments"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/segments"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".results[]"
+single_sends_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "single_sends"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "marketing/stats/singlesends"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".results[]"
+    paginator:
+      partial: "*ref(metadata_paginator)"
+templates_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "templates"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "templates"
+      request_parameters_provider:
+        partial: "*ref(request_parameters_provider)"
+        request_parameters:
+          "generations": "legacy,dynamic"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".templates[]"
+    paginator:
+      partial: "*ref(metadata_paginator)"
+global_suppressions_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "global_suppressions"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "suppression/unsubscribes"
+      request_parameters_provider: "*ref(offset_pagination_request_parameters)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+    paginator: "*ref(offset_paginator)"
+suppression_groups_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "suppression_groups"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path:
+        partial: "*ref(next_page_url_from_token_partial)"
+        default: "asm/groups"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+suppression_group_members_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "suppression_group_members"
+    primary_key: "group_id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "asm/suppressions"
+      request_parameters_provider: "*ref(offset_pagination_request_parameters)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+    paginator: "*ref(offset_paginator)"
+blocks_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "blocks"
+    primary_key: "email"
+  cursor_field: ["created"]
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "suppression/blocks"
+      request_parameters_provider: "*ref(cursor_offset_request_parameter_provider)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+    paginator: "*ref(offset_paginator)"
+    state: "*ref(cursor_state)"
+bounces_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "bounces"
+    primary_key: "email"
+  cursor_field: ["created"]
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "suppression/bounces"
+      request_parameters_provider: "*ref(cursor_offset_request_parameter_provider)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+    paginator: "*ref(offset_paginator)"
+    state: "*ref(cursor_state)"
+invalid_emails_stream:
+  partial: "*ref(partial_stream)"
+  cursor_field: ["created"]
+  kwargs:
+    name: "invalid_emails"
+    primary_key: "email"
+  retriever:
+    partial: "*ref(retriever)"
+    state: "*ref(cursor_state)"
+    requester:
+      partial: "*ref(requester)"
+      path: "suppression/invalid_emails"
+      request_parameters_provider: "*ref(cursor_offset_request_parameter_provider)"
+    paginator:
+      partial: "*ref(offset_paginator)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
+spam_reports_stream:
+  partial: "*ref(partial_stream)"
+  cursor_field: ["created"]
+  kwargs:
+    name: "spam_reports"
+    primary_key: "email"
+  retriever:
+    partial: "*ref(retriever)"
+    state: "*ref(cursor_state)"
+    requester:
+      partial: "*ref(requester)"
+      path: "suppression/spam_reports"
+      request_parameters_provider: "*ref(cursor_offset_request_parameter_provider)"
+    paginator:
+      partial: "*ref(offset_paginator)"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".[]"
 streams:
-  - partial: "*ref(partial_stream)"
-    kwargs:
-      name: "lists"
-      primary_key: "id"
-    retriever:
-      partial: "*ref(retriever)"
-      requester:
-        partial: "*ref(requester)"
-        path:
-          partial: "*ref(next_page_url_from_token_partial)"
-          default: "marketing/lists"
-      paginator:
-        partial: "*ref(metadata_paginator)"
-      extractor:
-        partial: "*ref(extractor)"
-        transform: ".result[]"
+  - "*ref(lists_stream)"
+  - "*ref(campaigns_stream)"
+  - "*ref(contacts_stream)"
+  - "*ref(stats_automations_stream)"
+  - "*ref(segments_stream)"
+  - "*ref(single_sends_stream)"
+  - "*ref(templates_stream)"
+  - "*ref(global_suppressions_stream)"
+  - "*ref(suppression_groups_stream)"
+  - "*ref(suppression_group_members_stream)"
+  - "*ref(blocks_stream)"
+  - "*ref(bounces_stream)"
+  - "*ref(invalid_emails_stream)"
+  - "*ref(spam_reports_stream)"
 source:
   class_name: airbyte_cdk.sources.lcc.YamlConfigurableSource.YamlConfigurableSource
   connection_checker:

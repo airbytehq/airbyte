@@ -9,7 +9,7 @@ class NoState(State):
     def __init__(self, **kwargs):
         pass
 
-    def update_state(self, stream_slice, stream_state, last_response, last_record):
+    def update_state(self, **kwargs):
         pass
 
     def get_state(self):
