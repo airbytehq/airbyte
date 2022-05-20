@@ -70,7 +70,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
+            String.join("&", SSL_PARAMETERS)),
+        SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {
