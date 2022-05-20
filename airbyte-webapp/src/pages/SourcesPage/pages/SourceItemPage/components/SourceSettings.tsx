@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -10,20 +10,29 @@ import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 const Content = styled.div`
   max-width: 813px;
   margin: 18px auto;
 `;
 
-type IProps = {
+interface SourceSettingsProps {
   currentSource: Source;
   connectionsWithSource: Connection[];
-};
+}
 
-const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {
+const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
+
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
