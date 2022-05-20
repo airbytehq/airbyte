@@ -4,7 +4,6 @@
 
 package io.airbyte.db.instance.jobs.migrations;
 
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.jobs.AbstractJobsDatabaseTest;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -17,8 +16,7 @@ public class V0_35_5_001__Add_failureSummary_col_to_AttemptsTest extends Abstrac
 
   @Test
   public void test() throws SQLException, IOException {
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = getDslContext();
     Assertions.assertFalse(failureSummaryColumnExists(context));
     V0_35_5_001__Add_failureSummary_col_to_Attempts.addFailureSummaryColumn(context);
     Assertions.assertTrue(failureSummaryColumnExists(context));

@@ -113,6 +113,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.30  | 2022-05-09 | [12294](https://github.com/airbytehq/airbyte/pull/12294) | Add incremental support for streams `CommitCommentReactions`, `IssueCommentReactions`, `IssueReactions`, `PullRequestCommentReactions`, `Repositories`, `Workflows` |
 | 0.2.29  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.2.28  | 2022-04-21 | [11893](https://github.com/airbytehq/airbyte/pull/11893) | Add new streams `TeamMembers`, `TeamMemberships`                                                           |
 | 0.2.27  | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678) | Fix "PAT Credentials" in spec                                                                              |

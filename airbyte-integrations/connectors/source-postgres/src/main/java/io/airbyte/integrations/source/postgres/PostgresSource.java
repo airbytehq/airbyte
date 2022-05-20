@@ -17,6 +17,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -51,7 +52,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
-  static final String DRIVER_CLASS = "org.postgresql.Driver";
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -136,11 +137,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
-        LOGGER.debug("Discovering schema: {}", schema);
-        internals.addAll(super.discoverInternal(database, schema));
-      }
-      for (final TableInfo<CommonField<JDBCType>> info : internals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+        LOGGER.info("Checking schema: {}", schema);
+        final List<TableInfo<CommonField<JDBCType>>> tables = super.discoverInternal(database, schema);
+        internals.addAll(tables);
+        for (final TableInfo<CommonField<JDBCType>> table : tables) {
+          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
+        }
       }
       return internals;
     } else {
@@ -308,12 +310,33 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                          OR     s[2] = 'r');
+                        OR     s[2] = 'r')
+                 UNION
+                 SELECT DISTINCT table_catalog,
+                         table_schema,
+                         table_name,
+                         privilege_type
+                 FROM            information_schema.table_privileges p
+                 JOIN			 information_schema.applicable_roles r ON p.grantee = r.role_name
+                 WHERE   r.grantee in
+                (WITH RECURSIVE membership_tree(grpid, userid) AS (
+                    SELECT pg_roles.oid, pg_roles.oid
+                    FROM pg_roles WHERE oid = (select oid from pg_roles where  rolname=?)
+                  UNION ALL
+                    SELECT m_1.roleid, t_1.userid
+                    FROM pg_auth_members m_1, membership_tree t_1
+                    WHERE m_1.member = t_1.grpid
+                )
+                SELECT DISTINCT m.rolname AS grpname
+                FROM membership_tree t, pg_roles r, pg_roles m
+                WHERE t.grpid = m.oid AND t.userid = r.oid)
+                 AND             privilege_type = 'SELECT';
           """);
-      final String username = database.getDatabaseConfig().get("username").asText();
+      final String username = getUsername(database.getDatabaseConfig());
       ps.setString(1, username);
       ps.setString(2, username);
       ps.setString(3, username);
+      ps.setString(4, username);
       return ps;
     };
 
@@ -324,6 +347,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .tableName(e.get("table_name").asText())
             .build())
         .collect(toSet());
+  }
+
+  @VisibleForTesting
+  static String getUsername(final JsonNode databaseConfig) {
+    final String jdbcUrl = databaseConfig.get("jdbc_url").asText();
+    final String username = databaseConfig.get("username").asText();
+
+    // Azure Postgres server has this username pattern: <username>@<host>.
+    // Inside Postgres, the true username is just <username>.
+    // The jdbc_url is constructed in the toDatabaseConfigStatic method.
+    if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
+      final String[] tokens = username.split("@");
+      final String postgresUsername = tokens[0];
+      LOGGER.info("Azure username \"{}\" is detected; use \"{}\" to check permission", username, postgresUsername);
+      return postgresUsername;
+    }
+
+    return username;
   }
 
   @Override

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -22,7 +23,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
-  public static final String DRIVER_CLASS = "org.postgresql.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   public static final String DATABASE_KEY = "database";

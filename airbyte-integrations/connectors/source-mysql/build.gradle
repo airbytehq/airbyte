@@ -10,6 +10,24 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    /*
+     * For some reason, the MySQL testcontainer does not start properly on
+     * newer versions of the testcontainers library.  Therefore, pin the version
+     * to the known working version to ensure that the tests continue to work.
+     */
+    testRuntimeClasspath {
+        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:mysql:1.15.3'
+    }
+    integrationTestRuntimeClasspath {
+        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:mysql:1.15.3'
+    }
+}
+
 dependencies {
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')

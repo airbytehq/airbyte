@@ -93,7 +93,6 @@ const OnboardingPage: React.FC = () => {
       >
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
         <StepsCounter steps={steps} currentStep={currentStep} />
-
         <Suspense fallback={<LoadingPage />}>
           {currentStep === StepType.INSTRUCTION && (
             <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
@@ -115,7 +114,6 @@ const OnboardingPage: React.FC = () => {
           )}
           {currentStep === StepType.FINAl && <FinalStep />}
         </Suspense>
-
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
             {currentStep === StepType.FINAl ? (

@@ -68,9 +68,6 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
       }
       return null;
     });
-
-    database.close();
-
   }
 
   /**

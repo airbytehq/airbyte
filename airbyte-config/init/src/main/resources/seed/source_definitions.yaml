@@ -17,11 +17,11 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
@@ -240,7 +240,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.46
+  dockerImageTag: 0.2.47
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -249,7 +249,7 @@
   sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerRepository: airbyte/source-facebook-pages
   dockerImageTag: 0.1.6
-  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   icon: facebook.svg
   sourceType: api
   releaseStage: alpha
@@ -295,7 +295,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.29
+  dockerImageTag: 0.2.30
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -311,7 +311,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.36
+  dockerImageTag: 0.1.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -343,7 +343,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -390,7 +390,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.58
+  dockerImageTag: 0.1.59
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -407,7 +407,7 @@
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
   dockerImageTag: 0.1.9
-  documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
   releaseStage: beta
@@ -463,7 +463,7 @@
   sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/source-lemlist
+  documentationUrl: https://docs.airbyte.io/integrations/sources/lemlist
   sourceType: api
   releaseStage: alpha
 - name: Lever Hiring
@@ -598,7 +598,7 @@
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
   dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
+  documentationUrl: https://docs.airbyte.io/integrations/sources/onesignal
   icon: onesignal.svg
   sourceType: api
   releaseStage: alpha
@@ -624,6 +624,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/orb
   icon: orb.svg
   sourceType: api
+  releaseStage: alpha
 - sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
   name: Outreach
   dockerRepository: airbyte/source-outreach
@@ -675,7 +676,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
@@ -714,7 +715,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.12
+  dockerImageTag: 0.4.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -778,7 +779,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -794,7 +795,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.8
+  dockerImageTag: 1.0.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -870,6 +871,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/square
   icon: square.svg
   sourceType: api
+  releaseStage: alpha
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   name: Strava
   dockerRepository: airbyte/source-strava
@@ -912,11 +914,11 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
@@ -948,11 +950,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
   icon: uscensus.svg
   sourceType: api
+  releaseStage: alpha
 - sourceDefinitionId: afa734e4-3571-11ec-991a-1e0031268139
   name: YouTube Analytics
   dockerRepository: airbyte/source-youtube-analytics
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/source-youtube-analytics
+  documentationUrl: https://docs.airbyte.io/integrations/sources/youtube-analytics
   icon: youtube.svg
   sourceType: api
   releaseStage: alpha
@@ -1002,6 +1005,7 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/zenloop
   sourceType: api
+  releaseStage: alpha
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
