@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
+interface ConnectionCreateSourceFormProps {
   afterSubmit: () => void;
-};
+}
 
-const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -43,7 +44,13 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
 };
-
-export default SourceFormComponent;

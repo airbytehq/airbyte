@@ -6,6 +6,8 @@ import { useToggle } from "react-use";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
+import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { FormBaseItem } from "core/form/types";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
@@ -122,6 +124,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onStopTesting,
     testConnector,
     selectedConnectorDefinitionSpecification,
+    availableServices,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -145,6 +148,29 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
+  const documentationUrl = useMemo(() => {
+    if (!selectedConnectorDefinitionSpecification) {
+      return undefined;
+    }
+
+    const selectedServiceDefinition = availableServices.find((service) => {
+      if (isSourceDefinition(service)) {
+        const serviceDefinitionId = service.sourceDefinitionId;
+        return (
+          isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+          serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
+        );
+      } else {
+        const serviceDefinitionId = service.destinationDefinitionId;
+        return (
+          isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+          serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
+        );
+      }
+    });
+    return selectedServiceDefinition?.documentationUrl;
+  }, [availableServices, selectedConnectorDefinitionSpecification]);
+
   const uiOverrides = useMemo(
     () => ({
       name: {
@@ -155,7 +181,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={selectedConnectorDefinitionSpecification?.documentationUrl}
+            documentationUrl={documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
@@ -169,7 +195,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     }),
     [
       formType,
-      selectedConnectorDefinitionSpecification?.documentationUrl,
+      documentationUrl,
       props.onServiceSelect,
       props.availableServices,
       props.isEditMode,

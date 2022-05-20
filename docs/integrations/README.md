@@ -132,7 +132,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
 | [Sendgrid](sources/sendgrid.md)                                                             | Alpha                | Yes                 |
 | [Sentry](sources/sentry.md)                                                                 | Alpha                | Yes                 |
-| [Shopify](sources/shopify.md)                                                               | Alpha                | Yes                 |
+| [Shopify](sources/shopify.md)                                                               | Alpha                | No                 |
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
 | [Slack](sources/slack.md)                                                                   | Alpha                | No                  |
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
