@@ -60,15 +60,15 @@ def test_fetch_record(patch_base_class, requests_mock):
     expected = {"id": 1}
     record = {"links": [{"href": "https://netsuite.com/1"}]}
     requests_mock.get("https://netsuite.com/1", json={"id": 1})
-    assert expected == stream.fetch_record(record)
+    assert expected == stream.fetch_record(record, {})
 
 def test_parse_response(patch_base_class):
     stream = make_stream()
     response = MagicMock()
     response.json = MagicMock(return_value={"items": [{"id": 1}]})
-    inputs = {"response": response}
+    inputs = {"response": response, "stream_state": {}}
     expected_parsed_object = {"id": 1}
-    with patch.object(Pool, 'map', return_value=[{"id": 1}]):
+    with patch.object(Pool, 'starmap', return_value=[{"id": 1}]):
         assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 def test_http_method(patch_base_class):

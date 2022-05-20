@@ -7,8 +7,8 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from requests_oauthlib import OAuth1
 from multiprocessing import Pool
+from requests_oauthlib import OAuth1
 from datetime import datetime, timedelta, date
 
 from airbyte_cdk.models import SyncMode
@@ -23,6 +23,7 @@ class NetsuiteStream(HttpStream, ABC):
         self.record_url = record_url
         self.concurrency_limit = concurrency_limit
         self.start_datetime = start_datetime
+        self.concurrency_limit = concurrency_limit
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -68,18 +69,20 @@ class NetsuiteStream(HttpStream, ABC):
             query = {"q": f"lastModifiedDate AFTER {fmt_date}"}
         return {**query, **next_page_token}
 
-    def fetch_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         url = record["links"][0]["href"]
-        resp = requests.get(url, auth=self._session.auth)
-        resp.raise_for_status()
+        args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
+        prep_req = self._session.prepare_request(requests.Request(**args))
+        resp = self._send_request(prep_req, request_kwargs)
         return resp.json()
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
         records = response.json().get("items")
-        with Pool(self.concurrency_limit) as pool:
-            data = pool.map(self.fetch_record, records) if records else []
-            for record in data:
-                yield record
+        pool = Pool(self.concurrency_limit)
+        request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
+        data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
+        for record in data:
+            yield record
 
 
 # Basic incremental stream
@@ -113,8 +116,6 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        print(stream_slice)
-        print(stream_state)
         return {**(stream_slice or {}), **(next_page_token or {})}
 
 # Source
