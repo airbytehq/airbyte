@@ -61,10 +61,7 @@ class SourceFacebookMarketing(AbstractSource):
         api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(
-            api=api,
-            start_date=config.start_date,
-            end_date=config.end_date,
-            insights_lookback_window=config.insights_lookback_window
+            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
             AdAccount(api=api),

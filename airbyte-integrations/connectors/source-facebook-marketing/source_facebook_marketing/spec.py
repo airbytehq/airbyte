@@ -79,9 +79,7 @@ class InsightConfig(BaseModel):
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",
-        description=(
-            "The attribution window"
-        ),
+        description=("The attribution window"),
         exclusiveMaximum=28,
         default=28,
     )
@@ -168,9 +166,7 @@ class ConnectorConfig(BaseConfig):
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
         order=7,
-        description=(
-            "The attribution window"
-        ),
+        description=("The attribution window"),
         exclusiveMaximum=28,
         default=28,
     )
