@@ -5,9 +5,10 @@ import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
 
 import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -122,28 +123,18 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   connection,
 }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
+
+  const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<Error | null>(null);
+
   const formatMessage = useIntl().formatMessage;
+
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+
   const workspace = useCurrentWorkspace();
-
-  const openResetDataModal = useCallback(() => {
-    openConfirmationModal({
-      title: "form.resetData",
-      text: "form.changedColumns",
-      submitButtonText: "form.reset",
-      cancelButtonText: "form.noNeed",
-      onSubmit: async () => {
-        await onReset?.();
-        closeConfirmationModal();
-      },
-    });
-  }, [closeConfirmationModal, onReset, openConfirmationModal]);
-
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
@@ -161,9 +152,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
         const requiresReset =
           mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
-
         if (requiresReset) {
-          openResetDataModal();
+          setResetModalIsOpen(true);
         }
 
         result?.onSubmitComplete?.();
@@ -180,7 +170,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       mode,
       initialValues.syncCatalog,
       editSchemeMode,
-      openResetDataModal,
     ]
   );
 
@@ -322,6 +311,16 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               </>
             )}
           </Section>
+          {modalIsOpen && (
+            <ResetDataModal
+              modalType={ModalTypes.RESET_CHANGED_COLUMN}
+              onClose={() => setResetModalIsOpen(false)}
+              onSubmit={async () => {
+                await onReset?.();
+                setResetModalIsOpen(false);
+              }}
+            />
+          )}
         </FormContainer>
       )}
     </Formik>
