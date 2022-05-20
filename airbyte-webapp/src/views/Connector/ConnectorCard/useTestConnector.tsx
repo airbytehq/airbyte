@@ -20,6 +20,7 @@ export const useTestConnector = (
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
   error: Error | null;
+  reset: () => void;
 } => {
   const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(props.formType);
 
@@ -29,6 +30,7 @@ export const useTestConnector = (
     isTestConnectionInProgress: isLoading,
     isSuccess,
     error,
+    reset,
     onStopTesting: () => {
       abortControllerRef.current?.abort();
       reset();
