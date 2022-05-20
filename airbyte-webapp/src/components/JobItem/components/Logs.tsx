@@ -1,4 +1,4 @@
-import React from "react";
+import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 import styled from "styled-components";
@@ -39,7 +39,7 @@ type LogsProps = {
 
 const Logs: React.FC<LogsProps> = ({ logsArray, logTimestamp }) => {
   const logsJoin = logsArray?.length ? logsArray.join("\n") : "No logs available";
-  const matchingLineNumbers = getMatchingLineNumbers(logTimestamp, logsArray);
+  const matchingLineNumbers = useMemo(() => getMatchingLineNumbers(logTimestamp, logsArray), [logsArray, logTimestamp]);
 
   return (
     <LogsView isEmpty={!logsArray}>
@@ -67,14 +67,13 @@ const Logs: React.FC<LogsProps> = ({ logsArray, logTimestamp }) => {
  * 2. The timestamps used are in the same timezone
  * 3. The error is closer to the end of the log file than the beginning
  * 4. Lines are matched by the start of a line with "YYYY-MM-DD HH:mm:ss" format, like "2022-05-17 23:00:19 DEBUG I am a log message"
- *
- * TODO: it appears that LazyLog only highlights the first 2 lines in the array.  Can this be fixed?
  */
 const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: string[] | undefined) => {
   if (!matchTimestamp || !lines || lines.length === 0) {
     return [];
   }
 
+  const resolutionOffset = 1000; // the resolution of the timestamps is in seconds
   const matchingLineNumbers: number[] = [];
   const matcher = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
 
@@ -83,16 +82,16 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
     const timeString = lines[lineCounter].match(matcher);
     if (timeString) {
       const datetime = Date.parse(`${timeString[0].replace(" ", "T")}Z`);
-      if (datetime - 1000 <= matchTimestamp && datetime + 1000 >= matchTimestamp) {
+      if (datetime - resolutionOffset <= matchTimestamp && datetime + resolutionOffset >= matchTimestamp) {
         matchingLineNumbers.push(lineCounter + 1);
-      } else if (datetime - 2001 <= matchTimestamp) {
+      } else if (datetime - (resolutionOffset * 2 + 1) <= matchTimestamp) {
         break; // Once we've reached a timestamp earlier than our search, we can stop seeking
       }
     }
     lineCounter--;
   }
 
-  return matchingLineNumbers.sort();
+  return [Math.min(...matchingLineNumbers), Math.max(...matchingLineNumbers)];
 };
 
 export default Logs;
