@@ -142,8 +142,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
         Map.of("role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText())
-    );
+            "database", config.get("database").asText()));
   }
 
   @Test

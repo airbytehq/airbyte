@@ -66,7 +66,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
     final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
@@ -84,12 +85,13 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   private void executeQuery(final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
         DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
-            config.get("port").asInt())), null)) {
+            container.getUsername(),
+            container.getPassword(),
+            container.getDriverClassName(),
+            String.format("jdbc:sqlserver://%s:%d;",
+                config.get("host").asText(),
+                config.get("port").asInt())),
+        null)) {
       final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
