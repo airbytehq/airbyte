@@ -4,11 +4,15 @@
 
 Add any relevant unit tests to the `unit_tests` directory. Unit tests should **not** depend on any secrets.
 
-You can run the tests using `python -m pytest -s unit_tests`
+You can run the tests using `python -m pytest -s unit_tests`.
 
 ## Integration Tests
 
 Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery).
+
+Run integration tests using `python -m pytest -s integration_tests`.
+
+More information on integration testing can be found on [the Testing Connectors doc]([url](https://docs.airbyte.com/connector-development/testing-connectors/#running-integration-tests)).
 
 ## Standard Tests
 
