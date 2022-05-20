@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class YamlListToStandardDefinitionsTest {
+
   private static final String DESTINATION_DEFINITION_ID = "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n";
   private static final String DESTINATION_NAME = "  name: Local JSON\n";
   private static final String DOCKER_REPO = "  dockerRepository: airbyte/destination-local-json\n";
