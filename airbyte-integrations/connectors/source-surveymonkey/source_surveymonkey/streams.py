@@ -116,7 +116,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, ''))}
 
 
 class Surveys(IncrementalSurveymonkeyStream):
