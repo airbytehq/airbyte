@@ -102,9 +102,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
+
+        date_start = None
+        if stream_state:
+            date_start = stream_state.get("date_start")
+            if date_start:
+                date_start = pendulum.parse(date_start).date()
+
         job = stream_slice["insight_job"]
         for obj in job.get_result():
-            yield obj.export_all_data()
+            record = obj.export_all_data()
+            if date_start and pendulum.parse(record["updated_time"]).date() <= date_start:
+                continue
+            yield record
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
@@ -173,9 +183,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
+        today = pendulum.today().date()
+        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
+
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
-                continue
+                if ts_start < refresh_date:
+                    continue
+                self._completed_slices.remove(ts_start)
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
