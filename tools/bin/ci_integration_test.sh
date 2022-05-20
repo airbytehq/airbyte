@@ -43,8 +43,19 @@ else
 fi
 }
 
+show_run_details() {
+   run_info=`sed -n "/=* $1 =*/,/========/p" build.out`
+   if ! test -z "$run_info"
+   then
+      echo '```' >> $GITHUB_STEP_SUMMARY
+      echo "$run_info" | sed '$d' >> $GITHUB_STEP_SUMMARY  # $d removes last line
+      echo '```' >> $GITHUB_STEP_SUMMARY
+      echo '' >> $GITHUB_STEP_SUMMARY
+   fi
+}
+
 show_skipped_failed_info() {
-   skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
+   skipped_failed_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
    if ! test -z "$skipped_failed_info"
       then
          echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
@@ -53,9 +64,21 @@ show_skipped_failed_info() {
          echo "$skipped_failed_info" >> $GITHUB_ENV
          echo '```' >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
+
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "$skipped_failed_info" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo '' >> $GITHUB_STEP_SUMMARY
    else
       echo "PYTHON_SHORT_TEST_SUMMARY_INFO=No skipped/failed tests"
+      echo '### No skipped/failed tests' >> $GITHUB_STEP_SUMMARY
    fi
+}
+
+write_logs() {
+  show_skipped_failed_info
+  show_run_details 'FAILURES'
+  show_run_details 'ERRORS'
 }
 
 # Copy command output to extract gradle scan link.
@@ -70,11 +93,11 @@ test $run_status == "0" || {
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> $GITHUB_ENV
-   show_skipped_failed_info
+   write_logs
    exit $run_status
 }
 
-show_skipped_failed_info
+write_logs
 
 # Build successed
 coverage_report=`sed -n '/.*Name.*Stmts.*Miss.*Cover/,/TOTAL   /p' build.out`
