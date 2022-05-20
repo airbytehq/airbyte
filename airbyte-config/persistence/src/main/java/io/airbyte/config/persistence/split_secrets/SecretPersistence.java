@@ -16,9 +16,9 @@ import org.jooq.DSLContext;
  * are always strings. See {@link SecretCoordinate} for more information on how secrets are
  * identified.
  */
+@SuppressWarnings("PMD.MissingOverride")
 public interface SecretPersistence extends ReadOnlySecretPersistence {
 
-  @Override
   Optional<String> read(final SecretCoordinate coordinate);
 
   void write(final SecretCoordinate coordinate, final String payload);
