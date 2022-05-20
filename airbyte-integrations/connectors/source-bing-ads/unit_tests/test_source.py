@@ -44,14 +44,6 @@ def test_source_check_connection_ok(mocked_client, config, logger_mock):
 
 
 @patch.object(source_bing_ads.source, "Client")
-def test_source_check_connection_ok_strategy_all(mocked_client, config, logger_mock):
-    config = config.copy()
-    config["accounts"]["selection_strategy"] = "all"
-    with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267}, {"Id": 180278106}])):
-        assert SourceBingAds().check_connection(logger_mock, config=config) == (True, None)
-
-
-@patch.object(source_bing_ads.source, "Client")
 def test_source_check_connection_failed(mocked_client, config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=0):
         assert SourceBingAds().check_connection(logger_mock, config=config)[0] is False
