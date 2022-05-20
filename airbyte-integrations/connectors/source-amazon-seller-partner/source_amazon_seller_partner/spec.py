@@ -10,15 +10,16 @@ from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion
 class AmazonSellerPartnerConfig(BaseModel):
     class Config:
         title = "Amazon Seller Partner Spec"
+        schema_extra = {"additionalProperties": True}
 
     app_id: str = Field(None, description="Your Amazon App ID", title="App Id *", airbyte_secret=True, order=0)
 
-    # auth_type: str = Field(default="oauth2.0", const=True, order=1)
+    auth_type: str = Field(default="oauth2.0", const=True, order=1)
 
-    lwa_app_id: str = Field(description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
+    client_id: str = Field(None, description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
-    lwa_client_secret: str = Field(
-        description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3
+    client_secret: str = Field(
+        None, description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3
     )
 
     refresh_token: str = Field(
@@ -75,8 +76,8 @@ class AmazonSellerPartnerConfig(BaseModel):
 
 advanced_auth = AdvancedAuth(
     auth_flow_type=AuthFlowType.oauth2_0,
-    predicate_key=[],
-    predicate_value="",
+    predicate_key=["auth_type"],
+    predicate_value="oauth2.0",
     oauth_config_specification=OAuthConfigSpecification(
         complete_oauth_output_specification={
             "type": "object",
@@ -92,8 +93,8 @@ advanced_auth = AdvancedAuth(
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "client_id": {"type": "string", "path_in_connector_config": ["lwa_app_id"]},
-                "client_secret": {"type": "string", "path_in_connector_config": ["lwa_client_secret"]},
+                "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
             },
         },
         oauth_user_input_from_connector_config_specification={

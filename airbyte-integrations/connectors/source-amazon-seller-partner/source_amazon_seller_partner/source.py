@@ -12,7 +12,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import get_marketplaces
-from source_amazon_seller_partner.spec import AmazonSellerPartnerConfig, advanced_auth
 from source_amazon_seller_partner.streams import (
     BrandAnalyticsAlternatePurchaseReports,
     BrandAnalyticsItemComparisonReports,
@@ -34,8 +33,26 @@ from source_amazon_seller_partner.streams import (
     VendorInventoryHealthReports,
 )
 
+from .spec import AmazonSellerPartnerConfig, advanced_auth
+
 
 class SourceAmazonSellerPartner(AbstractSource):
+    @staticmethod
+    def _get_client_id(config: AmazonSellerPartnerConfig) -> str:
+        if "client_id" in config.dict():
+            return config.client_id
+        if "lwa_app_id" in config.dict():
+            return config.lwa_app_id
+        raise ValueError("Client ID is required")
+
+    @staticmethod
+    def _get_client_secret(config: AmazonSellerPartnerConfig) -> str:
+        if "client_secret" in config.dict():
+            return config.client_secret
+        if "lwa_client_secret" in config.dict():
+            return config.lwa_client_secret
+        raise ValueError("Client Secret is required")
+
     def _get_stream_kwargs(self, config: AmazonSellerPartnerConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
@@ -50,8 +67,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
-            client_secret=config.lwa_client_secret,
-            client_id=config.lwa_app_id,
+            client_id=self._get_client_id(config),
+            client_secret=self._get_client_secret(config),
             refresh_token=config.refresh_token,
             host=endpoint.replace("https://", ""),
         )
