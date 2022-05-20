@@ -1,7 +1,10 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import re
 
 from airbyte_cdk import AirbyteLogger
-
 from source_typeform import SourceTypeform
 from source_typeform.source import TypeformStream
 
