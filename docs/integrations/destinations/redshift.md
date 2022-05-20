@@ -138,6 +138,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.38  | 2022-05-25 | [13069](https://github.com/airbytehq/airbyte/pull/13069) | Fixed array contents verification for SUPER type |
 | 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                 | 
 | 0.3.36  | 2022-05-23 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.3.35  | 2022-05-18 | [12940](https://github.com/airbytehq/airbyte/pull/12940) | Fixed maximum record size for SUPER type |
