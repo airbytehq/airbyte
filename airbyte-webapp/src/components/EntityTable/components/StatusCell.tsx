@@ -29,13 +29,13 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
     await onSync(id);
   }, []);
 
-  const OnToggleClick = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    onChangeStatus(id);
-  };
-
   if (!isManual) {
-    return <Switch checked={enabled} onChange={OnToggleClick} disabled={!allowSync} />;
+    const onSwitchChange = (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      onChangeStatus(id);
+    };
+
+    return <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} />;
   }
 
   if (isSyncing) {
