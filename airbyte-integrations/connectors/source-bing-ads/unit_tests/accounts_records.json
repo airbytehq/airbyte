@@ -1,4 +1,5 @@
-[{
+[
+  {
     "BillToCustomerId": 251186883,
     "CurrencyCode": "USD",
     "AccountFinancialStatus": "ClearFinancialStatus",
@@ -38,7 +39,8 @@
     "AutoTagType": "Preserve",
     "SoldToPaymentInstrumentId": null,
     "AccountMode": "Expert"
-  }, {
+  },
+  {
     "BillToCustomerId": 251186883,
     "CurrencyCode": "USD",
     "AccountFinancialStatus": "ClearFinancialStatus",

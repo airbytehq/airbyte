@@ -72,7 +72,13 @@
             "type": "object",
             "title": "Private OAuth2.0 Client",
             "description": "Microsoft Private Client API Credentials for connecting to Bings Ads",
-            "required": ["auth_method", "developer_token", "client_id", "client_secret", "refresh_token"],
+            "required": [
+              "auth_method",
+              "developer_token",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
             "properties": {
               "auth_method": {
                 "type": "string",
