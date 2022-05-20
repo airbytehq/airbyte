@@ -86,6 +86,15 @@ public class FailureHelper {
         .withExternalMessage(m.getError().getMessage());
   }
 
+  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
+    return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(origin)
+        .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
+        .withRetryable(false)
+        .withExternalMessage(String
+            .format("Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing", origin));
+  }
+
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.REPLICATION)

@@ -12,7 +12,7 @@
         "title": "Pokemon Name",
         "description": "Pokemon requested from the API.",
         "pattern": "^[a-z0-9_\\-]+$",
-        "examples": ["ditto, luxray, snorlax"]
+        "examples": ["ditto", "luxray", "snorlax"]
       }
     }
   }
