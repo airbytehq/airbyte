@@ -575,7 +575,7 @@ class TestIncrementalFileStream:
         "_get_master_schema",
         MagicMock(return_value={"column_A": "string", "column_B": "integer", "column_C": "boolean"}),
     )
-    def test_get_shema_map(self):
+    def test_get_schema_map(self):
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={}, format={"filetype": "csv"}, schema={}, path_pattern="**/prefix*.csv"
         )
@@ -586,4 +586,56 @@ class TestIncrementalFileStream:
             "column_A": "string",
             "column_B": "integer",
             "column_C": "boolean",
+        }
+
+    @pytest.mark.parametrize(
+        ("file_type", "error_expected"),
+        (
+            (
+                "csv",
+                False,
+            ),
+            ("avro", False),
+            ("parquet", False),
+            ("png", True),
+        ),
+    )
+    def test_fileformatparser_class(self, file_type, error_expected):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy", provider={}, format={"filetype": file_type}, schema={}, path_pattern="**/prefix*.csv"
+        )
+        if error_expected:
+            with pytest.raises(RuntimeError):
+                _ = stream_instance.fileformatparser_class
+        else:
+            assert stream_instance.fileformatparser_class
+
+    @patch.object(
+        IncrementalFileStreamS3,
+        "_get_schema_map",
+        MagicMock(
+            return_value={
+                "_ab_additional_properties": "object",
+                "_ab_source_file_last_modified": "string",
+                "_ab_source_file_url": "string",
+                "column_A": "string",
+                "column_B": "integer",
+                "column_C": "boolean",
+            }
+        ),
+    )
+    def test_get_json_schema(self):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy", provider={}, format={"filetype": "csv"}, schema={}, path_pattern="**/prefix*.csv"
+        )
+        assert stream_instance.get_json_schema() == {
+            "properties": {
+                "_ab_additional_properties": {"type": "object"},
+                "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
+                "_ab_source_file_url": {"type": "string"},
+                "column_A": {"type": ["null", "string"]},
+                "column_B": {"type": ["null", "integer"]},
+                "column_C": {"type": ["null", "boolean"]},
+            },
+            "type": "object",
         }
