@@ -13,11 +13,13 @@ import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3De
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -65,6 +67,13 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (final ConnectionErrorException e) {
+      LOGGER.error("Exception while checking connection: ", e);
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+              .getErrorMessage(e.getCustomErrorCode(), e);
+      return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
