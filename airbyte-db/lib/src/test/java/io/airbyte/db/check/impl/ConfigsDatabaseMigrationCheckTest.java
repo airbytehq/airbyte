@@ -32,7 +32,7 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, 60000L);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -49,7 +49,7 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, 2000L);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -66,14 +66,14 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, 2000L);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullFlyway() {
     final var minimumVersion = "2.0.0";
-    final var check = new ConfigsDatabaseMigrationCheck(null, minimumVersion, 2000L);
+    final var check = new ConfigsDatabaseMigrationCheck(null, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 

@@ -18,6 +18,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public abstract class AbstractDatabaseAvailabilityCheckTest {
 
+  protected static final long TIMEOUT_MS = 500L;
+
   protected PostgreSQLContainer<?> container;
 
   protected DataSource dataSource;

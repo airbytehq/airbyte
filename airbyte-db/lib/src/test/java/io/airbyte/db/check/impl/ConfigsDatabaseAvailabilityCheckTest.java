@@ -21,7 +21,7 @@ public class ConfigsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvaila
 
   @Test
   void checkDatabaseAvailability() {
-    final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, 60000L);
+    final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -29,13 +29,13 @@ public class ConfigsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvaila
   void checkDatabaseAvailabilityTimeout() {
     final DSLContext dslContext = mock(DSLContext.class);
     when(dslContext.fetchExists(any(Select.class))).thenThrow(new DataAccessException("test"));
-    final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, 2000L);
+    final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullDslContext() {
-    final var check = new ConfigsDatabaseAvailabilityCheck(null, 2000L);
+    final var check = new ConfigsDatabaseAvailabilityCheck(null, TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 

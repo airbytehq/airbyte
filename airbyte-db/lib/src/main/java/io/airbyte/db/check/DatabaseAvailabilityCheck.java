@@ -6,7 +6,6 @@ package io.airbyte.db.check;
 
 import static org.jooq.impl.DSL.select;
 
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.Database;
 import java.util.Optional;
 import java.util.function.Function;
@@ -47,7 +46,7 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
         initialized = isDatabaseConnected(getDatabaseName()).apply(database);
         if (!initialized) {
           getLogger().info("Database is not ready yet. Please wait a moment, it might still be initializing...");
-          Exceptions.toRuntime(() -> Thread.sleep(sleepTime));
+          Thread.sleep(sleepTime);
           totalTime += sleepTime;
         }
       } else {

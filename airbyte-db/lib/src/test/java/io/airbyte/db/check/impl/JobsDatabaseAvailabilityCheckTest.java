@@ -21,7 +21,7 @@ public class JobsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvailabil
 
   @Test
   void checkDatabaseAvailability() {
-    final var check = new JobsDatabaseAvailabilityCheck(dslContext, 60000L);
+    final var check = new JobsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -29,13 +29,13 @@ public class JobsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvailabil
   void checkDatabaseAvailabilityTimeout() {
     final DSLContext dslContext = mock(DSLContext.class);
     when(dslContext.fetchExists(any(Select.class))).thenThrow(new DataAccessException("test"));
-    final var check = new JobsDatabaseAvailabilityCheck(dslContext, 2000L);
+    final var check = new JobsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullDslContext() {
-    final var check = new JobsDatabaseAvailabilityCheck(null, 2000L);
+    final var check = new JobsDatabaseAvailabilityCheck(null, TIMEOUT_MS);
     Assertions.assertThrows(InterruptedException.class, () -> check.check());
   }
 
