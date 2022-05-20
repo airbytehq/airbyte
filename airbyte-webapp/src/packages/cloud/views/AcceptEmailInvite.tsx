@@ -2,7 +2,8 @@ import { Field, FieldProps, Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LabeledInput, LoadingButton } from "components";
+import { H1, LabeledInput, LoadingButton } from "components";
+import HeadTitle from "components/HeadTitle";
 
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
@@ -18,7 +19,7 @@ export const AcceptEmailInvite: React.FC = () => {
   const { formatMessage } = useIntl();
   const authService = useAuthService();
 
-  return (
+  const formElement = (
     <Formik
       initialValues={{
         name: "",
@@ -97,5 +98,15 @@ export const AcceptEmailInvite: React.FC = () => {
         </Form>
       )}
     </Formik>
+  );
+
+  return (
+    <>
+      <HeadTitle titles={[{ id: "login.inviteTitle" }]} />
+      <H1 bold>
+        <FormattedMessage id="login.inviteTitle" />
+      </H1>
+      {formElement}
+    </>
   );
 };
