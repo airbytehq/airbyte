@@ -23,9 +23,9 @@ public interface DatabaseMigrationCheck {
   /**
    * Checks whether the configured database has been migrated to the required minimum schema version.
    *
-   * @throws InterruptedException if unable to perform the check.
+   * @throws DatabaseCheckException if unable to perform the check.
    */
-  default void check() throws InterruptedException {
+  default void check() throws DatabaseCheckException {
     final var startTime = System.currentTimeMillis();
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
     final Optional<Flyway> flywayOptional = getFlyway();
@@ -38,15 +38,19 @@ public interface DatabaseMigrationCheck {
 
       while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
         if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
-          throw new InterruptedException("Timeout while waiting for database to fulfill minimum flyway migration version..");
+          throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
         }
 
-        Thread.sleep(sleepTime);
+        try {
+          Thread.sleep(sleepTime);
+        } catch (final InterruptedException e) {
+          throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+        }
         currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
       }
       getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
     } else {
-      throw new InterruptedException("Flyway configuration not present.");
+      throw new DatabaseCheckException("Flyway configuration not present.");
     }
   }
 

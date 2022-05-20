@@ -9,6 +9,7 @@ import static org.jooq.impl.DSL.select;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
+import io.airbyte.db.check.DatabaseCheckException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -29,14 +30,10 @@ public interface DatabaseInitializer {
   /**
    * Initializes the configured database.
    *
-   * @throws InterruptedException if unable to perform the initialization.
+   * @throws DatabaseInitializationException if unable to perform the initialization.
    */
-  default void init() throws InterruptedException {
-    try {
-      initialize();
-    } catch (final IOException e) {
-      throw new InterruptedException("Unable to perform database initialization: " + e.getMessage());
-    }
+  default void init() throws DatabaseInitializationException {
+    initialize();
   }
 
   /**
@@ -48,35 +45,38 @@ public interface DatabaseInitializer {
    * schema.</li>
    * </ol>
    *
-   * @throws IOException if unable to perform the initial schema check/creation.
-   * @throws InterruptedException if unable to verify the database availability.
+   * @throws DatabaseInitializationException if unable to verify the database availability.
    */
-  default void initialize() throws IOException, InterruptedException {
+  default void initialize() throws DatabaseInitializationException {
     // Verify that the database is up and reachable first
     final Optional<DatabaseAvailabilityCheck> availabilityCheck = getDatabaseAvailabilityCheck();
     if (availabilityCheck.isPresent()) {
-      availabilityCheck.get().check();
-      final Optional<DSLContext> dslContext = getDslContext();
-      if (dslContext.isPresent()) {
-        final Database database = new Database(dslContext.get());
-        new ExceptionWrappingDatabase(database).transaction(ctx -> {
-          // Verify that all the required tables are present
-          if (getTableNames().stream().allMatch(tableName -> hasTable(dslContext.get(), tableName))) {
-            getLogger().info("The {} database is initialized", getDatabaseName());
-          } else {
-            getLogger().info("The {} database has not been initialized; initializing it with schema: \n{}", getDatabaseName(), getInitialSchema());
-            ctx.execute(getInitialSchema());
-            getLogger().info("The {} database successfully initialized with schema: \n{}.", getDatabaseName(), getInitialSchema());
-          }
+      try {
+        availabilityCheck.get().check();
+        final Optional<DSLContext> dslContext = getDslContext();
+        if (dslContext.isPresent()) {
+          final Database database = new Database(dslContext.get());
+          new ExceptionWrappingDatabase(database).transaction(ctx -> {
+            // Verify that all the required tables are present
+            if (getTableNames().stream().allMatch(tableName -> hasTable(dslContext.get(), tableName))) {
+              getLogger().info("The {} database is initialized", getDatabaseName());
+            } else {
+              getLogger().info("The {} database has not been initialized; initializing it with schema: \n{}", getDatabaseName(), getInitialSchema());
+              ctx.execute(getInitialSchema());
+              getLogger().info("The {} database successfully initialized with schema: \n{}.", getDatabaseName(), getInitialSchema());
+            }
 
-          // Always return true, as the tables either exist or were just initialized by this transaction
-          return true;
-        });
-      } else {
-        throw new InterruptedException("Database configuration not present.");
+            // Always return true, as the tables either exist or were just initialized by this transaction
+            return true;
+          });
+        } else {
+          throw new DatabaseInitializationException("Database configuration not present.");
+        }
+      } catch (final DatabaseCheckException | IOException e) {
+        throw new DatabaseInitializationException("Database availability check failed.", e);
       }
     } else {
-      throw new InterruptedException("Availability check not configured.");
+      throw new DatabaseInitializationException("Availability check not configured.");
     }
   }
 

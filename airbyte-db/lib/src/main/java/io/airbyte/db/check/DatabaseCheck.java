@@ -12,8 +12,8 @@ public interface DatabaseCheck {
   /**
    * Checks whether the configured database is available.
    *
-   * @throws InterruptedException if unable to perform the check.
+   * @throws DatabaseCheckException if unable to perform the check.
    */
-  void check() throws InterruptedException;
+  void check() throws DatabaseCheckException;
 
 }

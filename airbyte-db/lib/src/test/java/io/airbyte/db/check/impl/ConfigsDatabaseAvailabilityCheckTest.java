@@ -8,6 +8,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.db.check.DatabaseCheckException;
 import org.jooq.DSLContext;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
@@ -30,13 +31,13 @@ public class ConfigsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvaila
     final DSLContext dslContext = mock(DSLContext.class);
     when(dslContext.fetchExists(any(Select.class))).thenThrow(new DataAccessException("test"));
     final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
-    Assertions.assertThrows(InterruptedException.class, () -> check.check());
+    Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullDslContext() {
     final var check = new ConfigsDatabaseAvailabilityCheck(null, TIMEOUT_MS);
-    Assertions.assertThrows(InterruptedException.class, () -> check.check());
+    Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
 }

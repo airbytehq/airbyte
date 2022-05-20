@@ -26,9 +26,9 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
   /**
    * Checks whether the configured database is available.
    *
-   * @throws InterruptedException if unable to perform the check.
+   * @throws DatabaseCheckException if unable to perform the check.
    */
-  default void check() throws InterruptedException {
+  default void check() throws DatabaseCheckException {
     var initialized = false;
     var totalTime = 0;
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
@@ -36,7 +36,7 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
     while (!initialized) {
       getLogger().warn("Waiting for database to become available...");
       if (totalTime >= getTimeoutMs()) {
-        throw new InterruptedException("Unable to connect to the database.");
+        throw new DatabaseCheckException("Unable to connect to the database.");
       }
 
       final Optional<DSLContext> dslContext = getDslContext();
@@ -46,11 +46,15 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
         initialized = isDatabaseConnected(getDatabaseName()).apply(database);
         if (!initialized) {
           getLogger().info("Database is not ready yet. Please wait a moment, it might still be initializing...");
-          Thread.sleep(sleepTime);
+          try {
+            Thread.sleep(sleepTime);
+          } catch (final InterruptedException e) {
+            throw new DatabaseCheckException("Unable to wait for database to be ready.", e);
+          }
           totalTime += sleepTime;
         }
       } else {
-        throw new InterruptedException("Database configuration not present.");
+        throw new DatabaseCheckException("Database configuration not present.");
       }
     }
   }

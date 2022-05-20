@@ -10,6 +10,8 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
+import io.airbyte.db.check.DatabaseCheckException;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.DatabaseConstants;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
@@ -42,14 +44,14 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
   }
 
   @Test
-  void testInitializationException() throws IOException, InterruptedException {
+  void testInitializationException() throws IOException, DatabaseCheckException {
     final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
     final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
 
-    doThrow(new InterruptedException("test")).when(databaseAvailabilityCheck).check();
+    doThrow(new DatabaseCheckException("test")).when(databaseAvailabilityCheck).check();
 
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
-    Assertions.assertThrows(InterruptedException.class, () -> initializer.init());
+    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.init());
   }
 
 }

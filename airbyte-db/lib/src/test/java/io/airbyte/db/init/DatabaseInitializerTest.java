@@ -5,7 +5,6 @@
 package io.airbyte.db.init;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -20,8 +19,8 @@ public class DatabaseInitializerTest {
     final var initializer = new DatabaseInitializer() {
 
       @Override
-      public void initialize() throws IOException, InterruptedException {
-        throw new IOException("test");
+      public void initialize() throws DatabaseInitializationException {
+        throw new DatabaseInitializationException("test");
       }
 
       @Override
@@ -56,7 +55,7 @@ public class DatabaseInitializerTest {
 
     };
 
-    Assertions.assertThrows(InterruptedException.class, () -> initializer.init());
+    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.init());
   }
 
   @Test
@@ -64,7 +63,7 @@ public class DatabaseInitializerTest {
     final var initializer = new DatabaseInitializer() {
 
       @Override
-      public void initialize() throws IOException, InterruptedException {}
+      public void initialize() throws DatabaseInitializationException {}
 
       @Override
       public Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck() {
