@@ -8,20 +8,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Set;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
   private static final String SCHEMA_NAME = "test";
 
   @Override
@@ -41,15 +45,15 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("replication_method", replicationMethod)
         .build());
 
-    final Database database = Databases.createDatabase(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.POSTGRES);
+    final Database database = new Database(dslContext);
 
     database.query(ctx -> {
       ctx.execute(String.format("CREATE SCHEMA %S;", SCHEMA_NAME));
@@ -63,7 +67,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
-      ctx.execute("SET TIMEZONE TO 'America/Los_Angeles'");
+      ctx.execute("SET TIMEZONE TO 'MST'");
       return null;
     });
 
@@ -87,6 +91,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -458,9 +463,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
-              // A time value without time zone will use the time zone set on the database, which is Z-8,
-              // so 13:00:01 is returned as 13:00:01-08.
-              .addExpectedValues(null, "13:00:01-08", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
+              // A time value without time zone will use the time zone set on the database, which is Z-7,
+              // so 13:00:01 is returned as 13:00:01-07.
+              .addExpectedValues(null, "13:00:01-07", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
               .build());
     }
 

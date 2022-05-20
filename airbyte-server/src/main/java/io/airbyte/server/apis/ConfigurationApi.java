@@ -87,6 +87,8 @@ import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceState;
+import io.airbyte.api.model.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -139,6 +141,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -183,7 +186,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final Path workspaceRoot,
                           final HttpClient httpClient,
                           final FeatureFlags featureFlags,
-                          final EventRunner eventRunner) {
+                          final EventRunner eventRunner,
+                          final Flyway configsFlyway,
+                          final Flyway jobsFlyway) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -242,8 +247,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        eventRunner);
-    healthCheckHandler = new HealthCheckHandler();
+        eventRunner,
+        configRepository);
+    healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
         configRepository,
@@ -256,7 +262,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         true);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
-    dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
+    dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
   }
 
   // WORKSPACE
@@ -398,8 +404,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // SOURCE SPECIFICATION
 
   @Override
-  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
+  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId));
   }
 
   // OAUTH
@@ -596,8 +602,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(
-                                                                                      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
+                                                                                      final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
   }
 
   // DESTINATION IMPLEMENTATION
@@ -815,6 +821,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
+    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
   @Override

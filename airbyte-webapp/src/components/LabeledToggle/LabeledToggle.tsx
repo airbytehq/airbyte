@@ -19,8 +19,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   padding-left: 7px;
   font-size: 13px;
   line-height: 16px;
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.greyColor40 : theme.textColor};
+  color: ${({ theme, disabled }) => (disabled ? theme.greyColor40 : theme.textColor)};
   cursor: ${({ disabled }) => (disabled ? "auto" : "pointer")};
 `;
 

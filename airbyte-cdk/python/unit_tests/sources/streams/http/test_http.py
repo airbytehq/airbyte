@@ -424,3 +424,71 @@ def test_using_cache(mocker):
         pass
 
     assert parent_stream.cassete.play_count != 0
+
+
+class AutoFailTrueHttpStream(StubBasicReadHttpStream):
+    raise_on_http_errors = True
+
+
+@pytest.mark.parametrize("status_code", range(400, 600))
+def test_send_raise_on_http_errors_logs(mocker, status_code):
+    mocker.patch.object(AutoFailTrueHttpStream, "logger")
+    mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
+    stream = AutoFailTrueHttpStream()
+    req = requests.Response()
+    req.status_code = status_code
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    with pytest.raises(requests.exceptions.HTTPError):
+        response = stream._send_request(req, {})
+        stream.logger.error.assert_called_with(response.text)
+        assert response.status_code == status_code
+
+
+@pytest.mark.parametrize(
+    "api_response, expected_message",
+    [
+        ({"error": "something broke"}, "something broke"),
+        ({"error": {"message": "something broke"}}, "something broke"),
+        ({"error": "err-001", "message": "something broke"}, "something broke"),
+        ({"failure": {"message": "something broke"}}, "something broke"),
+        ({"error": {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}}, "one, two, three"),
+        ({"errors": ["one", "two", "three"]}, "one, two, three"),
+        ({"messages": ["one", "two", "three"]}, "one, two, three"),
+        ({"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]}, "one, two, three"),
+        ({"failures": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        (["one", "two", "three"], "one, two, three"),
+        ([{"error": "one"}, {"error": "two"}, {"error": "three"}], "one, two, three"),
+        ({"error": True}, None),
+        ({"something_else": "hi"}, None),
+        ({}, None),
+    ],
+)
+def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
+    stream = StubBasicReadHttpStream()
+    response = MagicMock()
+    response.json.return_value = api_response
+
+    message = stream.parse_response_error_message(response)
+    assert message == expected_message
+
+
+def test_default_parse_response_error_message_not_json():
+    stream = StubBasicReadHttpStream()
+    response = MagicMock()
+    response.json.side_effect = requests.exceptions.JSONDecodeError()
+
+    message = stream.parse_response_error_message(response)
+    assert message is None
+
+
+def test_default_get_error_display_message_handles_http_error(mocker):
+    stream = StubBasicReadHttpStream()
+    mocker.patch.object(stream, "parse_response_error_message", return_value="my custom message")
+
+    non_http_err_msg = stream.get_error_display_message(RuntimeError("not me"))
+    assert non_http_err_msg is None
+
+    http_err_msg = stream.get_error_display_message(requests.HTTPError())
+    assert http_err_msg == "my custom message"

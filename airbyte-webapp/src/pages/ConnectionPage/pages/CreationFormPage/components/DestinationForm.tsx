@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-
-import useRouter from "hooks/useRouter";
+import React, { useEffect, useState } from "react";
 
 // TODO: create separate component for source and destinations forms
-import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+import useRouter from "hooks/useRouter";
+import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
+interface ConnectionCreateDestinationFormProps {
   afterSubmit: () => void;
-};
+}
 
-const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
@@ -24,9 +24,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = destinationDefinitions.find(
-      (item) => item.destinationDefinitionId === values.serviceType
-    );
+    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
     const result = await createDestination({
       values,
       destinationConnector: connector,
@@ -47,6 +45,14 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   return (
     <DestinationForm
       onSubmit={onSubmitDestinationForm}
@@ -55,5 +61,3 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     />
   );
 };
-
-export default CreateDestinationPage;

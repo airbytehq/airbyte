@@ -1,34 +1,30 @@
-import React, { useCallback, useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
-import { WarningMessage } from "../WarningMessage";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
-
-import { FormBaseItem } from "core/form/types";
-import {
-  Connector,
-  ConnectorDefinition,
-  ReleaseStage,
-} from "core/domain/connector";
-
-import Instruction from "./Instruction";
-import {
-  IDataItem,
-  IProps as OptionProps,
-  OptionView,
-} from "components/base/DropDown/components/Option";
+import { ControlLabels, DropDown, DropDownRow } from "components";
+import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
   IProps as SingleValueProps,
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import { GAIcon } from "components/icons/GAIcon";
+
+import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
+import { FormBaseItem } from "core/form/types";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useExperiment } from "hooks/services/Experiment";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+
+import { WarningMessage } from "../WarningMessage";
+import { DocumentationLink } from "./DocumentationLink";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -84,13 +80,6 @@ const SingleValueContent = styled(components.SingleValue)`
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 /**
- * Can be used to overwrite the alphabetical order of connectors in the select.
- * A higher positive number will put the given connector to the top of the list
- * a low negative number to the end of it.
- */
-const ORDER_OVERWRITE: Record<string, number> = {};
-
-/**
  * Returns the order for a specific release stage label. This will define
  * in what order the different release stages are shown inside the select.
  * They will be shown in an increasing order (i.e. 0 on top), unless not overwritten
@@ -107,46 +96,37 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
-  children,
-  ...props
-}) => (
+const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
-      <Block
-        onClick={() =>
-          props.selectProps.selectProps.onOpenRequestConnectorModal(
-            props.selectProps.inputValue
-          )
-        }
-      >
+      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
     </BottomElement>
   </>
 );
 
-const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
-  releaseStage,
-}) =>
-  releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
+  if (!releaseStage) {
+    return null;
+  }
+
+  if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
+    return <GAIcon />;
+  }
+
+  return (
     <Stage>
-      <FormattedMessage
-        id={`connector.releaseStage.${releaseStage}`}
-        defaultMessage={releaseStage}
-      />
+      <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
     </Stage>
-  ) : null;
+  );
+};
 
 const Option: React.FC<OptionProps> = (props) => {
   return (
     <components.Option {...props}>
-      <OptionView
-        data-testid={props.data.label}
-        isSelected={props.isSelected}
-        isDisabled={props.isDisabled}
-      >
+      <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
         <Text>
           {props.data.img || null}
           <Label>{props.label}</Label>
@@ -188,7 +168,8 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl,
   onOpenRequestConnectorModal,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
+  const orderOverwrite = useExperiment("connector.orderOverwrite", {});
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
 
@@ -215,32 +196,46 @@ const ConnectorServiceTypeControl: React.FC<{
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .filter(
-          (item) => !disallowedOauthConnectors.includes(Connector.id(item))
-        )
+        .filter((item) => !disallowedOauthConnectors.includes(Connector.id(item)))
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),
-          img: <ImageBlock img={item.icon} />,
+          img: <ConnectorIcon icon={item.icon} />,
           releaseStage: item.releaseStage,
         }))
         .sort((a, b) => {
-          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
-          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          const priorityA = orderOverwrite[a.value] ?? 0;
+          const priorityB = orderOverwrite[b.value] ?? 0;
           // If they have different priority use the higher priority first, otherwise use the label
           if (priorityA !== priorityB) {
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
-            return (
-              getOrderForReleaseStage(a.releaseStage) -
-              getOrderForReleaseStage(b.releaseStage)
-            );
+            return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
           } else {
             return naturalComparator(a.label, b.label);
           }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices]
+    [availableServices, orderOverwrite]
+  );
+
+  const { setDocumentationUrl } = useDocumentationPanelContext();
+
+  useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);
+
+  const getNoOptionsMessage = useCallback(
+    ({ inputValue }: { inputValue: string }) => {
+      analytics.track(
+        formType === "source"
+          ? "Airbyte.UI.NewSource.NoMatchingConnector"
+          : "Airbyte.UI.NewDestination.NoMatchingConnector",
+        {
+          query: inputValue,
+        }
+      );
+      return formatMessage({ id: "form.noConnectorFound" });
+    },
+    [analytics, formType, formatMessage]
   );
 
   const selectedService = React.useMemo(
@@ -262,9 +257,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   const onMenuOpen = () => {
     const eventName =
-      formType === "source"
-        ? "Airbyte.UI.NewSource.SelectionOpened"
-        : "Airbyte.UI.NewDestination.SelectionOpened";
+      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
     analytics.track(eventName, {});
   };
 
@@ -292,17 +285,12 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
           onMenuOpen={onMenuOpen}
+          noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && documentationUrl && (
-        <Instruction
-          selectedService={selectedService}
-          documentationUrl={documentationUrl}
-        />
-      )}
+      {selectedService && <DocumentationLink />}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA ||
-          selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>

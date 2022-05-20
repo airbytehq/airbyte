@@ -1,9 +1,11 @@
 import { JSONSchema7 } from "json-schema";
+
 import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
   catalog: SyncSchema;
   jobInfo?: JobInfo;
+  catalogId: string;
 }
 
 export type SchemaFields = JSONSchema7;

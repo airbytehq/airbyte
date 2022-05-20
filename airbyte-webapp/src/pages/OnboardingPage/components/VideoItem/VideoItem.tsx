@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import ShowVideo from "./components/ShowVideo";
 import PlayButton from "./components/PlayButton";
+import ShowVideo from "./components/ShowVideo";
 
 type VideoItemProps = {
   small?: boolean;
@@ -55,12 +55,10 @@ const VideoFrame = styled.div<{ small?: boolean; img?: string }>`
   position: relative;
   width: ${({ small }) => (small ? 158 : 317)}px;
   height: ${({ small }) => (small ? 92 : 185)}px;
-  background: ${({ theme }) => theme.whiteColor}
-    ${({ img }) => (img ? `url(${img})` : "")};
+  background: ${({ theme }) => theme.whiteColor} ${({ img }) => (img ? `url(${img})` : "")};
   background-size: cover;
   border: 2.4px solid ${({ theme }) => theme.whiteColor};
-  box-shadow: 0 2.4px 4.8px rgba(26, 25, 77, 0.12),
-    0 16.2px 7.2px -10.2px rgba(26, 25, 77, 0.2);
+  box-shadow: 0 2.4px 4.8px rgba(26, 25, 77, 0.12), 0 16.2px 7.2px -10.2px rgba(26, 25, 77, 0.2);
   border-radius: ${({ small }) => (small ? 3.6 : 7.2)}px;
   z-index: 3;
   display: flex;
@@ -70,21 +68,14 @@ const VideoFrame = styled.div<{ small?: boolean; img?: string }>`
 
 const Description = styled.div<{ small?: boolean }>`
   text-align: center;
-  color: ${({ theme, small }) =>
-    small ? theme.textColor : theme.primaryColor};
+  color: ${({ theme, small }) => (small ? theme.textColor : theme.primaryColor)};
   font-size: 13px;
   line-height: ${({ small }) => (small ? 16 : 20)}px;
   margin-top: 14px;
   cursor: pointer;
 `;
 
-const VideoItem: React.FC<VideoItemProps> = ({
-  description,
-  small,
-  videoId,
-  img,
-  link,
-}) => {
+const VideoItem: React.FC<VideoItemProps> = ({ description, small, videoId, img, link }) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const onOpenVideo = () => videoId && setIsVideoOpen(true);
   const isLink = !!link && !videoId;
@@ -101,9 +92,7 @@ const VideoItem: React.FC<VideoItemProps> = ({
       <Description small={small} onClick={onOpenVideo}>
         {description}
       </Description>
-      {isVideoOpen ? (
-        <ShowVideo videoId={videoId} onClose={() => setIsVideoOpen(false)} />
-      ) : null}
+      {isVideoOpen ? <ShowVideo videoId={videoId} onClose={() => setIsVideoOpen(false)} /> : null}
     </Content>
   );
 };

@@ -56,6 +56,17 @@ class TwilioStream(HttpStream, ABC):
                     record.pop(field, None)
                     yield record
         yield from records
+        
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """This method is called if we run into the rate limit.
+        Twilio puts the retry time in the `Retry-After` response header so we
+        we return that value. If the response is anything other than a 429 (e.g: 5XX)
+        fall back on default retry behavior.
+        Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting"""
+
+        backoff_time = response.headers.get("Retry-After")
+        if backoff_time is not None:
+          return float(backoff_time)
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -285,6 +296,7 @@ class ConferenceParticipants(TwilioNestedStream):
     which are on conference call at the moment request is made).
     """
 
+    primary_key = ["account_sid", "conference_sid"]
     parent_stream = Conferences
     data_field = "participants"
 

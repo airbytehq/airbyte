@@ -1,13 +1,12 @@
 import merge from "lodash/merge";
+
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 export interface JwtProvider {
   getValue(): string | Promise<string>;
 }
 
-export function RequestAuthMiddleware(
-  jwtProvider: JwtProvider
-): RequestMiddleware {
+export function RequestAuthMiddleware(jwtProvider: JwtProvider): RequestMiddleware {
   return async (options: RequestInit) => ({
     ...options,
     header: merge(options.headers, {

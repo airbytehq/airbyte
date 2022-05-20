@@ -41,7 +41,7 @@ if [[ "$(which pip)" && "$(pip --version)" ]];
         printf "not installed, must have version ${desired} at least"
 fi;
 printf "\n";
-desired="3.7.9"
+desired="3.9.11"
 printf "Python ";
 if [[ "$(which python3)" && "$(python3 --version)" ]]; 
     then

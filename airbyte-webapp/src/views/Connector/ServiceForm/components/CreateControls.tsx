@@ -1,14 +1,12 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
+
+import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import {
-  TestingConnectionError,
-  FetchingConnectorError,
-} from "./TestingConnectionError";
 
 type IProps = {
   formType: "source" | "destination";
@@ -44,12 +42,7 @@ const CreateControls: React.FC<IProps> = ({
   onCancelTesting,
 }) => {
   if (isSubmitting) {
-    return (
-      <TestingConnectionSpinner
-        isCancellable={isTestConnectionInProgress}
-        onCancelTesting={onCancelTesting}
-      />
-    );
+    return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
 
   if (hasSuccess) {
@@ -58,9 +51,7 @@ const CreateControls: React.FC<IProps> = ({
 
   return (
     <ButtonContainer>
-      {errorMessage && !fetchingConnectorError && (
-        <TestingConnectionError errorMessage={errorMessage} />
-      )}
+      {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
       <SubmitButton type="submit" disabled={isLoadSchema}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />

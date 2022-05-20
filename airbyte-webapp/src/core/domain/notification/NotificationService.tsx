@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { NotificationStatus } from "./types";
 
 class NotificationService extends AirbyteRequestService {

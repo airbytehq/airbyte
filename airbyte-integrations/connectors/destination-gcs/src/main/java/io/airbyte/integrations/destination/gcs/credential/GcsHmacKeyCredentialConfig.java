@@ -5,6 +5,9 @@
 package io.airbyte.integrations.destination.gcs.credential;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
+import java.util.Optional;
 
 public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
 
@@ -16,6 +19,11 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
     this.hmacKeySecret = credentialConfig.get("hmac_key_secret").asText();
   }
 
+  public GcsHmacKeyCredentialConfig(final String hmacKeyAccessId, final String hmacKeySecret) {
+    this.hmacKeyAccessId = hmacKeyAccessId;
+    this.hmacKeySecret = hmacKeySecret;
+  }
+
   public String getHmacKeyAccessId() {
     return hmacKeyAccessId;
   }
@@ -25,8 +33,13 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
   }
 
   @Override
-  public GcsCredential getCredentialType() {
-    return GcsCredential.HMAC_KEY;
+  public GcsCredentialType getCredentialType() {
+    return GcsCredentialType.HMAC_KEY;
+  }
+
+  @Override
+  public Optional<S3CredentialConfig> getS3CredentialConfig() {
+    return Optional.of(new S3AccessKeyCredentialConfig(hmacKeyAccessId, hmacKeySecret));
   }
 
 }

@@ -1,9 +1,10 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { CommonRequestError } from "core/request/CommonRequestError";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import Status from "core/statuses";
+
 import { ConnectionConfiguration } from "../connection";
 import { Scheduler, Schema, Source } from "./types";
-import Status from "core/statuses";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { CommonRequestError } from "core/request/CommonRequestError";
 
 class SourceService extends AirbyteRequestService {
   get url(): string {
@@ -93,6 +94,7 @@ class SourceService extends AirbyteRequestService {
     return {
       catalog: result.catalog,
       jobInfo: result.jobInfo,
+      catalogId: result.catalogId,
       id: sourceId,
     };
   }

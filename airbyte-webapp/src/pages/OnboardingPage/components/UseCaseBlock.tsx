@@ -1,8 +1,8 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
-import { FormattedMessage } from "react-intl";
 
 type UseCaseBlockProps = {
   count: number;
@@ -62,12 +62,7 @@ const Link = styled.a`
   }
 `;
 
-const UseCaseBlock: React.FC<UseCaseBlockProps> = ({
-  id,
-  count,
-  onSkip,
-  href,
-}) => {
+const UseCaseBlock: React.FC<UseCaseBlockProps> = ({ id, count, onSkip, href }) => {
   return (
     <Block>
       <div>

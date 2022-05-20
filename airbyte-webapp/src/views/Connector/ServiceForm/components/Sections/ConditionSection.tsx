@@ -1,22 +1,25 @@
+import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { useFormikContext, setIn } from "formik";
 
 import { Label, DropDown } from "components";
+import { IDataItem } from "components/base/DropDown/components/Option";
+import GroupControls from "components/GroupControls";
+
+import { FormBlock, FormConditionItem } from "core/form/types";
+import { isDefined } from "utils/common";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
-
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { IDataItem } from "components/base/DropDown/components/Option";
-import GroupControls from "components/GroupControls";
 import { FormSection } from "./FormSection";
-import { isDefined } from "utils/common";
 
 const GroupLabel = styled(Label)`
   width: auto;
   margin-right: 8px;
+  padding-top: 8px;
   display: inline-block;
+  padding-bottom: 0px;
+  vertical-align: middle;
 `;
 
 const ConditionControls = styled.div`
@@ -85,11 +88,7 @@ export const ConditionSection: React.FC<{
       }
     >
       <ConditionControls>
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          skipAppend
-        />
+        <FormSection blocks={formField.conditions[currentlySelectedCondition]} path={path} skipAppend />
       </ConditionControls>
     </GroupControls>
   );

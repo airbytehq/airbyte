@@ -18,11 +18,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
   line-height: 17px;
   color: ${({ theme }) => theme.textColor};
   padding-bottom: 5px;
-  width: calc(
-    100% +
-      ${({ additionLength }) =>
-        additionLength === 0 || additionLength ? additionLength : 30}px
-  );
+  width: calc(100% + ${({ additionLength }) => (additionLength === 0 || additionLength ? additionLength : 30)}px);
 
   & a {
     text-decoration: underline;
@@ -33,20 +29,12 @@ const Content = styled.label<{ additionLength?: number | string }>`
 const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   white-space: break-spaces;
   color: ${(props) =>
-    props.error
-      ? props.theme.dangerColor
-      : props.success
-      ? props.theme.successColor
-      : props.theme.greyColor40};
+    props.error ? props.theme.dangerColor : props.success ? props.theme.successColor : props.theme.greyColor40};
   font-size: 13px;
 `;
 
 const Label: React.FC<IProps> = (props) => (
-  <Content
-    additionLength={props.additionLength}
-    className={props.className}
-    onClick={props.onClick}
-  >
+  <Content additionLength={props.additionLength} className={props.className} onClick={props.onClick}>
     {props.children}
     {props.message && (
       <span>

@@ -1,11 +1,12 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Indicator from "components/Indicator";
-import { getIcon } from "utils/imageUtils";
-import { FormattedMessage } from "react-intl";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
 import { ReleaseStage } from "core/domain/connector";
+import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   connectorName: string;
@@ -39,13 +40,7 @@ const CustomAnnotation = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const ConnectorCell: React.FC<IProps> = ({
-  connectorName,
-  img,
-  hasUpdate,
-  isDeprecated,
-  releaseStage,
-}) => {
+const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}

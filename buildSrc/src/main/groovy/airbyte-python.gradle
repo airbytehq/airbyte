@@ -79,7 +79,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.python {
             envPath = venvDirectoryName
-            minPythonVersion = '3.7'
+            minPythonVersion = '3.9'
             scope = 'VIRTUALENV'
             installVirtualenv = true
             pip 'pip:21.3.1'

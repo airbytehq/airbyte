@@ -222,4 +222,16 @@ public interface JobCreationAndStatusUpdateActivity {
   @ActivityMethod
   void reportJobStart(ReportJobStartInput reportJobStartInput);
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class EnsureCleanJobStateInput {
+
+    private UUID connectionId;
+
+  }
+
+  @ActivityMethod
+  void ensureCleanJobState(EnsureCleanJobStateInput input);
+
 }

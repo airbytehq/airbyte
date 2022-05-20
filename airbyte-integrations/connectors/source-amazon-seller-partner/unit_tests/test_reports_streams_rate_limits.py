@@ -2,8 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import time
-
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -51,10 +49,10 @@ def test_reports_stream_send_request(mocker, reports_stream):
 
 
 def test_reports_stream_send_request_backoff_exception(mocker, caplog, reports_stream):
+    mocker.patch("time.sleep", lambda x: None)
     response = requests.Response()
     response.status_code = 429
     mocker.patch.object(requests.Session, "send", return_value=response)
-    mocker.patch.object(time, "sleep", return_value=None)
 
     with pytest.raises(DefaultBackoffException):
         reports_stream._send_request(request=requests.PreparedRequest())

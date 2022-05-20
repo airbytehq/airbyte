@@ -204,20 +204,20 @@ class SourceTypeform(AbstractSource):
             form_ids = config.get("form_ids", []).copy()
             # verify if form inputted by user is valid
             try:
-                url = f"{TypeformStream.url_base}/me"
+                url = urlparse.urljoin(TypeformStream.url_base, "me")
                 auth_headers = {"Authorization": f"Bearer {config['token']}"}
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
-            except requests.exceptions.BaseHTTPError as e:
+            except Exception as e:
                 return False, f"Cannot authenticate, please verify token. Error: {e}"
             if form_ids:
                 for form in form_ids:
                     try:
-                        url = f"{TypeformStream.url_base}/forms/{form}"
+                        url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
                         auth_headers = {"Authorization": f"Bearer {config['token']}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
-                    except requests.exceptions.BaseHTTPError as e:
+                    except Exception as e:
                         return (
                             False,
                             f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again. Error: {e}",
@@ -226,7 +226,7 @@ class SourceTypeform(AbstractSource):
             else:
                 return True, None
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

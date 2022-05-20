@@ -18,6 +18,10 @@ public class BigQueryDenormalizedTestDataUtils {
     return getTestDataFromResourceJson("schema.json");
   }
 
+  public static JsonNode getAnyOfSchema() {
+    return getTestDataFromResourceJson("schemaAnyOfAllOf.json");
+  }
+
   public static JsonNode getSchemaWithFormats() {
     return getTestDataFromResourceJson("schemaWithFormats.json");
   }
@@ -36,6 +40,18 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static JsonNode getDataWithFormats() {
     return getTestDataFromResourceJson("dataWithFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormats() {
+    return getTestDataFromResourceJson("dataAnyOfFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithNull() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithNull.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithEmptyList() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithEmptyList.json");
   }
 
   public static JsonNode getDataWithJSONDateTimeFormats() {

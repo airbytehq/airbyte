@@ -1,10 +1,12 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import withMock from "storybook-addon-mock";
 
-import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
-import withMock from "storybook-addon-mock";
+
+import { ServiceForm } from "./ServiceForm";
 
 const TempConnector = {
   name: "Service",
@@ -49,13 +51,8 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
     args.selectedConnectorDefinitionSpecification &&
     !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    if (
-      isSourceDefinitionSpecification(
-        args.selectedConnectorDefinitionSpecification
-      )
-    ) {
-      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
-        TempConnector.sourceDefinitionId;
+    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
     }
   }
 

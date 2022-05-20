@@ -46,8 +46,7 @@ const MainCircle = styled.div<PlayButtonProps>`
   width: ${({ small }) => (small ? 42 : 85)}px;
   border-radius: 50%;
   background: ${({ theme }) => theme.primaryColor};
-  padding: ${({ small, isLink }) =>
-    isLink ? "0" : small ? "10px 0 0 16px" : "20px 0 0 32px"};
+  padding: ${({ small, isLink }) => (isLink ? "0" : small ? "10px 0 0 16px" : "20px 0 0 32px")};
   box-shadow: 0 2.4px 4.8px ${({ theme }) => theme.cardShadowColor},
     0 16.2px 7.2px -10.2px ${({ theme }) => theme.cardShadowColor};
   display: ${({ isLink }) => (isLink ? "flex" : "block")};

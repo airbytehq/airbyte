@@ -1,6 +1,7 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { Connection } from "./types";
 import { CommonRequestError } from "core/request/CommonRequestError";
+
+import { Connection } from "./types";
 
 class ConnectionService extends AirbyteRequestService {
   get url() {

@@ -10,8 +10,9 @@ import tempfile
 import time
 
 import pytest
+from normalization.destination_type import DestinationType
 from normalization.transform_catalog.transform import extract_schema
-from normalization.transform_config.transform import DestinationType, TransformConfig
+from normalization.transform_config.transform import TransformConfig
 
 
 class TestTransformConfig:
@@ -434,7 +435,7 @@ class TestTransformConfig:
             "threads": 8,
             "user": "a user",
         }
-        actual = TransformConfig().transform(DestinationType.postgres, input)
+        actual = TransformConfig().transform(DestinationType.POSTGRES, input)
 
         assert expected == actual
         assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
@@ -452,7 +453,7 @@ class TestTransformConfig:
 
     def test_parse(self):
         t = TransformConfig()
-        assert {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"} == t.parse(
+        assert {"integration_type": DestinationType.POSTGRES, "config": "config.json", "output_path": "out.yml"} == t.parse(
             ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
         )
 

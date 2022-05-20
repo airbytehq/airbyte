@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { SourceDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import useRouter from "hooks/useRouter";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
-type IProps = {
+interface SourceFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -22,20 +23,17 @@ type IProps = {
   sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-};
+}
 
-const hasSourceDefinitionId = (
-  state: unknown
-): state is { sourceDefinitionId: string } => {
+const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
   return (
     typeof state === "object" &&
     state !== null &&
-    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId ===
-      "string"
+    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
   );
 };
 
-const SourceForm: React.FC<IProps> = ({
+export const SourceForm: React.FC<SourceFormProps> = ({
   onSubmit,
   sourceDefinitions,
   error,
@@ -43,12 +41,11 @@ const SourceForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const analyticsService = useAnalyticsService();
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    hasSourceDefinitionId(location.state)
-      ? location.state.sourceDefinitionId
-      : null
+    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
   );
 
   const {
@@ -58,18 +55,17 @@ const SourceForm: React.FC<IProps> = ({
   } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
+    setDocumentationPanelOpen(false);
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === sourceDefinitionId
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
+    setDocumentationUrl(connector?.documentationUrl || "");
 
     if (afterSelectConnector) {
       afterSelectConnector();
     }
 
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
-      connector_source_definition: connector?.name,
+    trackNewSourceAction("Select a connector", {
+      connector_source: connector?.name,
       connector_source_definition_id: sourceDefinitionId,
     });
   };
@@ -94,15 +90,9 @@ const SourceForm: React.FC<IProps> = ({
       fetchingConnectorError={sourceDefinitionError}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={
-        sourceDefinitionId
-          ? { serviceType: sourceDefinitionId, name: "" }
-          : undefined
-      }
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };
-
-export default SourceForm;

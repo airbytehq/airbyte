@@ -6,7 +6,9 @@ This page will help you manage your Airbyte Cloud workspaces and understand Airb
 
 An Airbyte Workspace allows you to collaborate with other users and manage connections under a shared billing account.
 
-*Note: Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.*
+:::info
+Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
+:::
 
 ### Add users to your workspace
 
@@ -16,7 +18,10 @@ To add a user to your workspace:
 2. In the Workspace Settings sidebar, click **Access Management**.
 3. In the top right-hand corner, click **+ New User**.
 4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
-<br> *Note: The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.*
+
+    :::info
+    The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
+    :::
 
 ### Switch between multiple workspaces
 

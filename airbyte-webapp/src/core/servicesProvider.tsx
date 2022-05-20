@@ -15,17 +15,10 @@ type ServicesProviderApi = {
   registeredServices: ServiceContainer;
 };
 
-const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(
-  null
-);
+const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(null);
 
-export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
-  children,
-  inject,
-}) => {
-  const [registeredServices, { remove, set }] = useMap<ServiceContainer>(
-    inject
-  );
+export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({ children, inject }) => {
+  const [registeredServices, { remove, set }] = useMap<ServiceContainer>(inject);
 
   const ctxValue = useMemo<ServicesProviderApi>(
     () => ({
@@ -38,11 +31,7 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
     [registeredServices]
   );
 
-  return (
-    <ServicesProviderContext.Provider value={ctxValue}>
-      {children}
-    </ServicesProviderContext.Provider>
-  );
+  return <ServicesProviderContext.Provider value={ctxValue}>{children}</ServicesProviderContext.Provider>;
 };
 
 export type ServiceInject = [string, Service];
@@ -63,9 +52,7 @@ export function useInjectServices(serviceInject: ServiceContainer): void {
   const { register, unregister } = useServicesProvider();
 
   useEffect(() => {
-    Object.entries(serviceInject).forEach(([token, service]) =>
-      register(token, service)
-    );
+    Object.entries(serviceInject).forEach(([token, service]) => register(token, service));
 
     return () => Object.keys(serviceInject).forEach(unregister);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,9 +66,7 @@ export const useServicesProvider = (): ServicesProviderApi => {
   const diService = useContext(ServicesProviderContext);
 
   if (!diService) {
-    throw new Error(
-      "useServicesProvider should be used within ServicesProvider"
-    );
+    throw new Error("useServicesProvider should be used within ServicesProvider");
   }
 
   return diService;
@@ -90,10 +75,7 @@ export const useServicesProvider = (): ServicesProviderApi => {
 export function useGetService<T>(serviceToken: string): T {
   const { registeredServices } = useServicesProvider();
 
-  return useMemo(() => registeredServices[serviceToken], [
-    registeredServices,
-    serviceToken,
-  ]);
+  return useMemo(() => registeredServices[serviceToken], [registeredServices, serviceToken]);
 }
 
 //
