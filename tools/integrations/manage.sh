@@ -215,8 +215,6 @@ cmd_publish() {
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
 
-  docker buildx create --use --name "connector_publisher_buildx"
-
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
@@ -237,16 +235,25 @@ cmd_publish() {
 
     cd $original_pwd
   else
-    echo "Publishing new version ($versioned_image) from $path"
-    docker buildx build       \
-      -t $versioned_image     \
-      -t $latest_image        \
-      --platform $build_arch  \
-      --push                  \
-      $path
-  fi
+    # We have to go arch-by-arch locally (see https://github.com/docker/buildx/issues/59 for more info) due to our base images (e.g. airbyte-integrations/bases/base-java)
+    # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
 
-  docker buildx rm "connector_publisher_buildx"
+    for arch in $(echo $build_arch | sed "s/,/ /g")
+    do
+      echo "building base images for $arch"
+      docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
+      docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+
+      local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
+      echo "Publishing new version ($arch_versioned_image) from $path"
+      docker buildx build -t $arch_versioned_image --platform $arch --push $path
+      docker manifest create $latest_image --amend $arch_versioned_image
+      docker manifest create $versioned_image --amend $arch_versioned_image
+    done
+
+    docker manifest push $latest_image
+    docker manifest push $versioned_image
+  fi
 
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
