@@ -41,6 +41,8 @@ cmd_build() {
   local run_tests=$1; shift || run_tests=true
 
   echo "Building $path"
+  # Note that we are only building (and testing) once on this build machine's achetecure
+  # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
