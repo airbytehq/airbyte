@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-python-http-example:dev
+connector_image: airbyte/source-dockerhub:dev
 tests:
   spec:
-    - spec_path: "source_python_http_example/spec.yaml"
+    - spec_path: "source_dockerhub/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

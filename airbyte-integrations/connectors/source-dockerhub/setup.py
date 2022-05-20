@@ -16,10 +16,10 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_python_http_example",
-    description="Source implementation for Python Http Example.",
+    name="source_dockerhub",
+    description="Source implementation for Dockerhub.",
     author="Airbyte",
-    author_email="contact@airbyte.io",
+    author_email="shawn@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},

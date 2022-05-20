@@ -32,21 +32,14 @@ class SourceDockerhub(AbstractSource):
                 return False, "Invalid JWT received, check if auth.docker.io changed API"
             elif e.response.status_code == 404:
                 print(str(e))
-                return False, f"User '{username}' not found"
+                return False, f"User '{username}' not found, check if hub.docker.com/u/{username} exists"
             else:
                 print(str(e))
-                return False, f"Error getting basic user info for Docker user '{username}', unexepcted error"
+                return False, f"Error getting basic user info for Docker user '{username}', unexpected error"
         json_response = response.json()
         repocount = json_response["count"]
         print(f"Connection check for Docker user '{username}' successful: {repocount} repos found")
         return True, None
-
-
-        input_pokemon = config["pokemon_name"]
-        if input_pokemon not in pokemon_list.POKEMON_LIST:
-            return False, f"Input Pokemon {input_pokemon} is invalid. Please check your spelling and input a valid Pokemon."
-        else:
-            return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [DockerHub(jwt=self.jwt, config=config)]

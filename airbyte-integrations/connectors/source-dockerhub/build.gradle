@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_python_http_example'
+    moduleDirectory 'source_dockerhub'
 }
