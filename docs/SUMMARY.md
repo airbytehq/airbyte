@@ -66,6 +66,7 @@
     - [Delighted](integrations/sources/delighted.md)
     - [Db2](integrations/sources/db2.md)
     - [Dixa](integrations/sources/dixa.md)
+    - [DockerHub](integrations/sources/dockerhub.md)
     - [Drift](integrations/sources/drift.md)
     - [Drupal](integrations/sources/drupal.md)
     - [End-to-End Testing](integrations/sources/e2e-test.md)
