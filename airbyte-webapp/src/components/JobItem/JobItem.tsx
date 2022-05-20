@@ -10,7 +10,7 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/comp
 import { AttemptRead, JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
-import ErrorDetails from "./components/FailureDetails";
+import ErrorDetails from "./components/ErrorDetails";
 import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 
