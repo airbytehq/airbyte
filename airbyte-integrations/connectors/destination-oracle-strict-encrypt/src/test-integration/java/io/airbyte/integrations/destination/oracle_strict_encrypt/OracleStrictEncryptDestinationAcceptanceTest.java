@@ -141,7 +141,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
   }
 
   @Override

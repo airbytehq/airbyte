@@ -177,4 +177,5 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   public void close() throws Exception {}
+
 }

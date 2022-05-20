@@ -325,15 +325,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
         DataSourceFactory.create(config.get("username").asText(),
-        config.get("password").asText(),
-        DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName)),
+            config.get("password").asText(),
+            DRIVER_CLASS,
+            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                dbName)),
         new MssqlSourceOperations(),
-            AdaptiveStreamingQueryConfig::new
-    );
+        AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 
