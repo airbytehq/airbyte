@@ -42,7 +42,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * This class provides downstream tests with constants and helpers.
  */
-@SuppressWarnings({"PMD.MutableStaticState", "PMD.SignatureDeclareThrowsException", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings({"PMD.MutableStaticState", "PMD.SignatureDeclareThrowsException"})
 class BaseDatabaseConfigPersistenceTest {
 
   static PostgreSQLContainer<?> container;
@@ -106,6 +106,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withCustom(true)
       .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
       .withTombstone(false);
+  private static final String CANNOT_BE_NULL = "can not be null";
 
   @BeforeAll
   static void dbSetup() {
@@ -140,15 +141,15 @@ class BaseDatabaseConfigPersistenceTest {
     final UUID workspaceId = UUID.randomUUID();
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(workspaceId)
-        .withName("can not be null")
-        .withSlug("can not be null")
+        .withName(CANNOT_BE_NULL)
+        .withSlug(CANNOT_BE_NULL)
         .withInitialSetupComplete(true);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final SourceConnection sourceConnection = new SourceConnection()
         .withSourceId(connectionId)
         .withWorkspaceId(workspaceId)
-        .withName("can not be null")
+        .withName(CANNOT_BE_NULL)
         .withSourceDefinitionId(source.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, connectionId.toString(), sourceConnection);
   }
@@ -166,15 +167,15 @@ class BaseDatabaseConfigPersistenceTest {
     final UUID workspaceId = UUID.randomUUID();
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(workspaceId)
-        .withName("can not be null")
-        .withSlug("can not be null")
+        .withName(CANNOT_BE_NULL)
+        .withSlug(CANNOT_BE_NULL)
         .withInitialSetupComplete(true);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
 
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withDestinationId(connectionId)
         .withWorkspaceId(workspaceId)
-        .withName("can not be null")
+        .withName(CANNOT_BE_NULL)
         .withDestinationDefinitionId(destination.getDestinationDefinitionId());
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, connectionId.toString(), destinationConnection);
   }

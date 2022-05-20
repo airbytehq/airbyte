@@ -15,41 +15,43 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class YamlListToStandardDefinitionsTest {
-
+  private static final String DESTINATION_DEFINITION_ID = "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n";
+  private static final String DESTINATION_NAME = "  name: Local JSON\n";
+  private static final String DOCKER_REPO = "  dockerRepository: airbyte/destination-local-json\n";
+  private static final String DOCKER_IMAGE_TAG = "  dockerImageTag: 0.1.4\n";
   private static final String GOOD_DES_DEF_YAML =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
   private static final String DUPLICATE_ID =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json"
-          + "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
+          + DESTINATION_DEFINITION_ID
           + "  name: JSON 2\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
   private static final String DUPLICATE_NAME =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json\n"
           + "- destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6\n"
-          + "  name: Local JSON\n"
+          + DESTINATION_NAME
           + "  dockerRepository: airbyte/destination-csv\n"
           + "  dockerImageTag: 0.1.8\n"
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv";
   private static final String BAD_DATA =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
           + "  dockerImageTag: 0.1.8\n"
           + "  documentationUrl";
 
