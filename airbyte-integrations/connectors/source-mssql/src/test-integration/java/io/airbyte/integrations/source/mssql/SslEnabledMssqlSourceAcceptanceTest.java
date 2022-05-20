@@ -62,7 +62,8 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
             baseConfig.get("host").asText(),
-            baseConfig.get("port").asInt()), null);
+            baseConfig.get("port").asInt()),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

@@ -44,9 +44,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
-                + algorithm + " )")
-        )
-    );
+                + algorithm + " )")));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -77,9 +75,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
                 clone.get("port").asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";")
-        )
-    );
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";")));
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);

@@ -124,7 +124,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
   }
 
   @Test
@@ -178,9 +179,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
 
     return PostgresCdcTargetPosition.targetPosition(database);
   }

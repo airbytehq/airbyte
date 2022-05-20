@@ -69,7 +69,7 @@ connectionSpecification:
                 Guide</a> for more details
               airbyte_secret: true
               examples:
-                - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
 authSpecification:
   auth_type: oauth2.0
   oauth2Specification:

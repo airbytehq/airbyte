@@ -134,9 +134,7 @@ public class ClickhouseDestinationTest {
             String.format("jdbc:clickhouse://%s:%s/%s",
                 config.get("host").asText(),
                 config.get("port").asText(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(
