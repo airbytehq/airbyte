@@ -7,6 +7,7 @@ import HeadTitle from "components/HeadTitle";
 
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
+import { EmailLinkErrorCodes } from "../services/auth/types";
 import { BottomBlock, FieldItem, Form } from "./auth/components/FormComponents";
 
 const ValidationSchema = yup.object().shape({
@@ -34,7 +35,14 @@ export const AcceptEmailInvite: React.FC = () => {
           if (err instanceof FieldError) {
             setFieldError(err.field, err.message);
           } else {
-            setStatus(err.message);
+            console.log(err.message);
+            setStatus(
+              formatMessage({
+                id: [EmailLinkErrorCodes.LINK_EXPIRED, EmailLinkErrorCodes.LINK_INVALID].includes(err.message)
+                  ? `login.${err.message}`
+                  : "errorView.unknownError",
+              })
+            );
           }
         }
       }}

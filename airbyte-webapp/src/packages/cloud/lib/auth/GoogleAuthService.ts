@@ -19,7 +19,7 @@ import {
 
 import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { ErrorCodes } from "packages/cloud/services/auth/types";
+import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
 interface AuthService {
   login(email: string, password: string): Promise<UserCredential>;
@@ -162,13 +162,13 @@ export class GoogleAuthService implements AuthService {
     } catch (e) {
       switch (e?.code) {
         case AuthErrorCodes.INVALID_EMAIL:
-          throw new FieldError("email", "This email does not match the email address sent to this invite.");
+          throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
         case AuthErrorCodes.INVALID_OOB_CODE:
           // Maybe they already activated the link?
-          throw new Error("This invite link is no longer valid.");
+          throw new Error(EmailLinkErrorCodes.LINK_INVALID);
         case AuthErrorCodes.EXPIRED_OOB_CODE:
           // TODO - Resend invitation
-          throw new Error("This invite link has expired.");
+          throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
 
         default:
           break;

@@ -4,7 +4,6 @@
   "login.login": "Log in",
   "login.signup": "Sign up",
   "login.loginTitle": "Sign in to Airbyte",
-  "login.inviteTitle": "Invite access",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
   "login.inviteEmail": "For security, re-enter your invite email*",
@@ -28,6 +27,9 @@
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+  "login.inviteTitle": "Invite access",
+  "login.inviteLinkExpired": "This invite link has expired.",
+  "login.inviteLinkInvalid": "This invite link is no longer valid.",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
@@ -118,6 +120,7 @@
   "email.duplicate": "Email already exists",
   "email.notfound": "Email not found",
   "email.disabled": "Your account is disabled",
+  "email.inviteMismatch": "This email does not match the email address sent to this invite.",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
