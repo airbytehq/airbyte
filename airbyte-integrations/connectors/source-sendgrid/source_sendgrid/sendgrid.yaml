@@ -347,8 +347,5 @@ streams:
   - "*ref(bounces_stream)"
   - "*ref(invalid_emails_stream)"
   - "*ref(spam_reports_stream)"
-source:
-  class_name: airbyte_cdk.sources.lcc.YamlConfigurableSource.YamlConfigurableSource
-  connection_checker:
-    class_name: airbyte_cdk.sources.lcc.checks.check_stream.CheckStream
-  streams: "*ref(streams)"
+check:
+  class_name: airbyte_cdk.sources.lcc.checks.check_stream.CheckStream

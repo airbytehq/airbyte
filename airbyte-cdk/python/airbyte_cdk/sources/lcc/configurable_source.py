@@ -6,6 +6,7 @@ from abc import abstractmethod
 from typing import Tuple
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
+from airbyte_cdk.sources.lcc.checks.connection_checker import ConnectionChecker
 
 
 class ConfigurableSource(AbstractSource):
@@ -15,8 +16,8 @@ class ConfigurableSource(AbstractSource):
 
     @property
     @abstractmethod
-    def connection_checker(self):
+    def connection_checker(self) -> ConnectionChecker:
         pass
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return self.connection_checker.check_connection(logger, config)
+        return self.connection_checker.check_connection(self, logger, config)
