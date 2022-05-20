@@ -308,6 +308,7 @@ class StreamProcessor(object):
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
+                # TODO scd_new_data_table needs to be passed into add_to_outputs, not generate_final_model
                 self.generate_final_model(from_table, column_names, scd_new_data_table=scd_new_data_table, unique_key=self.get_unique_key())
                 + where_clause,
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
@@ -696,7 +697,7 @@ from {{'{{'}} {{ from_table }}  {{'}}'}}
 where 1 = 1
 {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}, this) {{'}}'}}
 {{ '{% else %}' }}
-select * from {{'{{'}} {{ from_table }}  {{'}}'}} where 1 = 0 -- create an empty table just to get the columns
+select * from {{'{{'}} {{ from_table }}  {{'}}'}}
 {{ '{% endif %}' }}
 """
         ).render(jinja_variables)
@@ -855,7 +856,6 @@ input_data_with_active_row_num as (
             jinja_variables["scd_columns_sql"] = scd_columns_sql
         sql = Template(
             """
--- depends_on: {{ from_table }}
 -- depends on: {{ '{{' }} {{ new_data_table }} {{ '}}' }}
 with
 {{ '{% if is_incremental() %}' }}
@@ -1115,15 +1115,35 @@ where 1 = 1
                 stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
                 if self.name_transformer.needs_quotes(stg_table):
                     stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
+
+                hooks = []
+
+                # Drop rows from the final table which need to be updated
+                # TODO does the final table always get populated into tables_registry before the SCD table?
+                final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
+                hashid_column_name = self.hash_id(False)
+                hooks.append(
+                    f"""
+                    {{% if adapter.get_relation(
+                        database=this.database,
+                        schema=this.schema,
+                        identifier='{final_table_name}') is not none %}}
+                    delete from {{{{ this.schema }}}}.{jinja_call(self.name_transformer.apply_quote(final_table_name))} where {hashid_column_name} in (select {hashid_column_name} from {stg_schema}.{stg_table})
+                    {{% endif %}}
+                    """
+                )
+
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
-                    config["post_hook"] = (
-                        f'["delete from {stg_schema}.{stg_table} '
-                        + f"where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) "
-                        + f'from {stg_schema}.{stg_table})"]'
+                    hooks.append(
+                        f"delete from {stg_schema}.{stg_table} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {stg_schema}.{stg_table})",
                     )
                 else:
-                    config["post_hook"] = f'["drop view {stg_schema}.{stg_table}"]'
+                    hooks.append(
+                        f"drop view {stg_schema}.{stg_table}",
+                    )
+
+                config["post_hook"] = "[" + ",".join(map(lambda hook: '"' + hook + '"', hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
