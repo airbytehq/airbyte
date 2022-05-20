@@ -27,7 +27,7 @@ class FreshdeskStream(HttpStream, ABC):
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
-        requests_per_minute = config["requests_per_minute"]
+        requests_per_minute = config.get("requests_per_minute")
         self.domain = config["domain"]
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
         # By default, only tickets that have been created within the past 30 days will be returned.
