@@ -1910,7 +1910,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kafka:0.1.7"
+- dockerImage: "airbyte/destination-kafka:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
@@ -2037,6 +2037,7 @@
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
                 - "SCRAM-SHA-512"
+                - "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "JAAS login context parameters for SASL connections in\

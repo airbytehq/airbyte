@@ -41,13 +41,14 @@ import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
@@ -69,7 +70,6 @@ import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -189,6 +189,15 @@ public class WorkerApp {
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
+        new CheckConnectionActivityImpl(
+            checkWorkerConfigs,
+            checkProcessFactory,
+            secretsHydrator,
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            jobPersistence,
+            airbyteVersion),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 
