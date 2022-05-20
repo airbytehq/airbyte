@@ -11,9 +11,9 @@ class AmazonSellerPartnerConfig(BaseModel):
     class Config:
         title = "Amazon Seller Partner Spec"
 
-    app_id: str = Field(None, description="Your Amazon App ID", title="App Id", airbyte_secret=True, order=0)
+    app_id: str = Field(None, description="Your Amazon App ID", title="App Id *", airbyte_secret=True, order=0)
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=1)
+    # auth_type: str = Field(default="oauth2.0", const=True, order=1)
 
     lwa_app_id: str = Field(description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
@@ -75,8 +75,8 @@ class AmazonSellerPartnerConfig(BaseModel):
 
 advanced_auth = AdvancedAuth(
     auth_flow_type=AuthFlowType.oauth2_0,
-    predicate_key=["auth_type"],
-    predicate_value="oauth2.0",
+    predicate_key=[],
+    predicate_value="",
     oauth_config_specification=OAuthConfigSpecification(
         complete_oauth_output_specification={
             "type": "object",
