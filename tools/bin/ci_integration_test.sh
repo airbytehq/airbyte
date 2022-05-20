@@ -44,6 +44,7 @@ fi
 }
 
 show_run_details() {
+   echo "Run Details: $1" >> $GITHUB_STEP_SUMMARY
    run_info=`sed -n "/=* $1 =*/,/========/p" build.out`
    if ! test -z "$run_info"
    then
@@ -55,6 +56,7 @@ show_run_details() {
 }
 
 show_skipped_failed_info() {
+   echo "show_skipped_failed_info function" >> $GITHUB_STEP_SUMMARY
    skipped_failed_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
    if ! test -z "$skipped_failed_info"
       then
@@ -80,6 +82,9 @@ write_logs() {
   show_run_details 'FAILURES'
   show_run_details 'ERRORS'
 }
+
+echo "# $connector" >> $GITHUB_STEP_SUMMARY
+echo "" >> $GITHUB_STEP_SUMMARY
 
 # Copy command output to extract gradle scan link.
 run | tee build.out
