@@ -41,11 +41,12 @@ const NewsPart = styled(Part)`
 const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
   const { loggedOut } = useAuthService();
+  const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
     <Content>
       <Part>
-        <FormContent toLogin={pathname === `${CloudRoutes.Signup}`}>
+        <FormContent toLogin={toLogin}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route path={CloudRoutes.Login} element={<LoginPage />} />
