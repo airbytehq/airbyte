@@ -191,12 +191,6 @@ class JsonSecretsProcessorTest {
   private static final String POSTGRES_SSH_KEY = "postgres_ssh_key";
   private static final String SIMPLE = "simple";
 
-
-
-
-
-
-
   private JsonSecretsProcessor processor;
 
   @BeforeEach
