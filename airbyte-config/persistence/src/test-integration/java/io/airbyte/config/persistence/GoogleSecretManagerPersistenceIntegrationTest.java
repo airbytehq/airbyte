@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
  * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the
  * integration testing GCP project.
  */
+@SuppressWarnings("PMD.EmptyCatchBlock")
 class GoogleSecretManagerPersistenceIntegrationTest {
 
   private GoogleSecretManagerPersistence persistence;
@@ -42,9 +43,13 @@ class GoogleSecretManagerPersistenceIntegrationTest {
     try (final var client = GoogleSecretManagerPersistence.getSecretManagerServiceClient(configs.getSecretStoreGcpCredentials())) {
       // try to delete this so we aren't charged for the secret
       // if this is missed due to some sort of failure the secret will be deleted after the ttl
-      client.deleteSecret(SecretName.of(
-          configs.getSecretStoreGcpProjectId(),
-          baseCoordinate));
+      try {
+        client.deleteSecret(SecretName.of(
+            configs.getSecretStoreGcpProjectId(),
+            baseCoordinate));
+      } catch (final NotFoundException nfe) {
+        // do nothing
+      }
     }
   }
 
