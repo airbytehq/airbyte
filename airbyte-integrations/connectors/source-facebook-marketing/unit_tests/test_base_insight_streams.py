@@ -6,6 +6,7 @@ from datetime import datetime
 
 import pendulum
 import pytest
+import source_facebook_marketing.streams.base_insight_streams
 from airbyte_cdk.models import SyncMode
 from pendulum import duration
 from source_facebook_marketing.streams import AdsInsights
@@ -290,3 +291,42 @@ class TestBaseInsightsStream:
         )
 
         assert stream.fields == ["account_id", "account_currency"]
+
+    def test_completed_slices_processed(self, api, mocker, monkeypatch):
+        start_date = pendulum.parse("2020-03-01")
+        end_date = pendulum.parse("2020-04-02")
+        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-01")))
+
+        class InsightAsyncJob:
+            def __init__(self, interval, **kwargs):
+                self.interval = interval
+
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", InsightAsyncJob)
+
+        class InsightAsyncJobManager:
+            def __init__(self, jobs, **kwargs):
+                self.jobs = jobs
+
+            def completed_jobs(self):
+                yield from self.jobs
+
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", InsightAsyncJobManager)
+
+        state = {
+            AdsInsights.cursor_field: "2020-03-20",
+            "slices": [
+                "2020-03-23",
+                "2020-03-24",
+            ],
+            "time_increment": 1,
+        }
+
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream.state = state
+        assert stream._completed_slices == {pendulum.Date(2020, 3, 24), pendulum.Date(2020, 3, 23)}
+        slices = stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
+        result = [x["insight_job"].interval.start for x in slices]
+        assert len(result) == 30
+        assert pendulum.parse("2020-03-23").date() in result
+        assert pendulum.parse("2020-03-24").date() in result
+        assert stream._completed_slices == set()
