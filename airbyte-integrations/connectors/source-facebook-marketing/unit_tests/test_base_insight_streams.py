@@ -292,7 +292,7 @@ class TestBaseInsightsStream:
 
         assert stream.fields == ["account_id", "account_currency"]
 
-    def test_completed_slices_processed(self, api, mocker, monkeypatch):
+    def test_completed_slices_processed_in_lookback_period(self, api, mocker, monkeypatch):
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-04-02")
         monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-01")))
