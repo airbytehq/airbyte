@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -27,6 +28,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
   private static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected Database setupDatabase() throws Exception {
@@ -58,7 +60,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("ssl", false)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -104,6 +106,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 

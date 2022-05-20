@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     report = create_report(relevant_connectors, relevant_stages)
     print(report)
-    # send_report(report)
+    send_report(report)
     print("Finish")
 elif "pytest" in sys.argv[0]:
     import unittest

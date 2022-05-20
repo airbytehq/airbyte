@@ -148,6 +148,7 @@
   "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.reauthenticate": "Re-authenticate",
+  "connectorForm.expandForm": "Expand this form to continue setting up your connector",
 
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",
@@ -479,6 +480,9 @@
   "connector.releaseStage.beta.description": "<b>Beta connectors</b> are in development but stable and reliable and support is provided.",
   "connector.releaseStage.generally_available.description": "<b>Generally Available (GA) connectors</b> have been deemed ready for use in a production environment and is officially supported by Airbyte. Their documentation is considered sufficient to support widespread adoption.",
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
+  "connector.setupGuide": "Setup Guide",
+  "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
+
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
   "credits.buyCredits": "Buy credits",
@@ -491,10 +495,11 @@
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
 
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
-  "errorView.startOver": "Continue using the app",
-  "errorView.notFound": "Resource not found",
+  "errorView.notFound": "Resource not found.",
+  "errorView.notAuthorized": "You don’t have permission to access this page.",
   "errorView.unknown": "Unknown",
 
+  "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
