@@ -116,6 +116,10 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         return JDBCType.VARCHAR;
+      } else if(typeName.equalsIgnoreCase("timestamptz")){
+        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
+      }else if (typeName.equalsIgnoreCase("timetz")){
+        return JDBCType.TIME_WITH_TIMEZONE;
       }
 
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
