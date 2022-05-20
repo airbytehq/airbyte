@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
  * {@link RedshiftInsertDestination} for more detail. The second inserts via streaming the data to
  * an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
  * production workloads, but does require users to set up an S3 bucket and pass in additional
- * credentials. See {@link RedshiftStagingS3Destination} for more detail. This class inspect the given
- * arguments to determine which strategy to use.
+ * credentials. See {@link RedshiftStagingS3Destination} for more detail. This class inspect the
+ * given arguments to determine which strategy to use.
  */
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 

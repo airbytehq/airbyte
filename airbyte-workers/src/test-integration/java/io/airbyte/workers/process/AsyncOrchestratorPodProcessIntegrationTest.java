@@ -12,7 +12,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
 import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;

@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -233,6 +234,14 @@ public class ServerApp implements ServerRunnable {
     final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
+    // It is important that the migration to the temporal scheduler is performed before the server
+    // accepts any requests.
+    // This is why this migration is performed here instead of in the bootloader - so that the server
+    // blocks on this.
+    // TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
+    // "major" version bump as it will no longer be needed.
+    migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -260,14 +269,24 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway);
   }
 
-  private static void migrateExistingConnection(final ConfigRepository configRepository, final EventRunner eventRunner)
+  @VisibleForTesting
+  static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
+                                                            final JobPersistence jobPersistence,
+                                                            final EventRunner eventRunner)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    // Skip the migration if it was already performed, to save on resources/startup time
+    if (jobPersistence.isSchedulerMigrated()) {
+      LOGGER.info("Migration to temporal scheduler has already been performed");
+      return;
+    }
+
     LOGGER.info("Start migration to the new scheduler...");
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
             .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
     eventRunner.migrateSyncIfNeeded(connectionIds);
+    jobPersistence.setSchedulerMigrationDone();
     LOGGER.info("Done migrating to the new scheduler...");
   }
 

@@ -5,6 +5,7 @@
 package io.airbyte.workers.storage;
 
 import io.airbyte.commons.io.IOs;
+import io.airbyte.workers.general.DocumentStoreClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

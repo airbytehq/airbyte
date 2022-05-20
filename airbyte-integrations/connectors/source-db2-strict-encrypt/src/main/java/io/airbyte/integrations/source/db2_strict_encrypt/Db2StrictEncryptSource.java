@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.db2_strict_encrypt;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;

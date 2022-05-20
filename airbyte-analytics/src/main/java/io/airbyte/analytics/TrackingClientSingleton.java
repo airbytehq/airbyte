@@ -14,8 +14,12 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TrackingClientSingleton {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
   private static final Object lock = new Object();
   private static TrackingClient trackingClient;
@@ -23,6 +27,7 @@ public class TrackingClientSingleton {
   public static TrackingClient get() {
     synchronized (lock) {
       if (trackingClient == null) {
+        LOGGER.warn("Attempting to fetch an initialized track client. Initializing a default one.");
         initialize();
       }
       return trackingClient;

@@ -1,3 +1,3 @@
-import CreationFormPage from "./CreationFormPage";
+import { CreationFormPage } from "./CreationFormPage";
 
 export default CreationFormPage;
