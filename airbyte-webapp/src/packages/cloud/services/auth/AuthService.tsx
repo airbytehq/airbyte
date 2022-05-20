@@ -45,7 +45,6 @@ interface AuthContextApi {
   login: AuthLogin;
   signUpWithEmailLink: (form: { name: string; email: string; password: string }) => Promise<void>;
   signUp: AuthSignUp;
-  setPassword: (password: string) => Promise<void>;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
   requirePasswordReset: AuthRequirePasswordReset;
@@ -121,14 +120,6 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         // https://firebase.google.com/docs/auth/web/manage-users#re-authenticate_a_user
         await authService.reauthenticate(email, currentPassword);
         return authService.updatePassword(newPassword);
-      },
-      async setPassword(password: string): Promise<void> {
-        const currentAuthUser = authService.getCurrentUser();
-
-        if (currentAuthUser && !state.currentUser) {
-          await authService.updatePassword(password);
-          await onAfterAuth(currentAuthUser);
-        }
       },
       async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);
