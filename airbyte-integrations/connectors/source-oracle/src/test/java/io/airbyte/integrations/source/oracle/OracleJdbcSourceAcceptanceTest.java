@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.oracle;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -342,7 +343,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
   @Test
@@ -350,7 +351,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("username", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
   @Test
@@ -369,4 +370,15 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
   }
 
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    executeOracleStatement("CREATE USER Mary IDENTIFIED BY password");
+
+    ((ObjectNode) config).put("username", "Mary");
+    ((ObjectNode) config).put("password", "password");
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
 }

@@ -80,7 +80,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       conn.close();
       return metaData;
     } catch (SQLException e) {
-      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e.getMessage() : e.getCause().getMessage() );
+      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e.getMessage() : e.getCause().getMessage());
     }
   }
 

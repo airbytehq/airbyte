@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +37,11 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+
+  protected static final String USERNAME = "new_user";
+  protected static final String DATABASE = "new_db";
+  protected static final String PASSWORD = "new_password";
 
   protected static final String TEST_USER = "test";
   protected static final Callable<String> TEST_PASSWORD = () -> "test";
@@ -161,7 +167,17 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("database", "wrongdatabase");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
+    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD.call());
+    connection.createStatement().execute("create user 'new_user'@'%' IDENTIFIED BY 'password';\n");
+    ((ObjectNode) config).put("username", "new_user");
+    ((ObjectNode) config).put("password", "password");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
 }

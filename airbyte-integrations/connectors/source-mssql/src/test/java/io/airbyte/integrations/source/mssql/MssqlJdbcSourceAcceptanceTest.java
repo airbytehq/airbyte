@@ -27,7 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -64,6 +65,9 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
+      database.execute(ctx -> ctx.createStatement().execute("CREATE LOGIN Mary WITH PASSWORD = 'password_3435!'; " +
+              "CREATE USER Mary FOR LOGIN Mary;  "));
+
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put("database", dbName);
 
@@ -97,12 +101,13 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public String getDriverClass() {
     return MssqlSource.DRIVER_CLASS;
   }
+
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
   @Test
@@ -110,7 +115,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("username", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
 
   @Test
@@ -134,6 +139,17 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("database", "wrongdatabase");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+    Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    ((ObjectNode) config).put("username", "Mary");
+    ((ObjectNode) config).put("password", "password_3435!");
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
+
 }

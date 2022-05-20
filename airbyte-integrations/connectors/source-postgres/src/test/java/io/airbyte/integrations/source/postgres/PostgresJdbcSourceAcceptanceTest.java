@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_SCHEMA_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +27,7 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +35,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  private static final String USERNAME = "new_user";
+  private static final String DATABASE = "new_db";
+  private static final String PASSWORD = "new_password";
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -135,5 +142,24 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD )));
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("create database %s;", DATABASE)));
+    // deny access for database for all users from group public
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("revoke all on database %s from public;", DATABASE)));
+
+    ((ObjectNode) config).put("username", USERNAME);
+    ((ObjectNode) config).put("password", PASSWORD);
+    ((ObjectNode) config).put("database", DATABASE);
+
+    final AirbyteConnectionStatus actual = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
   }
 }
