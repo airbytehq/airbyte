@@ -83,6 +83,7 @@ write_logs() {
   show_run_details 'ERRORS'
 }
 
+echo 'testing GITHUB_STEP_SUMMARY'
 echo "# $connector" >> $GITHUB_STEP_SUMMARY
 echo "" >> $GITHUB_STEP_SUMMARY
 
