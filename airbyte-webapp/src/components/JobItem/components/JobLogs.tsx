@@ -52,7 +52,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   });
 
   if (isSynchronousJobRead) {
-    return <Logs logsArray={debugInfo?.attempts.slice(-1)[0].logs.logLines ?? job.logs?.logLines} />;
+    return <Logs logsArray={debugInfo?.attempts[attemptNumber].logs.logLines ?? job.logs?.logLines} />;
   }
 
   const currentAttempt = job.attempts?.[attemptNumber];
@@ -84,6 +84,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
         currentAttempt={currentAttempt}
         jobDebugInfo={debugInfo}
         showAttemptStats={attempts > 1}
+        logs={debugInfo?.attempts[attemptNumber].logs.logLines}
       />
     </>
   );
