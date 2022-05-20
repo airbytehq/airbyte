@@ -437,7 +437,7 @@ class TestIncrementalFileStream:
                 ],
             ),
             ("another_test_bucket", "/fullscreen", [{}], []),  # empty response
-            (  # some files
+            (  # some keys are not accepted
                 "almost_real_test_bucket",
                 "/HD",
                 [
@@ -464,9 +464,126 @@ class TestIncrementalFileStream:
                 dataset="dummy",
                 provider={"bucket": bucket, "path_prefix": path_prefix, **provider},
                 format={},
-                path_pattern="**/prefix*.csv",
+                path_pattern="**/prefix*.png",
             )
             expected_info = iter(expected_file_info)
 
             for file_info in stream_instance.filepath_iterator():
                 assert file_info == next(expected_info)
+
+    @pytest.mark.parametrize(
+        ("user_schema", "min_datetime", "ordered_file_infos", "file_schemas", "expected_schema", "log_expected", "error_expected"),
+        (
+            (  # first file skipped due to min datetime constraint
+                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
+                datetime(2022, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [{"pets": "array", "hobbies": "array"}],  # this is the second file schema as call for the first one will be skipped
+                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
+                False,
+                False,
+            ),
+            (  # first file schema == user schema
+                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [
+                    {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"},
+                    {"pets": "array", "hobbies": "array"},
+                ],
+                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
+                False,
+                False,
+            ),
+            (  # warning log expected
+                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [
+                    {"id": "integer", "first_name": "string", "last_name": "string", "single": "boolean"},
+                    {"pets": "array", "hobbies": "array"},
+                ],
+                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
+                True,
+                False,
+            ),
+            (  # error expected
+                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [{"pets": "boolean", "hobbies": "boolean"}, {"pets": "array", "hobbies": "array"}],
+                {},
+                False,
+                True,
+            ),
+            (  # successful merge of 3 schemas
+                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [{"company": "string", "gender": "string"}, {"pets": "array", "hobbies": "array"}],
+                {
+                    "id": "string",
+                    "first_name": "string",
+                    "last_name": "string",
+                    "single": "boolean",
+                    "pets": "array",
+                    "hobbies": "array",
+                    "company": "string",
+                    "gender": "string",
+                },
+                False,
+                False,
+            ),
+        ),
+    )
+    @patch("source_s3.stream.IncrementalFileStreamS3.storagefile_class", MagicMock())
+    def test_master_schema(
+        self, capsys, user_schema, min_datetime, ordered_file_infos, file_schemas, expected_schema, log_expected, error_expected
+    ):
+        file_format_parser_mock = MagicMock(return_value=MagicMock(get_inferred_schema=MagicMock(side_effect=file_schemas)))
+        with patch.object(IncrementalFileStreamS3, "fileformatparser_class", file_format_parser_mock):
+            with patch.object(IncrementalFileStreamS3, "get_time_ordered_file_infos", MagicMock(return_value=ordered_file_infos)):
+                stream_instance = IncrementalFileStreamS3(
+                    dataset="dummy", provider={}, format={"filetype": "csv"}, schema=user_schema, path_pattern="**/prefix*.csv"
+                )
+                if error_expected:
+                    with pytest.raises(RuntimeError):
+                        stream_instance._get_master_schema(min_datetime=min_datetime)
+                else:
+                    assert stream_instance._get_master_schema(min_datetime=min_datetime) == expected_schema
+                    if log_expected:
+                        captured = capsys.readouterr()
+                        assert "Detected mismatched datatype" in captured.out
+
+    @patch.object(
+        IncrementalFileStreamS3,
+        "_get_master_schema",
+        MagicMock(return_value={"column_A": "string", "column_B": "integer", "column_C": "boolean"}),
+    )
+    def test_get_shema_map(self):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy", provider={}, format={"filetype": "csv"}, schema={}, path_pattern="**/prefix*.csv"
+        )
+        assert stream_instance._get_schema_map() == {
+            "_ab_additional_properties": "object",
+            "_ab_source_file_last_modified": "string",
+            "_ab_source_file_url": "string",
+            "column_A": "string",
+            "column_B": "integer",
+            "column_C": "boolean",
+        }
