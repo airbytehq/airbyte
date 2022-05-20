@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -121,7 +122,9 @@ public class AirbyteTestContainer {
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
-            .setBasePath("/api"));
+            .setBasePath("/api")
+            .setHttpClientBuilder(HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)));
     final HealthApi healthApi = apiClient.getHealthApi();
 
     final AtomicReference<ApiException> lastException = new AtomicReference<>();

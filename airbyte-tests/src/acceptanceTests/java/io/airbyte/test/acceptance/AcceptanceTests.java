@@ -96,6 +96,7 @@ import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -262,7 +263,9 @@ public class AcceptanceTests {
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
-            .setBasePath("/api"));
+            .setBasePath("/api")
+            .setHttpClientBuilder(HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)));
 
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
