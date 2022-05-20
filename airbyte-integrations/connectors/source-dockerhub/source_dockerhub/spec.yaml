@@ -9,7 +9,7 @@ connectionSpecification:
   properties:
     docker_username:
       type: string
-      description: Username of DockerHub person or organization (for https://hub.docker.com/v2/repositories/USERNAME/)
+      description: Username of DockerHub person or organization (for https://hub.docker.com/v2/repositories/USERNAME/ API call)
       pattern: ^[a-z0-9_\-]+$
       examples:
-        - airbytehq
+        - airbyte

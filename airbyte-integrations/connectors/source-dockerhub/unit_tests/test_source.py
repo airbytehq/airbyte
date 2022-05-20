@@ -4,19 +4,18 @@
 
 from unittest.mock import MagicMock
 
-from source_python_http_example.source import SourceDockerhub
+from source_dockerhub.source import SourceDockerhub
 
 
-def test_check_connection(mocker):
+def test_check_connection():
     source = SourceDockerhub()
-    logger_mock, config_mock = MagicMock(), MagicMock()
+    logger_mock, config_mock = MagicMock(), {"docker_username": "airbyte"} # shouldnt actually ping network request in test but we will skip for now
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
-def test_streams(mocker):
+def test_streams():
     source = SourceDockerhub()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    expected_streams_number = 1
     assert len(streams) == expected_streams_number

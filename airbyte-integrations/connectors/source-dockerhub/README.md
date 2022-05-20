@@ -39,8 +39,17 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/dockerhub)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_python_http_example/spec.yaml` file.
+
+Create a file `secrets/config.json` that fits the `source_dockerhub/spec.yaml` file.
+
+For this source it is pretty simple (feel free to change the username to something of interest):
+
+```json
+{
+  "docker_username": "airbyte"
+}
+```
+
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
