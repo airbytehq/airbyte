@@ -154,12 +154,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     } catch (Exception e) {
       try {
         var mongoException = (MongoCommandException) e.getCause();
-        String code = String.valueOf(mongoException.getCode());
+        var code = String.valueOf(mongoException.getCode());
         throw new ConnectionErrorException(code, e.getMessage());
       } catch (ConnectionErrorException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new ConnectionErrorException(e.getMessage());
+        try {
+          var mongoException = (MongoCommandException) e;
+          var code = String.valueOf(mongoException.getCode());
+          throw new ConnectionErrorException(code, e.getMessage());
+        } catch (ConnectionErrorException ex1) {
+          throw ex1;
+        } catch (Exception exception) {
+          throw e;
+        }
       }
     }
   }

@@ -110,8 +110,19 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
 
   @Test
   public void testCheckIncorrectHost() throws Exception {
-    JsonNode conf = ((ObjectNode) config.get("instance_type")).put("host", "localhost2");
-    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance", STANDALONE.getType())
+            .put("host", "localhost2")
+            .put("port", mongoDBContainer.getFirstMappedPort())
+            .put("tls", false)
+            .build());
+
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance_type", instanceConfig)
+            .put("database", DATABASE_NAME)
+            .put("auth_source", "admin")
+            .build());
+    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
   }
 
   @Test
