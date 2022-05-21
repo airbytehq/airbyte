@@ -304,6 +304,8 @@ class StreamProcessor(object):
                 subdir="scd",
                 unique_key=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
                 partition_by=PartitionScheme.ACTIVE_ROW,
+                do_deletions=True,
+                column_names=column_names,
             )
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
@@ -315,8 +317,8 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
-                do_deletions=True,
                 scd_table=from_table,
+                column_names=column_names,
             )
         return self.find_children_streams(from_table, column_names)
 
@@ -1092,6 +1094,7 @@ where 1 = 1
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
         do_deletions: bool = False,
         scd_table: str = "",
+        column_names: Dict[str, Tuple[str, str]] = {},
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -1110,28 +1113,55 @@ where 1 = 1
         else:
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
+            stg_schema = self.get_schema(True)
+            stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+            if self.name_transformer.needs_quotes(stg_table):
+                stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
             if suffix == "scd":
-                stg_schema = self.get_schema(True)
-                stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
-                if self.name_transformer.needs_quotes(stg_table):
-                    stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
-
                 hooks = []
 
-                # Drop rows from the final table which need to be updated
-                # TODO does the final table always get populated into tables_registry before the SCD table?
-                final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
-                hashid_column_name = self.hash_id(False)
-                hooks.append(
-                    f"""
-                    {{% if adapter.get_relation(
-                        database=this.database,
-                        schema=this.schema,
-                        identifier='{final_table_name}') is not none %}}
-                    delete from {{{{ this.schema }}}}.{jinja_call(self.name_transformer.apply_quote(final_table_name))} where {hashid_column_name} in (select {hashid_column_name} from {stg_schema}.{stg_table})
-                    {{% endif %}}
-                    """
-                )
+                # This delete query depends on the _stg model, so run it before we drop/update the _stg view
+                if do_deletions:
+                    final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
+                    # final_table_name = self.final_table_name
+                    deletion_hook = Template(
+                        """
+                        {{ '{%' }}
+                            if adapter.get_relation(
+                                database=this.database,
+                                schema=this.schema,
+                                identifier='{{ final_table_name }}'
+                            ) is not none
+                        {{ '%}' }}
+
+                        delete from {{ '{{ this.schema }}' }}.{{ quoted_final_table_name }} where {{ unique_key }} in (
+                            select
+                                {{ '{{' }} dbt_utils.surrogate_key([
+                                    {%- for primary_key in primary_keys %}
+                                        {{ primary_key }},
+                                    {%- endfor %}
+                                ]) {{ '}}' }} as {{ unique_key }}
+                            from {{stg_schema}}.{{stg_table}}
+                            where 1=1 {{ incremental_clause }}
+                        )
+
+                        {{ '{% else %}' }}
+                        -- If the table doesn't exist, then we shouldn't try to delete it.
+                        -- We have to have a non-empty query, so just do a simple select here.
+                        select 1
+                        {{ '{% endif %}' }}
+                        """
+                    ).render(
+                        final_table_name=final_table_name,
+                        quoted_final_table_name=jinja_call(self.name_transformer.apply_quote(final_table_name)),
+                        unique_key=self.get_unique_key(),
+                        primary_keys=self.list_primary_keys(column_names),
+                        stg_schema=stg_schema,
+                        stg_table=stg_table,
+                        # TODO should this be using the final table?
+                        incremental_clause=self.get_incremental_clause("this"),
+                    )
+                    hooks.append(deletion_hook)
 
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
@@ -1142,34 +1172,10 @@ where 1 = 1
                     hooks.append(
                         f"drop view {stg_schema}.{stg_table}",
                     )
-
                 config["post_hook"] = "[" + ",".join(map(lambda hook: '"' + hook + '"', hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
-                if do_deletions:
-                    deletion_hook = Template(
-                        """
-delete from {{ '{{ this }}' }} where _airbyte_unique_key in (
-    select _airbyte_unique_key from (
-        select row_number() over (
-            partition by _airbyte_unique_key
-            order by _airbyte_active_row desc, _airbyte_ab_id
-        ) as _airbyte_row_num,
-        {{ scd_table }}.*
-        from {{ scd_table }}
-        where 1=1
-        {{ incremental_clause }}
-    ) partitioned_data
-    where _airbyte_active_row = 0 and _airbyte_row_num = 1
-)
-"""
-                    ).render(
-                        scd_table="{{" + scd_table + "}}",
-                        normalized_normalized_at_column_name=self.name_transformer.normalize_column_name(self.airbyte_normalized_at),
-                        incremental_clause=self.get_incremental_clause(scd_table),
-                    )
-                    config["post_hook"] = '["' + deletion_hook + '"]'
         template = Template(
             """
 {{ '{{' }} config(
