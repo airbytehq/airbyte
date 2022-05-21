@@ -326,7 +326,7 @@ class TestBaseInsightsStream:
         assert stream._completed_slices == {pendulum.Date(2020, 3, 24), pendulum.Date(2020, 3, 23)}
         slices = stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
         result = [x["insight_job"].interval.start for x in slices]
-        assert len(result) == 30
+        assert len(result) == AdsInsights.INSIGHTS_LOOKBACK_PERIOD.days + 1
         assert pendulum.parse("2020-03-23").date() in result
         assert pendulum.parse("2020-03-24").date() in result
         assert stream._completed_slices == set()

@@ -67,6 +67,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         **kwargs,
     ):
         super().__init__(**kwargs)
+        self._today = pendulum.today(tz="UTC").date()
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
@@ -162,9 +163,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
-        if self._end_date < self._next_cursor_value:
+        end_date = min(self._end_date, self._today)
+        if end_date < self._next_cursor_value:
             return
-        date_range = self._end_date - self._next_cursor_value
+        date_range = end_date - self._next_cursor_value
         yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
@@ -183,8 +185,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
-        today = pendulum.today().date()
-        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
+        refresh_date = self._today - self.INSIGHTS_LOOKBACK_PERIOD
 
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
@@ -230,9 +231,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today().date()
-        oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
-        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
+        oldest_date = self._today - self.INSIGHTS_RETENTION_PERIOD
+        refresh_date = self._today - self.INSIGHTS_LOOKBACK_PERIOD
 
         if self._cursor_value:
             start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
