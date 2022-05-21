@@ -126,15 +126,15 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, SQLDialect.DEFAULT);
     return new Database(dslContext).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get("database")));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+        });
   }
 
   @BeforeAll
@@ -151,7 +151,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

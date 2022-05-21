@@ -15,7 +15,9 @@
         "type": "string",
         "title": "Spreadsheet Link",
         "description": "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details.",
-        "examples": ["https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG/edit"]
+        "examples": [
+          "https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG/edit"
+        ]
       },
       "credentials": {
         "type": "object",

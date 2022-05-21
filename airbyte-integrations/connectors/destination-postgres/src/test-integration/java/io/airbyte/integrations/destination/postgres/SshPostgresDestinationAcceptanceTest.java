@@ -120,9 +120,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
                 config.get("host").asText(),
                 config.get("port").asInt(),
                 config.get("database").asText()),
-            SQLDialect.POSTGRES
-        )
-    );
+            SQLDialect.POSTGRES));
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {

@@ -89,9 +89,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
   }
 
   protected void createTestUser(final JdbcDatabase database, final JsonNode config, final String testUserName, final String testUserPassword)

@@ -87,9 +87,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
             ClickHouseSource.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
                 configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asText())
-        )
-    );
+                configWithoutDbName.get("port").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
