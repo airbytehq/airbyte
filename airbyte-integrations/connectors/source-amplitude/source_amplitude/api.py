@@ -113,17 +113,18 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 class Events(IncrementalAmplitudeStream):
     cursor_field = "event_time"
     date_template = "%Y%m%dT%H"
+    compare_date_template = '%Y-%m-%d %H:%M:%S'
     primary_key = "uuid"
     state_checkpoint_interval = 1000
     time_interval = {"days": 3}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        state = stream_state[self.cursor_field] if stream_state else self._start_date
+        state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
         zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
-                    if record[self.cursor_field] >= state:
+                    if record[self.cursor_field] >= state_value:
                         yield record
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
