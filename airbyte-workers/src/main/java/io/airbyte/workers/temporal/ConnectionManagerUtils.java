@@ -163,16 +163,17 @@ public class ConnectionManagerUtils {
 
     final ConnectionManagerWorkflow connectionManagerWorkflow;
     final WorkflowState workflowState;
+    final WorkflowExecutionStatus workflowExecutionStatus;
     try {
       connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
       workflowState = connectionManagerWorkflow.getState();
+      workflowExecutionStatus = getConnectionManagerWorkflowStatus(client, connectionId);
     } catch (final Exception e) {
       throw new UnreachableWorkflowException(
           String.format("Failed to retrieve ConnectionManagerWorkflow for connection %s due to the following error:", connectionId),
           e);
     }
 
-    final WorkflowExecutionStatus workflowExecutionStatus = getConnectionManagerWorkflowStatus(client, connectionId);
     if (WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED.equals(workflowExecutionStatus)) {
       if (workflowState.isDeleted()) {
         throw new DeletedWorkflowException(String.format(
