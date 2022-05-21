@@ -83,7 +83,7 @@ write_results_summary() {
   then
     result="Build Passed"
     info='All Passed'
-    echo '### Build Passed\n' >> $GITHUB_STEP_SUMMARY
+    echo '### Build Passed' >> $GITHUB_STEP_SUMMARY
     echo '' >> $GITHUB_STEP_SUMMARY
   else
     result="Build Failed"
