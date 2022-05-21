@@ -146,14 +146,3 @@ def test_accounts_live(config):
     accounts = Accounts(client, config)
     records = accounts.read_records(SyncMode.full_refresh)
     assert len(list(records)) == 4
-
-
-# def test_AccountPerformanceReportMonthly_live(config):
-#
-#     with open("./unit_tests/accountperformancereportmonthly_records.json", "r") as f:
-#         accountperformancereportmonthly_records = json.load(f)
-#
-#     client = Client(**config)
-#     accountperformancereportmonthly = AccountPerformanceReportMonthly(client, config)
-#     records = accountperformancereportmonthly.read_records(SyncMode.full_refresh, stream_slice={"account_id": 180278106})
-#     assert list(records) == accountperformancereportmonthly_records
