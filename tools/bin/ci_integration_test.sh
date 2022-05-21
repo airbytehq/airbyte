@@ -43,7 +43,7 @@ else
 fi
 }
 
-show_run_details() {
+show_python_run_details() {
    run_info=`sed -n "/=* $1 =*/,/========/p" build.out`
    if ! test -z "$run_info"
    then
@@ -54,31 +54,77 @@ show_run_details() {
    fi
 }
 
-show_skipped_failed_info() {
-   skipped_failed_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
-   if ! test -z "$skipped_failed_info"
-      then
-         echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
-         echo "Python short test summary info:" >> $GITHUB_ENV
-         echo '```' >> $GITHUB_ENV
-         echo "$skipped_failed_info" >> $GITHUB_ENV
-         echo '```' >> $GITHUB_ENV
-         echo "EOF" >> $GITHUB_ENV
+show_java_run_details() {
+  # show few lines after stack trace
+  run_info=`awk '/] FAILED/{x=NR+8}(NR<=x){print}' build.out`
+  if ! test -z "$run_info"
+  then
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo "$run_info" >> $GITHUB_STEP_SUMMARY
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo '' >> $GITHUB_STEP_SUMMARY
+  fi
+}
 
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo "$skipped_failed_info" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo '' >> $GITHUB_STEP_SUMMARY
-   else
-      echo "PYTHON_SHORT_TEST_SUMMARY_INFO=No skipped/failed tests"
-      echo '### No skipped/failed tests' >> $GITHUB_STEP_SUMMARY
-   fi
+write_results_summary() {
+  echo "write_results_summary"
+  success="$1"
+  python_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
+  java_info=`sed -n '/tests completed,/p' build.out`
+
+  echo "success: $success"
+  echo "python_info: $python_info"
+  echo "java_info: $java_info"
+
+  info='Could not find result details'
+  result='Unknown result'
+
+  if [ "$success" = true ]
+  then
+    result="Build Passed"
+    info='All Passed'
+    echo '### Build Passed\n' >> $GITHUB_STEP_SUMMARY
+    echo '' >> $GITHUB_STEP_SUMMARY
+  else
+    result="Build Failed"
+    echo '### Build Failed' >> $GITHUB_STEP_SUMMARY
+    echo '' >> $GITHUB_STEP_SUMMARY
+  fi
+
+  if ! test -z "$java_info"
+  then
+    info="$java_info"
+
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo "$java_info" >> $GITHUB_STEP_SUMMARY
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo '' >> $GITHUB_STEP_SUMMARY
+  fi
+  if ! test -z "$python_info"
+  then
+    info="$python_info"
+
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo "$python_info" >> $GITHUB_STEP_SUMMARY
+    echo '```' >> $GITHUB_STEP_SUMMARY
+    echo '' >> $GITHUB_STEP_SUMMARY
+  fi
+
+  echo "TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
+  echo "$result" >> $GITHUB_ENV
+  echo '' >> $GITHUB_ENV
+  echo "Test summary info:" >> $GITHUB_ENV
+  echo '```' >> $GITHUB_ENV
+  echo "$info" >> $GITHUB_ENV
+  echo '```' >> $GITHUB_ENV
+  echo "EOF" >> $GITHUB_ENV
 }
 
 write_logs() {
-  show_skipped_failed_info
-  show_run_details 'FAILURES'
-  show_run_details 'ERRORS'
+  write_results_summary $1
+  show_python_run_details 'FAILURES'
+  show_python_run_details 'ERRORS'
+  show_java_run_details
 }
 
 echo "# $connector" >> $GITHUB_STEP_SUMMARY
@@ -96,11 +142,11 @@ test $run_status == "0" || {
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> $GITHUB_ENV
-   write_logs
+   write_logs false
    exit $run_status
 }
 
-write_logs
+write_logs true
 
 # Build successed
 coverage_report=`sed -n '/.*Name.*Stmts.*Miss.*Cover/,/TOTAL   /p' build.out`
