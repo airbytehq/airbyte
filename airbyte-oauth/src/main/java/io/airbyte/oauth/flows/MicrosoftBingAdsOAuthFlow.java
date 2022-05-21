@@ -5,6 +5,7 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -18,10 +19,13 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class MicrosoftBingAdsOAuthFlow extends BaseOAuth2Flow {
 
+  private static final String fieldName = "tenant_id";
+
   public MicrosoftBingAdsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
+  @VisibleForTesting
   public MicrosoftBingAdsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
@@ -37,7 +41,12 @@ public class MicrosoftBingAdsOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
 
-    final String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+    final String tenantId;
+    try {
+      tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
+    } catch (final IllegalArgumentException e) {
+      throw new IOException("Failed to get " + fieldName + " value from input configuration", e);
+    }
 
     try {
       return new URIBuilder()
@@ -70,7 +79,7 @@ public class MicrosoftBingAdsOAuthFlow extends BaseOAuth2Flow {
 
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    final String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, "tenant_id");
+    final String tenantId = getConfigValueUnsafe(inputOAuthConfiguration, fieldName);
     return "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
   }
 
