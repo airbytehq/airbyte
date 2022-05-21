@@ -662,7 +662,8 @@ class Orders(IncrementalAmazonSPStream):
     replication_end_date_field = "LastUpdatedBefore"
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
-
+    default_backoff_time = 60
+    
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
 
@@ -675,6 +676,13 @@ class Orders(IncrementalAmazonSPStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get(self.name, [])
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):
