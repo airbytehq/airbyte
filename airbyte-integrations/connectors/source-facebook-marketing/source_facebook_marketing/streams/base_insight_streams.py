@@ -103,11 +103,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
 
-        date_start = None
-        if stream_state:
-            date_start = stream_state.get("date_start")
-            if date_start:
-                date_start = pendulum.parse(date_start).date()
+        date_start = stream_state and stream_state.get("date_start")
+        if date_start:
+            date_start = pendulum.parse(date_start).date()
 
         job = stream_slice["insight_job"]
         for obj in job.get_result():
