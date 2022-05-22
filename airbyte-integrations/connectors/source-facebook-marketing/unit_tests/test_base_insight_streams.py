@@ -326,7 +326,8 @@ class TestBaseInsightsStream:
     def test_incremental_lookback_period_updated(self, api, mocker, monkeypatch):
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
-        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-01")))
+        today = pendulum.parse("2020-04-01")
+        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=today))
         monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
@@ -334,9 +335,9 @@ class TestBaseInsightsStream:
         stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
 
         records = read_full_refresh(stream)
-        assert len(records) == 32
-        assert records[0]["date_start"] == "2020-03-01"
-        assert records[-1]["date_start"] == "2020-04-01"
+        assert len(records) == (today - start_date).days + 1
+        assert records[0]["date_start"] == str(start_date.date())
+        assert records[-1]["date_start"] == str(today.date())
 
         state = {AdsInsights.cursor_field: "2020-03-20", "time_increment": 1}
         records = read_incremental(stream, state)
