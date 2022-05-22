@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import os
-from typing import List, Optional, NoReturn
+from typing import List, Optional, NoReturn, Tuple
 
 import airbyte_api_client
 import click
@@ -13,7 +13,9 @@ from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdReques
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
 from .generate import commands as generate_commands
+from .api_headers import deserialize_api_headers, ApplicationHeader, API_HEADERS_YAML_FILE_INSTRUCTION, set_api_headers
 from .init import commands as init_commands
+from .init.commands import AIRBYTE_HEADERS_FILE_PATH_ENV_VARIABLE_NAME
 from .list import commands as list_commands
 from .telemetry import TelemetryClient, build_user_agent
 
@@ -21,7 +23,8 @@ AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, init_commands.in
 
 
 def set_context_object(
-        ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool, api_headers: Optional[List[str]] = None
+        ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool,
+        api_headers: Optional[List[ApplicationHeader]] = None
 ) -> click.Context:
     """Fill the context object with resources that will be reused by other commands.
     Performs check and telemetry sending in case of error.
@@ -44,7 +47,7 @@ def set_context_object(
         ctx.ensure_object(dict)
         ctx.obj["OCTAVIA_VERSION"] = pkg_resources.require("octavia-cli")[0].version
         ctx.obj["TELEMETRY_CLIENT"] = telemetry_client
-        api_client = get_api_client(airbyte_url=airbyte_url, api_headers=api_headers)
+        api_client = get_api_client(airbyte_url, api_headers=api_headers)
         ctx.obj["WORKSPACE_ID"] = get_workspace_id(api_client, workspace_id)
         ctx.obj["ANONYMOUS_DATA_COLLECTION"] = get_anonymous_data_collection(api_client, ctx.obj["WORKSPACE_ID"])
         api_client.user_agent = build_user_agent(ctx.obj["OCTAVIA_VERSION"])
@@ -54,45 +57,6 @@ def set_context_object(
         telemetry_client.send_command_telemetry(ctx, error=e)
         raise e
     return ctx
-
-
-def get_env_headers() -> Optional[List[str]]:
-    headers = os.environ.get("AIRBYTE_API_HEADERS")
-    headers_splitter = os.environ.get("AIRBYTE_API_HEADERS_SEPARATOR", "|")
-
-    if headers:
-        try:
-            parsed_headers = [header for header in headers.split(headers_splitter)]
-            return parsed_headers
-        except AttributeError:
-            return None
-    return None
-
-
-def assign_api_values(api_client: airbyte_api_client.ApiClient, api_headers: Optional[List[str]]) -> NoReturn:
-    if api_headers:
-        for header_value_pair in api_headers:
-            try:
-                header_name, header_value = header_value_pair.split(":")
-            except ValueError:
-                raise ValueError(
-                    f"Provided header name {header_value_pair} and header value does not meet the criteria header_name: header_value")
-
-            api_client.set_default_header(header_name.strip(), header_value.strip())
-
-
-def assign_api_headers(api_headers: Optional[List[str]], api_header_file: Optional[str]) -> List[str]:
-    if api_headers and api_header_file:
-        raise AttributeError("Can't handle api_headers file and api headers at the same time")
-
-    api_headers_clean = []
-
-    if api_header_file:
-        with open(api_header_file) as file:
-            api_headers_clean = file.readlines()
-    if api_headers:
-        api_headers_clean = api_headers
-    return api_headers_clean
 
 
 @click.group()
@@ -110,26 +74,25 @@ def assign_api_headers(api_headers: Optional[List[str]], api_header_file: Option
     help="Enable or disable telemetry for product improvement.",
 )
 @click.option(
-    "--api-headers",
-    "-h",
-    default=lambda: get_env_headers(),
-    help="Additional header name and header value pairs to pass to octavia cli ex. Authorization: Basic dXNlcjpwYXNzd29yZA==",
-    multiple=True
+    "--api-header",
+    "-ah",
+    help="Additional HTTP header name and header value pairs to pass to use when calling Airbyte's API ex. --api-header \"Authorization\" \"Basic dXNlcjpwYXNzd29yZA==\"",
+    multiple=True,
+    type=(str, str)
 )
 @click.option(
     "--api-headers-file",
     "-f",
-    envvar="AIRBYTE_HEADERS_FILE",
-    default=None,
-    help="File with header options each line consist of header_name: header_value"
+    envvar=AIRBYTE_HEADERS_FILE_PATH_ENV_VARIABLE_NAME,
+    help=f"Yaml file with headers configuration like below \n {API_HEADERS_YAML_FILE_INSTRUCTION}",
+    type=click.Path(exists=True, readable=True)
 )
 @click.pass_context
 def octavia(
-        ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool, api_headers: Optional[List[str]] = None,
-        api_header_file: Optional[str] = None
+        ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool, api_header: Optional[List[Tuple[str, str]]] = None,
+        api_headers_file: Optional[str] = None
 ) -> None:
-
-    api_headers_clean = assign_api_headers(api_headers=api_headers, api_header_file=api_header_file)
+    api_headers_clean = deserialize_api_headers(api_headers=api_header, api_headers_file=api_headers_file)
 
     ctx = set_context_object(
         ctx=ctx, airbyte_url=airbyte_url, workspace_id=workspace_id, enable_telemetry=enable_telemetry, api_headers=api_headers_clean
@@ -144,11 +107,12 @@ def octavia(
         click.echo(click.style("🐙 - Project is not yet initialized.", fg="red", bold=True))
 
 
-def get_api_client(airbyte_url: str, api_headers: Optional[List[str]] = None):
+def get_api_client(airbyte_url: str, api_headers: Optional[List[ApplicationHeader]] = None):
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api")
     api_client = airbyte_api_client.ApiClient(client_configuration)
 
-    assign_api_values(api_client, api_headers)
+    if api_headers:
+        set_api_headers(api_client, api_headers)
 
     check_api_health(api_client)
     return api_client

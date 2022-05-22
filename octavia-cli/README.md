@@ -138,11 +138,42 @@ docker-compose run octavia-cli <command>`
 
 ### `octavia` command flags
 
-| **Flag**                                 | **Description**                                  | **Env Variable**           | **Default**                                            |
-|------------------------------------------|--------------------------------------------------|----------------------------|--------------------------------------------------------|
-| `--airbyte-url`                          | Airbyte instance URL.                            | `AIRBYTE_URL`              | `http://localhost:8000`                                |
-| `--workspace-id`                         | Airbyte workspace id.                            | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
-| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data. | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
+| **Flag**                                 | **Description**                                              | **Env Variable**             | **Default**                                            |
+|------------------------------------------|--------------------------------------------------------------|------------------------------|--------------------------------------------------------|
+| `--airbyte-url`                          | Airbyte instance URL.                                        | `AIRBYTE_URL`                | `http://localhost:8000`                                |
+| `--workspace-id`                         | Airbyte workspace id.                                        | `AIRBYTE_WORKSPACE_ID`       | The first workspace id found on your Airbyte instance. |
+| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.             | `OCTAVIA_ENABLE_TELEMETRY`   | True                                                   |
+| `--api-headers`                          | Header value pairs passed while calling airbyte api endpoint | not supported                | None                                                   |
+| `--api-headers-file`                     | Yaml file with header pairs values                           | not supported                | None                                                   |
+           
+```bash
+--api-header "Authorization: Basic dXNlcjpwYXNzd29yZA==" --api-header "Content-Type: application/json"
+```
+
+yaml file example passed to --api-headers-file flag
+```bash
+headers:
+  - name: Authorization
+    value: Basic dXNlcjpwYXNzd29yZA==
+  - name: Content-Type
+    value: application/json
+```
+You can also provide environment variables to yaml file
+```bash
+headers:
+  - name: ${AUTHORIZATION_HEADER_NAME}
+    value: ${AUTHORIZATION_HEADER_VALUE}
+  - name: Content-Type
+    value: application/json
+```
+
+to use that option provide relative based on current path or 
+absolute path to configuration file
+
+note:
+- application headers from cli arguments overrides application headers from file
+- if multiple application headers with the same name provided with different key values, then values are sorted in
+  alphabetical order.
 
 ### `octavia` subcommands
 

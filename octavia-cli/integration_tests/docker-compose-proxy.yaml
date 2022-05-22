@@ -1,7 +1,9 @@
 version: "3.7"
 services:
   nginx-proxy:
-    build: nginx_proxy
+    build:
+      context: ./octavia-cli/integration_tests
+      dockerfile: nginx_proxy/Dockerfile
     ports:
       - "8010:80"
     depends_on:
@@ -14,4 +16,4 @@ services:
       - webapp
       - airbyte-temporal
     volumes:
-      - "./nginx_proxy/nginx.conf:/etc/nginx/nginx.conf"
+      - "./octavia-cli/integration_tests/nginx_proxy/nginx.conf:/etc/nginx/nginx.conf"

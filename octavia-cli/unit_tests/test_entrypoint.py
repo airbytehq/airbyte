@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from typing import Optional
+from typing import Optional, List
 
 import click
 import pkg_resources
@@ -9,6 +9,7 @@ import pytest
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from click.testing import CliRunner
 from octavia_cli import entrypoint
+from octavia_cli.api_headers import ApplicationHeader
 
 
 @click.command()
@@ -84,16 +85,22 @@ def test_octavia_not_initialized(mocker):
 
 
 @pytest.mark.parametrize(
-    "header_name,header_value",
-    [(None, None), ("non-empty", "non-empty"), (None, "non-empty"), ("non-empty", None)],
+    "api_headers",
+    [
+        None,
+        [],
+        [ApplicationHeader(name="Authorization", value="Basic dXNlcjE6cGFzc3dvcmQ=")],
+        [
+            ApplicationHeader(name="Authorization", value="Basic dXNlcjE6cGFzc3dvcmQ="),
+            ApplicationHeader(name="Header", value="header_value")]],
 )
-def test_get_api_client(mocker, header_name: Optional[str], header_value: Optional[str]):
+def test_get_api_client(mocker, api_headers: Optional[List[str]]):
     mocker.patch.object(entrypoint, "airbyte_api_client")
     mocker.patch.object(entrypoint, "check_api_health")
-    api_client = entrypoint.get_api_client("test-url", header_name=header_name, header_value=header_value)
+    api_client = entrypoint.get_api_client("test-url", api_headers=api_headers)
     entrypoint.airbyte_api_client.Configuration.assert_called_with(host="test-url/api")
     entrypoint.airbyte_api_client.ApiClient.assert_called_with(
-        entrypoint.airbyte_api_client.Configuration.return_value, header_name=header_name, header_value=header_value
+        entrypoint.airbyte_api_client.Configuration.return_value
     )
     entrypoint.check_api_health.assert_called_with(entrypoint.airbyte_api_client.ApiClient.return_value)
     assert api_client == entrypoint.airbyte_api_client.ApiClient.return_value
