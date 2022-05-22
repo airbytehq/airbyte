@@ -293,32 +293,35 @@ class TestBaseInsightsStream:
 
         assert stream.fields == ["account_id", "account_currency"]
 
-    def test_completed_slices_processed_in_lookback_period(self, api, mocker, monkeypatch):
+    def test_completed_slices_in_lookback_period(self, api, mocker, monkeypatch):
         start_date = pendulum.parse("2020-03-01")
-        end_date = pendulum.parse("2020-04-10")
+        end_date = pendulum.parse("2020-05-01")
         monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-01")))
-        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
+        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=10))
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
         state = {
-            AdsInsights.cursor_field: "2020-03-20",
+            AdsInsights.cursor_field: "2020-03-19",
             "slices": [
+                "2020-03-21",
+                "2020-03-22",
                 "2020-03-23",
-                "2020-03-24",
             ],
             "time_increment": 1,
         }
 
         stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
         stream.state = state
-        assert stream._completed_slices == {pendulum.Date(2020, 3, 24), pendulum.Date(2020, 3, 23)}
+        assert stream._completed_slices == {pendulum.Date(2020, 3, 21), pendulum.Date(2020, 3, 22), pendulum.Date(2020, 3, 23)}
+
         slices = stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
-        result = [x["insight_job"].interval.start for x in slices]
-        assert len(result) == AdsInsights.INSIGHTS_LOOKBACK_PERIOD.days + 1
-        assert pendulum.parse("2020-03-23").date() in result
-        assert pendulum.parse("2020-03-24").date() in result
-        assert stream._completed_slices == set()
+        slices = [x["insight_job"].interval.start for x in slices]
+
+        assert pendulum.parse("2020-03-21").date() not in slices
+        assert pendulum.parse("2020-03-22").date() in slices
+        assert pendulum.parse("2020-03-23").date() in slices
+        assert stream._completed_slices == {pendulum.Date(2020, 3, 21)}
 
     def test_incremental_lookback_period_updated(self, api, mocker, monkeypatch):
         start_date = pendulum.parse("2020-03-01")
