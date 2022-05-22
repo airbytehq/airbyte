@@ -1,8 +1,6 @@
 #
-
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -19,25 +17,12 @@ from requests_oauthlib import OAuth2Session
 import json
 
 """
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
+Source connector for HydroVu API
 """
-
 
 # Basic full refresh stream
 class HydroVuStream(HttpStream, ABC):
     """
-    TODO remove this comment
-
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
@@ -61,7 +46,7 @@ class HydroVuStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
+    # Required url_base for hydrovu api
     url_base = "https://www.hydrovu.com/public-api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -100,91 +85,61 @@ class HydroVuStream(HttpStream, ABC):
 
 class Locations(HydroVuStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    Gets list of locations from HydroVu API
     """
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    # Required
     primary_key = "id"
     
-    #def __init__(self, authenticator, *args, **kw):
     def __init__(self, *args, **kw):
         super(Locations, self).__init__(*args, **kw)
-        #self.count = 0
-
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
+        End of URL path to locations list from API
         """
         return "locations/list"
     
 
-    #def request_params(
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
+        The X-ISI-Start-Page is a header that is required if accessing any page beyond the fist
+        page from the given path to the locations list. If accessing the first page, then the
+        header can be empty.
         """
 
-        #if next_page_token and self.count < 5:
+        # If there is a next_page_token from the previous page of the list of locations,
+        # then set the X-ISI-Start-Page header.
         if next_page_token:
-            #print ("yes next_page_token")
-            #print ("next_page_token")
-            #print (next_page_token)
-
-            #self.count += 1
-            #print (self.count)
-            #print ("##########")
-
-            #return {}
             return {"X-ISI-Start-Page": next_page_token}
             
         else:
-            #print ("no next_page_token")
             return {}
-            #StopIteration
-            #pass
-
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        If there is a next page listed in the response header, then the string for that 
+        page will be parsed.
+        """
+
         try:
-            #r = next(self._pages)
-            print ("location response.headers")
-            print (response.headers)
-
-            print ("---------------------------------")
-
             r = response.headers['X-ISI-Next-Page']
-
-            #print (r)
-
-            #print ("2---------------------------------")
-
-
             return r
 
-        #except StopIteration:
         except:
             pass
 
 
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-
-        print ("parse location response.headers")
-        #print (response.headers)
-
-        print ("locations response.json()")
-        print (response.json())
-        #print ("3---------------------------------")
-
+        """
+        Parses the response of locations list to create records and associated parameters 
+        for each location.  
+        """
 
         def format_record(r):
 
@@ -198,25 +153,37 @@ class Locations(HydroVuStream):
 
 
 class Readings(HydroVuStream):
+    """
+    Gets readings for each location from HydroVu API
+    """
+
+    # Required
     primary_key = 'id'
+
     cursor_field = "latest_timestamp_for_each_location_param_id_combo"
 
     def __init__(self, auth, *args, **kw):
         super(Readings, self).__init__(*args, **kw)
 
+        # Call Locations class in order to get the list of locations
         locations = Locations(authenticator=auth)
 
         records = list(locations.read_records('full-refresh'))
 
+        # Create _pages iterable storing each location id
         self._pages = (location for location in sorted(location['id'] for location in records))
 
         self._cursor_value = None
 
-        self.location_and_param_id_latest_timestamps = {} 
+        # Dictionary to store the latest timestamp read in for each location throughout
+        # the reading process
         self.location_latest_timestamps = {} 
 
+        # Dictionary to store the timestamp for each location read in from the stored 
+        # state at the beginning of the reading process 
         self.state_location_timestamps = {} 
 
+        # Boolean to indicate to move on to the next location reading
         self.continue_to_next_location_reading = False
 
         self.next_location_page = ""
@@ -226,242 +193,132 @@ class Readings(HydroVuStream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
+        End of URL path to location date from API
         """
 
-
-
-
-        # next_page_token is the location id
+        # If next_page_token is empty, then iterate to next location page
         if not next_page_token:
             self.next_location_page = next(self._pages)
 
-
-
+        # Else if the second element of the next_page_token tuple contains a location id,
+        # then set the next location page to that location id.
         elif len(str(next_page_token[1])) > 0:
-
-            print ("len(next_page_token[1])")
-            print (len(str(next_page_token[1])))
-
             self.next_location_page = next_page_token[1]
-
-        
-
-        print ("self.next_location_page")
-        print (self.next_location_page)
-        print ("=============")
-
-
 
         return f"locations/{self.next_location_page}/data"
 
-
-
-
-
-        #return f"locations/{next_page_token}/data"
-
-        '''
-        try:
-            next_page = next(self._pages)
-
-            return f"locations/{next_page}/data"
-        except StopIteration:
-            pass
-
-        '''
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
+        The X-ISI-Start-Page is a header that is required if accessing any page beyond the fist
+        page from the given path to the readings for a given location. If accessing the first page, then the
+        header can be empty.
         """
 
-        #if next_page_token and self.count < 5:
+        # If the next_page_token exists and if the first element of the next_page_token
+        # tuple is not empty, then the X-ISI-Start-Page header to the string in that element. 
         if next_page_token and len(next_page_token[0]) > 0:
-            print ("len(next_page_token[0])")
-            print (len(next_page_token[0]))
-            print ("yes next_page_token")
-            print ("next_page_token")
-            print (next_page_token)
-
-            #self.count += 1
-            #print (self.count)
-            print ("##########")
-
-            #return {}
             return {"X-ISI-Start-Page": next_page_token[0]}
-            #return {"X-ISI-Start-Page": next_page_token}
             
         else:
-            print ("no next_page_token")
             return {}
-            #StopIteration
-            #pass
-
-
 
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
-        #if not next_page_token:
-        #    next_page_token = next(self._pages)
-
-        #self._active_page = next_page_token
-        
-        #td = datetime.timedelta(days=1)
-        #params = {'id': next_page_token}
+        """
+        The startTime parameter is required if wanting to pull data starting at any other time 
+        than the first Epoch timestamp available from the API. This is set up to stored state as the 
+        last timestamp read for each location. Therefore, when Airbyte executes a new run with these
+        timestamps stored in state, the timestamps will be read in from state and set as the startTime
+        parameter to read data from that timestamp until the most recently available timestamp.
+        """
       
         # Check to see if self.location_latest_timestamps is an empty dictionary.
-        # It is only empty on the first overall call to request_params
+        # It is only empty on the first overall call of a given run to request_params.
+        # If this is the first time Airbyte is run, and no state is stored, then these
+        # will remain as empty dictionaries.
         if not bool(self.location_latest_timestamps):
+
+            # This dictionary will be continously be updated throughout a run
             self.location_latest_timestamps = stream_state
-            #self.state_location_timestamps = stream_state
        
-            # Dictionary copy makes a shallow copy of the dictionary
+            # Dictionary copy makes a shallow copy of the dictionary.
+            # This dictionary will remain static throughout a run and only contain the
+            # state that is read in at the beginning. If there is no state available to
+            # be read in, then this dictionary will remain empty for the run.
             self.state_location_timestamps = self.location_latest_timestamps.copy()
 
-            print ("Set dicts")
-
-
-        print ("state ts:") 
-        for key, value in self.state_location_timestamps.items():
-            print (key)
-            print (value)
-            print ("----")
-
-
-        print ("latest ts:") 
-        for key, value in self.location_latest_timestamps.items():
-            print (key)
-            print (value)
-            print ("----")
-
-
-
-        '''
+        # If there are timestamps from state for a given location, then set that to startTime.
+        # Otherwise, params will be empty.
         try:
-            print ("self.location_latest_timestamps[self.next_location_page]")
-            print (self.location_latest_timestamps[str(self.next_location_page)])
-
-            params = {'startTime': self.location_latest_timestamps[str(self.next_location_page)]}
-            print ("1CCCCCCCCCCCCCCCCCCCCC")
-
-        except:
-            #pass
-            params = {}
-        '''
-
-
-        print ("CCCCCCCCCCCCCCCCCCCCC")
-        print ("self.next_location_page")
-        print (self.next_location_page)
-
-        try:
-            print ("self.state_location_timestamps[self.next_location_page]")
-            print (self.state_location_timestamps[str(self.next_location_page)])
-
             params = {'startTime': self.state_location_timestamps[str(self.next_location_page)]}
 
-
-            print ("1CCCCCCCCCCCCCCCCCCCCC")
-
-
-
         except:
-            #pass
             params = {}
 
-        
-        
-        print ("2CCCCCCCCCCCCCCCCCCCCC")
-
-
-        #params = {'startTime': self.location_latest_timestamps[self.next_location_page]}
-
-        #params = {'id': next_page_token,
-        #          'start': 0,
-        #          'end': int((datetime.datetime.now() - td).timestamp() * 1000)}
-
-        #self._request_params_hook(params)
         return params
-   
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # If no X-ISI-Next-Page, then the next page token will be the next of self._pages to iterate
-        # over the 
-
-        # set the next page request to a class variable
-
-        print ("readings response.headers")
-        print (response.headers)
-        print (response.json())
-        print ("^^^^^^^^^^^^^^")
+        '''
+        If no X-ISI-Next-Page, then the next page token will be the next of self._pages to iterate
+        over the location ids.  
+        '''
 
         isi_next_page = ""
 
         next_location_page = ""
 
+        # If the readings response for a given location has a next page, then set that to isi_next_page
+        # and return it in a tuple.
         try:
-
             isi_next_page = response.headers['X-ISI-Next-Page']
-            #r = response.headers['X-ISI-Next-Page']
-           
-            #self.continue_to_next_location_reading = False
 
             return (isi_next_page, next_location_page)
 
         except:
 
+            # Otherwise, if there is another location id to continue to, then iterate to the next
+            # of self._pages to retrieve that location id and return that in a tuple with the 
+            # isi_next_page as an empty string.
             try:
                 next_location_page = next(self._pages)
 
                 return (isi_next_page, next_location_page)
 
+            # Otherwise, there are no more pages for a given location's reading adn there are no
+            # more location ids to iterate.
             except StopIteration:
                 pass
 
 
-        '''
-        try:
-            r = next(self._pages)
-
-            self.continue_to_next_location_reading = True
-
-            return r
-        except StopIteration:
-            pass
-        '''
-
-
     @property
     def state(self) -> Mapping[str, Any]:
+        '''
+        Saves self.location_latest_timestamps to state to be store between Airbyte runs.
+        '''
 
-        #return self.location_and_param_id_latest_timestamps
         return self.location_latest_timestamps
 
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-
-       self._cursor_value = self.cursor_field
-
-       # Dictionary copy makes a shallow copy of the dictionary
-       #self.state_location_timestamps = self.location_latest_timestamps.copy()
-
+        '''
+        Sets the stream state from the stored state after the stream is initialized.
+        '''
+        self._cursor_value = self.cursor_field
 
 
-    # Original update state method but not currently used. Leave in here in case needed in future.
     def update_state(self):
-        "sends an update of the state variable to stdout"
-        #output_message = {"type":"STATE","state":{"data":self.location_and_param_id_latest_timestamps}}
+        '''
+        Original update state method but not currently used. Leave in here in case needed in future.
+        Sends an update of the state variable to stdout.
+        '''
         output_message = {"type":"STATE","state":{"data":self.location_latest_timestamps}}
         
         print(json.dumps(output_message))
@@ -471,27 +328,9 @@ class Readings(HydroVuStream):
         response: requests.Response, 
         stream_state: Mapping[str, Any],
         **kwargs) -> Iterable[Mapping]:
-
-        print ("readings response.headers")
-        print (response.headers)
-
-        print ("---------------------------------")
-
-
-        # parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
-
-        #self.update_state(stream_state)
-
-        # Check to see if self.location_and_param_id_latest_timestamps is an empty dictionary
-        #if not bool(self.location_and_param_id_latest_timestamps):
-        #    self.location_and_param_id_latest_timestamps = stream_state
-
-        # Check to see if self.location_latest_timestamps is an empty dictionary.
-        # It is only empty on the first overall call to parse_response
-        #if not bool(self.location_latest_timestamps):
-        #    self.location_latest_timestamps = stream_state
-        #    self.state_location_timestamps = stream_state
-
+        """
+        Parses the response of a given reading for a location to create records and associated parameters.  
+        """
 
         response_json = response.json() 
 
@@ -503,17 +342,12 @@ class Readings(HydroVuStream):
 
         parameters = r['parameters']
 
+        # If there is a latest timestamp from a previous run or a previous call to this function
+        # for this location, then set cursor_timestamp to that value.
         try:
-            #cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
             cursor_timestamp = self.location_latest_timestamps[str(locationId)]
         except:
             cursor_timestamp = 0
-
-        #if str(locationId) not in self.location_and_param_id_latest_timestamps.keys():
-        #    self.location_and_param_id_latest_timestamps[str(locationId)] = {}
-
-        #if str(locationId) not in self.location_latest_timestamps.keys():
-        #    self.location_timestamps[str(locationId)] = {}
 
         for param in parameters:
 
@@ -531,23 +365,9 @@ class Readings(HydroVuStream):
 
                 timestamp = reading['timestamp']
 
-
-                '''
-                try:
-                    #cursor_timestamp = self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)]
-                    cursor_timestamp = self.location_latest_timestamps[str(locationId)]
-                except:
-                    cursor_timestamp = 0
-                '''
-
-
-                #if timestamp > cursor_timestamp:
                 if timestamp > cursor_timestamp:
 
                     value = reading['value']
-
-                    print ("value")
-                    print (value)
 
                     flat_reading = {}
 
@@ -558,35 +378,10 @@ class Readings(HydroVuStream):
                     flat_reading['timestamp'] = timestamp
                     flat_reading['value'] = value
 
-                    # More efficient way to do this???
                     flat_readings_list.append(flat_reading)
-
-                    # Check to ensure that cursor_value is set to the latest timestamp.
-                    # The records thus far have been read in sequential order by increasing
-                    # timestamps, but this will ensure the latest timestamp if they are read
-                    # out of order from the API.
-                    '''
-                    if timestamp > previous_timestamp:
-                        #self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = timestamp
-                        self.location_latest_timestamps[str(locationId)] = timestamp
-
-                    else:
-                        #self.location_and_param_id_latest_timestamps[str(locationId)][str(parameterId)] = previous_timestamp
-                        self.location_latest_timestamps[str(locationId)] = previous_timestamp
-
-                    previous_timestamp = timestamp
-                    '''
-
-
-
 
         # Sets to latest timestamp to save to state
         self.location_latest_timestamps[str(locationId)] = timestamp
-
-        print ("latest timestamp")
-        print (timestamp)
-        print ("$$$$$$$$$$")
-
 
         yield from flat_readings_list
 
@@ -595,7 +390,7 @@ class myOauth2Authenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
+        Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         client = BackendApplicationClient(client_id=self.client_id)
         oauth = OAuth2Session(client=client)
@@ -609,7 +404,7 @@ class myOauth2Authenticator(Oauth2Authenticator):
 class SourceHydrovu(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        Implements a connection check to validate that the user-provided config can be used to connect to the underlying API
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -619,7 +414,6 @@ class SourceHydrovu(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-
             # create session
             client = BackendApplicationClient(client_id=config["client_id"])
             oauth = OAuth2Session(client=client)
@@ -634,8 +428,6 @@ class SourceHydrovu(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
