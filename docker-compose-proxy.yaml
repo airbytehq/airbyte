@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  nginx-proxy:
+    build: nginx_proxy
+    ports:
+      - "8010:80"
+    depends_on:
+      - init
+      - bootloader
+      - db
+      - scheduler
+      - worker
+      - server
+      - webapp
+      - airbyte-temporal
+    volumes:
+      - "./nginx_proxy/nginx.conf:/etc/nginx/nginx.conf"

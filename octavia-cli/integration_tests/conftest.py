@@ -35,7 +35,7 @@ def octavia_test_project_directory():
 
 @pytest.fixture(scope="session")
 def api_client():
-    return get_api_client("http://localhost:8000")
+    return get_api_client("http://localhost:8010", api_headers=["Authorization: Basic dXNlcjE6cGFzc3dvcmQ="])
 
 
 @pytest.fixture(scope="session")
