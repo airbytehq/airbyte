@@ -325,13 +325,12 @@ class TestBaseInsightsStream:
 
     def test_incremental_lookback_period_updated(self, api, mocker, monkeypatch):
         start_date = pendulum.parse("2020-03-01")
-        end_date = pendulum.parse("2020-04-10")
+        end_date = pendulum.parse("2020-05-01")
         monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-01")))
-
+        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
-        AdsInsights.INSIGHTS_LOOKBACK_PERIOD = pendulum.duration(days=20)
         stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
 
         records = read_full_refresh(stream)
