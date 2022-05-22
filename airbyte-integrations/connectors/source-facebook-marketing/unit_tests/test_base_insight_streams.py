@@ -341,18 +341,19 @@ class TestBaseInsightsStream:
 
         state = {AdsInsights.cursor_field: "2020-03-20", "time_increment": 1}
         records = read_incremental(stream, state)
-        assert len(records) == 12
+        assert len(records) == (today - pendulum.parse("2020-03-20")).days
         assert records[0]["date_start"] == "2020-03-21"
-        assert records[-1]["date_start"] == "2020-04-01"
-        assert state == {"date_start": "2020-04-01", "slices": [], "time_increment": 1}
+        assert records[-1]["date_start"] == str(today.date())
+        assert state == {"date_start": str(today.date()), "slices": [], "time_increment": 1}
 
-        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-02")))
-
+        today = pendulum.parse("2020-04-02")
+        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=today))
         records = read_incremental(stream, state)
-        assert records == [{"date_start": "2020-04-02", "updated_time": "2020-04-02"}]
-        assert state == {"date_start": "2020-04-02", "slices": [], "time_increment": 1}
+        assert records == [{"date_start": str(today.date()), "updated_time": str(today.date())}]
+        assert state == {"date_start": str(today.date()), "slices": [], "time_increment": 1}
 
-        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=pendulum.parse("2020-04-03")))
+        today = pendulum.parse("2020-04-03")
+        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=today))
         FakeInsightAsyncJob.update_insight("2020-03-27", "2020-04-02")
         FakeInsightAsyncJob.update_insight("2020-03-28", "2020-04-03")
 
@@ -361,3 +362,4 @@ class TestBaseInsightsStream:
             {"date_start": "2020-03-28", "updated_time": "2020-04-03"},
             {"date_start": "2020-04-03", "updated_time": "2020-04-03"},
         ]
+        assert state == {"date_start": str(today.date()), "slices": [], "time_increment": 1}
