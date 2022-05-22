@@ -23,7 +23,7 @@ public class MssqlCdcProperties {
     props.setProperty("mssql_converter.type", "io.airbyte.integrations.debezium.internals.MSSQLConverter");
 
       final JsonNode replication_config = config.get("replication_method");
-      if(replication_config.hasNonNull("replication_method")){
+      if(replication_config.hasNonNull("replication_method")) {
         final JsonNode cdcMethod = config.get("replication_method");
         if(cdcMethod.hasNonNull("is_snapshot_disabled") &&
                 cdcMethod.get("is_snapshot_disabled").asBoolean()) {
@@ -36,7 +36,7 @@ public class MssqlCdcProperties {
           props.setProperty("snapshot.isolation.mode", "snapshot");
         }
         if(cdcMethod.hasNonNull("is_cdc_only") &&
-                cdcMethod.get("is_cdc_only").asBoolean()){
+                cdcMethod.get("is_cdc_only").asBoolean()) {
           props.setProperty("snapshot.mode", "schema_only");
         } else {
           // snapshot config
