@@ -105,26 +105,54 @@
         ]
       },
       "replication_method": {
-        "type": "string",
+        "type": "object",
         "title": "Replication Method",
-        "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-        "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"],
-        "order": 8
-      },
-      "is_snapshotDisabled": {
-        "title": "DisableSnapshot",
-        "type": "boolean",
-        "default": false,
-        "description": "if CDC enabled then true value would set snapshot.isolation.mode to read_committed otherwise, it would be snapshot",
-        "order": 9
-      },
-      "is_cdc_only": {
-        "title": "CDCOnly",
-        "type": "boolean",
-        "default": false,
-        "description": "if CDC enabled then true would set snapshot mode to schema_only otherwise, it would set to initial. Refer, https://debezium.io/documentation/reference/stable/connectors/sqlserver.html",
-        "order": 10
+        "description": "The replication method used for extracting data from the database.  ",
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "STANDARD",
+            "additionalProperties": false,
+            "description": "STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "properties": {
+              "replication_method": {
+                "type": "string",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "CDC",
+            "additionalProperties": false,
+            "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "properties": {
+              "replication_method": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order":0
+              },
+              "is_snapshot_disabled": {
+                "title": "DisableSnapshot",
+                "type": "boolean",
+                "description": "validate the snapshot enable in the database. true would set snapshot.isolation.mode to snapshot otherwise, it would be ",
+                "default": false,
+                "order": 1
+              },
+              "is_cdc_only": {
+                "title": "cdcOnly",
+                "type": "boolean",
+                "default": false,
+                "description": "true would set snapshot mode to schema_only otherwise, it would set to initial. Refer, https://debezium.io/documentation/reference/stable/connectors/sqlserver.html",
+                "order": 2
+              }
+            }
+          }
+          ]
       }
     }
   }

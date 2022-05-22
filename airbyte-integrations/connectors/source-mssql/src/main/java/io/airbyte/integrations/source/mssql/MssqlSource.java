@@ -313,8 +313,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    if(!config.hasNonNull("is_snapshotDisabled") ||
-            !config.get("is_snapshotDisabled").asBoolean()) {
+    final JsonNode  replication_config =config.get("replication_method");
+    if(!replication_config.hasNonNull("is_snapshot_disabled") ||
+            !replication_config.get("is_snapshot_disabled").asBoolean()) {
       final List<JsonNode> queryResponse = database.queryJsons(connection -> {
         final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
         final PreparedStatement ps = connection.prepareStatement(sql);
@@ -349,8 +350,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      Properties props=MssqlCdcProperties.getDebeziumProperties();
-      addCDCDetails(sourceConfig,props);
+      Properties props=MssqlCdcProperties.getDebeziumProperties(sourceConfig);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
               props, catalog, true);
@@ -365,9 +365,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   private static boolean isCdc(final JsonNode config) {
-    return config.hasNonNull("replication_method")
-        && ReplicationMethod.valueOf(config.get("replication_method").asText())
-            .equals(ReplicationMethod.CDC);
+    if(config.hasNonNull("replication_method")){
+      final JsonNode replication_config = config.get("replication_method");
+      if(replication_config.hasNonNull("replication_method")){
+        return ReplicationMethod.valueOf(replication_config.get("replication_method").asText())
+                .equals(ReplicationMethod.CDC);
+      }else{
+        return ReplicationMethod.valueOf(replication_config.asText())
+                .equals(ReplicationMethod.CDC);
+      }
+    } else {
+      return false;
+    }
   }
 
   private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
@@ -409,28 +418,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return stream;
   }
 
-  //validate snapshot isolation and cdc mode
-  private void addCDCDetails(final JsonNode cdcMethod,Properties props) {
-    if(cdcMethod.hasNonNull("is_snapshotDisabled") &&
-            cdcMethod.get("is_snapshotDisabled").asBoolean()) {
-      props.setProperty("snapshot.isolation.mode", "read_committed");
-    }
-    else{
-      // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-      // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
-      // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows while
-      // we snapshot
-      props.setProperty("snapshot.isolation.mode", "snapshot");
-    }
-    if(cdcMethod.hasNonNull("is_cdc_only") &&
-            cdcMethod.get("is_cdc_only").asBoolean()){
-      props.setProperty("snapshot.mode", "schema_only");
-    }else{
-      // snapshot config
-      // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
-      props.setProperty("snapshot.mode", "initial");
-    }
-  }
 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
     final JsonNode config = sslMethod.get("ssl_method");
