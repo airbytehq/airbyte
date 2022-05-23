@@ -724,6 +724,47 @@ class TemporalClientTest {
     verify(mNewConnectionManagerWorkflow).submitManualSync();
   }
 
+  @Test
+  @DisplayName("Test manual operation on completed workflow causes a restart")
+  void testManualOperationOnCompletedWorkflow() {
+    final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+    final WorkflowState mWorkflowState = mock(WorkflowState.class);
+    when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+    when(mWorkflowState.isQuarantined()).thenReturn(false);
+    when(mWorkflowState.isDeleted()).thenReturn(false);
+    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+    mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED);
+
+    final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+    final WorkflowState mNewWorkflowState = mock(WorkflowState.class);
+    when(mNewConnectionManagerWorkflow.getState()).thenReturn(mNewWorkflowState);
+    when(mNewWorkflowState.isRunning()).thenReturn(false).thenReturn(true);
+    when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+    when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
+    final BatchRequest mBatchRequest = mock(BatchRequest.class);
+    when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
+
+    final WorkflowStub mWorkflowStub = mock(WorkflowStub.class);
+    when(workflowClient.newUntypedWorkflowStub(anyString())).thenReturn(mWorkflowStub);
+
+    final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
+
+    assertTrue(result.getJobId().isPresent());
+    assertEquals(JOB_ID, result.getJobId().get());
+    assertFalse(result.getFailingReason().isPresent());
+    verify(workflowClient).signalWithStart(mBatchRequest);
+    verify(mWorkflowStub).terminate(anyString());
+
+    // Verify that the submitManualSync signal was passed to the batch request by capturing the
+    // argument,
+    // executing the signal, and verifying that the desired signal was executed
+    final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
+    verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
+    final Proc signal = batchRequestAddArgCaptor.getValue();
+    signal.apply();
+    verify(mNewConnectionManagerWorkflow).submitManualSync();
+  }
+
   private void mockWorkflowStatus(final WorkflowExecutionStatus status) {
     when(workflowServiceBlockingStub.describeWorkflowExecution(any())).thenReturn(
         DescribeWorkflowExecutionResponse.newBuilder().setWorkflowExecutionInfo(
