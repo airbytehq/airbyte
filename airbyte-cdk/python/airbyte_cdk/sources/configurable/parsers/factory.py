@@ -29,7 +29,7 @@ class LowCodeComponentFactory:
         updated_kwargs = dict()
         for k, v in kwargs.items():
             if type(v) == dict and "class_name" in v:
-                updated_kwargs[k] = self.create_component(v, config)
+                updated_kwargs[k] = self.create_component(v, config)()
             else:
                 updated_kwargs[k] = v
 

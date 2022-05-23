@@ -39,7 +39,8 @@ def create(func, /, *args, **keywords):
         fully_created = _create_inner_objects(all_keywords, kwargs)
 
         # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": {**fully_created, **kwargs}})
+        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": kwargs})
+        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v is not None}
 
         all_keywords.update(interpolated_keywords)
 
