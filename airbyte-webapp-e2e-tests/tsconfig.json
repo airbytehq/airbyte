@@ -2,7 +2,7 @@
   "include": ["./**/*.ts"],
   "exclude": [],
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": "cypress",
     "target": "es5",
     "skipLibCheck": true,
     "esModuleInterop": true,
