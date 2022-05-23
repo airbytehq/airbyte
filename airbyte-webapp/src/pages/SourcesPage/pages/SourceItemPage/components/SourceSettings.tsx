@@ -4,8 +4,8 @@ import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Source } from "core/domain/connector";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
@@ -18,8 +18,8 @@ const Content = styled.div`
 `;
 
 interface SourceSettingsProps {
-  currentSource: Source;
-  connectionsWithSource: Connection[];
+  currentSource: SourceRead;
+  connectionsWithSource: WebBackendConnectionRead[];
 }
 
 const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
@@ -36,7 +36,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
 
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
-  const sourceDefinition = useSourceDefinition(currentSource?.sourceDefinitionId);
+  const sourceDefinition = useSourceDefinition(currentSource.sourceDefinitionId);
 
   const onSubmit = async (values: {
     name: string;
