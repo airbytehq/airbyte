@@ -32,8 +32,6 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 1. Define a `docker_username`: the username that the connector will pull all repo data from.
 
-   Keep the performance consideration above in mind
-
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
