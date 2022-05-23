@@ -164,7 +164,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
             return response
         except FacebookRequestError as exc:
             if exc.api_error_code() == 17 or exc.api_error_code() == 4:
-                logger.warn(f"Hit ratelimits! {method} {path} {params} {headers} {exc} {exc.http_headers()}")
+                logger.warn(f"Hit ratelimits! {method} {path} {params} {headers} {exc}")
                 raise FacebookRateLimitException(exc)
             else:
                 logger.error(f"Error in request {method} {path} {params} {headers}")
