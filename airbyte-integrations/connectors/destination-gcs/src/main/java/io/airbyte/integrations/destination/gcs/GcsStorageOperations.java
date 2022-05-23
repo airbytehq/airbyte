@@ -49,4 +49,5 @@ public class GcsStorageOperations extends S3StorageOperations {
   protected Map<String, String> getMetadataMapping() {
     return new HashMap<>();
   }
+
 }

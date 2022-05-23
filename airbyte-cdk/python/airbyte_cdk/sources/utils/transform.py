@@ -114,7 +114,7 @@ class TypeTransformer:
                 if isinstance(original_item, str):
                     return strtobool(original_item) == 1
                 return bool(original_item)
-        except ValueError:
+        except (ValueError, TypeError):
             return original_item
         return original_item
 

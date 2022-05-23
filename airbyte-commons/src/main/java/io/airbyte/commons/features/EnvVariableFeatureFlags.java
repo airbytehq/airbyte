@@ -11,9 +11,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean usesNewScheduler() {
-    log.info("New Scheduler: " + Boolean.parseBoolean(System.getenv("NEW_SCHEDULER")));
+    // TODO: sweep this method along with the scheduler
+    log.info("New Scheduler: true (post-migration)");
 
-    return Boolean.parseBoolean(System.getenv("NEW_SCHEDULER"));
+    // After migrating all OSS users onto the new temporal scheduler, this should always return true.
+    return true;
   }
 
   @Override

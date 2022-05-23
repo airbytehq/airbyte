@@ -125,8 +125,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
-        jdbcUrl
-    );
+        jdbcUrl);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
