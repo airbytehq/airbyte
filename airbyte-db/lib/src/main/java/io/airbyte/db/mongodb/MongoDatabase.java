@@ -7,6 +7,7 @@ package io.airbyte.db.mongodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoConfigurationException;
 import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
@@ -49,9 +50,11 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       this.connectionString = new ConnectionString(connectionString);
       mongoClient = MongoClients.create(this.connectionString);
       database = mongoClient.getDatabase(databaseName);
-    } catch (final MongoConfigurationException ex) {
-      LOGGER.error(ex.getMessage());
-      throw new ConnectionErrorException(String.valueOf(ex.getCode()), ex.getMessage());
+    } catch (ConnectionErrorException e) {
+      throw e;
+    } catch (final MongoConfigurationException e) {
+      LOGGER.error(e.getMessage());
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e.getMessage());
     } catch (final Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);

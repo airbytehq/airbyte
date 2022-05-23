@@ -4,15 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
@@ -23,13 +15,19 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.List;
+
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -127,14 +125,36 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
 
   @Test
   public void testCheckIncorrectPort() throws Exception {
-    JsonNode conf = ((ObjectNode) config.get("instance_type")).put("post", "0000");
-    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance", STANDALONE.getType())
+            .put("host", mongoDBContainer.getHost())
+            .put("port", 1234)
+            .put("tls", false)
+            .build());
+
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance_type", instanceConfig)
+            .put("database", DATABASE_NAME)
+            .put("auth_source", "admin")
+            .build());
+    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
   }
 
   @Test
   public void testCheckIncorrectDataBase() throws Exception {
-    JsonNode conf = ((ObjectNode) config).put("database", "wrongdatabase");
-    testCheckErrorMessageConnection(conf, INCORRECT_DB_NAME.getValue());
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance", STANDALONE.getType())
+            .put("host", mongoDBContainer.getHost())
+            .put("port", mongoDBContainer.getFirstMappedPort())
+            .put("tls", false)
+            .build());
+
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+            .put("instance_type", instanceConfig)
+            .put("database", "wrongdatabase")
+            .put("auth_source", "admin")
+            .build());
+    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT_OR_DATABASE);
   }
 
 }
