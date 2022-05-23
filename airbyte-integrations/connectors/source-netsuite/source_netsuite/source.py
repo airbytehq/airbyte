@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
-    def __init__(self, auth: OAuth1, name: str, record_url: str, concurrency_limit: int = 1, start_datetime: str = None):
+    def __init__(self, auth: OAuth1, name: str, record_url: str, start_datetime: str, concurrency_limit: int = 1):
         self.obj_name = name
         self.record_url = record_url
         self.concurrency_limit = concurrency_limit
@@ -169,10 +169,10 @@ class SourceNetsuite(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         record_url = self.record_url(config)
         auth = self.auth(config)
-        start_datetime = config.get("start_datetime")
+        start_datetime = config["start_datetime"]
         concurrency_limit = config.get("concurrency_limit")
         record_types = config.get("record_types") or self.record_types(record_url, auth)
         return [
-            IncrementalNetsuiteStream(auth, name, record_url, concurrency_limit, start_datetime)
+            IncrementalNetsuiteStream(auth, name, record_url, start_datetime, concurrency_limit)
             for name in record_types
         ]

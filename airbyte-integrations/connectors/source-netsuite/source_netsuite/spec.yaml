@@ -9,6 +9,7 @@ connectionSpecification:
     - consumer_secret
     - token_id
     - token_secret
+    - start_datetime
   additionalProperties: false
   properties:
     realm:
