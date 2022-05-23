@@ -1,6 +1,4 @@
-{
-  "type": "SPEC",
-  "spec": {
+
     "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
     "changelogUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
     "connectionSpecification": {
@@ -181,4 +179,4 @@
     },
     "additionalProperties": true
   }
-}
+  
