@@ -1,5 +1,5 @@
 {
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "cypress/plugins/index.js"],
   "exclude": [],
   "compilerOptions": {
     "baseUrl": "cypress",
