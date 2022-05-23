@@ -64,8 +64,8 @@ public class JobsDatabaseInitializer implements DatabaseInitializer {
   }
 
   @Override
-  public Collection<String> getTableNames() {
-    return DatabaseConstants.JOBS_INITIAL_EXPECTED_TABLES;
+  public Optional<Collection<String>> getTableNames() {
+    return Optional.of(DatabaseConstants.JOBS_INITIAL_EXPECTED_TABLES);
   }
 
 }

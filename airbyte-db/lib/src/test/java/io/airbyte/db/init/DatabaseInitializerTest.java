@@ -4,6 +4,8 @@
 
 package io.airbyte.db.init;
 
+import static org.mockito.Mockito.mock;
+
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import java.util.Collection;
 import java.util.Optional;
@@ -11,8 +13,11 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DatabaseInitializerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializerTest.class);
 
   @Test
   void testExceptionHandling() {
@@ -45,12 +50,12 @@ public class DatabaseInitializerTest {
 
       @Override
       public Logger getLogger() {
-        return null;
+        return LOGGER;
       }
 
       @Override
-      public Collection<String> getTableNames() {
-        return null;
+      public Optional<Collection<String>> getTableNames() {
+        return Optional.empty();
       }
 
     };
@@ -59,15 +64,13 @@ public class DatabaseInitializerTest {
   }
 
   @Test
-  void testDefaultTableNamesMethod() {
+  void testEmptyTableNames() {
+    final var dslContext = mock(DSLContext.class);
     final var initializer = new DatabaseInitializer() {
 
       @Override
-      public void initialize() throws DatabaseInitializationException {}
-
-      @Override
       public Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck() {
-        return Optional.empty();
+        return Optional.of(mock(DatabaseAvailabilityCheck.class));
       }
 
       @Override
@@ -77,7 +80,7 @@ public class DatabaseInitializerTest {
 
       @Override
       public Optional<DSLContext> getDslContext() {
-        return Optional.empty();
+        return Optional.of(dslContext);
       }
 
       @Override
@@ -87,13 +90,18 @@ public class DatabaseInitializerTest {
 
       @Override
       public Logger getLogger() {
-        return null;
+        return LOGGER;
       }
 
+      @Override
+      public Optional<Collection<String>> getTableNames() {
+        return Optional.empty();
+      }
     };
 
+    Assertions.assertEquals(false, initializer.initializeSchema(dslContext));
     Assertions.assertNotNull(initializer.getTableNames());
-    Assertions.assertEquals(0, initializer.getTableNames().size());
+    Assertions.assertEquals(false, initializer.getTableNames().isPresent());
   }
 
 }

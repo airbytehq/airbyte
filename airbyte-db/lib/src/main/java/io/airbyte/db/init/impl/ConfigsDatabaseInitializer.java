@@ -64,8 +64,8 @@ public class ConfigsDatabaseInitializer implements DatabaseInitializer {
   }
 
   @Override
-  public Collection<String> getTableNames() {
-    return DatabaseConstants.CONFIGS_INITIAL_EXPECTED_TABLES;
+  public Optional<Collection<String>> getTableNames() {
+    return Optional.of(DatabaseConstants.CONFIGS_INITIAL_EXPECTED_TABLES);
   }
 
 }

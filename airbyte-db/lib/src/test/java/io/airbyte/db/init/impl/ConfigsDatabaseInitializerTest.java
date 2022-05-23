@@ -29,7 +29,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
     Assertions.assertDoesNotThrow(() -> initializer.init());
-    assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().stream().findFirst().get()));
+    assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().get().stream().findFirst().get()));
   }
 
   @Test
@@ -40,7 +40,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
     Assertions.assertDoesNotThrow(() -> initializer.init());
-    assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().stream().findFirst().get()));
+    assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().get().stream().findFirst().get()));
   }
 
   @Test

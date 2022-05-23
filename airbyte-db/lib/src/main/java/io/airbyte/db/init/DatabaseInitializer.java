@@ -56,19 +56,7 @@ public interface DatabaseInitializer {
         final Optional<DSLContext> dslContext = getDslContext();
         if (dslContext.isPresent()) {
           final Database database = new Database(dslContext.get());
-          new ExceptionWrappingDatabase(database).transaction(ctx -> {
-            // Verify that all the required tables are present
-            if (getTableNames().stream().allMatch(tableName -> hasTable(dslContext.get(), tableName))) {
-              getLogger().info("The {} database is initialized", getDatabaseName());
-            } else {
-              getLogger().info("The {} database has not been initialized; initializing it with schema: \n{}", getDatabaseName(), getInitialSchema());
-              ctx.execute(getInitialSchema());
-              getLogger().info("The {} database successfully initialized with schema: \n{}.", getDatabaseName(), getInitialSchema());
-            }
-
-            // Always return true, as the tables either exist or were just initialized by this transaction
-            return true;
-          });
+          new ExceptionWrappingDatabase(database).transaction(this::initializeSchema);
         } else {
           throw new DatabaseInitializationException("Database configuration not present.");
         }
@@ -92,6 +80,35 @@ public interface DatabaseInitializer {
         .from("information_schema.tables")
         .where(DSL.field("table_name").eq(tableName)
             .and(DSL.field("table_schema").eq("public"))));
+  }
+
+  /**
+   * Initializes the schema in the database represented by the provided {@link DSLContext} instance.
+   *
+   * If the initial tables already exist in the database, initialization is skipped.  Otherwise,
+   * the script provided by the {@link #getInitialSchema()} method is executed against the database.
+   *
+   * @param ctx The {@link DSLContext} used to execute the schema initialization.
+   * @return {@code true} indicating that the operation ran
+   */
+  default boolean initializeSchema(final DSLContext ctx) {
+    final Optional<Collection<String>> tableNames = getTableNames();
+
+    if(tableNames.isPresent()) {
+      // Verify that all the required tables are present
+      if (tableNames.get().stream().allMatch(tableName -> hasTable(ctx, tableName))) {
+        getLogger().info("The {} database is initialized", getDatabaseName());
+      } else {
+        getLogger().info("The {} database has not been initialized; initializing it with schema: \n{}", getDatabaseName(),
+            getInitialSchema());
+        ctx.execute(getInitialSchema());
+        getLogger().info("The {} database successfully initialized with schema: \n{}.", getDatabaseName(), getInitialSchema());
+      }
+      return true;
+    } else {
+      getLogger().warn("Initial collection of table names is empty.  Cannot perform schema check.");
+      return false;
+    }
   }
 
   /**
@@ -137,8 +154,6 @@ public interface DatabaseInitializer {
    *
    * @return The collection of database table names.
    */
-  default Collection<String> getTableNames() {
-    return List.of();
-  }
+  Optional<Collection<String>> getTableNames();
 
 }
