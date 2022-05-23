@@ -81,7 +81,7 @@ retriever:
   class_name: "airbyte_cdk.sources.configurable.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ kwargs['name'] }}"
   state:
-    class_name: airbyte_cdk.sources.configurable.states.no_state.NoState
+    class_name: airbyte_cdk.sources.configurable.states.dict_state.DictState
   stream_slicer:
     class_name: airbyte_cdk.sources.configurable.stream_slicers.single_slice.SingleSlice
   paginator:
