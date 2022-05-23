@@ -83,11 +83,9 @@ class NetsuiteStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         records = response.json().get("items")
-        pool = Pool(self.concurrency_limit)
         request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
-        data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
-        pool.close()
-        pool.join()
+        with Pool(self.concurrency_limit) as pool:
+            data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
         for record in data:
             yield record
 
