@@ -291,7 +291,7 @@
               "format": "date-time"
             },
             "insights_lookback_window": {
-              "title": "Insights Lookback Window",
+              "title": "Custom Insights Lookback Window",
               "description": "The attribution window",
               "default": 28,
               "maximum": 28,
