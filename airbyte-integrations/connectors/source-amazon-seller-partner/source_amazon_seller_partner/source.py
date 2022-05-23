@@ -47,11 +47,11 @@ class ConnectorConfig(BaseModel):
         examples=["2017-01-25T00:00:00Z"],
     )
     replication_end_date: str = Field(
-        "default",
+        None,
         description="UTC date and time in the format 2017-02-25T00:00:00Z. Any data after this date will not be replicated.",
         title="End Date",
-        pattern="(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|default)",
-        examples=["default", "2017-02-25T00:00:00Z"],
+        pattern="(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$)",
+        examples=["2017-02-25T00:00:00Z"],
     )
     period_in_days: int = Field(
         30,
@@ -120,11 +120,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "replication_end_date": config.replication_end_date,
             "marketplace_id": marketplace_id,
             "period_in_days": config.period_in_days,
             "report_options": config.report_options,
             "max_wait_seconds": config.max_wait_seconds,
+            "replication_end_date": config.replication_end_date,
         }
         return stream_kwargs
 
