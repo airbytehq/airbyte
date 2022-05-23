@@ -15,6 +15,7 @@ config = {
     "realm": "12345",
 }
 
+
 def test_check_connection(mocker, requests_mock):
     source = SourceNetsuite()
     requests_mock.options("https://12345.suitetalk.api.netsuite.com/services/rest/*")

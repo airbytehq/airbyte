@@ -19,11 +19,13 @@ config = {
     "realm": "12345",
 }
 
+
 def make_stream():
     src = SourceNetsuite()
     auth = src.auth(config)
     url = src.record_url(config)
     return NetsuiteStream(auth, "invoice", url)
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -49,11 +51,13 @@ def test_next_page_token(patch_base_class):
     expected_token = {"offset": 1000}
     assert stream.next_page_token(**inputs) == expected_token
 
+
 def test_format_date(patch_base_class):
     stream = make_stream()
     inpt = "2022-01-01T00:00:00Z"
     expected = "2022-01-01 12:00:00 AM"
     assert stream.format_date(inpt) == expected
+
 
 def test_fetch_record(patch_base_class, requests_mock):
     stream = make_stream()
@@ -62,14 +66,16 @@ def test_fetch_record(patch_base_class, requests_mock):
     requests_mock.get("https://netsuite.com/1", json={"id": 1})
     assert expected == stream.fetch_record(record, {})
 
+
 def test_parse_response(patch_base_class):
     stream = make_stream()
     response = MagicMock()
     response.json = MagicMock(return_value={"items": [{"id": 1}]})
     inputs = {"response": response, "stream_state": {}}
     expected_parsed_object = {"id": 1}
-    with patch.object(Pool, 'starmap', return_value=[{"id": 1}]):
+    with patch.object(Pool, "starmap", return_value=[{"id": 1}]):
         assert next(stream.parse_response(**inputs)) == expected_parsed_object
+
 
 def test_http_method(patch_base_class):
     stream = make_stream()

@@ -76,7 +76,13 @@ class NetsuiteStream(HttpStream, ABC):
         resp = self._send_request(prep_req, request_kwargs)
         return resp.json()
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         records = response.json().get("items")
         pool = Pool(self.concurrency_limit)
         request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
@@ -92,12 +98,14 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
         return "lastModifiedDate"
 
     def stream_slices(
-            self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs: Optional[Mapping[str, Any]]
+        self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs: Optional[Mapping[str, Any]]
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
         ranges = []
-        start_str = (stream_state.get(self.cursor_field) or self.start_datetime) if sync_mode == SyncMode.incremental else self.start_datetime
+        start_str = (
+            (stream_state.get(self.cursor_field) or self.start_datetime) if sync_mode == SyncMode.incremental else self.start_datetime
+        )
         first = datetime.strptime(start_str, self.output_datetime_format)
         start = first.date() + timedelta(days=1)
         # we want the first slice to be after the datetime of the last cursor
@@ -117,6 +125,7 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {**(stream_slice or {}), **(next_page_token or {})}
+
 
 # Source
 class SourceNetsuite(AbstractSource):
@@ -155,4 +164,7 @@ class SourceNetsuite(AbstractSource):
         auth = self.auth(config)
         start_datetime = config.get("start_datetime")
         concurrency_limit = config.get("concurrency_limit")
-        return [IncrementalNetsuiteStream(auth, name, record_url, concurrency_limit, start_datetime) for name in self.record_types(record_url, auth)]
+        return [
+            IncrementalNetsuiteStream(auth, name, record_url, concurrency_limit, start_datetime)
+            for name in self.record_types(record_url, auth)
+        ]
