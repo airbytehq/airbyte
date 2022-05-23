@@ -17,7 +17,7 @@ const useStepsConfig = (
     if (hasSources) {
       if (hasDestinations) {
         if (hasConnections) {
-          return StepType.FINAl;
+          return StepType.FINAL;
         }
         return StepType.SET_UP_CONNECTION;
       }
@@ -68,7 +68,7 @@ const useStepsConfig = (
         //     : undefined
       },
       {
-        id: StepType.FINAl,
+        id: StepType.FINAL,
         name: <FormattedMessage id="onboarding.final" />,
       },
     ],

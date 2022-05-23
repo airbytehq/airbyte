@@ -23,6 +23,7 @@ import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -32,9 +33,10 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -60,6 +62,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
     try {
+      // Fail non-terminal jobs first to prevent this activity from repeatedly trying to create a new job
+      // and failing, potentially resulting in the workflow ending up in a quarantined state.
+      // Another non-terminal job is not expected to exist at this point in the normal case, but this
+      // could happen in special edge cases for example when migrating to this from the old scheduler.
+      failNonTerminalJobs(input.getConnectionId());
+
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       if (input.isReset()) {
 
@@ -257,6 +265,42 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       final Job job = jobPersistence.getJob(input.getJobId());
       jobTracker.trackSync(job, JobState.STARTED);
+    } catch (final IOException e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  @Override
+  public void ensureCleanJobState(final EnsureCleanJobStateInput input) {
+    failNonTerminalJobs(input.getConnectionId());
+  }
+
+  private void failNonTerminalJobs(final UUID connectionId) {
+    try {
+      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(connectionId, Job.REPLICATION_TYPES,
+          io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
+      for (final Job job : jobs) {
+        final long jobId = job.getId();
+        log.info("Failing non-terminal job {}", jobId);
+        jobPersistence.failJob(jobId);
+
+        // fail all non-terminal attempts
+        for (final Attempt attempt : job.getAttempts()) {
+          if (Attempt.isAttemptInTerminalState(attempt)) {
+            continue;
+          }
+
+          // the Attempt object 'id' is actually the value of the attempt_number column in the db
+          final int attemptNumber = (int) attempt.getId();
+          jobPersistence.failAttempt(jobId, attemptNumber);
+          jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,
+              FailureHelper.failureSummaryForTemporalCleaningJobState(jobId, attemptNumber));
+        }
+
+        final Job failedJob = jobPersistence.getJob(jobId);
+        jobNotifier.failJob("Failing job in order to start from clean job state for new temporal workflow run.", failedJob);
+        trackCompletion(failedJob, JobStatus.FAILED);
+      }
     } catch (final IOException e) {
       throw new RetryableException(e);
     }

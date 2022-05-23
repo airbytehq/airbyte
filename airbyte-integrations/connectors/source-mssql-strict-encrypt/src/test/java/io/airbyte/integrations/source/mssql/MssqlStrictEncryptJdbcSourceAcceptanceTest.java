@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -23,6 +22,7 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.util.function.Function;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static MSSQLServerContainer<?> dbContainer;
-  private static JdbcDatabase database;
+  private static DataSource dataSource;
   private JsonNode config;
 
   @BeforeAll
@@ -50,30 +50,32 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
         .put("password", dbContainer.getPassword())
         .build());
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
-            DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-            String.format("jdbc:sqlserver://%s:%d",
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asInt())
-        )
-    );
+    dataSource = DataSourceFactory.create(
+        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get("password").asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
+            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get("port").asInt()));
 
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    try {
+      database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
-    super.setup();
+      config = Jsons.clone(configWithoutDbName);
+      ((ObjectNode) config).put("database", dbName);
+
+      super.setup();
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    database.close();
     dbContainer.close();
   }
 

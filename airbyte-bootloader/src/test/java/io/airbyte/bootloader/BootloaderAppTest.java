@@ -37,8 +37,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,7 +75,7 @@ public class BootloaderAppTest {
   }
 
   @AfterEach
-  void cleanup() throws IOException {
+  void cleanup() throws Exception {
     closeDataSource(configsDataSource);
     closeDataSource(jobsDataSource);
     container.stop();
@@ -128,7 +126,9 @@ public class BootloaderAppTest {
 
       val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      // this line should change with every new migration
+      // to show that you meant to make a new migration to the prod database
+      assertEquals("0.38.4.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(version, jobsPersistence.getVersion().get());
@@ -323,10 +323,8 @@ public class BootloaderAppTest {
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
   }
 
-  private void closeDataSource(final DataSource dataSource) throws IOException {
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+  private void closeDataSource(final DataSource dataSource) throws Exception {
+    DataSourceFactory.close(dataSource);
   }
 
 }

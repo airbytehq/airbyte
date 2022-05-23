@@ -37,6 +37,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private MSSQLServerContainer<?> container;
   private JsonNode config;
   private Database database;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -93,15 +94,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
-    final DSLContext dslContext = DSLContextFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
-            config.get("port").asInt()), null);
-    database = new Database(dslContext);
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -110,6 +102,16 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("password", TEST_USER_PASSWORD)
         .put("replication_method", "CDC")
         .build());
+
+    dslContext = DSLContextFactory.create(
+        container.getUsername(),
+        container.getPassword(),
+        container.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d;",
+            config.get("host").asText(),
+            config.get("port").asInt()),
+        null);
+    database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
     executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
@@ -191,6 +193,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 

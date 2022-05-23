@@ -24,6 +24,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
   private static final String SCHEMA_NAME = "test";
 
   @Override
@@ -43,14 +44,15 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("replication_method", replicationMethod)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> {
@@ -89,6 +91,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 

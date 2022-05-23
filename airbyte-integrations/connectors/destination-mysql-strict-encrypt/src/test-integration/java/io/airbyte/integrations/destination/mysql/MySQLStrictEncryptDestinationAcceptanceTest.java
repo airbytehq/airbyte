@@ -12,7 +12,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -29,7 +28,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
@@ -110,15 +108,16 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
-            db.getDatabaseName()), SQLDialect.MYSQL);
+            db.getDatabaseName()),
+        SQLDialect.MYSQL);
     return new Database(dslContext).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -163,18 +162,18 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void executeQuery(final String query) {
-    try {
-      final DSLContext dslContext = DSLContextFactory.create(
-          db.getUsername(),
-          db.getPassword(),
-          db.getDriverClassName(),
-          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()), SQLDialect.MYSQL);
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        db.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()),
+        SQLDialect.MYSQL)) {
       new Database(dslContext).query(
-              ctx -> ctx
-                  .execute(query));
+          ctx -> ctx
+              .execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

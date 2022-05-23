@@ -236,4 +236,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return connectionStrBuilder.toString();
   }
 
+  @Override
+  public void close() throws Exception {}
+
 }

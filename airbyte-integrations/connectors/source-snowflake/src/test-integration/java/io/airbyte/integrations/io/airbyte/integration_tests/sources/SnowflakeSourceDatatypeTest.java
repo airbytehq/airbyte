@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
 
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
@@ -46,6 +45,17 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   protected Database setupDatabase() throws Exception {
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
 
+    dslContext = DSLContextFactory.create(
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
+        SnowflakeSource.DRIVER_CLASS,
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+        SQLDialect.DEFAULT,
+        Map.of(
+            "role", config.get("role").asText(),
+            "warehouse", config.get("warehouse").asText(),
+            "database", config.get("database").asText()));
+
     database = getDatabase();
 
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
@@ -60,25 +70,17 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     super.setupEnvironment(environment);
-    dslContext = DSLContextFactory.create(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
-        SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
-        SQLDialect.DEFAULT,
-        Map.of(
-            "role", config.get("role").asText(),
-            "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String
-        .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
-    database = getDatabase();
-    database.query(ctx -> ctx.fetch(dropSchemaQuery));
-    dslContext.close();
+    try {
+      final String dropSchemaQuery = String
+          .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+      database.query(ctx -> ctx.fetch(dropSchemaQuery));
+    } finally {
+      dslContext.close();
+    }
   }
 
   @Override

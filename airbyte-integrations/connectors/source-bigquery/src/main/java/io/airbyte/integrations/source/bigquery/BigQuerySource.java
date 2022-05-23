@@ -175,4 +175,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     LOGGER.info("completed source: {}", BigQuerySource.class);
   }
 
+  @Override
+  public void close() throws Exception {}
+
 }

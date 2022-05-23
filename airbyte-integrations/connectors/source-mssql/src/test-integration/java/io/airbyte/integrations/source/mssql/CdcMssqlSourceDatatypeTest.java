@@ -21,6 +21,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private MSSQLServerContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
   private static final String DB_NAME = "comprehensive";
   private static final String SCHEMA_NAME = "dbo";
 
@@ -34,6 +35,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -49,15 +51,6 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
-    final DSLContext dslContext = DSLContextFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;",
-            config.get("host").asText(),
-            config.get("port").asInt()), null);
-    final Database database = new Database(dslContext);
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -66,6 +59,16 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("password", container.getPassword())
         .put("replication_method", "CDC")
         .build());
+
+    dslContext = DSLContextFactory.create(
+        container.getUsername(),
+        container.getPassword(),
+        container.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%s;",
+            config.get("host").asText(),
+            config.get("port").asInt()),
+        null);
+    final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
     executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
@@ -80,16 +83,16 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   private void executeQuery(final String query) {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
-            config.get("port").asInt())), null);
-
-    try (final Database database = new Database(dslContext)) {
+            container.getUsername(),
+            container.getPassword(),
+            container.getDriverClassName(),
+            String.format("jdbc:sqlserver://%s:%d;",
+                config.get("host").asText(),
+                config.get("port").asInt())),
+        null)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));

@@ -34,6 +34,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -125,15 +126,15 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, SQLDialect.DEFAULT);
     return new Database(dslContext).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get("database")));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+        });
   }
 
   @BeforeAll
@@ -143,14 +144,18 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     db.start();
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format("jdbc:sqlserver://%s:%d",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
@@ -161,8 +166,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
@@ -177,7 +182,9 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @AfterAll
   static void cleanUp() {

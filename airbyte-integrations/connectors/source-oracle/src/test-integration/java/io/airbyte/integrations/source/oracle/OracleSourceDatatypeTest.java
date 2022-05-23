@@ -31,6 +31,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private OracleContainer container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSourceDatatypeTest.class);
 
@@ -48,14 +49,15 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
@@ -81,6 +83,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 

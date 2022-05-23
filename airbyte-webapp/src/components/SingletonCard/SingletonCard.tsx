@@ -30,7 +30,6 @@ const Singleton = styled.div<{ hasError?: boolean }>`
   bottom: 49px;
   left: 50%;
   transform: translate(-50%, 0);
-  z-index: 20;
 
   padding: 25px 25px 22px;
 

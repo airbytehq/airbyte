@@ -41,6 +41,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MssqlSource source;
   private JsonNode config;
   private DSLContext dslContext;
+  private DataSource dataSource;
+  private DataSource testDataSource;
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -89,24 +92,27 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("replication_method", "CDC")
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dataSource = DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()),
-        null);
+            container.getFirstMappedPort()));
 
-    database = new Database(dslContext);
-
-    testJdbcDatabase = new DefaultJdbcDatabase(DataSourceFactory.create(
+    testDataSource = DataSourceFactory.create(
         TEST_USER_NAME,
         TEST_USER_PASSWORD,
         DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s",
+        String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort())));
+            container.getFirstMappedPort()));
+
+    dslContext = DSLContextFactory.create(dataSource, null);
+
+    database = new Database(dslContext);
+
+    testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -210,7 +216,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   public void tearDown() {
     try {
       dslContext.close();
-      testJdbcDatabase.close();
+      DataSourceFactory.close(dataSource);
+      DataSourceFactory.close(testDataSource);
       container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -318,15 +325,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
         DataSourceFactory.create(config.get("username").asText(),
-        config.get("password").asText(),
-        DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName)),
+            config.get("password").asText(),
+            DRIVER_CLASS,
+            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                dbName)),
         new MssqlSourceOperations(),
-            AdaptiveStreamingQueryConfig::new
-    );
+        AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 

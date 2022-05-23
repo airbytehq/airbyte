@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +54,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
+  protected Collection<DataSource> dataSources = new ArrayList<>();
 
   public AbstractJdbcSource(final String driverClass,
                             final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
@@ -287,20 +290,26 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     });
   }
 
+  protected DataSource createDataSource(final JsonNode config) {
+    final JsonNode jdbcConfig = toDatabaseConfig(config);
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        driverClass,
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+    // Record the data source so that it can be closed.
+    dataSources.add(dataSource);
+    return dataSource;
+  }
+
   @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+    final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new StreamingJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            driverClass,
-            jdbcConfig.get("jdbc_url").asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-        ),
+        dataSource,
         sourceOperations,
-        streamingQueryConfigProvider
-    );
+        streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
@@ -309,6 +318,18 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   protected String getJdbcParameterDelimiter() {
     return "&";
+  }
+
+  @Override
+  public void close() {
+    dataSources.forEach(d -> {
+      try {
+        DataSourceFactory.close(d);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
+    });
+    dataSources.clear();
   }
 
 }

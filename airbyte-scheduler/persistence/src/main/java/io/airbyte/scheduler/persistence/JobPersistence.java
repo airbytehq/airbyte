@@ -161,6 +161,8 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
+  List<Job> listJobsForConnectionWithStatuses(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Set<JobStatus> statuses) throws IOException;
+
   /**
    * @param connectionId The ID of the connection
    * @param configTypes The types of jobs
@@ -245,5 +247,21 @@ public interface JobPersistence {
    * Set that the secret migration has been performed.
    */
   void setSecretMigrationDone() throws IOException;
+
+  /**
+   * Check if the scheduler has been migrated to temporal.
+   *
+   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
+   * "major" version bump as it will no longer be needed.
+   */
+  boolean isSchedulerMigrated() throws IOException;
+
+  /**
+   * Set that the scheduler migration has been performed.
+   *
+   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
+   * "major" version bump as it will no longer be needed.
+   */
+  void setSchedulerMigrationDone() throws IOException;
 
 }

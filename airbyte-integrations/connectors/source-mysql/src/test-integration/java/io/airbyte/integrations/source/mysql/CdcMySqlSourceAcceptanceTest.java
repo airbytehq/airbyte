@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -132,15 +132,16 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()), SQLDialect.MYSQL);
-    try (final Database database = new Database(dslContext)) {
+            container.getDatabaseName()),
+        SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));
@@ -177,7 +178,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
-    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
+
+    // Uncaught exceptions are now handled by the AirbyteExceptionHandler, so
+    // it will not be thrown outside the connector execution.
+    assertDoesNotThrow(() -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
 }

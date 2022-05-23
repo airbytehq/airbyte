@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,22 +116,24 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+  protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            driverClass,
-            jdbcConfig.get("jdbc_url").asText(),
-            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
-        ),
-        sourceOperations
-    );
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        driverClass,
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
+    dataSources.add(dataSource);
+    return dataSource;
+  }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final DataSource dataSource = createDataSource(config);
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
     return new CockroachJdbcDatabase(database, sourceOperations);
   }
 
