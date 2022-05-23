@@ -225,7 +225,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.34
+  dockerImageTag: 0.3.35
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:
@@ -244,7 +244,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:

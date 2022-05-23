@@ -8,15 +8,16 @@ import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow } from "components";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
-  IProps as SingleValueProps,
   Icon as SingleValueIcon,
+  IProps as SingleValueProps,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
-import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -87,9 +88,9 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
  */
 function getOrderForReleaseStage(stage?: ReleaseStage): number {
   switch (stage) {
-    case ReleaseStage.BETA:
+    case ReleaseStage.beta:
       return 1;
-    case ReleaseStage.ALPHA:
+    case ReleaseStage.alpha:
       return 2;
     default:
       return 0;
@@ -112,7 +113,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
     return null;
   }
 
-  if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
+  if (releaseStage === ReleaseStage.generally_available) {
     return <GAIcon />;
   }
 
@@ -290,7 +291,7 @@ const ConnectorServiceTypeControl: React.FC<{
       </ControlLabels>
       {selectedService && <DocumentationLink />}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>
