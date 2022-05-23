@@ -139,11 +139,13 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         try {
           await authService.updatePassword(form.password);
 
-          const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
-          await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name: form.name });
-          user.name = form.name;
+          // TODO: Wait for name endpoint
+          // const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
+          // await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name: form.name });
+          // user.name = form.name;
 
-          await onAfterAuth(firebaseUser, user);
+          // await onAfterAuth(firebaseUser, user);
+          await onAfterAuth(firebaseUser);
         } catch (e) {
           await authService.signOut();
           throw e;
