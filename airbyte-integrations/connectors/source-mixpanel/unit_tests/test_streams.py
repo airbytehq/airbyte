@@ -172,13 +172,14 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, cohor
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
     stream = CohortMembers(authenticator=MagicMock())
-
+    stream_state = {"created": "2008-12-12T11:20:47"}
     records = stream.read_records(
-        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"}, stream_slice={"id": 1000}
+        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
     )
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
+    records = [item for item in records]
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
 @pytest.fixture
@@ -292,6 +293,25 @@ def test_engage_schema(requests_mock, engage_schema_response):
 
     records_length = sum(1 for _ in records)
     assert records_length == 3
+
+
+def test_update_engage_schema(requests_mock):
+    stream = EngageSchema(authenticator=MagicMock())
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "results": {
+                    "$someNewSchemaField": {"count": 124, "type": "string"},
+                }
+            },
+        ),
+    )
+    engage_stream = Engage(authenticator=MagicMock())
+    engage_schema = engage_stream.get_json_schema()
+    assert "someNewSchemaField" in engage_schema["properties"]
 
 
 @pytest.fixture
