@@ -67,19 +67,15 @@ show_java_run_details() {
 }
 
 write_results_summary() {
-  file_contents=`tail -n 1000 build.out`
-  echo "write_results_summary: $file_contents"
-  echo "write_results_summary_end"
-  
   success="$1"
   python_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
-  java_info=`sed -n '/tests completed,/p' build.out`
+  java_info=`sed -n '/tests completed,/p' build.out` # this doesn't seem to work, not in build.out
 
   echo "success: $success"
   echo "python_info: $python_info"
   echo "java_info: $java_info"
 
-  info='Could not find result details'
+  info='Could not find result summary'
   result='Unknown result'
 
   if [ "$success" = true ]
