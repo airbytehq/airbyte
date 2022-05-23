@@ -39,7 +39,7 @@ class SourceEmarsys(AbstractSource):
 
             field_dict = set(field["string_id"] for field in fields)
             logger.info("Fetched available fields")
-            for required_field in config["contact_fields"]:
+            for required_field in config["contact_fields"].split(","):
                 if required_field not in field_dict:
                     raise ValueError(f"Required field `{required_field}` does not exist in Emarsys")
 
@@ -55,17 +55,18 @@ class SourceEmarsys(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = EmarsysAuthenticator(config["username"], config["password"])
-        contact_lists_stream = ContactLists(authenticator=auth)
+        record_limit = config.get("limit",10000)
+        contact_lists_stream = ContactLists(authenticator=auth,pattern_list_text=config.get("contact_list_pattern",""))
         return [
             Fields(authenticator=auth),
             Segments(authenticator=auth),
             contact_lists_stream,
-            ContactListMemberships(authenticator=auth, parent=contact_lists_stream, limit=config["limit"]),
+            ContactListMemberships(authenticator=auth, parent=contact_lists_stream, limit=record_limit),
             Contacts(
                 authenticator=auth,
                 parent=contact_lists_stream,
-                fields=config["contact_fields"],
-                limit=config["limit"],
+                fields=config["contact_fields"].split(","),
+                limit=record_limit,
                 recur_list_patterns=config["recurring_contact_lists"],
             ),
         ]

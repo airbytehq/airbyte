@@ -23,14 +23,10 @@
         "airbyte_secret": "true"
       },
       "contact_fields": {
-        "type": "array",
+        "type": "string",
         "title": "Contact fields",
-        "description": "List of contact data fields to be fetched. Should be snake-cased string ID like 'zip_code' or 'birth_date'.",
-        "items": {
-          "type": "string"
-        },
-        "minItems": 1,
-        "uniqueItems": true
+        "description": "List of contact data fields to be fetched. Should be snake-cased string ID like 'zip_code' or 'birth_date'. Seperate by comma, no spaces",
+        "default": "acq_channel,address,address_2,anniversary,apple_user,average_visit_duration,birth_date,bo_order_date,bo_order_item1,bo_order_item2,bo_order_item3,bo_order_item4,bo_order_item5,bo_order_number1,bo_order_number2,bo_order_number3,bo_order_sku,children,city,company_address,company_annual_revenue,company_city,company_country,company_department,company_employees,company_fax,company_industry,company_name,company_phone,company_position,company_state,company_zip_code,country,current_offer,days_since_last_email_sent,delivery_estimate,delivery_status,dnu_last_open,dnu_profile_created_on,do_not_track_me,do_not_track_me_in_email,education,email,email_valid,fax,first_active,first_name,form,gender,hashed_email,historical_country,ietf_language_tag,in_flow,initial_source_historical,interests,klaviyo_profile_created,last_active,last_click,last_email_open,last_name,low_nps_date,loyalty_anniversary_day,loyalty_anniversary_month,loyalty_anniversary_year,loyalty_credit_balance_in_custom,loyalty_opt_in,loyalty_opt_in_date,loyalty_tier_amount_spend_nee_1,loyalty_tier_amount_spend_needed,loyalty_tier_amount_spent_cents_,loyalty_tier_amount_spent_in_cus,marital_status,mobile,mobile_advertising_id,monthly_emails_only,new_point_balance,newsletter,number_of_orders,optin,pageviews_per_day,partner_birth_date,partner_first_name,phone,postscript_subscriber_id,postscript_test,predict_last_abandoned_categorie,predict_last_abandoned_date,predict_last_abandoned_products,predict_last_abandoned_total_pri,predict_last_purchase_categories,predict_last_purchase_date,predict_last_purchase_products,predict_last_purchase_total_pric,predict_last_session_categories,predict_last_session_date,predict_last_session_products,predict_last_session_time_spent,predict_top_categories,predictuserid,preferred_email_format,purchase_date_1,purchase_date_10,purchase_date_2,purchase_date_3,purchase_date_4,purchase_date_5,purchase_date_6,purchase_date_7,purchase_date_8,purchase_date_9,reengaged_date,registration_date,registration_language,reply_address,salutation,seed_tag,segment_status,shipping_label_id,shopify_created_at,shopify_id,shopify_updated_at,sign_up_source,source,state,status,swell_affiliate_email,swell_birth_day,swell_birth_month,swell_birth_year,swell_credit_balance,swell_first_name,swell_has_account,swell_has_provided_tax_details,swell_is_affiliate,swell_last_name,swell_name,swell_next_tier_multiplier,swell_next_tier_name,swell_next_tier_redemption_optio,swell_next_tier_reward_points,swell_payout_percentage,swell_point_balance,swell_points_earned,swell_points_expire_at,swell_referral_discount_code,swell_referral_link,swell_tier_amount_spend_needed,swell_tier_amount_spend_needed_c,swell_tier_amount_spent,swell_tier_amount_spent_cents,swell_tier_multiplier,swell_tier_points_earned,swell_tier_points_needed,swell_tier_purchases_made,swell_tier_purchases_needed,swell_tier_redemption_option_nam,swell_tier_referrals_completed,swell_tier_referrals_needed,swell_tier_reward_points,swell_total_amount_earned,swell_unredeemed_coupon,swell_vip_tier_ends_at,swell_vip_tier_name,test_hashed_email,testing,testing_date,timestamp,title,unengaged,unengaged_date,unfulfilled_order,url,userid_custom,yotpo_review_score,zip_code"
       },
       "limit": {
         "title": "API call limit",
@@ -39,7 +35,7 @@
         "default": 10000,
         "examples": [10000],
         "minimum": 0,
-        "maximum": 1000000
+        "maximum": 10000
       },
       "recurring_contact_lists": {
         "title": "Recurring contact list name patterns",
@@ -49,6 +45,12 @@
           "type": "string"
         },
         "default": []
+    },
+      "contact_list_pattern": {
+        "title": "ContactList patterns",
+        "description": "List of contact list names to get, or the regex to match contact list name",
+        "type":"string",
+        "default": ""
       }
     }
   }

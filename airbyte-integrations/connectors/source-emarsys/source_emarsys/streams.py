@@ -18,6 +18,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from requests import models
 from requests.auth import AuthBase
 
+PATTERN_ALL = "^.*$"
+
 
 class EmarsysAuthenticator(AuthBase):
     def __init__(self, username, password) -> None:
@@ -149,6 +151,10 @@ class Fields(EmarsysStream):
 class ContactLists(EmarsysStream):
     primary_key = "id"
 
+    def __init__(self, pattern_list_text: str, **kwargs):
+        super().__init__(**kwargs)
+        self.pattern_list = pattern_list_text.split(",") if pattern_list_text else [PATTERN_ALL]
+
     def path(
         self,
         *,
@@ -160,6 +166,30 @@ class ContactLists(EmarsysStream):
 
     def use_cache(self):
         return True
+
+    def _match_record_by_pattern_list(self,record_list):
+        matched_name_set = set()
+        for pattern in self.pattern_list:
+            self.logger.info(f"Match pattern {pattern}")
+            compiled_pattern = re.compile(pattern)
+            matched = {record["name"] for record in record_list if compiled_pattern.match(record["name"])}
+            matched_name_set.update(matched)
+        
+        matched_record_list = [record for record in record_list if record["name"] in matched_name_set]
+        self.logger.info(f"Found {len(matched_record_list)} matched records")
+        return matched_record_list
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parse data from response
+        :return an iterable containing each record in the response
+        """
+        data = response.json().get("data", [])
+        if data:
+            matched_data = self._match_record_by_pattern_list(data)
+            # matched_data = data
+
+        yield from matched_data
 
 
 class Segments(EmarsysStream):
@@ -216,7 +246,7 @@ class ContactListMemberships(SubPaginatedEmarsysStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"contactlist/{stream_slice['parent']['id']}"
+        return f"contactlist/{stream_slice['parent']['id']}/"
 
     def parse_response(
         self,
@@ -366,8 +396,8 @@ class Contacts(SubPaginatedEmarsysStream):
         field_id = self.field_string_2_id[field_string_id]
 
         airbyte_format = {"type": ["null", "string"]}
-        if self.field_dict[field_id]["application_type"] == "numeric":
-            airbyte_format = {"type": ["null", "number"]}
+        # if self.field_dict[field_id]["application_type"] == "numeric": #Commented out since field monthly_emails_only has "TRUE" as a value in contact list id 737496849, contact id 18963422
+        #     airbyte_format = {"type": ["null", "number"]}
 
         if self.field_dict[field_id]["application_type"] == "date":
             airbyte_format = {"type": ["null", "string"], "format": "date"}
