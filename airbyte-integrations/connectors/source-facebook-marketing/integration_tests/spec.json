@@ -289,6 +289,14 @@
               "examples": ["2017-01-26T00:00:00Z"],
               "type": "string",
               "format": "date-time"
+            },
+            "insights_lookback_window": {
+              "title": "Insights Lookback Window",
+              "description": "The attribution window",
+              "default": 28,
+              "maximum": 28,
+              "minimum": 1,
+              "type": "integer"
             }
           },
           "required": ["name"]
@@ -300,6 +308,15 @@
         "default": 100,
         "order": 7,
         "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "insights_lookback_window": {
+        "title": "Insights Lookback Window",
+        "description": "The attribution window",
+        "default": 28,
+        "order": 8,
+        "maximum": 28,
+        "minimum": 1,
         "type": "integer"
       }
     },
