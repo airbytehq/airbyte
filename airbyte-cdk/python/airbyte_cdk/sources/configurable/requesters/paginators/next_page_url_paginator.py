@@ -17,7 +17,6 @@ class NextPageUrlPaginator(Paginator):
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         next_page_token = self._interpolated_paginator.next_page_token(response, last_records)
-        print(f"next_page_token: {next_page_token}")
         if next_page_token:
             return {k: v.replace(self._url_base, "") for k, v in next_page_token.items() if v}
         else:
