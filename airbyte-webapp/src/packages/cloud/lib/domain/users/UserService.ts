@@ -50,6 +50,13 @@ export class UserService extends AirbyteRequestService {
     });
   }
 
+  public async resendWithSignInLink({ email }: { email: string }): Promise<void> {
+    this.fetch(`v1/web_backend/cloud_workspaces/resend_with_signin_link`, {
+      email,
+      continueUrl: window.location.href,
+    });
+  }
+
   public async invite(
     users: {
       email: string;

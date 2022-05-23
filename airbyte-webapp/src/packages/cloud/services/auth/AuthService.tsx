@@ -14,6 +14,7 @@ import { useInitService } from "services/useInitService";
 import { getUtmFromStorage } from "utils/utmStorage";
 
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
+import { EmailLinkErrorCodes } from "./types";
 
 export type AuthUpdatePassword = (email: string, currentPassword: string, newPassword: string) => Promise<void>;
 
@@ -135,8 +136,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.finishResetPassword(code, newPassword);
       },
       async signUpWithEmailLink(form: { name: string; email: string; password: string }): Promise<void> {
-        const { user: firebaseUser } = await authService.signInWithEmailLink(form.email);
         try {
+          const { user: firebaseUser } = await authService.signInWithEmailLink(form.email);
           await authService.updatePassword(form.password);
 
           // TODO: Wait for name endpoint
@@ -148,6 +149,9 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
           await onAfterAuth(firebaseUser);
         } catch (e) {
           await authService.signOut();
+          if (e.message === EmailLinkErrorCodes.LINK_EXPIRED) {
+            await userService.resendWithSignInLink({ email: form.email });
+          }
           throw e;
         }
       },
