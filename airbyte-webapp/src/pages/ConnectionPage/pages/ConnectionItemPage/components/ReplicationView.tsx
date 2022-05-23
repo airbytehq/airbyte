@@ -11,7 +11,6 @@ import LoadingSchema from "components/LoadingSchema";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 
-import { ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
 import {
   useConnectionLoad,
   useResetConnection,
@@ -20,6 +19,8 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
+
+import { ConnectionStatus, NamespaceDefinitionType } from "../../../../../core/request/AirbyteClient";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -53,7 +54,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    namespaceDefinition: ConnectionNamespaceDefinition.Source,
+    namespaceDefinition: NamespaceDefinitionType.source,
     namespaceFormat: "",
     schedule: null,
     prefix: "",
@@ -144,7 +145,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            mode={connection?.status !== ConnectionStatus.DEPRECATED ? "edit" : "readonly"}
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
