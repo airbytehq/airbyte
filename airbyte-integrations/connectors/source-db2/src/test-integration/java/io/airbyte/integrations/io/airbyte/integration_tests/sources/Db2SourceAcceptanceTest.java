@@ -121,8 +121,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("db").asText())
-    );
+            config.get("db").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

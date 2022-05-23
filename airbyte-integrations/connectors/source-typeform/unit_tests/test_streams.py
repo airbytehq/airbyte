@@ -1,14 +1,18 @@
-from typing import List, Mapping, Any
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-
-from source_typeform.source import TypeformStream, Forms, Responses
+from source_typeform.source import Forms, Responses, TypeformStream
 
 logger = AirbyteLogger()
 
 TYPEFORM_BASE_URL = TypeformStream.url_base
+
 
 def merge_records(stream: TypeformStream, sync_mode: SyncMode) -> List[Mapping[str, Any]]:
     merged_records = []
