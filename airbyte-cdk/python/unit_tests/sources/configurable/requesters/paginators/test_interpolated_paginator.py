@@ -5,10 +5,8 @@
 import json
 
 import requests
-
 from airbyte_cdk.sources.configurable.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.configurable.requesters.paginators.interpolated_paginator import \
-    InterpolatedPaginator
+from airbyte_cdk.sources.configurable.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 
 config = {"option": "OPTION"}
 

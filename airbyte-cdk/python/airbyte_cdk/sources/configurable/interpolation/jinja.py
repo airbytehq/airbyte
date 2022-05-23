@@ -4,8 +4,7 @@
 
 import datetime
 
-from airbyte_cdk.sources.configurable.interpolation.interpolation import \
-    Interpolation
+from airbyte_cdk.sources.configurable.interpolation.interpolation import Interpolation
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 

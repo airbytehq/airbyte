@@ -2,8 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.configurable.interpolation.jinja import \
-    JinjaInterpolation
+from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
 
 
 def test_get_value_from_config():

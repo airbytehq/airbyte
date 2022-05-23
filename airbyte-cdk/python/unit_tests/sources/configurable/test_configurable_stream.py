@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode

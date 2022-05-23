@@ -5,14 +5,10 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
-
 from airbyte_cdk.sources.configurable.decoders.decoder import Decoder
-from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import \
-    InterpolatedMapping
-from airbyte_cdk.sources.configurable.interpolation.jinja import \
-    JinjaInterpolation
-from airbyte_cdk.sources.configurable.requesters.paginators.paginator import \
-    Paginator
+from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.configurable.requesters.paginators.paginator import Paginator
 
 
 class InterpolatedPaginator(Paginator):

@@ -4,8 +4,7 @@
 
 from typing import Optional
 
-from airbyte_cdk.sources.configurable.interpolation.jinja import \
-    JinjaInterpolation
+from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
 
 
 class InterpolatedString:

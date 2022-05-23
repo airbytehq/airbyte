@@ -3,8 +3,7 @@
 #
 
 
-from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import \
-    InterpolatedMapping
+from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import InterpolatedMapping
 
 
 def test():
