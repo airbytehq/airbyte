@@ -1,4 +1,5 @@
-import { DestinationSyncMode, SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -9,13 +10,13 @@ const mockSyncSchemaStream: SyncSchemaStream = {
     defaultCursorField: [],
     sourceDefinedPrimaryKey: [],
     jsonSchema: {},
-    name: "name",
+    name: "test",
     supportedSyncModes: [],
   },
   config: {
-    destinationSyncMode: DestinationSyncMode.Append,
+    destinationSyncMode: DestinationSyncMode.append,
     selected: false,
-    syncMode: SyncMode.FullRefresh,
+    syncMode: SyncMode.full_refresh,
     cursorField: [],
     primaryKey: [],
     aliasName: "",
@@ -60,7 +61,7 @@ describe("calculateInitialCatalog", () => {
     );
 
     values.streams.forEach((stream) => {
-      expect(stream).toHaveProperty("stream.supportedSyncModes", [SyncMode.FullRefresh]);
+      expect(stream).toHaveProperty("stream.supportedSyncModes", [SyncMode.full_refresh]);
     });
   });
 
@@ -74,53 +75,56 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
+              name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
-              supportedSyncModes: [SyncMode.Incremental],
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Overwrite,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "2",
             stream: {
               ...stream,
+              name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
-              supportedSyncModes: [SyncMode.Incremental],
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Dedupted,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "3",
             stream: {
               ...stream,
+              name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["name"],
-              supportedSyncModes: [SyncMode.Incremental],
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Append,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append,
+              syncMode: SyncMode.full_refresh,
             },
           },
         ],
       },
-      [DestinationSyncMode.Dedupted],
+      [DestinationSyncMode.append_dedup],
       false
     );
 
     values.streams.forEach((stream) => {
-      expect(stream).toHaveProperty("config.syncMode", SyncMode.Incremental);
-      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.Dedupted);
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.incremental);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append_dedup);
     });
   });
 
@@ -134,47 +138,50 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Overwrite,
-              syncMode: SyncMode.Incremental,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.incremental,
             },
           },
           {
             id: "2",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Dedupted,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "3",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Append,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append,
+              syncMode: SyncMode.full_refresh,
             },
           },
         ],
       },
-      [DestinationSyncMode.Overwrite],
+      [DestinationSyncMode.overwrite],
       false
     );
 
     values.streams.forEach((stream) => {
-      expect(stream).toHaveProperty("config.syncMode", SyncMode.FullRefresh);
-      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.Overwrite);
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.full_refresh);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.overwrite);
     });
   });
 
@@ -188,47 +195,50 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Overwrite,
-              syncMode: SyncMode.Incremental,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.incremental,
             },
           },
           {
             id: "2",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Dedupted,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "3",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.Incremental],
+              name: "test",
+              supportedSyncModes: [SyncMode.incremental],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Append,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append,
+              syncMode: SyncMode.full_refresh,
             },
           },
         ],
       },
-      [DestinationSyncMode.Append],
+      [DestinationSyncMode.append],
       false
     );
 
     values.streams.forEach((stream) => {
-      expect(stream).toHaveProperty("config.syncMode", SyncMode.Incremental);
-      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.Append);
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.incremental);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append);
     });
   });
 
@@ -242,47 +252,50 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.FullRefresh],
+              name: "test",
+              supportedSyncModes: [SyncMode.full_refresh],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Overwrite,
-              syncMode: SyncMode.Incremental,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.incremental,
             },
           },
           {
             id: "2",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.FullRefresh],
+              name: "test",
+              supportedSyncModes: [SyncMode.full_refresh],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Dedupted,
-              syncMode: SyncMode.Incremental,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
             },
           },
           {
             id: "3",
             stream: {
               ...stream,
-              supportedSyncModes: [SyncMode.FullRefresh],
+              name: "test",
+              supportedSyncModes: [SyncMode.full_refresh],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Append,
-              syncMode: SyncMode.Incremental,
+              destinationSyncMode: DestinationSyncMode.append,
+              syncMode: SyncMode.incremental,
             },
           },
         ],
       },
-      [DestinationSyncMode.Append],
+      [DestinationSyncMode.append],
       false
     );
 
     values.streams.forEach((stream) => {
-      expect(stream).toHaveProperty("config.syncMode", SyncMode.FullRefresh);
-      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.Append);
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.full_refresh);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append);
     });
   });
 
@@ -296,27 +309,28 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
+              name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
               supportedSyncModes: [],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Append,
-              syncMode: SyncMode.FullRefresh,
+              destinationSyncMode: DestinationSyncMode.append,
+              syncMode: SyncMode.full_refresh,
             },
           },
         ],
       },
-      [DestinationSyncMode.Dedupted],
+      [DestinationSyncMode.append_dedup],
       true
     );
 
-    expect(streams[0]).toHaveProperty("stream.supportedSyncModes", [SyncMode.FullRefresh]);
+    expect(streams[0]).toHaveProperty("stream.supportedSyncModes", [SyncMode.full_refresh]);
 
     expect(streams[0]).toHaveProperty("config.cursorField", []);
-    expect(streams[0]).toHaveProperty("config.syncMode", SyncMode.FullRefresh);
-    expect(streams[0]).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.Append);
+    expect(streams[0]).toHaveProperty("config.syncMode", SyncMode.full_refresh);
+    expect(streams[0]).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append);
   });
 
   test("should set the default cursorField value when it's available and no cursorField is selected", () => {
@@ -329,39 +343,47 @@ describe("calculateInitialCatalog", () => {
             id: "1",
             stream: {
               ...stream,
+              name: "test",
               defaultCursorField: ["default_path"],
             },
             config: {
               ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
               cursorField: [],
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "2",
             stream: {
               ...stream,
+              name: "test",
               defaultCursorField: ["default_path"],
             },
             config: {
               ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
               cursorField: ["selected_path"],
+              syncMode: SyncMode.full_refresh,
             },
           },
           {
             id: "3",
             stream: {
               ...stream,
+              name: "test",
               defaultCursorField: [],
             },
             config: {
               ...config,
-              destinationSyncMode: DestinationSyncMode.Overwrite,
+              destinationSyncMode: DestinationSyncMode.overwrite,
               cursorField: [],
+              syncMode: SyncMode.full_refresh,
             },
           },
         ],
       },
-      [DestinationSyncMode.Dedupted],
+      [DestinationSyncMode.append_dedup],
       false
     );
 
