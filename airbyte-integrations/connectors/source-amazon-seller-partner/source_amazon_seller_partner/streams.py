@@ -14,6 +14,7 @@ from urllib.parse import urljoin
 
 import pendulum
 import requests
+import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -420,6 +421,16 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+
+
+class GetXmlBrowseTreeData(ReportsAmazonSPStream):
+    def parse_document(self, document):
+        parsed = xmltodict.parse(
+            document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
+        )
+        return parsed.get("Result", {}).get("Node", [])
+
+    name = "GET_XML_BROWSE_TREE_DATA"
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):

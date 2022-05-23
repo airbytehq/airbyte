@@ -8,7 +8,6 @@ import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 
-import { Connection, ConnectionStatus } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
@@ -16,11 +15,12 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
+import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import JobsList from "./JobsList";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface StatusViewProps {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
   frequencyText?: string;
 }
 
@@ -85,7 +85,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            {connection.status === ConnectionStatus.ACTIVE && (
+            {connection.status === ConnectionStatus.active && (
               <div>
                 <Button onClick={() => setIsModalOpen(true)}>
                   <FormattedMessage id={"connection.resetData"} />

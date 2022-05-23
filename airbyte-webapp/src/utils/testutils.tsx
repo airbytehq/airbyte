@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import { configContext, defaultConfig } from "config";
+import { ConfigContext, defaultConfig } from "config";
 import { ServicesProvider } from "core/servicesProvider";
 import { FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
@@ -23,7 +23,7 @@ export async function render<
 
     return (
       <TestWrapper>
-        <configContext.Provider value={{ config: defaultConfig }}>
+        <ConfigContext.Provider value={{ config: defaultConfig }}>
           <FeatureService>
             <ServicesProvider>
               <QueryClientProvider client={queryClient}>
@@ -33,7 +33,7 @@ export async function render<
               </QueryClientProvider>
             </ServicesProvider>
           </FeatureService>
-        </configContext.Provider>
+        </ConfigContext.Provider>
       </TestWrapper>
     );
   }
