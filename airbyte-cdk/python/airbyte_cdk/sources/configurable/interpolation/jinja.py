@@ -37,5 +37,6 @@ class JinjaInterpolation(Interpolation):
         try:
             return self._environment.from_string(s).render(context)
         except TypeError:
-            # Not a template node!
+            # The string is a static value, not a jinja template
+            # It can be returned as is
             return s
