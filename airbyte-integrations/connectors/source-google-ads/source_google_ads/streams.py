@@ -9,6 +9,7 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v9.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v9.errors.types.request_error import RequestErrorEnum
 from google.ads.googleads.v9.services.services.google_ads_service.pagers import SearchPager
 
@@ -115,10 +116,10 @@ class GoogleAdsStream(Stream, ABC):
             if not self.CATCH_API_ERRORS:
                 raise
             for error in exc.failure.errors:
-                if error.error_code.authentication_error or error.error_code.authorization_error or error.error_code.query_error:
+                if error.error_code.authorization_error == AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED:
                     self.logger.error(error.message)
                     continue
-                # log and ignore only auth and query errors, otherwise - raise further
+                # log and ignore only CUSTOMER_NOT_ENABLED error, otherwise - raise further
                 raise
 
 

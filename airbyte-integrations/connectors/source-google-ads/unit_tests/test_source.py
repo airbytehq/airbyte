@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v9.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
@@ -41,15 +42,15 @@ def stream_mock(mocker, config, customers):
 
 @pytest.fixture
 def mocked_gads_api(mocker):
-    def mock(response=None, failure_msg="", error_type=""):
+    def mock(response=None, failure_code=1, failure_msg="", error_type=""):
         def side_effect_func():
-            raise make_google_ads_exception(failure_msg=failure_msg, error_type=error_type)
+            raise make_google_ads_exception(failure_code=failure_code, failure_msg=failure_msg, error_type=error_type)
             yield
 
         side_effect = []
         if response:
             side_effect.append(response)
-        if failure_msg or error_type:
+        if failure_msg or failure_code or error_type:
             side_effect.append(side_effect_func())
         mocker.patch("source_google_ads.google_ads.GoogleAds.send_request", side_effect=side_effect)
 
@@ -525,17 +526,17 @@ def test_invalid_custom_query_handled(mocked_gads_api, config):
 
 
 @pytest.mark.parametrize(
-    ("cls", "error", "raise_expected", "log_expected"),
+    ("cls", "error", "failure_code", "raise_expected", "log_expected"),
     (
-        (AdGroupLabels, "authentication_error", False, True),
-        (AdGroupLabels, "internal_error", True, False),
-        (ServiceAccounts, "authentication_error", True, False),
-        (ServiceAccounts, "internal_error", True, False),
+        (AdGroupLabels, "authorization_error", AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, False, True),
+        (AdGroupLabels, "internal_error", 1, True, False),
+        (ServiceAccounts, "authentication_error", 1, True, False),
+        (ServiceAccounts, "internal_error", 1, True, False),
     ),
 )
-def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, raise_expected, log_expected):
+def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, failure_code, raise_expected, log_expected):
     error_msg = "Some unexpected error"
-    mocked_gads_api(failure_msg=error_msg, error_type=error)
+    mocked_gads_api(failure_code=failure_code, failure_msg=error_msg, error_type=error)
     google_api = GoogleAds(credentials=config["credentials"])
     stream = cls(api=google_api, customers=customers)
     if raise_expected:

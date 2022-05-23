@@ -91,7 +91,10 @@ class SourceGoogleAds(AbstractSource):
                 for query in config.get("custom_queries", []):
                     query = query.get("query")
                     if customer.is_manager_account and self.is_metrics_in_custom_query(query):
-                        return False, f"Metrics are not available for manager account. Check fields in your custom query: {query}"
+                        logger.warning(
+                            f"Metrics are not available for manager account {customer.id}. "
+                            f"Please remove metrics fields in your custom query: {query}."
+                        )
                     if CustomQuery.cursor_field in query:
                         return False, f"Custom query should not contain {CustomQuery.cursor_field}"
                     req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
@@ -109,37 +112,38 @@ class SourceGoogleAds(AbstractSource):
         google_api = GoogleAds(credentials=self.get_credentials(config))
         accounts = self.get_account_info(google_api, config)
         customers = Customer.from_accounts(accounts)
-        incremental_stream_config = self.get_incremental_stream_config(google_api, config, customers)
-        streams = [
-            AdGroupAds(**incremental_stream_config),
-            AdGroupAdLabels(google_api, customers=customers),
-            AdGroups(**incremental_stream_config),
-            AdGroupLabels(google_api, customers=customers),
-            Accounts(**incremental_stream_config),
-            Campaigns(**incremental_stream_config),
-            CampaignLabels(google_api, customers=customers),
-            ClickView(**incremental_stream_config),
-        ]
-        custom_query_streams = [
-            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
-            for single_query_config in config.get("custom_queries", [])
-        ]
-        streams.extend(custom_query_streams)
-
-        # Metrics streams cannot be requested for a manager account.
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
+        incremental_config = self.get_incremental_stream_config(google_api, config, customers)
+        non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
+        streams = [
+            AdGroupAds(**incremental_config),
+            AdGroupAdLabels(google_api, customers=customers),
+            AdGroups(**incremental_config),
+            AdGroupLabels(google_api, customers=customers),
+            Accounts(**incremental_config),
+            Campaigns(**incremental_config),
+            CampaignLabels(google_api, customers=customers),
+            ClickView(**incremental_config),
+        ]
+        # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
-            incremental_stream_config["customers"] = non_manager_accounts
             streams.extend(
                 [
-                    UserLocationReport(**incremental_stream_config),
-                    AccountPerformanceReport(**incremental_stream_config),
-                    DisplayTopicsPerformanceReport(**incremental_stream_config),
-                    DisplayKeywordPerformanceReport(**incremental_stream_config),
-                    ShoppingPerformanceReport(**incremental_stream_config),
-                    AdGroupAdReport(**incremental_stream_config),
-                    GeographicReport(**incremental_stream_config),
-                    KeywordReport(**incremental_stream_config),
+                    UserLocationReport(**non_manager_incremental_config),
+                    AccountPerformanceReport(**non_manager_incremental_config),
+                    DisplayTopicsPerformanceReport(**non_manager_incremental_config),
+                    DisplayKeywordPerformanceReport(**non_manager_incremental_config),
+                    ShoppingPerformanceReport(**non_manager_incremental_config),
+                    AdGroupAdReport(**non_manager_incremental_config),
+                    GeographicReport(**non_manager_incremental_config),
+                    KeywordReport(**non_manager_incremental_config),
                 ]
             )
+        for single_query_config in config.get("custom_queries", []):
+            query = single_query_config.get("query")
+            if self.is_metrics_in_custom_query(query):
+                if non_manager_accounts:
+                    streams.append(CustomQuery(custom_query_config=single_query_config, **non_manager_incremental_config))
+                continue
+            streams.append(CustomQuery(custom_query_config=single_query_config, **incremental_config))
         return streams
