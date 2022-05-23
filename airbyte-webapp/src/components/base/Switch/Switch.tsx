@@ -17,9 +17,17 @@ export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, 
     [styles.small]: small,
     [styles.loading]: loading,
   });
+
   return (
     <label onClick={(event: React.SyntheticEvent) => event.stopPropagation()} className={labelStyle}>
-      <input {...props} className={styles.switchInput} type="checkbox" value={value} checked={checked || !!value} />
+      <input
+        {...props}
+        className={styles.switchInput}
+        type="checkbox"
+        value={value}
+        disabled={loading || props.disabled}
+        checked={checked || !!value}
+      />
       <span className={spanStyle} />
     </label>
   );
