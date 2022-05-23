@@ -46,7 +46,7 @@ class SourceFacebookMarketing(AbstractSource):
             raise ValueError("end_date must be equal or after start_date.")
         try:
             api = API(access_token=config.access_token, business_id=config.business_id)
-            api.check()
+            logger.info(f"Select accounts {api.accounts}")
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
