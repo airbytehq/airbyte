@@ -31,12 +31,9 @@ const LogsContent: React.FC = () => {
   const fetchLogs = useGetLogs();
 
   const downloadLogs = async (logType: LogType) => {
-    const { file } = await fetchLogs({ logType });
+    const file = await fetchLogs({ logType });
     const name = `${logType}-logs.txt`;
-
-    if (file) {
-      downloadFile(file, name);
-    }
+    downloadFile(file, name);
   };
 
   // TODO: get rid of useAsyncFn and use react-query
