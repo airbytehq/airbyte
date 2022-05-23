@@ -29,7 +29,10 @@ class DictState(State):
         if config is None:
             config = dict()
         self._d = d
-        self._state_type = StateType[state_type].value
+        if type(state_type) == str:
+            self._state_type = StateType[state_type].value
+        elif type(state_type) == type:
+            self._state_type = state_type
         self._interpolator = JinjaInterpolation()
         self._context = dict()
         self._config = config
@@ -52,7 +55,6 @@ class DictState(State):
             self._interpolator.eval(name, self._config): self._interpolator.eval(value, self._config, **self._context)
             for name, value in self._d.items()
         }
-        print(f"state_type: {self._state_type} ({type(self._state_type)})")
         updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
 
         if prev_state:
