@@ -23,7 +23,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] BIT_TYPES = {"BIT", "VARBIT"};
   private final String[] MONEY_ITEM_TYPE = {"MONEY"};
   private final String[] GEOMETRICS_TYPES = {"BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH"};
-  private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR"};
+  private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR", "TSQUERY"};
 
   @Override
   public void configure(final Properties props) {}
