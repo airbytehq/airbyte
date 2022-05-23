@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useUpdateEffect } from "react-use";
 import styled from "styled-components";
 
 import { Switch } from "components";
@@ -30,40 +31,38 @@ interface EnabledControlProps {
   connection: WebBackendConnectionRead;
   disabled?: boolean;
   frequencyText?: string;
+  onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText }) => {
-  const { mutateAsync: updateConnection } = useUpdateConnection();
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText, onStatusUpdating }) => {
+  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
-  const [loading, setLoading] = useState(false);
-
   const onChangeStatus = async () => {
-    setLoading(true);
-    try {
-      await updateConnection({
-        connectionId: connection.connectionId,
-        syncCatalog: connection.syncCatalog,
-        schedule: connection.schedule,
-        namespaceDefinition: connection.namespaceDefinition,
-        namespaceFormat: connection.namespaceFormat,
-        prefix: connection.prefix,
-        operations: connection.operations,
-        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-      });
+    await updateConnection({
+      connectionId: connection.connectionId,
+      syncCatalog: connection.syncCatalog,
+      schedule: connection.schedule,
+      namespaceDefinition: connection.namespaceDefinition,
+      namespaceFormat: connection.namespaceFormat,
+      prefix: connection.prefix,
+      operations: connection.operations,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+    });
 
-      analyticsService.track("Source - Action", {
-        action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
-        connector_source: connection.source?.sourceName,
-        connector_source_id: connection.source?.sourceDefinitionId,
-        connector_destination: connection.destination?.name,
-        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-        frequency: frequencyText,
-      });
-    } finally {
-      setLoading(false);
-    }
+    analyticsService.track("Source - Action", {
+      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      frequency: frequencyText,
+    });
   };
+
+  useUpdateEffect(() => {
+    onStatusUpdating?.(isLoading);
+  }, [isLoading]);
 
   return (
     <Content>
@@ -74,7 +73,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
         disabled={disabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
-        loading={loading}
+        loading={isLoading}
         id="toggle-enabled-source"
       />
     </Content>

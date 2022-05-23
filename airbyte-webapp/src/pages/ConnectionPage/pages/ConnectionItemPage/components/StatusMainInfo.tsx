@@ -43,6 +43,7 @@ interface StatusMainInfoProps {
   destinationDefinition?: DestinationDefinitionRead;
   sourceDefinition?: SourceDefinitionRead;
   allowSync?: boolean;
+  onStatusUpdating?: (updating: boolean) => void;
 }
 
 export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
@@ -51,6 +52,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   destinationDefinition,
   sourceDefinition,
   allowSync,
+  onStatusUpdating,
 }) => {
   return (
     <MainInfo>
@@ -80,7 +82,12 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
         <Cell>{frequencyText}</Cell>
         {connection.status !== ConnectionStatus.deprecated && (
           <EnabledCell flex={1.1}>
-            <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
+            <EnabledControl
+              disabled={!allowSync}
+              connection={connection}
+              frequencyText={frequencyText}
+              onStatusUpdating={onStatusUpdating}
+            />
           </EnabledCell>
         )}
       </Row>
