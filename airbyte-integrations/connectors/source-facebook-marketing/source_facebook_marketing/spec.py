@@ -166,7 +166,7 @@ class ConnectorConfig(BaseConfig):
 
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
-        order=7,
+        order=8,
         description=("The attribution window"),
         maximum=28,
         mininum=1,
