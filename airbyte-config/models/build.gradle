@@ -54,4 +54,3 @@ task logClientsIntegrationTest(type: Test) {
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("airbyte-config-models", "$rootProject.ext.version", project)
-//publishArtifactsTask.dependsOn(assemble)

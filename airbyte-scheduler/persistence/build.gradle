@@ -19,3 +19,5 @@ dependencies {
     testImplementation libs.testcontainers.postgresql
     testImplementation project(':airbyte-test-utils')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-persistence", "$rootProject.ext.version", project)

@@ -6,3 +6,5 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-models", "$rootProject.ext.version", project)

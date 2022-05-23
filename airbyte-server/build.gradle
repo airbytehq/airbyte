@@ -1,53 +1,5 @@
 plugins {
     id 'application'
-    id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-}
-
-// This is published as a shadow jar as the Airbyte Server jar is currently used
-// as a delivery mechanism for the common Airbyte libraries and clients. Proper
-// publishing is blocked on some gradle work.
-shadowJar {
-    // following properties need to be set here to have reproducible shadow archives, doesn't seem to inherit from AbstractArchiveTask
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-
-    zip64 true
-    mergeServiceFiles()
-    exclude 'META-INF/*.RSA'
-    exclude 'META-INF/*.SF'
-    exclude 'META-INF/*.DSA'
-    // Not stubbing this out adds 'all' to the end of the jar's name.
-    classifier = ''
-}
-
-publishing {
-    publications {
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
-        }
-    }
-    repositories {
-        publications {
-            // This block is present so Gradle knows to publish a Maven jar.
-            maven(MavenPublication) {
-                from components.java
-                // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-            }
-        }
-
-        maven {
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-        }
-
-        mavenLocal()
-    }
 }
 
 dependencies {
@@ -154,3 +106,5 @@ tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-server", "$rootProject.ext.version", project)

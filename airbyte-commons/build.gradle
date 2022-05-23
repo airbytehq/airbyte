@@ -9,4 +9,4 @@ dependencies {
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-config-models", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-commons", "$rootProject.ext.version", project)

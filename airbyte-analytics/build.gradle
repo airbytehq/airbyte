@@ -6,3 +6,5 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-json-validation')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-analytics", "$rootProject.ext.version", project)
