@@ -56,7 +56,7 @@ show_python_run_details() {
 
 show_java_run_details() {
   # show few lines after stack trace
-  run_info=`awk '/] FAILED/{x=NR+8}(NR<=x){print}' build.out`
+  run_info=`awk '/[\]\)] FAILED/{x=NR+8}(NR<=x){print}' build.out`
   if ! test -z "$run_info"
   then
     echo '```' >> $GITHUB_STEP_SUMMARY
