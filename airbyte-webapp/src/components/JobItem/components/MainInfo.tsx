@@ -4,14 +4,13 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton, StatusIcon } from "components";
+import { Button, StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
 import { AttemptRead, JobStatus } from "../../../core/request/AirbyteClient";
-import useLoadingState from "../../../hooks/useLoadingState";
 import { useCancelJob } from "../../../services/job/JobService";
 import { getJobId, getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
@@ -44,7 +43,7 @@ const AttemptCount = styled.div`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const CancelButton = styled(LoadingButton)`
+const CancelButton = styled(Button)`
   margin-right: 10px;
   padding: 3px 7px;
   z-index: 1;
@@ -106,12 +105,11 @@ const MainInfo: React.FC<MainInfoProps> = ({
   shortInfo,
   isPartialSuccess,
 }) => {
-  const { isLoading, showFeedback, startAction } = useLoadingState();
   const cancelJob = useCancelJob();
 
-  const onCancelJob = (event: React.SyntheticEvent) => {
+  const onCancelJob = async (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    return startAction({ action: () => cancelJob(Number(getJobId(job))) });
+    return cancelJob(Number(getJobId(job)));
   };
 
   const isNotCompleted = [JobStatus.pending, JobStatus.running, JobStatus.incomplete].includes(getJobStatus(job));
@@ -152,14 +150,8 @@ const MainInfo: React.FC<MainInfoProps> = ({
       </InfoCell>
       <InfoCell>
         {!shortInfo && isNotCompleted && (
-          <CancelButton
-            secondary
-            disabled={isLoading}
-            isLoading={isLoading}
-            wasActive={showFeedback}
-            onClick={onCancelJob}
-          >
-            <FormattedMessage id={showFeedback ? "form.canceling" : "form.cancel"} />
+          <CancelButton secondary onClick={onCancelJob}>
+            <FormattedMessage id="form.cancel" />
           </CancelButton>
         )}
         <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
