@@ -19,7 +19,7 @@ class HttpRequester(Requester):
         name: str,
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
-        http_method: HttpMethod,
+        http_method: Union[str, HttpMethod],
         request_parameters_provider: RequestParameterProvider,
         authenticator: HttpAuthenticator,
         retrier: Retrier,
@@ -33,6 +33,8 @@ class HttpRequester(Requester):
         if type(path) == str:
             path = InterpolatedString(path)
         self._path: InterpolatedString = path
+        if type(http_method) == str:
+            http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_parameters_provider = request_parameters_provider
         self._retrier = retrier
@@ -51,7 +53,8 @@ class HttpRequester(Requester):
 
     def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return self._path.eval(self._config, **kwargs)
+        path = self._path.eval(self._config, **kwargs)
+        return path
 
     def get_method(self):
         return self._method

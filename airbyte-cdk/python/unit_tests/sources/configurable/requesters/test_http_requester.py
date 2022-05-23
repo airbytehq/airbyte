@@ -8,7 +8,7 @@ from airbyte_cdk.sources.configurable.requesters.http_requester import HttpMetho
 
 
 def test():
-    http_method = HttpMethod.GET
+    http_method = "GET"
 
     request_parameters_provider = MagicMock()
     request_params = {"param": "value"}
@@ -43,7 +43,7 @@ def test():
     assert requester.get_url_base() == "https://airbyte.io"
     assert requester.get_path(stream_state=None, stream_slice=stream_slice, next_page_token=None) == "v1/1234"
     assert requester.get_authenticator() == authenticator
-    assert requester.get_method() == http_method
+    assert requester.get_method() == HttpMethod.GET
     assert requester.request_params(stream_state=None, stream_slice=None, next_page_token=None) == request_params
     assert requester.max_retries == max_retries
     assert requester.should_retry(requests.Response()) == should_retry
