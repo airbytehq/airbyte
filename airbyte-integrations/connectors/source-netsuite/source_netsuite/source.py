@@ -164,7 +164,8 @@ class SourceNetsuite(AbstractSource):
         auth = self.auth(config)
         start_datetime = config.get("start_datetime")
         concurrency_limit = config.get("concurrency_limit")
+        record_types = config.get("record_types") or self.record_types(record_url, auth)
         return [
             IncrementalNetsuiteStream(auth, name, record_url, concurrency_limit, start_datetime)
-            for name in self.record_types(record_url, auth)
+            for name in record_types
         ]

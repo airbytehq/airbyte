@@ -38,3 +38,8 @@ connectionSpecification:
       type: string
       description: Only get records updated after this date
       pattern: ^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})Z$
+    record_types:
+      type: array
+      items:
+        type: string
+      description: The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite.
