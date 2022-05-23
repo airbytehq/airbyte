@@ -11,7 +11,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;

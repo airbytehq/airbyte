@@ -109,7 +109,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
     database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");

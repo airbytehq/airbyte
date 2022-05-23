@@ -5,10 +5,14 @@ import styled from "styled-components";
 import { ContentCard } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { Header, Row, Cell } from "components/SimpleTableComponents";
+import { Cell, Header, Row } from "components/SimpleTableComponents";
 
-import { Connection, ConnectionStatus } from "core/domain/connection";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import {
+  ConnectionStatus,
+  DestinationDefinitionRead,
+  SourceDefinitionRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 
 import EnabledControl from "./EnabledControl";
 
@@ -34,10 +38,10 @@ const EnabledCell = styled(Cell)`
 `;
 
 interface StatusMainInfoProps {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
   frequencyText?: string;
-  destinationDefinition?: DestinationDefinition;
-  sourceDefinition?: SourceDefinition;
+  destinationDefinition?: DestinationDefinitionRead;
+  sourceDefinition?: SourceDefinitionRead;
   allowSync?: boolean;
 }
 
@@ -60,7 +64,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
         <Cell>
           <FormattedMessage id="tables.frequency" />
         </Cell>
-        {connection.status !== ConnectionStatus.DEPRECATED && <Cell flex={1.1}></Cell>}
+        {connection.status !== ConnectionStatus.deprecated && <Cell flex={1.1}></Cell>}
       </Header>
       <Row>
         <SourceCell flex={2}>
@@ -74,7 +78,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
           <ReleaseStageBadge stage={destinationDefinition?.releaseStage} />
         </SourceCell>
         <Cell>{frequencyText}</Cell>
-        {connection.status !== ConnectionStatus.DEPRECATED && (
+        {connection.status !== ConnectionStatus.deprecated && (
           <EnabledCell flex={1.1}>
             <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
           </EnabledCell>

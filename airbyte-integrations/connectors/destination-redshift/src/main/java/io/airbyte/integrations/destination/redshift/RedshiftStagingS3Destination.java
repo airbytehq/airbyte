@@ -82,11 +82,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public DataSource getDataSource(final JsonNode config) {
     final var jdbcConfig = getJdbcConfig(config);
     return DataSourceFactory.create(
-            jdbcConfig.get(USERNAME).asText(),
-            jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-            RedshiftInsertDestination.DRIVER_CLASS,
-            jdbcConfig.get(JDBC_URL).asText(),
-            SSL_JDBC_PARAMETERS);
+        jdbcConfig.get(USERNAME).asText(),
+        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        jdbcConfig.get(JDBC_URL).asText(),
+        SSL_JDBC_PARAMETERS);
   }
 
   @Override

@@ -1,5 +1,5 @@
 import { useField } from "formik";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
@@ -8,22 +8,24 @@ import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow } from "components";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
-  IProps as SingleValueProps,
   Icon as SingleValueIcon,
+  IProps as SingleValueProps,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
-import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import { WarningMessage } from "../WarningMessage";
-import Instruction from "./Instruction";
+import { DocumentationLink } from "./DocumentationLink";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -86,9 +88,9 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
  */
 function getOrderForReleaseStage(stage?: ReleaseStage): number {
   switch (stage) {
-    case ReleaseStage.BETA:
+    case ReleaseStage.beta:
       return 1;
-    case ReleaseStage.ALPHA:
+    case ReleaseStage.alpha:
       return 2;
     default:
       return 0;
@@ -111,7 +113,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
     return null;
   }
 
-  if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
+  if (releaseStage === ReleaseStage.generally_available) {
     return <GAIcon />;
   }
 
@@ -218,6 +220,10 @@ const ConnectorServiceTypeControl: React.FC<{
     [availableServices, orderOverwrite]
   );
 
+  const { setDocumentationUrl } = useDocumentationPanelContext();
+
+  useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);
+
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
       analytics.track(
@@ -283,11 +289,9 @@ const ConnectorServiceTypeControl: React.FC<{
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && documentationUrl && (
-        <Instruction selectedService={selectedService} documentationUrl={documentationUrl} />
-      )}
+      {selectedService && <DocumentationLink />}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -10,16 +10,17 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 
-type IProps = {
+interface SourcesStepProps {
   onSuccess: () => void;
   onNextStep: () => void;
-};
+}
 
-const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
+const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
@@ -29,6 +30,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
     message: string;
   } | null>(null);
 
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
 
   const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
@@ -38,6 +40,12 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const { data: sourceDefinitionSpecification, isLoading } =
     useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
@@ -46,6 +54,11 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   }) => {
     setError(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
+
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
 
     try {
       await createSource({ values, sourceConnector });
@@ -62,8 +75,9 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   };
 
   const onServiceSelect = (sourceId: string) => {
+    setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
-
+    setDocumentationUrl(sourceDefinition?.documentationUrl || "");
     trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
       connector_source_definition_id: sourceDefinition?.sourceDefinitionId,

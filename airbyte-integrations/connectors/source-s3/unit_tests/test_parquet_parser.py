@@ -13,6 +13,7 @@ from typing import Any, List, Mapping
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 from source_s3.source_files_abstract.formats.parquet_parser import PARQUET_TYPES, ParquetParser
 
 from .abstract_test_parser import AbstractTestParser
@@ -239,3 +240,11 @@ class TestParquetParser(AbstractTestParser):
                 "fails": [],
             }
         return cases
+
+    def test_parse_field_type(self):
+        with pytest.raises(TypeError):
+            assert ParquetParser.parse_field_type(needed_logical_type="", need_physical_type="")
+
+    def test_convert_field_data(self):
+        with pytest.raises(TypeError):
+            ParquetParser.convert_field_data(logical_type="", field_value="")
