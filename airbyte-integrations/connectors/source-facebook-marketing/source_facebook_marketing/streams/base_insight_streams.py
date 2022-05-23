@@ -103,6 +103,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
 
+        today = pendulum.today(tz="UTC").date()
         date_start = stream_state and stream_state.get("date_start")
         if date_start:
             date_start = pendulum.parse(date_start).date()
@@ -110,8 +111,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         job = stream_slice["insight_job"]
         for obj in job.get_result():
             record = obj.export_all_data()
-            if date_start and pendulum.parse(record["updated_time"]).date() <= date_start:
-                continue
+            if date_start:
+                updated_time = pendulum.parse(record["updated_time"]).date()
+                if updated_time <= date_start or updated_time >= today:
+                    continue
             yield record
 
         self._completed_slices.add(job.interval.start)
@@ -160,8 +163,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
-        today = pendulum.today(tz="UTC").date()
-        end_date = min(self._end_date, today)
+        yesterday = pendulum.yesterday(tz="UTC").date()
+        end_date = min(self._end_date, yesterday)
         if end_date < self._next_cursor_value:
             return
         date_range = end_date - self._next_cursor_value
