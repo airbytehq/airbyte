@@ -56,7 +56,7 @@ show_python_run_details() {
 
 show_java_run_details() {
   # show few lines after stack trace
-  run_info=`awk '/] FAILED/{x=NR+8}(NR<=x){print}' build.out`
+  run_info=`awk '/[\]\)] FAILED/{x=NR+8}(NR<=x){print}' build.out`
   if ! test -z "$run_info"
   then
     echo '```' >> $GITHUB_STEP_SUMMARY
@@ -67,16 +67,15 @@ show_java_run_details() {
 }
 
 write_results_summary() {
-  echo "write_results_summary"
   success="$1"
   python_info=`sed -n '/=* short test summary info =*/,/========/p' build.out`
-  java_info=`sed -n '/tests completed,/p' build.out`
+  java_info=`sed -n '/tests completed,/p' build.out` # this doesn't seem to work, not in build.out
 
   echo "success: $success"
   echo "python_info: $python_info"
   echo "java_info: $java_info"
 
-  info='Could not find result details'
+  info='Could not find result summary'
   result='Unknown result'
 
   if [ "$success" = true ]
@@ -111,7 +110,8 @@ write_results_summary() {
   fi
 
   echo "TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
-  echo "$result" >> $GITHUB_ENV
+  echo '' >> $GITHUB_ENV
+  echo "### $result" >> $GITHUB_ENV
   echo '' >> $GITHUB_ENV
   echo "Test summary info:" >> $GITHUB_ENV
   echo '```' >> $GITHUB_ENV
