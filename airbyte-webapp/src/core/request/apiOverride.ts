@@ -29,6 +29,7 @@ export const apiOverride = async <T, U = unknown>(
     data,
     headers,
     responseType,
+    signal,
   }: {
     url: string;
     method: "get" | "post" | "put" | "delete" | "patch";
@@ -36,6 +37,7 @@ export const apiOverride = async <T, U = unknown>(
     data?: U;
     headers?: HeadersInit;
     responseType?: "blob";
+    signal?: AbortSignal;
   },
   options?: ApiOverrideRequestOptions
 ): Promise<typeof responseType extends "blob" ? Blob : T> => {
@@ -56,7 +58,7 @@ export const apiOverride = async <T, U = unknown>(
     method,
     ...(data ? { body: getRequestBody(data) } : {}),
     headers,
-    signal: options.signal,
+    signal: signal ?? options.signal,
   });
 
   /*

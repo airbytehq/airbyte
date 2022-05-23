@@ -43,7 +43,7 @@ const traverseJsonSchemaProperties = (
 };
 
 type NamespaceOptions = {
-  namespaceDefinition: NamespaceDefinitionType;
+  namespaceDefinition: typeof NamespaceDefinitionType.source | typeof NamespaceDefinitionType.destination;
   sourceNamespace?: string;
 };
 type NamespaceOptionsCustomFormat = {
@@ -64,7 +64,7 @@ function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomF
       if (!opt.sourceNamespace?.trim()) {
         return destinationSetting;
       }
-      return (opt as NamespaceOptionsCustomFormat).namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
+      return opt.namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
   }
 }
 

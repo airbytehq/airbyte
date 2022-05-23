@@ -70,13 +70,13 @@ export interface InvalidInputExceptionInfo {
   validationErrors: InvalidInputProperty[];
 }
 
-export type UploadReadStatus = "succeeded" | "failed";
+export type UploadReadStatus = typeof UploadReadStatus[keyof typeof UploadReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UploadReadStatus = {
-  succeeded: "succeeded" as UploadReadStatus,
-  failed: "failed" as UploadReadStatus,
-};
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
 
 export type ResourceId = string;
 
@@ -90,13 +90,13 @@ export interface UploadRead {
   resourceId?: ResourceId;
 }
 
-export type ImportReadStatus = "succeeded" | "failed";
+export type ImportReadStatus = typeof ImportReadStatus[keyof typeof ImportReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ImportReadStatus = {
-  succeeded: "succeeded" as ImportReadStatus,
-  failed: "failed" as ImportReadStatus,
-};
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
 
 export interface ImportRead {
   status: ImportReadStatus;
@@ -108,22 +108,22 @@ export interface ImportRead {
  */
 export type AirbyteArchive = Blob;
 
-export type DestinationSyncMode = "append" | "overwrite" | "append_dedup";
+export type DestinationSyncMode = typeof DestinationSyncMode[keyof typeof DestinationSyncMode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DestinationSyncMode = {
-  append: "append" as DestinationSyncMode,
-  overwrite: "overwrite" as DestinationSyncMode,
-  append_dedup: "append_dedup" as DestinationSyncMode,
-};
+  append: "append",
+  overwrite: "overwrite",
+  append_dedup: "append_dedup",
+} as const;
 
-export type SyncMode = "full_refresh" | "incremental";
+export type SyncMode = typeof SyncMode[keyof typeof SyncMode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SyncMode = {
-  full_refresh: "full_refresh" as SyncMode,
-  incremental: "incremental" as SyncMode,
-};
+  full_refresh: "full_refresh",
+  incremental: "incremental",
+} as const;
 
 export interface WebBackendConnectionRead {
   connectionId: ConnectionId;
@@ -291,13 +291,13 @@ Examples:
   completeOAuthServerOutputSpecification?: OAuthConfiguration;
 }
 
-export type AdvancedAuthAuthFlowType = "oauth2.0" | "oauth1.0";
+export type AdvancedAuthAuthFlowType = typeof AdvancedAuthAuthFlowType[keyof typeof AdvancedAuthAuthFlowType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AdvancedAuthAuthFlowType = {
-  oauth20: "oauth2.0" as AdvancedAuthAuthFlowType,
-  oauth10: "oauth1.0" as AdvancedAuthAuthFlowType,
-};
+  oauth20: "oauth2.0",
+  oauth10: "oauth1.0",
+} as const;
 
 export interface AdvancedAuth {
   authFlowType?: AdvancedAuthAuthFlowType;
@@ -328,45 +328,28 @@ export interface CompleteDestinationOAuthRequest {
   oAuthInputConfiguration?: OAuthInputConfiguration;
 }
 
-export type DbMigrationState =
-  | "pending"
-  | "above_target"
-  | "below_baseline"
-  | "baseline"
-  | "ignored"
-  | "missing_success"
-  | "missing_failed"
-  | "success"
-  | "undone"
-  | "available"
-  | "failed"
-  | "out_of_order"
-  | "future_success"
-  | "future_failed"
-  | "outdated"
-  | "superseded"
-  | "deleted";
+export type DbMigrationState = typeof DbMigrationState[keyof typeof DbMigrationState];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DbMigrationState = {
-  pending: "pending" as DbMigrationState,
-  above_target: "above_target" as DbMigrationState,
-  below_baseline: "below_baseline" as DbMigrationState,
-  baseline: "baseline" as DbMigrationState,
-  ignored: "ignored" as DbMigrationState,
-  missing_success: "missing_success" as DbMigrationState,
-  missing_failed: "missing_failed" as DbMigrationState,
-  success: "success" as DbMigrationState,
-  undone: "undone" as DbMigrationState,
-  available: "available" as DbMigrationState,
-  failed: "failed" as DbMigrationState,
-  out_of_order: "out_of_order" as DbMigrationState,
-  future_success: "future_success" as DbMigrationState,
-  future_failed: "future_failed" as DbMigrationState,
-  outdated: "outdated" as DbMigrationState,
-  superseded: "superseded" as DbMigrationState,
-  deleted: "deleted" as DbMigrationState,
-};
+  pending: "pending",
+  above_target: "above_target",
+  below_baseline: "below_baseline",
+  baseline: "baseline",
+  ignored: "ignored",
+  missing_success: "missing_success",
+  missing_failed: "missing_failed",
+  success: "success",
+  undone: "undone",
+  available: "available",
+  failed: "failed",
+  out_of_order: "out_of_order",
+  future_success: "future_success",
+  future_failed: "future_failed",
+  outdated: "outdated",
+  superseded: "superseded",
+  deleted: "deleted",
+} as const;
 
 export interface DbMigrationRead {
   migrationType: string;
@@ -401,25 +384,18 @@ export type ResourceRequirements = {
 /**
  * enum that describes the different types of jobs that the platform runs.
  */
-export type JobType =
-  | "get_spec"
-  | "check_connection"
-  | "discover_schema"
-  | "sync"
-  | "reset_connection"
-  | "connection_updater"
-  | "replicate";
+export type JobType = typeof JobType[keyof typeof JobType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobType = {
-  get_spec: "get_spec" as JobType,
-  check_connection: "check_connection" as JobType,
-  discover_schema: "discover_schema" as JobType,
-  sync: "sync" as JobType,
-  reset_connection: "reset_connection" as JobType,
-  connection_updater: "connection_updater" as JobType,
-  replicate: "replicate" as JobType,
-};
+  get_spec: "get_spec",
+  check_connection: "check_connection",
+  discover_schema: "discover_schema",
+  sync: "sync",
+  reset_connection: "reset_connection",
+  connection_updater: "connection_updater",
+  replicate: "replicate",
+} as const;
 
 /**
  * sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
@@ -446,13 +422,13 @@ export interface ConnectionState {
   state?: ConnectionStateObject;
 }
 
-export type CheckConnectionReadStatus = "succeeded" | "failed";
+export type CheckConnectionReadStatus = typeof CheckConnectionReadStatus[keyof typeof CheckConnectionReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CheckConnectionReadStatus = {
-  succeeded: "succeeded" as CheckConnectionReadStatus,
-  failed: "failed" as CheckConnectionReadStatus,
-};
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
 
 export interface CheckConnectionRead {
   status: CheckConnectionReadStatus;
@@ -503,49 +479,42 @@ export interface JobReadList {
   jobs: JobWithAttemptsRead[];
 }
 
-export type AttemptStatus = "running" | "failed" | "succeeded";
+export type AttemptStatus = typeof AttemptStatus[keyof typeof AttemptStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptStatus = {
-  running: "running" as AttemptStatus,
-  failed: "failed" as AttemptStatus,
-  succeeded: "succeeded" as AttemptStatus,
-};
+  running: "running",
+  failed: "failed",
+  succeeded: "succeeded",
+} as const;
 
 /**
  * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
  */
-export type AttemptFailureType = "config_error" | "system_error" | "manual_cancellation";
+export type AttemptFailureType = typeof AttemptFailureType[keyof typeof AttemptFailureType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptFailureType = {
-  config_error: "config_error" as AttemptFailureType,
-  system_error: "system_error" as AttemptFailureType,
-  manual_cancellation: "manual_cancellation" as AttemptFailureType,
-};
+  config_error: "config_error",
+  system_error: "system_error",
+  manual_cancellation: "manual_cancellation",
+} as const;
 
 /**
  * Indicates where the error originated. If not set, the origin of error is not well known.
  */
-export type AttemptFailureOrigin =
-  | "source"
-  | "destination"
-  | "replication"
-  | "persistence"
-  | "normalization"
-  | "dbt"
-  | "airbyte_platform";
+export type AttemptFailureOrigin = typeof AttemptFailureOrigin[keyof typeof AttemptFailureOrigin];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptFailureOrigin = {
-  source: "source" as AttemptFailureOrigin,
-  destination: "destination" as AttemptFailureOrigin,
-  replication: "replication" as AttemptFailureOrigin,
-  persistence: "persistence" as AttemptFailureOrigin,
-  normalization: "normalization" as AttemptFailureOrigin,
-  dbt: "dbt" as AttemptFailureOrigin,
-  airbyte_platform: "airbyte_platform" as AttemptFailureOrigin,
-};
+  source: "source",
+  destination: "destination",
+  replication: "replication",
+  persistence: "persistence",
+  normalization: "normalization",
+  dbt: "dbt",
+  airbyte_platform: "airbyte_platform",
+} as const;
 
 export interface AttemptFailureReason {
   failureOrigin?: AttemptFailureOrigin;
@@ -588,40 +557,34 @@ export interface AttemptRead {
   failureSummary?: AttemptFailureSummary;
 }
 
-export type JobStatus = "pending" | "running" | "incomplete" | "failed" | "succeeded" | "cancelled";
+export type JobStatus = typeof JobStatus[keyof typeof JobStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobStatus = {
-  pending: "pending" as JobStatus,
-  running: "running" as JobStatus,
-  incomplete: "incomplete" as JobStatus,
-  failed: "failed" as JobStatus,
-  succeeded: "succeeded" as JobStatus,
-  cancelled: "cancelled" as JobStatus,
-};
+  pending: "pending",
+  running: "running",
+  incomplete: "incomplete",
+  failed: "failed",
+  succeeded: "succeeded",
+  cancelled: "cancelled",
+} as const;
 
 export interface JobWithAttemptsRead {
   job?: JobRead;
   attempts?: AttemptRead[];
 }
 
-export type JobConfigType =
-  | "check_connection_source"
-  | "check_connection_destination"
-  | "discover_schema"
-  | "get_spec"
-  | "sync"
-  | "reset_connection";
+export type JobConfigType = typeof JobConfigType[keyof typeof JobConfigType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobConfigType = {
-  check_connection_source: "check_connection_source" as JobConfigType,
-  check_connection_destination: "check_connection_destination" as JobConfigType,
-  discover_schema: "discover_schema" as JobConfigType,
-  get_spec: "get_spec" as JobConfigType,
-  sync: "sync" as JobConfigType,
-  reset_connection: "reset_connection" as JobConfigType,
-};
+  check_connection_source: "check_connection_source",
+  check_connection_destination: "check_connection_destination",
+  discover_schema: "discover_schema",
+  get_spec: "get_spec",
+  sync: "sync",
+  reset_connection: "reset_connection",
+} as const;
 
 export interface JobListRequestBody {
   configTypes: JobConfigType[];
@@ -654,16 +617,16 @@ export interface JobIdRequestBody {
   id: JobId;
 }
 
-export type DataType = "string" | "number" | "boolean" | "object" | "array";
+export type DataType = typeof DataType[keyof typeof DataType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DataType = {
-  string: "string" as DataType,
-  number: "number" as DataType,
-  boolean: "boolean" as DataType,
-  object: "object" as DataType,
-  array: "array" as DataType,
-};
+  string: "string",
+  number: "number",
+  boolean: "boolean",
+  object: "object",
+  array: "array",
+} as const;
 
 /**
  * the mutable part of the stream to configure the destination
@@ -721,25 +684,25 @@ export interface AirbyteCatalog {
 /**
  * type/source of logs produced
  */
-export type LogType = "server" | "scheduler";
+export type LogType = typeof LogType[keyof typeof LogType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LogType = {
-  server: "server" as LogType,
-  scheduler: "scheduler" as LogType,
-};
+  server: "server",
+  scheduler: "scheduler",
+} as const;
 
 export interface LogsRequestBody {
   logType: LogType;
 }
 
-export type CheckOperationReadStatus = "succeeded" | "failed";
+export type CheckOperationReadStatus = typeof CheckOperationReadStatus[keyof typeof CheckOperationReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CheckOperationReadStatus = {
-  succeeded: "succeeded" as CheckOperationReadStatus,
-  failed: "failed" as CheckOperationReadStatus,
-};
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
 
 export interface CheckOperationRead {
   status: CheckOperationReadStatus;
@@ -753,24 +716,24 @@ export type OperatorDbt = {
   dbtArguments?: string;
 } | null;
 
-export type OperatorNormalizationOption = "basic";
+export type OperatorNormalizationOption = typeof OperatorNormalizationOption[keyof typeof OperatorNormalizationOption];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OperatorNormalizationOption = {
-  basic: "basic" as OperatorNormalizationOption,
-};
+  basic: "basic",
+} as const;
 
 export interface OperatorNormalization {
   option?: OperatorNormalizationOption;
 }
 
-export type OperatorType = "normalization" | "dbt";
+export type OperatorType = typeof OperatorType[keyof typeof OperatorType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OperatorType = {
-  normalization: "normalization" as OperatorType,
-  dbt: "dbt" as OperatorType,
-};
+  normalization: "normalization",
+  dbt: "dbt",
+} as const;
 
 export interface OperatorConfiguration {
   operatorType: OperatorType;
@@ -810,25 +773,25 @@ export interface OperationIdRequestBody {
 /**
  * Method used for computing final namespace in destination
  */
-export type NamespaceDefinitionType = "source" | "destination" | "customformat";
+export type NamespaceDefinitionType = typeof NamespaceDefinitionType[keyof typeof NamespaceDefinitionType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NamespaceDefinitionType = {
-  source: "source" as NamespaceDefinitionType,
-  destination: "destination" as NamespaceDefinitionType,
-  customformat: "customformat" as NamespaceDefinitionType,
-};
+  source: "source",
+  destination: "destination",
+  customformat: "customformat",
+} as const;
 
-export type ConnectionScheduleTimeUnit = "minutes" | "hours" | "days" | "weeks" | "months";
+export type ConnectionScheduleTimeUnit = typeof ConnectionScheduleTimeUnit[keyof typeof ConnectionScheduleTimeUnit];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionScheduleTimeUnit = {
-  minutes: "minutes" as ConnectionScheduleTimeUnit,
-  hours: "hours" as ConnectionScheduleTimeUnit,
-  days: "days" as ConnectionScheduleTimeUnit,
-  weeks: "weeks" as ConnectionScheduleTimeUnit,
-  months: "months" as ConnectionScheduleTimeUnit,
-};
+  minutes: "minutes",
+  hours: "hours",
+  days: "days",
+  weeks: "weeks",
+  months: "months",
+} as const;
 
 /**
  * if null, then no schedule is set.
@@ -841,14 +804,14 @@ export type ConnectionSchedule = {
 /**
  * Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
  */
-export type ConnectionStatus = "active" | "inactive" | "deprecated";
+export type ConnectionStatus = typeof ConnectionStatus[keyof typeof ConnectionStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionStatus = {
-  active: "active" as ConnectionStatus,
-  inactive: "inactive" as ConnectionStatus,
-  deprecated: "deprecated" as ConnectionStatus,
-};
+  active: "active",
+  inactive: "inactive",
+  deprecated: "deprecated",
+} as const;
 
 export interface ConnectionReadList {
   connections: ConnectionRead[];
@@ -958,15 +921,15 @@ export interface ConnectionIdRequestBody {
   connectionId: ConnectionId;
 }
 
-export type ReleaseStage = "alpha" | "beta" | "generally_available" | "custom";
+export type ReleaseStage = typeof ReleaseStage[keyof typeof ReleaseStage];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ReleaseStage = {
-  alpha: "alpha" as ReleaseStage,
-  beta: "beta" as ReleaseStage,
-  generally_available: "generally_available" as ReleaseStage,
-  custom: "custom" as ReleaseStage,
-};
+  alpha: "alpha",
+  beta: "beta",
+  generally_available: "generally_available",
+  custom: "custom",
+} as const;
 
 /**
  * The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
@@ -1204,12 +1167,12 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
   oauthFlowOutputParameters: string[][];
 }
 
-export type AuthSpecificationAuthType = "oauth2.0";
+export type AuthSpecificationAuthType = typeof AuthSpecificationAuthType[keyof typeof AuthSpecificationAuthType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthSpecificationAuthType = {
-  oauth20: "oauth2.0" as AuthSpecificationAuthType,
-};
+  oauth20: "oauth2.0",
+} as const;
 
 export interface AuthSpecification {
   auth_type?: AuthSpecificationAuthType;
@@ -1357,26 +1320,26 @@ export interface WorkspaceIdRequestBody {
   workspaceId: WorkspaceId;
 }
 
-export type NotificationReadStatus = "succeeded" | "failed";
+export type NotificationReadStatus = typeof NotificationReadStatus[keyof typeof NotificationReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NotificationReadStatus = {
-  succeeded: "succeeded" as NotificationReadStatus,
-  failed: "failed" as NotificationReadStatus,
-};
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
 
 export interface NotificationRead {
   status: NotificationReadStatus;
   message?: string;
 }
 
-export type NotificationType = "slack" | "customerio";
+export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NotificationType = {
-  slack: "slack" as NotificationType,
-  customerio: "customerio" as NotificationType,
-};
+  slack: "slack",
+  customerio: "customerio",
+} as const;
 
 export type CustomerioNotificationConfiguration = { [key: string]: any };
 
@@ -1422,7 +1385,7 @@ export interface SourceSearch {
   sourceName?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
 
 /**
@@ -3037,8 +3000,8 @@ export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options?: Se
 /**
  * @summary Health Check
  */
-export const getHealthCheck = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get" }, options);
+export const getHealthCheck = (options?: SecondParameter<typeof apiOverride>, signal?: AbortSignal) => {
+  return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get", signal }, options);
 };
 
 /**
@@ -3060,8 +3023,8 @@ export const getLogs = (logsRequestBody: LogsRequestBody, options?: SecondParame
 /**
  * @summary Returns the openapi specification
  */
-export const getOpenApiSpec = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" }, options);
+export const getOpenApiSpec = (options?: SecondParameter<typeof apiOverride>, signal?: AbortSignal) => {
+  return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", signal, responseType: "blob" }, options);
 };
 
 /**
@@ -3141,154 +3104,157 @@ export const importIntoWorkspace = (
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
+type AwaitedInput<T> = PromiseLike<T> | T;
 
-export type CreateWorkspaceResult = NonNullable<AsyncReturnType<typeof createWorkspace>>;
-export type DeleteWorkspaceResult = NonNullable<AsyncReturnType<typeof deleteWorkspace>>;
-export type ListWorkspacesResult = NonNullable<AsyncReturnType<typeof listWorkspaces>>;
-export type GetWorkspaceResult = NonNullable<AsyncReturnType<typeof getWorkspace>>;
-export type GetWorkspaceBySlugResult = NonNullable<AsyncReturnType<typeof getWorkspaceBySlug>>;
-export type UpdateWorkspaceResult = NonNullable<AsyncReturnType<typeof updateWorkspace>>;
-export type UpdateWorkspaceNameResult = NonNullable<AsyncReturnType<typeof updateWorkspaceName>>;
-export type UpdateWorkspaceFeedbackResult = NonNullable<AsyncReturnType<typeof updateWorkspaceFeedback>>;
-export type TryNotificationConfigResult = NonNullable<AsyncReturnType<typeof tryNotificationConfig>>;
-export type CreateSourceDefinitionResult = NonNullable<AsyncReturnType<typeof createSourceDefinition>>;
-export type UpdateSourceDefinitionResult = NonNullable<AsyncReturnType<typeof updateSourceDefinition>>;
-export type ListSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listSourceDefinitions>>;
-export type ListLatestSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listLatestSourceDefinitions>>;
-export type GetSourceDefinitionResult = NonNullable<AsyncReturnType<typeof getSourceDefinition>>;
-export type DeleteSourceDefinitionResult = NonNullable<AsyncReturnType<typeof deleteSourceDefinition>>;
-export type ListPrivateSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listPrivateSourceDefinitions>>;
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type CreateWorkspaceResult = NonNullable<Awaited<ReturnType<typeof createWorkspace>>>;
+export type DeleteWorkspaceResult = NonNullable<Awaited<ReturnType<typeof deleteWorkspace>>>;
+export type ListWorkspacesResult = NonNullable<Awaited<ReturnType<typeof listWorkspaces>>>;
+export type GetWorkspaceResult = NonNullable<Awaited<ReturnType<typeof getWorkspace>>>;
+export type GetWorkspaceBySlugResult = NonNullable<Awaited<ReturnType<typeof getWorkspaceBySlug>>>;
+export type UpdateWorkspaceResult = NonNullable<Awaited<ReturnType<typeof updateWorkspace>>>;
+export type UpdateWorkspaceNameResult = NonNullable<Awaited<ReturnType<typeof updateWorkspaceName>>>;
+export type UpdateWorkspaceFeedbackResult = NonNullable<Awaited<ReturnType<typeof updateWorkspaceFeedback>>>;
+export type TryNotificationConfigResult = NonNullable<Awaited<ReturnType<typeof tryNotificationConfig>>>;
+export type CreateSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof createSourceDefinition>>>;
+export type UpdateSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof updateSourceDefinition>>>;
+export type ListSourceDefinitionsResult = NonNullable<Awaited<ReturnType<typeof listSourceDefinitions>>>;
+export type ListLatestSourceDefinitionsResult = NonNullable<Awaited<ReturnType<typeof listLatestSourceDefinitions>>>;
+export type GetSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof getSourceDefinition>>>;
+export type DeleteSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof deleteSourceDefinition>>>;
+export type ListPrivateSourceDefinitionsResult = NonNullable<Awaited<ReturnType<typeof listPrivateSourceDefinitions>>>;
 export type ListSourceDefinitionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof listSourceDefinitionsForWorkspace>
+  Awaited<ReturnType<typeof listSourceDefinitionsForWorkspace>>
 >;
-export type CreateCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof createCustomSourceDefinition>>;
+export type CreateCustomSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof createCustomSourceDefinition>>>;
 export type GetSourceDefinitionForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof getSourceDefinitionForWorkspace>
+  Awaited<ReturnType<typeof getSourceDefinitionForWorkspace>>
 >;
-export type UpdateCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof updateCustomSourceDefinition>>;
-export type DeleteCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof deleteCustomSourceDefinition>>;
+export type UpdateCustomSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof updateCustomSourceDefinition>>>;
+export type DeleteCustomSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof deleteCustomSourceDefinition>>>;
 export type GrantSourceDefinitionToWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof grantSourceDefinitionToWorkspace>
+  Awaited<ReturnType<typeof grantSourceDefinitionToWorkspace>>
 >;
 export type RevokeSourceDefinitionFromWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof revokeSourceDefinitionFromWorkspace>
+  Awaited<ReturnType<typeof revokeSourceDefinitionFromWorkspace>>
 >;
 export type GetSourceDefinitionSpecificationResult = NonNullable<
-  AsyncReturnType<typeof getSourceDefinitionSpecification>
+  Awaited<ReturnType<typeof getSourceDefinitionSpecification>>
 >;
-export type CreateSourceResult = NonNullable<AsyncReturnType<typeof createSource>>;
-export type UpdateSourceResult = NonNullable<AsyncReturnType<typeof updateSource>>;
-export type ListSourcesForWorkspaceResult = NonNullable<AsyncReturnType<typeof listSourcesForWorkspace>>;
-export type GetSourceResult = NonNullable<AsyncReturnType<typeof getSource>>;
-export type SearchSourcesResult = NonNullable<AsyncReturnType<typeof searchSources>>;
-export type CloneSourceResult = NonNullable<AsyncReturnType<typeof cloneSource>>;
-export type DeleteSourceResult = NonNullable<AsyncReturnType<typeof deleteSource>>;
-export type CheckConnectionToSourceResult = NonNullable<AsyncReturnType<typeof checkConnectionToSource>>;
+export type CreateSourceResult = NonNullable<Awaited<ReturnType<typeof createSource>>>;
+export type UpdateSourceResult = NonNullable<Awaited<ReturnType<typeof updateSource>>>;
+export type ListSourcesForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof listSourcesForWorkspace>>>;
+export type GetSourceResult = NonNullable<Awaited<ReturnType<typeof getSource>>>;
+export type SearchSourcesResult = NonNullable<Awaited<ReturnType<typeof searchSources>>>;
+export type CloneSourceResult = NonNullable<Awaited<ReturnType<typeof cloneSource>>>;
+export type DeleteSourceResult = NonNullable<Awaited<ReturnType<typeof deleteSource>>>;
+export type CheckConnectionToSourceResult = NonNullable<Awaited<ReturnType<typeof checkConnectionToSource>>>;
 export type CheckConnectionToSourceForUpdateResult = NonNullable<
-  AsyncReturnType<typeof checkConnectionToSourceForUpdate>
+  Awaited<ReturnType<typeof checkConnectionToSourceForUpdate>>
 >;
-export type DiscoverSchemaForSourceResult = NonNullable<AsyncReturnType<typeof discoverSchemaForSource>>;
-export type CreateDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof createDestinationDefinition>>;
-export type UpdateDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof updateDestinationDefinition>>;
-export type ListDestinationDefinitionsResult = NonNullable<AsyncReturnType<typeof listDestinationDefinitions>>;
+export type DiscoverSchemaForSourceResult = NonNullable<Awaited<ReturnType<typeof discoverSchemaForSource>>>;
+export type CreateDestinationDefinitionResult = NonNullable<Awaited<ReturnType<typeof createDestinationDefinition>>>;
+export type UpdateDestinationDefinitionResult = NonNullable<Awaited<ReturnType<typeof updateDestinationDefinition>>>;
+export type ListDestinationDefinitionsResult = NonNullable<Awaited<ReturnType<typeof listDestinationDefinitions>>>;
 export type ListLatestDestinationDefinitionsResult = NonNullable<
-  AsyncReturnType<typeof listLatestDestinationDefinitions>
+  Awaited<ReturnType<typeof listLatestDestinationDefinitions>>
 >;
-export type GetDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof getDestinationDefinition>>;
-export type DeleteDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof deleteDestinationDefinition>>;
+export type GetDestinationDefinitionResult = NonNullable<Awaited<ReturnType<typeof getDestinationDefinition>>>;
+export type DeleteDestinationDefinitionResult = NonNullable<Awaited<ReturnType<typeof deleteDestinationDefinition>>>;
 export type ListPrivateDestinationDefinitionsResult = NonNullable<
-  AsyncReturnType<typeof listPrivateDestinationDefinitions>
+  Awaited<ReturnType<typeof listPrivateDestinationDefinitions>>
 >;
 export type ListDestinationDefinitionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof listDestinationDefinitionsForWorkspace>
+  Awaited<ReturnType<typeof listDestinationDefinitionsForWorkspace>>
 >;
 export type CreateCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof createCustomDestinationDefinition>
+  Awaited<ReturnType<typeof createCustomDestinationDefinition>>
 >;
 export type GetDestinationDefinitionForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof getDestinationDefinitionForWorkspace>
+  Awaited<ReturnType<typeof getDestinationDefinitionForWorkspace>>
 >;
 export type UpdateCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof updateCustomDestinationDefinition>
+  Awaited<ReturnType<typeof updateCustomDestinationDefinition>>
 >;
 export type DeleteCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof deleteCustomDestinationDefinition>
+  Awaited<ReturnType<typeof deleteCustomDestinationDefinition>>
 >;
 export type GrantDestinationDefinitionToWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof grantDestinationDefinitionToWorkspace>
+  Awaited<ReturnType<typeof grantDestinationDefinitionToWorkspace>>
 >;
 export type RevokeDestinationDefinitionFromWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof revokeDestinationDefinitionFromWorkspace>
+  Awaited<ReturnType<typeof revokeDestinationDefinitionFromWorkspace>>
 >;
 export type GetDestinationDefinitionSpecificationResult = NonNullable<
-  AsyncReturnType<typeof getDestinationDefinitionSpecification>
+  Awaited<ReturnType<typeof getDestinationDefinitionSpecification>>
 >;
-export type CreateDestinationResult = NonNullable<AsyncReturnType<typeof createDestination>>;
-export type UpdateDestinationResult = NonNullable<AsyncReturnType<typeof updateDestination>>;
-export type ListDestinationsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listDestinationsForWorkspace>>;
-export type GetDestinationResult = NonNullable<AsyncReturnType<typeof getDestination>>;
-export type SearchDestinationsResult = NonNullable<AsyncReturnType<typeof searchDestinations>>;
-export type CheckConnectionToDestinationResult = NonNullable<AsyncReturnType<typeof checkConnectionToDestination>>;
+export type CreateDestinationResult = NonNullable<Awaited<ReturnType<typeof createDestination>>>;
+export type UpdateDestinationResult = NonNullable<Awaited<ReturnType<typeof updateDestination>>>;
+export type ListDestinationsForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof listDestinationsForWorkspace>>>;
+export type GetDestinationResult = NonNullable<Awaited<ReturnType<typeof getDestination>>>;
+export type SearchDestinationsResult = NonNullable<Awaited<ReturnType<typeof searchDestinations>>>;
+export type CheckConnectionToDestinationResult = NonNullable<Awaited<ReturnType<typeof checkConnectionToDestination>>>;
 export type CheckConnectionToDestinationForUpdateResult = NonNullable<
-  AsyncReturnType<typeof checkConnectionToDestinationForUpdate>
+  Awaited<ReturnType<typeof checkConnectionToDestinationForUpdate>>
 >;
-export type DeleteDestinationResult = NonNullable<AsyncReturnType<typeof deleteDestination>>;
-export type CloneDestinationResult = NonNullable<AsyncReturnType<typeof cloneDestination>>;
-export type CreateConnectionResult = NonNullable<AsyncReturnType<typeof createConnection>>;
-export type UpdateConnectionResult = NonNullable<AsyncReturnType<typeof updateConnection>>;
-export type ListConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listConnectionsForWorkspace>>;
-export type ListAllConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listAllConnectionsForWorkspace>>;
-export type GetConnectionResult = NonNullable<AsyncReturnType<typeof getConnection>>;
-export type GetStateResult = NonNullable<AsyncReturnType<typeof getState>>;
-export type SearchConnectionsResult = NonNullable<AsyncReturnType<typeof searchConnections>>;
-export type DeleteConnectionResult = NonNullable<AsyncReturnType<typeof deleteConnection>>;
-export type SyncConnectionResult = NonNullable<AsyncReturnType<typeof syncConnection>>;
-export type ResetConnectionResult = NonNullable<AsyncReturnType<typeof resetConnection>>;
-export type CheckOperationResult = NonNullable<AsyncReturnType<typeof checkOperation>>;
-export type CreateOperationResult = NonNullable<AsyncReturnType<typeof createOperation>>;
-export type UpdateOperationResult = NonNullable<AsyncReturnType<typeof updateOperation>>;
-export type ListOperationsForConnectionResult = NonNullable<AsyncReturnType<typeof listOperationsForConnection>>;
-export type GetOperationResult = NonNullable<AsyncReturnType<typeof getOperation>>;
-export type DeleteOperationResult = NonNullable<AsyncReturnType<typeof deleteOperation>>;
-export type ExecuteSourceCheckConnectionResult = NonNullable<AsyncReturnType<typeof executeSourceCheckConnection>>;
-export type ExecuteSourceDiscoverSchemaResult = NonNullable<AsyncReturnType<typeof executeSourceDiscoverSchema>>;
+export type DeleteDestinationResult = NonNullable<Awaited<ReturnType<typeof deleteDestination>>>;
+export type CloneDestinationResult = NonNullable<Awaited<ReturnType<typeof cloneDestination>>>;
+export type CreateConnectionResult = NonNullable<Awaited<ReturnType<typeof createConnection>>>;
+export type UpdateConnectionResult = NonNullable<Awaited<ReturnType<typeof updateConnection>>>;
+export type ListConnectionsForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof listConnectionsForWorkspace>>>;
+export type ListAllConnectionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof listAllConnectionsForWorkspace>>
+>;
+export type GetConnectionResult = NonNullable<Awaited<ReturnType<typeof getConnection>>>;
+export type GetStateResult = NonNullable<Awaited<ReturnType<typeof getState>>>;
+export type SearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof searchConnections>>>;
+export type DeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>;
+export type SyncConnectionResult = NonNullable<Awaited<ReturnType<typeof syncConnection>>>;
+export type ResetConnectionResult = NonNullable<Awaited<ReturnType<typeof resetConnection>>>;
+export type CheckOperationResult = NonNullable<Awaited<ReturnType<typeof checkOperation>>>;
+export type CreateOperationResult = NonNullable<Awaited<ReturnType<typeof createOperation>>>;
+export type UpdateOperationResult = NonNullable<Awaited<ReturnType<typeof updateOperation>>>;
+export type ListOperationsForConnectionResult = NonNullable<Awaited<ReturnType<typeof listOperationsForConnection>>>;
+export type GetOperationResult = NonNullable<Awaited<ReturnType<typeof getOperation>>>;
+export type DeleteOperationResult = NonNullable<Awaited<ReturnType<typeof deleteOperation>>>;
+export type ExecuteSourceCheckConnectionResult = NonNullable<Awaited<ReturnType<typeof executeSourceCheckConnection>>>;
+export type ExecuteSourceDiscoverSchemaResult = NonNullable<Awaited<ReturnType<typeof executeSourceDiscoverSchema>>>;
 export type ExecuteDestinationCheckConnectionResult = NonNullable<
-  AsyncReturnType<typeof executeDestinationCheckConnection>
+  Awaited<ReturnType<typeof executeDestinationCheckConnection>>
 >;
-export type ListMigrationsResult = NonNullable<AsyncReturnType<typeof listMigrations>>;
-export type ExecuteMigrationsResult = NonNullable<AsyncReturnType<typeof executeMigrations>>;
+export type ListMigrationsResult = NonNullable<Awaited<ReturnType<typeof listMigrations>>>;
+export type ExecuteMigrationsResult = NonNullable<Awaited<ReturnType<typeof executeMigrations>>>;
 export type SetInstancewideSourceOauthParamsResult = NonNullable<
-  AsyncReturnType<typeof setInstancewideSourceOauthParams>
+  Awaited<ReturnType<typeof setInstancewideSourceOauthParams>>
 >;
-export type GetSourceOAuthConsentResult = NonNullable<AsyncReturnType<typeof getSourceOAuthConsent>>;
-export type CompleteSourceOAuthResult = NonNullable<AsyncReturnType<typeof completeSourceOAuth>>;
-export type GetDestinationOAuthConsentResult = NonNullable<AsyncReturnType<typeof getDestinationOAuthConsent>>;
-export type CompleteDestinationOAuthResult = NonNullable<AsyncReturnType<typeof completeDestinationOAuth>>;
+export type GetSourceOAuthConsentResult = NonNullable<Awaited<ReturnType<typeof getSourceOAuthConsent>>>;
+export type CompleteSourceOAuthResult = NonNullable<Awaited<ReturnType<typeof completeSourceOAuth>>>;
+export type GetDestinationOAuthConsentResult = NonNullable<Awaited<ReturnType<typeof getDestinationOAuthConsent>>>;
+export type CompleteDestinationOAuthResult = NonNullable<Awaited<ReturnType<typeof completeDestinationOAuth>>>;
 export type SetInstancewideDestinationOauthParamsResult = NonNullable<
-  AsyncReturnType<typeof setInstancewideDestinationOauthParams>
+  Awaited<ReturnType<typeof setInstancewideDestinationOauthParams>>
 >;
 export type WebBackendListConnectionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof webBackendListConnectionsForWorkspace>
+  Awaited<ReturnType<typeof webBackendListConnectionsForWorkspace>>
 >;
 export type WebBackendListAllConnectionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof webBackendListAllConnectionsForWorkspace>
+  Awaited<ReturnType<typeof webBackendListAllConnectionsForWorkspace>>
 >;
-export type WebBackendGetConnectionResult = NonNullable<AsyncReturnType<typeof webBackendGetConnection>>;
-export type WebBackendCreateConnectionResult = NonNullable<AsyncReturnType<typeof webBackendCreateConnection>>;
-export type WebBackendUpdateConnectionResult = NonNullable<AsyncReturnType<typeof webBackendUpdateConnection>>;
-export type WebBackendSearchConnectionsResult = NonNullable<AsyncReturnType<typeof webBackendSearchConnections>>;
-export type WebBackendGetWorkspaceStateResult = NonNullable<AsyncReturnType<typeof webBackendGetWorkspaceState>>;
-export type ListJobsForResult = NonNullable<AsyncReturnType<typeof listJobsFor>>;
-export type GetJobInfoResult = NonNullable<AsyncReturnType<typeof getJobInfo>>;
-export type CancelJobResult = NonNullable<AsyncReturnType<typeof cancelJob>>;
-export type GetJobDebugInfoResult = NonNullable<AsyncReturnType<typeof getJobDebugInfo>>;
-export type GetHealthCheckResult = NonNullable<AsyncReturnType<typeof getHealthCheck>>;
-export type GetLogsResult = NonNullable<AsyncReturnType<typeof getLogs>>;
-export type GetOpenApiSpecResult = NonNullable<AsyncReturnType<typeof getOpenApiSpec>>;
-export type ExportArchiveResult = NonNullable<AsyncReturnType<typeof exportArchive>>;
-export type ImportArchiveResult = NonNullable<AsyncReturnType<typeof importArchive>>;
-export type ExportWorkspaceResult = NonNullable<AsyncReturnType<typeof exportWorkspace>>;
-export type UploadArchiveResourceResult = NonNullable<AsyncReturnType<typeof uploadArchiveResource>>;
-export type ImportIntoWorkspaceResult = NonNullable<AsyncReturnType<typeof importIntoWorkspace>>;
+export type WebBackendGetConnectionResult = NonNullable<Awaited<ReturnType<typeof webBackendGetConnection>>>;
+export type WebBackendCreateConnectionResult = NonNullable<Awaited<ReturnType<typeof webBackendCreateConnection>>>;
+export type WebBackendUpdateConnectionResult = NonNullable<Awaited<ReturnType<typeof webBackendUpdateConnection>>>;
+export type WebBackendSearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof webBackendSearchConnections>>>;
+export type WebBackendGetWorkspaceStateResult = NonNullable<Awaited<ReturnType<typeof webBackendGetWorkspaceState>>>;
+export type ListJobsForResult = NonNullable<Awaited<ReturnType<typeof listJobsFor>>>;
+export type GetJobInfoResult = NonNullable<Awaited<ReturnType<typeof getJobInfo>>>;
+export type CancelJobResult = NonNullable<Awaited<ReturnType<typeof cancelJob>>>;
+export type GetJobDebugInfoResult = NonNullable<Awaited<ReturnType<typeof getJobDebugInfo>>>;
+export type GetHealthCheckResult = NonNullable<Awaited<ReturnType<typeof getHealthCheck>>>;
+export type GetLogsResult = NonNullable<Awaited<ReturnType<typeof getLogs>>>;
+export type GetOpenApiSpecResult = NonNullable<Awaited<ReturnType<typeof getOpenApiSpec>>>;
+export type ExportArchiveResult = NonNullable<Awaited<ReturnType<typeof exportArchive>>>;
+export type ImportArchiveResult = NonNullable<Awaited<ReturnType<typeof importArchive>>>;
+export type ExportWorkspaceResult = NonNullable<Awaited<ReturnType<typeof exportWorkspace>>>;
+export type UploadArchiveResourceResult = NonNullable<Awaited<ReturnType<typeof uploadArchiveResource>>>;
+export type ImportIntoWorkspaceResult = NonNullable<Awaited<ReturnType<typeof importIntoWorkspace>>>;

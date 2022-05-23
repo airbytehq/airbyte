@@ -112,9 +112,11 @@ const MainInfo: React.FC<MainInfoProps> = ({
     return cancelJob(Number(getJobId(job)));
   };
 
-  const isNotCompleted = [JobStatus.pending, JobStatus.running, JobStatus.incomplete].includes(getJobStatus(job));
+  const jobStatus = getJobStatus(job);
+  const isNotCompleted =
+    jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
 
-  const jobStatus = isPartialSuccess ? (
+  const jobStatusLabel = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />
   ) : (
     <FormattedMessage id={`sources.${getJobStatus(job)}`} />
@@ -134,7 +136,7 @@ const MainInfo: React.FC<MainInfoProps> = ({
       <InfoCell>
         <Title isFailed={isFailed}>
           {getIcon()}
-          {jobStatus}
+          {jobStatusLabel}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
             <div>
