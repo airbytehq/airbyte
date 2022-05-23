@@ -212,7 +212,8 @@ public class StagingConsumerFactory {
           }
           queryList.add(stagingOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
         }
-        stagingOperations.onDestinationCloseOperations(database, writeConfigs.stream().map(WriteConfig::getOutputSchemaName).collect(Collectors.toSet()));
+        stagingOperations.onDestinationCloseOperations(database,
+            writeConfigs.stream().map(WriteConfig::getOutputSchemaName).collect(Collectors.toSet()));
         LOGGER.info("Executing finalization of tables.");
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");

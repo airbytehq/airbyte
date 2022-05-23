@@ -74,7 +74,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
       });
     } finally {
-       DataSourceFactory.close(dataSource);
+      DataSourceFactory.close(dataSource);
     }
   }
 

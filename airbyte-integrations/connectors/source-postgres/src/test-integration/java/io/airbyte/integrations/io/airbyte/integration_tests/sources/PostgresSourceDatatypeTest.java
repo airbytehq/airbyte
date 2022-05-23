@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
@@ -52,7 +51,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> {

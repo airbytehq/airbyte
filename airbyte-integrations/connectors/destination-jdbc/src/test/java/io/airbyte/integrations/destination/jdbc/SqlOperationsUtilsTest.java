@@ -53,9 +53,7 @@ class SqlOperationsUtilsTest {
             config.get("username").asText(),
             config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            config.get("jdbc_url").asText()
-        )
-    );
+            config.get("jdbc_url").asText()));
 
     uuidSupplier = mock(Supplier.class);
   }

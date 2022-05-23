@@ -137,9 +137,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         config.get("username").asText(),
         config.has("password") ? config.get("password").asText() : null,
         ClickhouseDestination.DRIVER_CLASS,
-        jdbcStr
-      )
-    );
+        jdbcStr));
   }
 
   @Override

@@ -42,7 +42,8 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL)) {
+            String.join("&", SSL_PARAMETERS)),
+        SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
       database.query(ctx -> {

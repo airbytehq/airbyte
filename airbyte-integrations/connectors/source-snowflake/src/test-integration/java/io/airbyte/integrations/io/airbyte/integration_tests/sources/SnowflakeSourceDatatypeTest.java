@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
 
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 

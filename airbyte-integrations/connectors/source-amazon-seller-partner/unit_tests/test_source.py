@@ -1,9 +1,13 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+from unittest.mock import MagicMock
+
 import pytest
-from source_amazon_seller_partner import SourceAmazonSellerPartner
-from source_amazon_seller_partner import ConnectorConfig
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.streams import Stream
-from unittest.mock import MagicMock
+from source_amazon_seller_partner import ConnectorConfig, SourceAmazonSellerPartner
 from source_amazon_seller_partner.source import boto3
 
 
@@ -23,7 +27,7 @@ def connector_config():
         aws_secret_key="aws_secret_key",
         role_arn="arn:aws:iam::123456789098:role/some-role",
         aws_environment="SANDBOX",
-        region="US"
+        region="US",
     )
 
 
@@ -56,10 +60,7 @@ def test_streams(connector_source, connector_config, mock_boto_client):
         assert isinstance(stream, Stream)
 
 
-@pytest.mark.parametrize(
-    "arn",
-    ("arn:aws:iam::123456789098:user/some-user", "arn:aws:iam::123456789098:role/some-role")
-)
+@pytest.mark.parametrize("arn", ("arn:aws:iam::123456789098:user/some-user", "arn:aws:iam::123456789098:role/some-role"))
 def test_stream_with_good_iam_arn_value(mock_boto_client, connector_source, connector_config, arn):
     connector_config.role_arn = arn
     result = connector_source.get_sts_credentials(connector_config)
