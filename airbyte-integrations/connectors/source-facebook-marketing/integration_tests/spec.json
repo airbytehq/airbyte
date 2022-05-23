@@ -295,7 +295,8 @@
               "description": "The attribution window",
               "default": 28,
               "maximum": 28,
-              "minimum": 1,
+              "mininum": 1,
+              "exclusiveMinimum": 0,
               "type": "integer"
             }
           },
@@ -316,7 +317,8 @@
         "default": 28,
         "order": 8,
         "maximum": 28,
-        "minimum": 1,
+        "mininum": 1,
+        "exclusiveMinimum": 0,
         "type": "integer"
       }
     },
