@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ContentCard } from "components";
-import JobItem from "components/JobItem";
+import { JobItem } from "components/JobItem/JobItem";
 
-import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
-import { JobInfo } from "core/domain/job/Job";
-import { LogsRequestError } from "core/request/LogsRequestError";
+import { Connector, ConnectorT } from "core/domain/connector";
+import { CheckConnectionRead } from "core/request/AirbyteClient";
+import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
@@ -17,14 +17,14 @@ export type ConnectorCardProvidedProps = {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
+  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
 };
 
-const ConnectorCard: React.FC<
+export const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
-    jobInfo?: JobInfo | null;
+    jobInfo?: SynchronousJobReadWithStatus | null;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -85,7 +85,7 @@ const ConnectorCard: React.FC<
     }
   };
 
-  const jobInfoMapped = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
+  const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
     <ContentCard title={title} full={full}>
@@ -100,9 +100,7 @@ const ConnectorCard: React.FC<
           props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
-      {jobInfoMapped && <JobItem jobInfo={jobInfoMapped} />}
+      {job && <JobItem job={job} />}
     </ContentCard>
   );
 };
-
-export { ConnectorCard };

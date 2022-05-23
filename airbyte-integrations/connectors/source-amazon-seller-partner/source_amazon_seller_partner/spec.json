@@ -64,8 +64,9 @@
       "period_in_days": {
         "title": "Period In Days",
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "default": 30,
         "examples": ["30", "365"],
-        "type": "integer",
+        "type": "integer"
         "order": 8,
         "default": 30
       },
@@ -89,7 +90,7 @@
       },
       "role_arn": {
         "title": "Role ARN",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         "airbyte_secret": true,
         "order": 11,
         "type": "string"

@@ -25,7 +25,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.18
   sourceType: api
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -240,7 +240,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.47
+  dockerImageTag: 0.2.48
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -676,7 +676,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
@@ -699,7 +699,7 @@
 - name: PokeAPI
   sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
   dockerRepository: airbyte/source-pokeapi
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
   icon: pokeapi.svg
   sourceType: api
@@ -731,7 +731,7 @@
 - name: Qualaroo
   sourceDefinitionId: b08e4776-d1de-4e80-ab5c-1e51dad934a2
   dockerRepository: airbyte/source-qualaroo
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/qualaroo
   icon: qualaroo.svg
   sourceType: api
@@ -779,7 +779,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -938,7 +938,7 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
@@ -986,7 +986,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api

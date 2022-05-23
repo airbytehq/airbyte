@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityExecutionContext;

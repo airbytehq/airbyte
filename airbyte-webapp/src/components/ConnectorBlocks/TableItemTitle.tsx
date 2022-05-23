@@ -6,10 +6,10 @@ import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
-import { ReleaseStage } from "core/domain/connector";
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-type IProps = {
+type TableItemTitleProps = {
   type: "source" | "destination";
   dropDownData: DropDownRow.IDataItem[];
   onSelect: (item: DropDownRow.IDataItem) => void;
@@ -46,7 +46,7 @@ const EntityIcon = styled.div`
   width: 40px;
 `;
 
-const TableItemTitle: React.FC<IProps> = ({
+const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
   dropDownData,
   onSelect,

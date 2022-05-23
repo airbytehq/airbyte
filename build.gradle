@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -16,7 +17,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.5'
+    id 'com.github.spotbugs' version '5.0.6'
     id 'version-catalog'
     id 'maven-publish'
 }
@@ -102,6 +103,7 @@ def createSpotlessTarget = { pattern ->
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
         'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+        'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -257,6 +259,15 @@ subprojects {
         cloudStorageTestTagName = 'cloud-storage'
     }
 
+    spotbugs {
+        ignoreFailures = false
+        effort = 'max'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
+    }
+
     test {
         jacoco {
             enabled = true
@@ -303,12 +314,7 @@ subprojects {
         }
         finalizedBy jacocoTestReport
     }
-
-    spotbugs {
-        reportLevel = 'high'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
-    }
-
+    
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -367,6 +373,14 @@ subprojects {
 
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/spotbugs/
+        reports {
+            xml.required = false
+            html.required = true
+        }
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')

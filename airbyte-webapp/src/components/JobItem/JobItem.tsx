@@ -4,13 +4,13 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { JobInfo, JobListItem, Logs, Attempt } from "core/domain/job/Job";
-import Status from "core/statuses";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
+import { AttemptRead, JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import JobLogs from "./components/JobLogs";
-import { LogsDetails } from "./components/LogsDetails";
 import MainInfo from "./components/MainInfo";
 
 const Item = styled.div<{ isFailed: boolean }>`
@@ -30,41 +30,33 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const isJobEntity = (props: { job: JobListItem } | { jobInfo: JobInfo }): props is { job: JobListItem } => {
-  return props.hasOwnProperty("job");
-};
-
-const JobCurrentLogs: React.FC<{
-  id: number | string;
-  jobIsFailed?: boolean;
-  logs?: Logs;
-}> = (props) => {
-  const path = ["/tmp/workspace", props.id, "logs.log"].join("/");
-
-  return <LogsDetails {...props} path={path} />;
-};
-
-const isPartialSuccessCheck = (attempts: Attempt[]) => {
-  if (attempts.length > 0 && attempts[attempts.length - 1].status === Status.FAILED) {
-    return attempts.some((attempt) => attempt.failureSummary && attempt.failureSummary.partialSuccess);
-  } else {
-    return false;
-  }
-};
-
-type IProps = {
+type JobItemProps = {
   shortInfo?: boolean;
-} & ({ job: JobListItem } | { jobInfo: JobInfo });
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
+};
 
-const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
-  const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
+const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
+  return getJobStatus(job) !== "failed";
+};
+
+export const getJobStatus: (job: SynchronousJobReadWithStatus | JobsWithJobs) => JobStatus = (job) => {
+  return (job as JobsWithJobs).job?.status ?? (job as SynchronousJobReadWithStatus).status;
+};
+
+export const getJobAttemps: (job: SynchronousJobReadWithStatus | JobsWithJobs) => AttemptRead[] | undefined = (job) => {
+  return "attempts" in job ? job.attempts : undefined;
+};
+
+export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).id ?? (job as JobsWithJobs).job.id;
+
+export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
-  const [isOpen, setIsOpen] = useState(linkedJobId === String(jobMeta.id));
+  const [isOpen, setIsOpen] = useState(linkedJobId === getJobId(job));
   const onExpand = () => setIsOpen(!isOpen);
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
-  const isFailed = jobMeta.status === Status.FAILED;
-  const isPartialSuccess = isJobEntity(props) ? isPartialSuccessCheck(props.job.attempts) : undefined;
+  const didSucceed = didJobSucceed(job);
 
   useEffectOnce(() => {
     if (linkedJobId) {
@@ -76,15 +68,14 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
   });
 
   return (
-    <Item isFailed={isFailed} ref={scrollAnchor}>
+    <Item isFailed={!didSucceed} ref={scrollAnchor}>
       <MainInfo
         shortInfo={shortInfo}
         isOpen={isOpen}
-        isFailed={isFailed}
-        isPartialSuccess={isPartialSuccess}
+        isFailed={!didSucceed}
         onExpand={onExpand}
-        job={jobMeta}
-        attempts={isJobEntity(props) ? props.job.attempts : undefined}
+        job={job}
+        attempts={getJobAttemps(job)}
       />
       <ContentWrapper isOpen={isOpen}>
         <div>
@@ -95,18 +86,10 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
               </LoadLogs>
             }
           >
-            {isOpen ? (
-              isJobEntity(props) ? (
-                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
-              ) : (
-                <JobCurrentLogs id={jobMeta.id} jobIsFailed={isFailed} logs={props.jobInfo.logs} />
-              )
-            ) : null}
+            {isOpen && <JobLogs job={job} jobIsFailed={!didSucceed} />}
           </Suspense>
         </div>
       </ContentWrapper>
     </Item>
   );
 };
-
-export default JobItem;
