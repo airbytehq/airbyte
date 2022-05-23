@@ -5,11 +5,11 @@ import styled from "styled-components";
 
 import { Input } from "components";
 
-import { Connection } from "core/domain/connection";
+import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
 type Props = {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
 };
 
 const MainContainer = styled.div`
@@ -60,8 +60,10 @@ const EditingContainer = styled.div`
 
 const InputContainer = styled.div`
   height: 50px;
+  width: 100%;
 
   div {
+    border-radius: 8px;
     border: none;
     box-shadow: none;
     background-color: white !important;

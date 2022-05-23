@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
-import { ReleaseStage } from "core/domain/connector";
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
 type Props = {
@@ -33,6 +33,7 @@ const ConnectionName = styled.div`
   font-size: 14px;
   color: #1a194d;
   text-align: left;
+  margin-right: 10px;
 `;
 
 const ConnectorDetails = styled.div`
@@ -44,7 +45,7 @@ const ConnectorDetails = styled.div`
 const ConnectorName = styled.div`
   font-size: 11px;
   color: #afafc1;
-  margin-right: 10px;
+  text-align: left;
 `;
 
 function ConnectorCard(props: Props) {
@@ -54,11 +55,11 @@ function ConnectorCard(props: Props) {
     <MainComponent>
       {icon && <EntityIcon>{getIcon(icon)}</EntityIcon>}
       <Details>
-        <ConnectionName>{connectionName}</ConnectionName>
         <ConnectorDetails>
-          <ConnectorName>{connectorName} </ConnectorName>
+          <ConnectionName>{connectionName}</ConnectionName>
           {releaseStage && <ReleaseStageBadge stage={releaseStage} />}
         </ConnectorDetails>
+        <ConnectorName>{connectorName} </ConnectorName>
       </Details>
     </MainComponent>
   );

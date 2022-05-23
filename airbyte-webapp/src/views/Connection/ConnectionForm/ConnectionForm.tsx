@@ -215,6 +215,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         {...field}
                         disabled={mode === "readonly"}
                         error={!!meta.error}
+                        data-testid="connectionName"
                         placeholder={formatMessage({
                           id: "form.connectionName.placeholder",
                         })}
