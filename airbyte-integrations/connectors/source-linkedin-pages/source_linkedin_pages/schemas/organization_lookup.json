@@ -1,494 +1,202 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": "object",
   "properties": {
     "vanityName": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "localizedName": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "website": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "localized": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "en_US": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         },
         "preferredLocale": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             },
             "language": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         }
       }
     },
     "foundedOn": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "year": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": "integer"
         }
       }
     },
     "groups": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "items": {}
-      }
+      "type": "array",
+      "items": {}
     },
     "description": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "localized": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "en_US": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         },
         "preferredLocale": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             },
             "language": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         }
       }
     },
     "versionTag": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "coverPhotoV2": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "cropped": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "original": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "cropInfo": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "x": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "width": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "y": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "height": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             }
           }
         }
       }
     },
     "defaultLocale": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "country": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "language": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         }
       }
     },
     "organizationType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "alternativeNames": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "items": {}
-      }
+      "type": "array",
+      "items": {}
     },
     "specialties": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "items": {}
-      }
+      "type": "array",
+      "items": {}
     },
     "staffCountRange": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "localizedSpecialties": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "items": {}
-      }
+      "type": "array",
+      "items": {}
     },
     "industries": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "string"
-        ]
-      }
+      "type": "array",
+      "items": {}
     },
     "name": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "localized": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "en_US": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         },
         "preferredLocale": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             },
             "language": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         }
       }
     },
     "primaryOrganizationType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "locations": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "properties": {
-          "locationType": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "description": {
-            "type": [
-              "null",
-              "object"
-            ],
-            "properties": {
-              "localized": {
-                "type": [
-                  "null",
-                  "object"
-                ],
-                "properties": {
-                  "en_US": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  }
-                }
-              },
-              "preferredLocale": {
-                "type": [
-                  "null",
-                  "object"
-                ],
-                "properties": {
-                  "country": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  },
-                  "language": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "address": {
-            "type": [
-              "null",
-              "object"
-            ],
-            "properties": {
-              "geographicArea": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "country": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "city": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "line1": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              },
-              "postalCode": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
-            }
-          },
-          "localizedDescription": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "geoLocation": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "streetAddressFieldState": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      }
+      "type": "array",
+      "items": {}
     },
     "id": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": "integer"
     },
     "localizedDescription": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "$URN": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "localizedWebsite": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": "string"
     },
     "logoV2": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": "object",
       "properties": {
         "cropped": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "original": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "cropInfo": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": "object",
           "properties": {
             "x": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "width": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "y": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             },
             "height": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "integer"
             }
           }
         }
