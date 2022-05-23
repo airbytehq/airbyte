@@ -113,7 +113,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 class Events(IncrementalAmplitudeStream):
     cursor_field = "event_time"
     date_template = "%Y%m%dT%H"
-    compare_date_template = '%Y-%m-%d %H:%M:%S'
+    compare_date_template = "%Y-%m-%d %H:%M:%S"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
     time_interval = {"days": 3}
