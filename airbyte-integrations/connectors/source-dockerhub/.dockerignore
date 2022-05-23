@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_python_http_example
+!source_dockerhub
 !setup.py
 !secrets
