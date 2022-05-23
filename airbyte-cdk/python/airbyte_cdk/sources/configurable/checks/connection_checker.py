@@ -6,6 +6,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Tuple
 
+from airbyte_cdk.sources.source import Source
+
 
 class ConnectionChecker(ABC):
     """
@@ -13,8 +15,9 @@ class ConnectionChecker(ABC):
     """
 
     @abstractmethod
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
+        :param source: source
         :param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
