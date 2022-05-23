@@ -104,11 +104,11 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Braintree
   sourceDefinitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
   dockerRepository: airbyte/source-braintree
