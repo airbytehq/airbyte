@@ -8,8 +8,6 @@ import CreateConnectionContent from "components/CreateConnectionContent";
 import HeadTitle from "components/HeadTitle";
 import StepsMenu from "components/StepsMenu";
 
-import { Connection } from "core/domain/connection";
-import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -17,6 +15,13 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
+import {
+  DestinationDefinitionRead,
+  DestinationRead,
+  SourceDefinitionRead,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "../../../../core/request/AirbyteClient";
 import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import { ConnectionCreateSourceForm } from "./components/SourceForm";
@@ -46,10 +51,10 @@ const hasDestinationId = (state: unknown): state is { destinationId: string } =>
 };
 
 function usePreloadData(): {
-  sourceDefinition?: SourceDefinition;
-  destination?: Destination;
-  source?: Source;
-  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinitionRead;
+  destination?: DestinationRead;
+  source?: SourceRead;
+  destinationDefinition?: DestinationDefinitionRead;
 } {
   const { location } = useRouter();
 
@@ -148,7 +153,7 @@ export const CreationFormPage: React.FC = () => {
       }
     }
 
-    const afterSubmitConnection = (connection: Connection) => {
+    const afterSubmitConnection = (connection: WebBackendConnectionRead) => {
       switch (type) {
         case EntityStepsTypes.DESTINATION:
           push(`../${source?.sourceId}`);
