@@ -1,1 +1,3 @@
-{"pokemon_name": "chikapu"}
+{
+  "invalid_username": "this should error because wrong name of field supplied"
+}
