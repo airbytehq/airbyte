@@ -17,6 +17,7 @@ config = {
     "token_id": "token_id",
     "token_secret": "token_secret",
     "realm": "12345",
+    "start_datetime": "2022-01-01T00:00:00Z",
 }
 
 
@@ -24,7 +25,7 @@ def make_stream():
     src = SourceNetsuite()
     auth = src.auth(config)
     url = src.record_url(config)
-    return NetsuiteStream(auth, "invoice", url)
+    return NetsuiteStream(auth, "invoice", url, config["start_datetime"])
 
 
 @pytest.fixture
