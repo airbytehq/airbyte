@@ -52,3 +52,5 @@ task logClientsIntegrationTest(type: Test) {
         events "passed", "skipped", "failed"
     }
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("airbyte-config-models", "$rootProject.ext.version")

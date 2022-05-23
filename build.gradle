@@ -5,6 +5,14 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        maven {
+          name = 'cloudrepo1'
+          url = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+          credentials {
+            username System.getenv('CLOUDREPO_USER')
+            password System.getenv('CLOUDREPO_PASSWORD')
+          }
+        }
     }
     dependencies {
         classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
@@ -18,6 +26,7 @@ plugins {
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.5'
     id 'version-catalog'
+    id 'java-library'
     id 'maven-publish'
 }
 
@@ -159,6 +168,56 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('ALPINE_IMAGE', alpineImage)
         buildArgs.put('VERSION', buildVersion)
     })
+}
+
+def Task getPublishArtifactsTask(String artifactName, String buildVersion) {
+      return task ("publishArtifact-$artifactName" {
+        apply plugin: 'maven-publish'
+        publishing { 
+          repositories {
+            publications {
+              //apply plugin: 'maven-publish'
+              "$artifactName"(MavenPublication) {
+                from components.java
+                artifactId = "$artifactName"
+                version = "$buildVersion"
+              }
+            }
+            maven {
+              name = 'cloudrepo1'
+              url = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+              credentials {
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+              }
+            }
+          }
+        }
+      })
+}
+
+def publishArtifact(def artifactName, def buildVersion) {
+  apply plugin: 'maven-publish'
+  publishing {
+    repositories {
+      publications {
+      //apply plugin: 'maven-publish'
+        "${artifactName}"(MavenPublication) {
+          from components.java
+          artifactId = "${artifactName}"
+          version = "${buildVersion}"
+        }
+      }
+      maven {
+        name = 'cloudrepo1'
+        url = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+        credentials {
+          username System.getenv('CLOUDREPO_USER')
+          password System.getenv('CLOUDREPO_PASSWORD')
+        }
+      }
+    }
+  }
 }
 
 allprojects {
@@ -401,7 +460,7 @@ catalog {
 
 //// TODO: Davin will turn this back on.
 //// Configure what subprojects to publish.
-//String[] toPublish = [
+String[] toPublish = [
 //        ':airbyte-analytics',
 //        ':airbyte-api',
 //        ':airbyte-commons',
@@ -417,34 +476,44 @@ catalog {
 //        ':airbyte-scheduler:models',
 //        ':airbyte-scheduler:persistence',
 //        ':airbyte-server',
-//        ':airbyte-workers'
-//]
-//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-//    apply plugin: 'maven-publish'
+        ':airbyte-workers'
+]
+//configure(subprojects.findAll {it.name == 'airbyte-workers'}) {
+//    //apply plugin: 'maven-publish'
+//    publishing {
+//      publications {
+//        maven(MavenPublication) {
+//          from components.java
+//          groupId    = 'io.airbyte'
+//          artifactId = "airbyte-workers"
+//          version = "test-dev1"
+//        }
+//      }
+//    }
+//}
+//publishing {
+//    publications {
+//        // This block is present so Gradle knows to publish a Maven jar.
+//        maven(MavenPublication) {
+//            groupId = 'io.airbyte'
+//            artifactId = 'oss-catalog'
 //
-publishing {
-    publications {
-        // This block is present so Gradle knows to publish a Maven jar.
-        maven(MavenPublication) {
-            groupId = 'io.airbyte'
-            artifactId = 'oss-catalog'
+//            from components.versionCatalog
+//            // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+//            // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+//        }
+//    }
+//
+//    repositories {
+//        maven {
+//            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+//            credentials {
+//                name 'cloudrepo'
+//                username System.getenv('CLOUDREPO_USER')
+//                password System.getenv('CLOUDREPO_PASSWORD')
+//            }
+//        }
 
-            from components.versionCatalog
-            // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-        }
-    }
-
-    repositories {
-        maven {
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-        }
-
-        mavenLocal()
-    }
-}
+//        mavenLocal()
+//    }
+//}
