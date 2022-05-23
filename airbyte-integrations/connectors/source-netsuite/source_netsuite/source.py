@@ -21,7 +21,6 @@ class NetsuiteStream(HttpStream, ABC):
     def __init__(self, auth: OAuth1, name: str, record_url: str, start_datetime: str, concurrency_limit: int = 1):
         self.obj_name = name
         self.record_url = record_url
-        self.concurrency_limit = concurrency_limit
         self.start_datetime = start_datetime
         self.concurrency_limit = concurrency_limit
         super().__init__(authenticator=auth)
@@ -87,6 +86,7 @@ class NetsuiteStream(HttpStream, ABC):
         pool = Pool(self.concurrency_limit)
         request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
         data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
+        pool.close()
         for record in data:
             yield record
 
