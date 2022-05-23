@@ -5,6 +5,7 @@
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
+      "developer_token",
       "reports_start_date",
       "hourly_reports",
       "daily_reports",
@@ -24,57 +25,42 @@
       "credentials": {
         "type": "object",
         "title": "Authentication Method",
-        "description": "The authentication method to use to retrieve data from Microsoft Bings Ads",
+        "description": "The authentication method to use to retrieve data from Microsoft Bing Ads",
         "order": 1,
         "oneOf": [
           {
             "type": "object",
-            "title": "Microsoft OAuth2.0",
-            "description": "Microsoft API Credentials for connecting to Bings Ads",
-            "required": ["auth_method", "developer_token"],
+            "title": "OAuth2.0",
+            "description": "Microsoft API Credentials for connecting to Bing Ads",
+            "required": ["auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",
                 "const": "oauth2.0",
                 "order": 0
               },
-              "developer_token": {
-                "type": "string",
-                "title": "Developer Token",
-                "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
-                "airbyte_secret": true,
-                "order": 1
-              },
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
                 "description": "The Client ID of your Microsoft Advertising developer application.",
                 "airbyte_secret": true,
-                "order": 2
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of your Microsoft Advertising developer application.",
-                "airbyte_secret": true,
-                "order": 3
+                "order": 1
               },
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
                 "description": "Refresh Token to renew the expired Access Token.",
                 "airbyte_secret": true,
-                "order": 4
+                "order": 2
               }
             }
           },
           {
             "type": "object",
-            "title": "Private OAuth2.0 Client",
-            "description": "Microsoft Private Client API Credentials for connecting to Bings Ads",
+            "title": "",
+            "description": "Microsoft Private Client API Credentials for connecting to Bing Ads",
             "required": [
               "auth_method",
-              "developer_token",
               "client_id",
               "client_secret",
               "refresh_token"
@@ -85,37 +71,37 @@
                 "const": "private_client",
                 "order": 0
               },
-              "developer_token": {
-                "type": "string",
-                "title": "Developer Token",
-                "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
-                "airbyte_secret": true,
-                "order": 1
-              },
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
                 "description": "The Client ID of your Microsoft Advertising developer application.",
                 "airbyte_secret": true,
-                "order": 2
+                "order": 1
               },
               "client_secret": {
                 "type": "string",
                 "title": "Client Secret",
                 "description": "The Client Secret of your Microsoft Advertising developer application.",
                 "airbyte_secret": true,
-                "order": 3
+                "order": 2
               },
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
                 "description": "Refresh Token to renew the expired Access Token.",
                 "airbyte_secret": true,
-                "order": 4
+                "order": 3
               }
             }
           }
         ]
+      },
+      "developer_token": {
+        "type": "string",
+        "title": "Developer Token",
+        "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
+        "airbyte_secret": true,
+        "order": 2
       },
       "reports_start_date": {
         "type": "string",
@@ -123,7 +109,7 @@
         "format": "date",
         "default": "2020-01-01",
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
-        "order": 2
+        "order": 3
       },
       "hourly_reports": {
         "title": "Enable hourly-aggregate reports",
@@ -172,9 +158,6 @@
         "properties": {
           "client_id": {
             "type": "string"
-          },
-          "client_secret": {
-            "type": "string"
           }
         }
       },
@@ -185,10 +168,6 @@
           "client_id": {
             "type": "string",
             "path_in_connector_config": ["credentials", "client_id"]
-          },
-          "client_secret": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       },

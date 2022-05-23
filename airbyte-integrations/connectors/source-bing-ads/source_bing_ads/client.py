@@ -43,15 +43,15 @@ class Client:
         weekly_reports: bool,
         monthly_reports: bool,
         credentials: dict = None,
+        developer_token: str = None,
         client_id: str = None,  # deprecated
         client_secret: str = None,  # deprecated
-        developer_token: str = None,  # deprecated
         refresh_token: str = None,  # deprecated
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.refresh_token = credentials["refresh_token"] if credentials else refresh_token
-        self.developer_token = credentials["developer_token"] if credentials else developer_token
+        self.developer_token = developer_token
         self.hourly_reports = hourly_reports
         self.daily_reports = daily_reports
         self.weekly_reports = weekly_reports
@@ -65,24 +65,24 @@ class Client:
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
     def _get_auth_client(self, credentials: dict, tenant_id: str) -> OAuthWebAuthCodeGrant:
-
-        # support the deprecated old input configuration
-        if self.client_id or self.client_secret:
-            auth_creds = {
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-                "redirection_uri": "",  # should be empty string
-                "tenant": tenant_id,
-            }
-            return OAuthWebAuthCodeGrant(**auth_creds)
-
+        
+        # base auth params
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
         auth_creds = {
-            "client_id": credentials["client_id"],
+            "client_id": None,
             "client_secret": None,
             "redirection_uri": "",  # should be empty string
             "tenant": tenant_id,
-        }
+            }
+        
+        # support the deprecated old input configuration
+        if self.client_id or self.client_secret:
+            auth_creds["client_id"] = self.client_id
+            auth_creds["client_secret"] = self.client_secret
+            return OAuthWebAuthCodeGrant(**auth_creds)
+
+        auth_creds["client_id"] = credentials["client_id"]
+
         if credentials["auth_method"] == "private_client":
             # the `client_secret` should be provided for `non-public clients` ONLY
             # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
