@@ -4,11 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -27,21 +22,33 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PostgresDestinationTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
+
+  private static final String USERNAME = "new_user";
+  private static final String DATABASE = "new_db";
+  private static final String PASSWORD = "new_password";
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -174,6 +181,28 @@ public class PostgresDestinationTest {
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD )));
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("create database %s;", DATABASE)));
+    // deny access for database for all users from group public
+    database.execute(connection -> connection.createStatement()
+            .execute(String.format("revoke all on database %s from public;", DATABASE)));
+
+    ((ObjectNode) config).put("username", USERNAME);
+    ((ObjectNode) config).put("password", PASSWORD);
+    ((ObjectNode) config).put("database", DATABASE);
+
+    var destination = new PostgresDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    Assertions.assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
