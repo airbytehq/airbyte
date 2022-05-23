@@ -111,7 +111,8 @@ write_results_summary() {
   fi
 
   echo "TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
-  echo "$result" >> $GITHUB_ENV
+  echo '' >> $GITHUB_ENV
+  echo "### $result" >> $GITHUB_ENV
   echo '' >> $GITHUB_ENV
   echo "Test summary info:" >> $GITHUB_ENV
   echo '```' >> $GITHUB_ENV
