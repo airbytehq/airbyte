@@ -7,8 +7,8 @@ import unittest
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.lcc.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.configurable.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.configurable.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
