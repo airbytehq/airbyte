@@ -148,9 +148,16 @@ class SourceNetsuite(AbstractSource):
         return self.base_url(config) + "record/v1/"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        url = self.base_url(config) + "*"
         auth = self.auth(config)
-        requests.options(url, auth=auth).raise_for_status()
+        record_types = config.get("record_types")
+        # if record types are specified make sure they are valid
+        if record_types:
+            params = {"select": ",".join(record_types)}
+            requests.get(self.record_url(config), auth=auth, params=params)
+        else:
+            # we could request the entire metadata catalog here, but this request returns much faster
+            url = self.base_url(config) + "*"
+            requests.options(url, auth=auth).raise_for_status()
         return True, None
 
     def record_types(self, record_url: str, auth: OAuth1) -> List[str]:
