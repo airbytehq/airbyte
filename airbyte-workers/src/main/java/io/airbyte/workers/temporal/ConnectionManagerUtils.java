@@ -136,7 +136,7 @@ public class ConnectionManagerUtils {
     } catch (final Exception e) {
       log.warn(
           "Could not terminate temporal workflow due to the following error; "
-              + "this may be because there is currently running workflow for this connection.",
+              + "this may be because there is currently no running workflow for this connection.",
           e);
     }
   }
