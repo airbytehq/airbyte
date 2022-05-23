@@ -170,7 +170,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
     })
 }
 
-def Task getPublishArtifactsTask(String artifactName, String buildVersion) {
+def Task getPublishArtifactsTask(String artifactName, String buildVersion, Project subproject) {
       return task ("publishArtifact-$artifactName" {
         apply plugin: 'maven-publish'
         publishing { 
@@ -178,7 +178,9 @@ def Task getPublishArtifactsTask(String artifactName, String buildVersion) {
             publications {
               //apply plugin: 'maven-publish'
               "$artifactName"(MavenPublication) {
-                from components.java
+                from subproject.components.java
+
+                groupId = "io.airbyte"
                 artifactId = "$artifactName"
                 version = "$buildVersion"
               }
