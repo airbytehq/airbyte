@@ -22,7 +22,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.metrics.lib.MetricsRegistry;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -32,9 +33,10 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -60,6 +62,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
     try {
+      // Fail non-terminal jobs first to prevent this activity from repeatedly trying to create a new job
+      // and failing, potentially resulting in the workflow ending up in a quarantined state.
+      // Another non-terminal job is not expected to exist at this point in the normal case, but this
+      // could happen in special edge cases for example when migrating to this from the old scheduler.
+      failNonTerminalJobs(input.getConnectionId());
+
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       if (input.isReset()) {
 
@@ -104,7 +112,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        DogStatsDMetricSingleton.count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
       }
     }
   }
@@ -118,7 +126,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
       final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
       final int persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
 
       LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
       return new AttemptCreationOutput(persistedAttemptId);
@@ -136,7 +144,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
       final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
       final int persistedAttemptNumber = jobPersistence.createAttempt(jobId, logFilePath);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
 
       LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
       return new AttemptNumberCreationOutput(persistedAttemptNumber);
@@ -158,11 +166,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
       jobPersistence.succeedAttempt(jobId, attemptId);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.successJob(job);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -185,7 +193,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.failJob(input.getReason(), job);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -207,9 +215,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       }
 
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
-        DogStatsDMetricSingleton.count(MetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1, MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+        DogStatsDMetricSingleton.count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+            MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -236,7 +245,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -261,7 +270,43 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
   }
 
-  private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
+  @Override
+  public void ensureCleanJobState(final EnsureCleanJobStateInput input) {
+    failNonTerminalJobs(input.getConnectionId());
+  }
+
+  private void failNonTerminalJobs(final UUID connectionId) {
+    try {
+      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(connectionId, Job.REPLICATION_TYPES,
+          io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
+      for (final Job job : jobs) {
+        final long jobId = job.getId();
+        log.info("Failing non-terminal job {}", jobId);
+        jobPersistence.failJob(jobId);
+
+        // fail all non-terminal attempts
+        for (final Attempt attempt : job.getAttempts()) {
+          if (Attempt.isAttemptInTerminalState(attempt)) {
+            continue;
+          }
+
+          // the Attempt object 'id' is actually the value of the attempt_number column in the db
+          final int attemptNumber = (int) attempt.getId();
+          jobPersistence.failAttempt(jobId, attemptNumber);
+          jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,
+              FailureHelper.failureSummaryForTemporalCleaningJobState(jobId, attemptNumber));
+        }
+
+        final Job failedJob = jobPersistence.getJob(jobId);
+        jobNotifier.failJob("Failing job in order to start from clean job state for new temporal workflow run.", failedJob);
+        trackCompletion(failedJob, JobStatus.FAILED);
+      }
+    } catch (final IOException e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  private void emitJobIdToReleaseStagesMetric(final OssMetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getJobIdToReleaseStages(jobId);
     if (releaseStages == null || releaseStages.size() == 0) {
       return;

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
 import FrequencyConfig from "config/FrequencyConfig.json";
@@ -57,6 +57,7 @@ type UpdateConnection = {
   schedule?: ScheduleProperties | null;
   operations?: Operation[];
   withRefreshedCatalog?: boolean;
+  sourceCatalogId?: string;
 };
 
 export type ListConnection = { connections: Connection[] };
@@ -221,4 +222,15 @@ const useConnectionList = (): ListConnection => {
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
-export { useConnectionList, useGetConnection, useUpdateConnection, useCreateConnection, useDeleteConnection };
+const invalidateConnectionsList = async (queryClient: QueryClient) => {
+  await queryClient.invalidateQueries(connectionsKeys.lists());
+};
+
+export {
+  useConnectionList,
+  useGetConnection,
+  useUpdateConnection,
+  useCreateConnection,
+  useDeleteConnection,
+  invalidateConnectionsList,
+};

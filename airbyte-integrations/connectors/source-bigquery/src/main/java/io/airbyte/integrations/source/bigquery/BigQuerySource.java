@@ -13,7 +13,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.bigquery.BigQuerySourceOperations;
@@ -60,7 +59,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode config) {
     dbConfig = Jsons.clone(config);
-    return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
   }
 
   @Override
@@ -175,5 +174,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", BigQuerySource.class);
   }
+
+  @Override
+  public void close() throws Exception {}
 
 }

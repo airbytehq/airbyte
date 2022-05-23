@@ -58,6 +58,7 @@
       },
       "credentials": {
         "title": "Authorization Method",
+        "description": "",
         "type": "object",
         "oneOf": [
           {
@@ -136,6 +137,8 @@
             "required": ["method"],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Standard"],
                 "default": "Standard"
@@ -149,6 +152,8 @@
             "required": ["method"],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Internal Staging"],
                 "default": "Internal Staging"
@@ -167,6 +172,8 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["S3 Staging"],
                 "default": "S3 Staging",
@@ -240,6 +247,49 @@
                 "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. Only relevant for COPY. Defaults to true.",
                 "default": true,
                 "order": 6
+              },
+              "encryption": {
+                "title": "Encryption",
+                "type": "object",
+                "description": "How to encrypt the staging data",
+                "default": { "encryption_type": "none" },
+                "order": 7,
+                "oneOf": [
+                  {
+                    "title": "No encryption",
+                    "description": "Staging data will be stored in plaintext.",
+                    "type": "object",
+                    "required": ["encryption_type"],
+                    "properties": {
+                      "encryption_type": {
+                        "type": "string",
+                        "const": "none",
+                        "enum": ["none"],
+                        "default": "none"
+                      }
+                    }
+                  },
+                  {
+                    "title": "AES-CBC envelope encryption",
+                    "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
+                    "type": "object",
+                    "required": ["encryption_type"],
+                    "properties": {
+                      "encryption_type": {
+                        "type": "string",
+                        "const": "aes_cbc_envelope",
+                        "enum": ["aes_cbc_envelope"],
+                        "default": "aes_cbc_envelope"
+                      },
+                      "key_encrypting_key": {
+                        "type": "string",
+                        "title": "Key",
+                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
+                        "airbyte_secret": true
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -255,6 +305,8 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["GCS Staging"],
                 "default": "GCS Staging",
@@ -296,6 +348,8 @@
             ],
             "properties": {
               "method": {
+                "title": "",
+                "description": "",
                 "type": "string",
                 "enum": ["Azure Blob Staging"],
                 "default": "Azure Blob Staging",

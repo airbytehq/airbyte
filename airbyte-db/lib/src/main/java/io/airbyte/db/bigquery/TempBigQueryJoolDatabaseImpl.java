@@ -6,8 +6,8 @@ package io.airbyte.db.bigquery;
 
 import io.airbyte.db.ContextQueryFunction;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import java.sql.SQLException;
+import javax.annotation.Nullable;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
@@ -22,8 +22,8 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
   private final BigQueryDatabase realDatabase;
 
   public TempBigQueryJoolDatabaseImpl(final String projectId, final String jsonCreds) {
-    super(null, null);
-    realDatabase = Databases.createBigQueryDatabase(projectId, jsonCreds);
+    super(null);
+    realDatabase = createBigQueryDatabase(projectId, jsonCreds);
   }
 
   @Override
@@ -34,11 +34,6 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
   @Override
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(new FakeDefaultDSLContext(realDatabase));
-  }
-
-  @Override
-  public void close() throws Exception {
-    realDatabase.close();
   }
 
   public BigQueryDatabase getRealDatabase() {
@@ -55,6 +50,7 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
     }
 
     @Override
+    @Nullable
     public Result<Record> fetch(final String sql) throws DataAccessException {
       try {
         database.execute(sql);
@@ -64,6 +60,10 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
       return null;
     }
 
+  }
+
+  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
+    return new BigQueryDatabase(projectId, jsonCreds);
   }
 
 }
