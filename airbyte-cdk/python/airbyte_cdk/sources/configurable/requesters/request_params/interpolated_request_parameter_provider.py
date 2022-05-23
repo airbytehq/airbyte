@@ -13,7 +13,6 @@ class InterpolatedRequestParameterProvider(RequestParameterProvider):
     def __init__(self, *, config, request_parameters=None):
         if request_parameters is None:
             request_parameters = dict()
-        request_parameters = request_parameters
         self._interpolation = InterpolatedMapping(request_parameters, JinjaInterpolation())
         self._config = config
 
