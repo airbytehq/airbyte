@@ -13,7 +13,14 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      empty_streams: ["satisfaction_ratings", "tickets", "time_entries", "conversations"]
+      empty_streams:
+        [
+          "satisfaction_ratings",
+          "tickets",
+          "time_entries",
+          "conversations",
+          "skills",
+        ]
   incremental:
     - config_path: "secrets/config.json"
       future_state_path: "integration_tests/abnormal_state.json"
