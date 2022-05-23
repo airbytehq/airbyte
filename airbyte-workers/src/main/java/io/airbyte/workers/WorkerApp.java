@@ -9,6 +9,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
@@ -22,6 +23,9 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -37,13 +41,14 @@ import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
@@ -65,7 +70,6 @@ import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -80,7 +84,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import javax.sql.DataSource;
 import lombok.AllArgsConstructor;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -90,6 +97,7 @@ public class WorkerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
   public static final int KUBE_HEARTBEAT_PORT = 9000;
+  private static final String DRIVER_CLASS_NAME = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
@@ -181,6 +189,15 @@ public class WorkerApp {
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
+        new CheckConnectionActivityImpl(
+            checkWorkerConfigs,
+            checkProcessFactory,
+            secretsHydrator,
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            jobPersistence,
+            airbyteVersion),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 
@@ -332,9 +349,7 @@ public class WorkerApp {
     }
   }
 
-  private static void launchWorkerApp() throws IOException {
-    final Configs configs = new EnvConfigs();
-
+  private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
@@ -358,7 +373,7 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
       KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
@@ -368,11 +383,7 @@ public class WorkerApp {
 
     TemporalUtils.configureTemporalNamespace(temporalService);
 
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getInitialized();
+    final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -381,11 +392,7 @@ public class WorkerApp {
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
-    final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getInitialized();
+    final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     TrackingClientSingleton.initialize(
@@ -456,7 +463,22 @@ public class WorkerApp {
 
   public static void main(final String[] args) {
     try {
-      launchWorkerApp();
+      final Configs configs = new EnvConfigs();
+
+      final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
+          DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl());
+      final DataSource jobsDataSource = DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(),
+          DRIVER_CLASS_NAME, configs.getDatabaseUrl());
+
+      // Manual configuration that will be replaced by Dependency Injection in the future
+      try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+          final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
+
+        // Ensure that the database resources are closed on application shutdown
+        CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
+
+        launchWorkerApp(configs, configsDslContext, jobsDslContext);
+      }
     } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
       System.exit(1);

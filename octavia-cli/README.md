@@ -105,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.36.6-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.1-alpha
 ```
 
 ### Using `docker-compose`
@@ -188,7 +188,7 @@ NAME                            DOCKER REPOSITORY                              D
 Airtable                        airbyte/source-airtable                        0.1.1             14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
 AWS CloudTrail                  airbyte/source-aws-cloudtrail                  0.1.4             6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
 Amazon Ads                      airbyte/source-amazon-ads                      0.1.3             c6b0a29e-1da9-4512-9002-7bfd0cba2246
-Amazon Seller Partner           airbyte/source-amazon-seller-partner           0.2.15            e55879a8-0ef8-4557-abcf-ab34c53ec460
+Amazon Seller Partner           airbyte/source-amazon-seller-partner           0.2.16            e55879a8-0ef8-4557-abcf-ab34c53ec460
 ```
 
 #### `octavia list connectors destinations`
@@ -362,8 +362,9 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description       | PR                                                       |
-|---------|------------|-------------------|----------------------------------------------------------|
-| 0.36.2  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68 | 2022-04-12 | Add telemetry     | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61 | 2022-04-07 | Alpha release     | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version | Date       | Description                         | PR                                                       |
+|---------|------------|-------------------------------------|----------------------------------------------------------|
+| 0.36.11 | 2022-05-05 | Use snake case in connection fields | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
+| 0.36.2  | 2022-04-15 | Improve telemetry                   | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68 | 2022-04-12 | Add telemetry                       | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61 | 2022-04-07 | Alpha release                       | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|

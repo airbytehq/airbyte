@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.36.6-alpha",
+  "version": "0.39.1-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -9,7 +9,6 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:coverage": "npm test -- --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
@@ -28,6 +27,7 @@
     "firebase": "^9.6.10",
     "flat": "^5.0.2",
     "formik": "^2.2.9",
+    "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
     "query-string": "^6.13.1",
     "react": "^17.0.2",
@@ -39,6 +39,7 @@
     "react-markdown": "^7.0.1",
     "react-pose": "^4.0.10",
     "react-query": "^3.34.19",
+    "react-reflex": "^4.0.6",
     "react-router-dom": "^6.3.0",
     "react-select": "^4.3.1",
     "react-table": "^7.7.0",
@@ -50,6 +51,7 @@
     "rehype-urls": "^1.1.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
+    "rxjs": "^7.5.5",
     "sanitize-html": "^2.7.0",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",

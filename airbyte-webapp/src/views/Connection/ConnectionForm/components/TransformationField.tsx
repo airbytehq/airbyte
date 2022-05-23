@@ -8,12 +8,15 @@ import { Transformation } from "core/domain/connection/operation";
 import { isDefined } from "utils/common";
 import TransformationForm from "views/Connection/TransformationForm";
 
+import { ConnectionFormMode } from "../ConnectionForm";
+
 const TransformationField: React.FC<
   ArrayHelpers & {
     form: FormikProps<{ transformations: Transformation[] }>;
     defaultTransformation: Transformation;
+    mode?: ConnectionFormMode;
   }
-> = ({ remove, push, replace, form, defaultTransformation }) => {
+> = ({ remove, push, replace, form, defaultTransformation, mode }) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
   return (
     <ArrayOfObjectsEditor
@@ -25,6 +28,7 @@ const TransformationField: React.FC<
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}
       onStartEdit={(idx) => setEditableItem(idx)}
+      mode={mode}
     >
       {(editableItem) => (
         <TransformationForm

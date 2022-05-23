@@ -3,93 +3,88 @@
 #
 
 import pendulum
+import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_google_ads.source import SourceGoogleAds
 
-SAMPLE_CATALOG = {
-    "streams": [
-        {
-            "stream": {
-                "name": "ad_group_ad_report",
-                "json_schema": {
-                    "type": "object",
-                    "title": "Ad Group Ad Report",
-                    "description": "An ad group ad.",
-                    "properties": {
-                        "accent_color": {
-                            "description": "AccentColor",
-                            "type": ["null", "string"],
-                            "field": "ad_group_ad.ad.legacy_responsive_display_ad.accent_color",
-                        },
-                        "account_currency_code": {
-                            "description": "AccountCurrencyCode",
-                            "type": ["null", "string"],
-                            "field": "customer.currency_code",
-                        },
-                        "account_descriptive_name": {
-                            "description": "AccountDescriptiveName",
-                            "type": ["null", "string"],
-                            "field": "customer.descriptive_name",
-                        },
-                        "segments.date": {"description": "Date", "type": ["null", "string"], "field": "segments.date"},
-                    },
+
+@pytest.fixture
+def configured_catalog():
+    return {
+        "streams": [
+            {
+                "stream": {
+                    "name": "ad_group_ad_report",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["segments.date"],
                 },
-                "supported_sync_modes": ["full_refresh", "incremental"],
-                "source_defined_cursor": True,
-                "default_cursor_field": ["segments.date"],
-            },
-            "sync_mode": "incremental",
-            "destination_sync_mode": "overwrite",
-            "cursor_field": ["segments.date"],
-        }
-    ]
-}
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+                "cursor_field": ["segments.date"],
+            }
+        ]
+    }
 
 
-def test_incremental_sync(config):
+GAP_DAYS = 14
+
+
+def test_incremental_sync(config, configured_catalog):
+    today = pendulum.now().date()
+    start_date = today.subtract(months=1)
+    config["start_date"] = start_date.to_date_string()
+
     google_ads_client = SourceGoogleAds()
-    state = "2021-05-24"
-    records = google_ads_client.read(
-        AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
+    records = list(google_ads_client.read(AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog)))
+    latest_state = None
+    for record in records[::-1]:
+        if record and record.type == Type.STATE:
+            latest_state = record.state.data["ad_group_ad_report"][config["customer_id"]]["segments.date"]
+            break
+
+    for message in records:
+        if not message or message.type != Type.RECORD:
+            continue
+        cursor_value = message.record.data["segments.date"]
+        assert cursor_value <= latest_state
+        assert cursor_value >= start_date.subtract(days=GAP_DAYS).to_date_string()
+
+    #  next sync
+    records = list(
+        google_ads_client.read(
+            AirbyteLogger(),
+            config,
+            ConfiguredAirbyteCatalog.parse_obj(configured_catalog),
+            {"ad_group_ad_report": {"segments.date": latest_state}},
+        )
     )
-    current_state = pendulum.parse(state).subtract(days=14).to_date_string()
 
     for record in records:
-        if record and record.type == Type.STATE:
-            print(record)
-            temp_state = record.state.data["ad_group_ad_report"]
-            current_state = (
-                temp_state[config["customer_id"]]["segments.date"] if temp_state.get(config["customer_id"]) else temp_state["segments.date"]
-            )
-        if record and record.type == Type.RECORD:
-            assert record.record.data["segments.date"] >= current_state
+        if record.type == Type.RECORD:
+            assert record.record.data["segments.date"] >= pendulum.parse(latest_state).subtract(days=GAP_DAYS).to_date_string()
+        if record.type == Type.STATE:
+            assert record.state.data["ad_group_ad_report"][config["customer_id"]]["segments.date"] >= latest_state
 
-    # Next sync
-    state = "2021-06-04"
+
+def test_abnormally_large_state(config, configured_catalog):
+    google_ads_client = SourceGoogleAds()
     records = google_ads_client.read(
-        AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
+        AirbyteLogger(),
+        config,
+        ConfiguredAirbyteCatalog.parse_obj(configured_catalog),
+        {"ad_group_ad_report": {"segments.date": "2222-06-04"}},
     )
-    current_state = pendulum.parse(state).subtract(days=14).to_date_string()
 
+    no_data_records = True
+    state_records = False
     for record in records:
         if record and record.type == Type.STATE:
-            current_state = record.state.data["ad_group_ad_report"][config["customer_id"]]["segments.date"]
+            state_records = True
         if record and record.type == Type.RECORD:
-            assert record.record.data["segments.date"] >= current_state
+            no_data_records = False
 
-    # # Abnormal state
-    # This part of the test is broken need to understand what is causing this.
-    # state = "2029-06-04"
-    # records = google_ads_client.read(
-    #     AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
-    # )
-
-    # no_records = True
-    # for record in records:
-    #     if record and record.type == Type.STATE:
-    #         assert record.state.data["ad_group_ad_report"]["segments.date"] == state
-    #     if record and record.type == Type.RECORD:
-    #         no_records = False
-
-    # assert no_records
+    assert no_data_records
+    assert state_records
