@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 import requests
-from airbyte_cdk.sources.lcc.types import Record
+from airbyte_cdk.sources.configurable.types import Record
 
 
 class HttpExtractor(ABC):

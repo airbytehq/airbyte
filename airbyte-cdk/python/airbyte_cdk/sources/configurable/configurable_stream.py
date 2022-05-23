@@ -6,8 +6,8 @@
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
-from airbyte_cdk.sources.lcc.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.configurable.retrievers.retriever import Retriever
+from airbyte_cdk.sources.configurable.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.streams.core import Stream
 
 

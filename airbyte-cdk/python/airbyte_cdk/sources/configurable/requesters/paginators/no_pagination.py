@@ -5,7 +5,7 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.configurable.requesters.paginators.paginator import Paginator
 
 
 class NoPagination(Paginator):

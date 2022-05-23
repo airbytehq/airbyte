@@ -5,7 +5,7 @@
 from typing import Optional, Union
 
 import requests
-from airbyte_cdk.sources.lcc.requesters.retriers.retrier import Retrier
+from airbyte_cdk.sources.configurable.requesters.retriers.retrier import Retrier
 
 
 class DefaultRetrier(Retrier):

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.requesters.requester import HttpMethod
-from airbyte_cdk.sources.lcc.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.configurable.requesters.requester import HttpMethod
+from airbyte_cdk.sources.configurable.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]

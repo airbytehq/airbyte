@@ -3,7 +3,7 @@
 #
 
 import requests
-from airbyte_cdk.sources.lcc.requesters.paginators.no_pagination import NoPagination
+from airbyte_cdk.sources.configurable.requesters.paginators.no_pagination import NoPagination
 
 
 def test():

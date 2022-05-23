@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
+from airbyte_cdk.sources.configurable.configurable_stream import ConfigurableStream
 
 
 def test():

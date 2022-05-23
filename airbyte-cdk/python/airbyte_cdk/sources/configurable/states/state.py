@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
 import requests
-from airbyte_cdk.sources.lcc.types import Record
+from airbyte_cdk.sources.configurable.types import Record
 
 
 class State(ABC):

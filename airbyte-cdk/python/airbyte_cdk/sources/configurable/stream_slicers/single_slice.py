@@ -5,7 +5,7 @@
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.configurable.stream_slicers.stream_slicer import StreamSlicer
 
 
 class SingleSlice(StreamSlicer):

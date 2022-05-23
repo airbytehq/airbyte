@@ -6,12 +6,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.extractors.http_extractor import HttpExtractor
-from airbyte_cdk.sources.lcc.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.lcc.requesters.requester import Requester
-from airbyte_cdk.sources.lcc.retrievers.retriever import Retriever
-from airbyte_cdk.sources.lcc.states.state import State
-from airbyte_cdk.sources.lcc.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.configurable.extractors.http_extractor import HttpExtractor
+from airbyte_cdk.sources.configurable.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.configurable.requesters.requester import Requester
+from airbyte_cdk.sources.configurable.retrievers.retriever import Retriever
+from airbyte_cdk.sources.configurable.states.state import State
+from airbyte_cdk.sources.configurable.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
 

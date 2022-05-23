@@ -3,7 +3,7 @@
 #
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.lcc.stream_slicers.single_slice import SingleSlice
+from airbyte_cdk.sources.configurable.stream_slicers.single_slice import SingleSlice
 
 
 def test():
