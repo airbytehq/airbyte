@@ -112,36 +112,30 @@ class ConnectorConfig(BaseConfig):
     access_token: str = Field(
         title="Access Token",
         order=3,
-        description=("The value of the access token generated. " "See the docs for more information: https://go.estuary.dev/OzUqlE"),
-        airbyte_secret=True,
-    )
-
-    business_id: str = Field(
-        title="Business ID",
-        order=4,
         description=(
-            "Your Facebook Business ID."
-            "We will fetch all the AdAccounts that this business has access to. See docs for more information: https://go.estuary.dev/OzUqlE"
+            "The value of the access token generated. "
+            'See the docs for more information: https://go.estuary.dev/OzUqlE'
         ),
+        airbyte_secret=True,
     )
 
     include_deleted: bool = Field(
         title="Include Deleted",
-        order=5,
+        order=4,
         default=False,
         description="Include data from deleted Campaigns, Ads, and AdSets",
     )
 
     fetch_thumbnail_images: bool = Field(
         title="Fetch Thumbnail Images",
-        order=6,
+        order=5,
         default=False,
         description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=7,
+        order=6,
         description=(
             "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
         ),
@@ -149,7 +143,7 @@ class ConnectorConfig(BaseConfig):
 
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
-        order=8,
+        order=7,
         default=100,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
