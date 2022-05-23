@@ -1013,12 +1013,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
   releaseStage: alpha
-- sourceDefinitionId: fe0249fb-f9f3-4234-9bbc-3f8ca990c777
-  name: SFTP
-  dockerRepository: airbyte/source-sftp
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/
-  icon: sftp.svg
 - name: Zoom
   sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   dockerRepository: airbyte/source-zoom-singer

@@ -182,6 +182,7 @@
     - [Zoho CRM](integrations/sources/zoho-crm.md)
     - [Zoom](integrations/sources/zoom.md)
     - [Zuora](integrations/sources/zuora.md)
+    - [SFTP](integrations/sources/sftp.md)
   - [Destinations](integrations/destinations/README.md)
     - [Amazon SQS](integrations/destinations/amazon-sqs.md)
     - [AzureBlobStorage](integrations/destinations/azureblobstorage.md)
