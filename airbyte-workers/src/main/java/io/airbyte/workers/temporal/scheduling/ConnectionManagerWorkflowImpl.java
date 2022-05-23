@@ -122,6 +122,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       if (workflowState.isDeleted()) {
+        if (workflowState.isRunning()) {
+          reportCancelled(false);
+        }
         log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
         return;
@@ -316,14 +319,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
-  private SyncCheckConnectionFailure checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
+  private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs) {
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
     final StandardSyncInput syncInput = jobInputs.getSyncInput();
     final JsonNode sourceConfig = syncInput.getSourceConfiguration();
     final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
     final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
-    SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
@@ -700,6 +703,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
   private void reportCancelledAndContinueWith(final boolean isReset, final ConnectionUpdaterInput connectionUpdaterInput) {
+    reportCancelled(isReset);
+    resetNewConnectionInput(connectionUpdaterInput);
+    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+  }
+
+  private void reportCancelled(final boolean isReset) {
     workflowState.setContinueAsReset(isReset);
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
@@ -721,8 +730,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               attemptNumber,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
-    resetNewConnectionInput(connectionUpdaterInput);
-    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
 }
