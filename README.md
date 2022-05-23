@@ -48,7 +48,7 @@ See our [Contributing guide](docs/contributing-to-airbyte/) on how to get starte
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
-**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
+**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it. Let's call it crowdsourced maintenance!**
 
 ## Community support
 
