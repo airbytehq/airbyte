@@ -10,7 +10,7 @@ from typing import Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-from .streams import DEFAULT_START_DATE, DEFAULT_END_DATE, ReportGranularity
+from .streams import DEFAULT_END_DATE, DEFAULT_START_DATE, ReportGranularity
 
 
 class OauthCredSpec(BaseModel):

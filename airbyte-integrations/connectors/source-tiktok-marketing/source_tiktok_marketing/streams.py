@@ -426,9 +426,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return []
 
     @staticmethod
-    def _get_time_interval(start_date: Union[datetime, str],
-                           ending_date: Union[datetime, str],
-                           granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
+    def _get_time_interval(
+        start_date: Union[datetime, str], ending_date: Union[datetime, str], granularity: ReportGranularity
+    ) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513

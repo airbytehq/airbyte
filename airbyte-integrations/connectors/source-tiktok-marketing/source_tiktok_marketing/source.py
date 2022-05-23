@@ -18,8 +18,8 @@ from .spec import (
     SourceTiktokMarketingSpec,
 )
 from .streams import (
-    DEFAULT_START_DATE,
     DEFAULT_END_DATE,
+    DEFAULT_START_DATE,
     AdGroupAudienceReports,
     AdGroups,
     AdGroupsReports,
