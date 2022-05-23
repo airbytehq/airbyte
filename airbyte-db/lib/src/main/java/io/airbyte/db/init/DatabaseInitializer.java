@@ -12,7 +12,6 @@ import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import io.airbyte.db.check.DatabaseCheckException;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -85,8 +84,8 @@ public interface DatabaseInitializer {
   /**
    * Initializes the schema in the database represented by the provided {@link DSLContext} instance.
    *
-   * If the initial tables already exist in the database, initialization is skipped.  Otherwise,
-   * the script provided by the {@link #getInitialSchema()} method is executed against the database.
+   * If the initial tables already exist in the database, initialization is skipped. Otherwise, the
+   * script provided by the {@link #getInitialSchema()} method is executed against the database.
    *
    * @param ctx The {@link DSLContext} used to execute the schema initialization.
    * @return {@code true} indicating that the operation ran
@@ -94,7 +93,7 @@ public interface DatabaseInitializer {
   default boolean initializeSchema(final DSLContext ctx) {
     final Optional<Collection<String>> tableNames = getTableNames();
 
-    if(tableNames.isPresent()) {
+    if (tableNames.isPresent()) {
       // Verify that all the required tables are present
       if (tableNames.get().stream().allMatch(tableName -> hasTable(ctx, tableName))) {
         getLogger().info("The {} database is initialized", getDatabaseName());

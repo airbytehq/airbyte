@@ -97,6 +97,7 @@ public class DatabaseInitializerTest {
       public Optional<Collection<String>> getTableNames() {
         return Optional.empty();
       }
+
     };
 
     Assertions.assertEquals(false, initializer.initializeSchema(dslContext));
