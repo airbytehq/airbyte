@@ -25,6 +25,9 @@ def create(func, /, *args, **keywords):
         interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
+        print(f"func: {func}")
+        print(f"keywords: {keywords}")
+        print(f"all_keywords: {all_keywords}")
 
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)

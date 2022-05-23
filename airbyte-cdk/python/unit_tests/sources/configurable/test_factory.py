@@ -126,3 +126,4 @@ list_stream:
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert type(stream._retriever._extractor._decoder) == JsonDecoder
     assert stream._retriever._extractor._transform == ".result[]"
+    assert stream._schema_loader._kwargs == {"name": "lists"}
