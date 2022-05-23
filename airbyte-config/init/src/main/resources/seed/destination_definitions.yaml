@@ -127,7 +127,7 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
   releaseStage: alpha
@@ -253,7 +253,7 @@
         resourceRequirements:
           memory_limit: "1Gi"
           memory_request: "1Gi"
-  releaseStage: beta
+  releaseStage: generally_available
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
