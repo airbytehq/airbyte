@@ -5,23 +5,14 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { DestinationSyncMode, SyncMode, SyncSchema } from "core/domain/catalog";
-import { Connection, ScheduleProperties } from "core/domain/connection";
-import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
-import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchema } from "core/domain/catalog";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
   NormalizationType,
 } from "core/domain/connection/operation";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import { ValuesProps } from "hooks/services/useConnectionHook";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-
-import calculateInitialCatalog from "./calculateInitialCatalog";
-
 import {
-  AirbyteStreamConfiguration,
   ConnectionSchedule,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
@@ -31,7 +22,11 @@ import {
   OperatorType,
   SyncMode,
   WebBackendConnectionRead,
-} from "../../../core/request/AirbyteClient";
+} from "core/request/AirbyteClient";
+import { ValuesProps } from "hooks/services/useConnectionHook";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import calculateInitialCatalog from "./calculateInitialCatalog";
 
 type FormikConnectionFormValues = {
   schedule?: ConnectionSchedule | null;
@@ -203,7 +198,7 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-const getInitialTransformations = (operations: Operation[]): Transformation[] =>
+const getInitialTransformations = (operations: OperationCreate[]): OperationRead[] =>
   operations?.filter(isDbtTransformation) ?? [];
 
 const getInitialNormalization = (
@@ -228,7 +223,8 @@ const useInitialValues = (
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
   const initialSchema = useMemo(
-    () => calculateInitialCatalog(connection.syncCatalog, destDefinition.supportedDestinationSyncModes, isEditMode),
+    () =>
+      calculateInitialCatalog(connection.syncCatalog, destDefinition?.supportedDestinationSyncModes || [], isEditMode),
     [connection.syncCatalog, destDefinition, isEditMode]
   );
 
