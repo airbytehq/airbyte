@@ -1,268 +1,202 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "vanityName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "localizedName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "website": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "localized": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "en_US": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "preferredLocale": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "country": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "language": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
     "foundedOn": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "year": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
     "groups": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {}
     },
     "description": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "localized": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "en_US": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "preferredLocale": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "country": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "language": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
     "versionTag": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "coverPhotoV2": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "cropped": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "original": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cropInfo": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "x": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "width": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "y": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "height": {
-              "type": "integer"
+              "type": ["null", "integer"]
             }
           }
         }
       }
     },
     "defaultLocale": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "language": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "organizationType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "alternativeNames": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {}
     },
     "specialties": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {}
     },
     "staffCountRange": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "localizedSpecialties": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {}
     },
     "industries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {}
     },
     "name": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "localized": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "en_US": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "preferredLocale": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "country": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "language": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
     "primaryOrganizationType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "locations": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "locationType": {
-              "type": "string"
-            },
-            "description": {
-              "type": "object",
-              "properties": {
-                "localized": {
-                  "type": "object",
-                  "properties": {
-                    "en_US": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "preferredLocale": {
-                  "type": "object",
-                  "properties": {
-                    "country": {
-                      "type": "string"
-                    },
-                    "language": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "address": {
-              "type": "object",
-              "properties": {
-                "geographicArea": {
-                  "type": "string"
-                },
-                "country": {
-                  "type": "string"
-                },
-                "city": {
-                  "type": "string"
-                },
-                "line1": {
-                  "type": "string"
-                },
-                "postalCode": {
-                  "type": "string"
-                }
-              }
-            },
-            "localizedDescription": {
-              "type": "string"
-            },
-            "geoLocation": {
-              "type": "string"
-            },
-            "streetAddressFieldState": {
-              "type": "string"
-            }
-          }
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {}
     },
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "localizedDescription": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "$URN": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "localizedWebsite": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "logoV2": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "cropped": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "original": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cropInfo": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "x": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "width": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "y": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "height": {
-              "type": "integer"
+              "type": ["null", "integer"]
             }
           }
         }
