@@ -4,26 +4,27 @@
 
 from typing import Any, List, Mapping
 
-from airbyte_cdk.sources.lcc import create_partial
-from airbyte_cdk.sources.lcc.checks.check_stream import CheckStream
-from airbyte_cdk.sources.lcc.configurable_source import ConfigurableSource
-from airbyte_cdk.sources.lcc.configurable_stream import ConfigurableStream
-from airbyte_cdk.sources.lcc.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.lcc.extractors.jq import JqExtractor
-from airbyte_cdk.sources.lcc.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.lcc.requesters.http_requester import HttpMethod, HttpRequester
-from airbyte_cdk.sources.lcc.requesters.paginators.interpolated_paginator import InterpolatedPaginator
-from airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
-from airbyte_cdk.sources.lcc.requesters.paginators.no_pagination import NoPagination
-from airbyte_cdk.sources.lcc.requesters.paginators.offset_pagination import OffsetPagination
-from airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider import InterpolatedRequestParameterProvider
-from airbyte_cdk.sources.lcc.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.lcc.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.lcc.schema.json_schema import JsonSchema
-from airbyte_cdk.sources.lcc.states.dict_state import DictState
-from airbyte_cdk.sources.lcc.states.no_state import NoState
-from airbyte_cdk.sources.lcc.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.lcc.stream_slicers.single_slice import SingleSlice
+from airbyte_cdk.sources.configurable import create_partial
+from airbyte_cdk.sources.configurable.checks.check_stream import CheckStream
+from airbyte_cdk.sources.configurable.configurable_source import ConfigurableSource
+from airbyte_cdk.sources.configurable.configurable_stream import ConfigurableStream
+from airbyte_cdk.sources.configurable.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.configurable.extractors.jq import JqExtractor
+from airbyte_cdk.sources.configurable.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.configurable.requesters.http_requester import HttpMethod, HttpRequester
+from airbyte_cdk.sources.configurable.requesters.paginators.interpolated_paginator import InterpolatedPaginator
+from airbyte_cdk.sources.configurable.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.configurable.requesters.paginators.no_pagination import NoPagination
+from airbyte_cdk.sources.configurable.requesters.paginators.offset_pagination import OffsetPagination
+from airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider import (
+    InterpolatedRequestParameterProvider,
+)
+from airbyte_cdk.sources.configurable.requesters.retriers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.configurable.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.configurable.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.configurable.states.dict_state import DictState
+from airbyte_cdk.sources.configurable.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.configurable.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -43,6 +44,7 @@ class SendgridSource(ConfigurableSource):
 
         # State
         cursor_state = DictState({"created": "{{ last_record['created'] }}"}, state_type=int)
+        no_state = DictState({})
 
         # Pagination
         metadata_paginator = NextPageUrlPaginator(
@@ -85,7 +87,7 @@ class SendgridSource(ConfigurableSource):
         simple_retriever = create_partial.create(
             SimpleRetriever,
             name="{{ kwargs['name'] }}",
-            state=NoState(),
+            state=no_state,
             iterator=SingleSlice(),
             paginator=NoPagination(),
             primary_key="{{ kwargs['primary_key'] }}",
