@@ -61,6 +61,15 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
+  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey("spapi_oauth_code")) {
+      return (String) queryParams.get("spapi_oauth_code");
+    } else {
+      throw new IOException("Undefined 'spapi_oauth_code' from consent redirected url.");
+    }
+  }
+
+  @Override
   protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
                                                               final String clientSecret,
                                                               final String authCode,
