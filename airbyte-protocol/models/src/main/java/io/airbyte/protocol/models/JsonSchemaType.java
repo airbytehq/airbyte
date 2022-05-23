@@ -14,7 +14,8 @@ public class JsonSchemaType {
   public static final String FORMAT = "format";
   public static final String DATE_TIME = "date-time";
   public static final String DATE = "date";
-  public static final String TIME = "time";
+  public static final String TIME_WITHOUT_TIMEZONE = "time";
+  public static final String TIME_WITH_TIMEZONE = "time_with_timezone";
   public static final String TIMESTAMP_WITH_TIMEZONE = "timestamp_with_timezone";
   public static final String TIMESTAMP_WITHOUT_TIMEZONE = "timestamp";
   public static final String CONTENT_ENCODING = "contentEncoding";
@@ -28,6 +29,11 @@ public class JsonSchemaType {
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
   public static final JsonSchemaType NULL = JsonSchemaType.builder(JsonSchemaPrimitive.NULL).build();
   public static final JsonSchemaType STRING_BASE_64 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
+  public static final JsonSchemaType STRING_TIME_WITH_TIMEZONE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType(TIME_WITH_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIME_WITHOUT_TIMEZONE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType(TIME_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIMESTAMP_WITH_TIMEZONE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType(TIMESTAMP_WITH_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIMESTAMP_WITHOUT_TIMEZONE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType STRING_DATE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType(DATE).build();
 
   private final Map<String, String> jsonSchemaTypeMap;
 

@@ -105,6 +105,12 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    int i =7;
+    super.putDate(node, columnName, resultSet, index);
+  }
+
+  @Override
   public JDBCType getFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
@@ -140,6 +146,12 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+
       default -> JsonSchemaType.STRING;
     };
   }
