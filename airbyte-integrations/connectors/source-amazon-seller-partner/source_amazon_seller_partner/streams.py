@@ -41,11 +41,11 @@ class AmazonSPStream(HttpStream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        replication_end_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
+        replication_end_date: Optional[str],
         *args,
         **kwargs,
     ):
@@ -108,7 +108,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
             start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
             params.update({self.replication_start_date_field: start_date})
 
-        if is_valid_replication_end_date(self._replication_end_date):
+        if self._replication_end_date:
             params[self.replication_end_date_field] = self._replication_end_date
 
         return params
@@ -161,11 +161,11 @@ class ReportsAmazonSPStream(Stream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
-        replication_end_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
+        replication_end_date: Optional[str],
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -242,7 +242,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
-        if is_valid_replication_end_date(self._replication_end_date):
+        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
             params["dataEndTime"] = self._replication_end_date
             params["dataStartTime"] = self._replication_start_date
 
@@ -548,7 +548,7 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now()
-        if is_valid_replication_end_date(self._replication_end_date):
+        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
             end_date = pendulum.parse(self._replication_end_date)
 
         if stream_state:
@@ -663,7 +663,7 @@ class Orders(IncrementalAmazonSPStream):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     default_backoff_time = 60
-    
+
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
 
@@ -718,22 +718,10 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             end_date = pendulum.now("utc").strftime(self.time_format)
-            if is_valid_replication_end_date(self._replication_end_date):
+            if self._replication_end_date:
                 end_date = self._replication_end_date
             params.update({self.replication_end_date_field: end_date})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
-
-
-def is_valid_replication_end_date(custom_date: str) -> bool:
-    """
-    validates if the user provided custom end date is before current date-time.
-    returns True if valid, else returns False.
-    """
-    if custom_date and custom_date != "default":
-        if pendulum.parse(custom_date) < pendulum.now("utc"):
-            return True
-
-    return False
