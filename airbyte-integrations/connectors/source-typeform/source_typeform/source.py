@@ -73,7 +73,6 @@ class TrimForms(PaginatedStream):
         return "forms"
 
 
-
 class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         form_ids = self.config.get("form_ids", [])
@@ -95,7 +94,7 @@ class Forms(TrimFormsMixin, TypeformStream):
 
     primary_key = "id"
 
-    def path(self,stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"forms/{stream_slice['form_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -276,5 +275,5 @@ class SourceTypeform(AbstractSource):
             Webhooks(authenticator=auth, **config),
             Workspaces(authenticator=auth, **config),
             Images(authenticator=auth, **config),
-            Themes(authenticator=auth, **config)
+            Themes(authenticator=auth, **config),
         ]

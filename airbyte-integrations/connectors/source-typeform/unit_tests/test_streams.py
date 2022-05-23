@@ -7,8 +7,7 @@ from unittest.mock import MagicMock
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-
-from source_typeform.source import TypeformStream, Forms, Responses, Webhooks, Images, Workspaces, Themes
+from source_typeform.source import Forms, Images, Responses, Themes, TypeformStream, Webhooks, Workspaces
 
 logger = AirbyteLogger()
 
