@@ -87,6 +87,7 @@ class NetsuiteStream(HttpStream, ABC):
         request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
         data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
         pool.close()
+        pool.join()
         for record in data:
             yield record
 
