@@ -3,10 +3,10 @@ import styled from "styled-components";
 
 import { Button } from "components/base";
 
-import { Attempt, Failure } from "core/domain/job/Job";
+import { AttemptRead } from "core/request/AirbyteClient";
 
 type IProps = {
-  attempts?: Attempt[];
+  attempts?: AttemptRead[];
   setLogTimestamp: (t: number) => void;
 };
 
@@ -18,7 +18,7 @@ const ExpandedFailureContainer = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const getFailureFromAttempt = (attempt: Attempt) => {
+const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary?.failures[0];
 };
 
@@ -29,8 +29,10 @@ const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
     return null;
   }
 
-  const getInternalFailureMessage = (failure: Failure) => {
+  const getInternalFailureMessage = (attempt: AttemptRead) => {
+    const failure = getFailureFromAttempt(attempt);
     const failureMessage = failure?.internalMessage ?? formatMessage({ id: "errorView.unknown" });
+
     return `${formatMessage({
       id: "sources.additionalFailureInfo",
     })}: ${failureMessage}`;
@@ -49,7 +51,7 @@ const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
     }
   };
 
-  const internalMessage = getInternalFailureMessage(failure);
+  const internalMessage = getInternalFailureMessage(attempt);
   return (
     <ExpandedFailureContainer>
       {failure.timestamp ? (

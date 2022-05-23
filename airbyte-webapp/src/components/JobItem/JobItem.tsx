@@ -92,10 +92,10 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
             }
           >
             {isOpen ? (
-                <>
-                  <ErrorDetails attempts={getJobAttemps(job)} setLogTimestamp={setLogTimestamp} />
-                  <JobLogs id={jobMeta.id} jobIsFailed={isFailed} logTimestamp={logTimestamp} />
-                </>
+              <>
+                <ErrorDetails attempts={getJobAttemps(job)} setLogTimestamp={setLogTimestamp} />
+                <JobLogs job={job} jobIsFailed={!didSucceed} logTimestamp={logTimestamp} />
+              </>
             ) : null}
           </Suspense>
         </div>
