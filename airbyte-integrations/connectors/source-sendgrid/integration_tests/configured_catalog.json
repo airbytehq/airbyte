@@ -4,7 +4,9 @@
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -13,7 +15,9 @@
       "stream": {
         "name": "lists",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -22,7 +26,9 @@
       "stream": {
         "name": "contacts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -31,7 +37,9 @@
       "stream": {
         "name": "stats_automations",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -40,7 +48,9 @@
       "stream": {
         "name": "segments",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -49,7 +59,9 @@
       "stream": {
         "name": "single_sends",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -58,7 +70,9 @@
       "stream": {
         "name": "templates",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -67,19 +81,28 @@
       "stream": {
         "name": "global_suppressions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "suppression_groups",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -88,7 +111,9 @@
       "stream": {
         "name": "suppression_group_members",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -97,65 +122,119 @@
       "stream": {
         "name": "blocks",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "bounces",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "invalid_emails",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "spam_reports",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "messages",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["last_event_time"]
+        "default_cursor_field": [
+          "last_event_time"
+        ]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": ["last_event_time"],
+      "cursor_field": [
+        "last_event_time"
+      ],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "messages_details",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "last_event_time"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [
+        "last_event_time"
+      ],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "template_details",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
