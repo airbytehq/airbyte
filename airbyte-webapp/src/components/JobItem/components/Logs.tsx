@@ -72,6 +72,7 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
   if (!matchTimestamp || !lines || lines.length === 0) {
     return [];
   }
+  const flooredMatchTimestamp = Math.floor(matchTimestamp / 1000) * 1000;
 
   const resolutionOffset = 1000; // the resolution of the timestamps is in seconds
   const matchingLineNumbers: number[] = [];
@@ -82,9 +83,12 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
     const timeString = lines[lineCounter].match(matcher);
     if (timeString) {
       const datetime = Date.parse(`${timeString[0].replace(" ", "T")}Z`);
-      if (datetime - resolutionOffset <= matchTimestamp && datetime + resolutionOffset >= matchTimestamp) {
+      if (
+        datetime - resolutionOffset <= flooredMatchTimestamp &&
+        datetime + resolutionOffset >= flooredMatchTimestamp
+      ) {
         matchingLineNumbers.push(lineCounter + 1);
-      } else if (datetime - (resolutionOffset * 2 + 1) <= matchTimestamp) {
+      } else if (datetime - (resolutionOffset * 2 + 1) <= flooredMatchTimestamp) {
         break; // Once we've reached a timestamp earlier than our search, we can stop seeking
       }
     }
