@@ -33,7 +33,7 @@ class SimpleRetriever(Retriever, HttpStream):
     @property
     def name(self) -> str:
         """
-        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        :return: Stream name
         """
         return self._name
 
@@ -43,35 +43,32 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def http_method(self) -> str:
-        """
-        Override if needed. See get_request_data/get_request_json if using POST/PUT/PATCH.
-        """
         return str(self._requester.get_method().value)
 
     @property
     def raise_on_http_errors(self) -> bool:
         """
-        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        If set to False, allows opting-out of raising HTTP code exception.
         """
         return self._requester.raise_on_http_errors
 
     @property
     def max_retries(self) -> Union[int, None]:
         """
-        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
         return self._requester.max_retries
 
     @property
     def retry_factor(self) -> float:
         """
-        Override if needed. Specifies factor for backoff policy.
+        Specifies factor to multiply the exponentiation by for backoff policy.
         """
         return self._requester.retry_factor
 
     def should_retry(self, response: requests.Response) -> bool:
         """
-        Override to set different conditions for backoff based on the response from the server.
+        Specifies conditions for backoff based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting
@@ -83,13 +80,13 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
-        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
+        Specifies backoff time.
 
-        This method is called only if should_backoff() returns True for the input request.
+         This method is called only if should_backoff() returns True for the input request.
 
-        :param response:
-        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-        to the default backoff behavior (e.g using an exponential algorithm).
+         :param response:
+         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
+         to the default backoff behavior (e.g using an exponential algorithm).
         """
         return self._requester.backoff_time(response)
 
@@ -97,7 +94,8 @@ class SimpleRetriever(Retriever, HttpStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        Specifies request headers.
+        Authentication headers will overwrite any overlapping headers returned from this method.
         """
         return self._requester.request_headers(stream_state, stream_slice, next_page_token)
 
@@ -108,7 +106,7 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Mapping, str]]:
         """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
+        Specifies how to populate the body of the request with a non-JSON payload.
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
@@ -125,7 +123,7 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
+        Specifies how to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -138,7 +136,7 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         """
-        Override to return a mapping of keyword arguments to be used when creating the HTTP request.
+        Specifies how to configure a mapping of keyword arguments to be used when creating the HTTP request.
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
@@ -156,7 +154,7 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
-        Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
+        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
@@ -165,14 +163,14 @@ class SimpleRetriever(Retriever, HttpStream):
     @property
     def cache_filename(self):
         """
-        Override if needed. Return the name of cache file
+        Return the name of cache file
         """
         return self._requester.cache_filename
 
     @property
     def use_cache(self):
         """
-        Override if needed. If True, all records will be cached.
+        If True, all records will be cached.
         """
         return self._requester.use_cache
 
@@ -195,7 +193,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        Override this method to define a pagination strategy.
+        Specifies a pagination strategy.
 
         The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
 
@@ -223,14 +221,14 @@ class SimpleRetriever(Retriever, HttpStream):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+        Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
         :param sync_mode:
         :param cursor_field:
         :param stream_state:
         :return:
         """
-        # FIXME: this is not passing the cursor field because i think it should be known at init time. Is this always true?
+        # FIXME: this is not passing the cursor field because it is always known at init time
         return self._iterator.stream_slices(sync_mode, stream_state)
 
     def get_state(self) -> MutableMapping[str, Any]:

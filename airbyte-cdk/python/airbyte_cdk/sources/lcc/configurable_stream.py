@@ -76,5 +76,5 @@ class ConfigurableStream(Stream):
         :param stream_state:
         :return:
         """
-        # this is not passing the cursor field because it isd known at init time
+        # this is not passing the cursor field because it is known at init time
         return self._retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
