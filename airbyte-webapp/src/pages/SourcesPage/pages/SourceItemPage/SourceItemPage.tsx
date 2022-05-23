@@ -8,7 +8,6 @@ import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks
 import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
@@ -18,6 +17,7 @@ import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
@@ -81,16 +81,14 @@ const SourceItemPage: React.FC = () => {
   };
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
-      pageTitle={
-        <PageTitle
-          title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
-          withLine
-        />
-      }
-    >
+    <ConnectorDocumentationWrapper>
+      <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
+      <PageTitle
+        title={<Breadcrumbs data={breadcrumbsData} />}
+        middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
+        withLine
+      />
+
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
@@ -120,7 +118,7 @@ const SourceItemPage: React.FC = () => {
           ></Route>
         </Routes>
       </Suspense>
-    </MainPageWithScroll>
+    </ConnectorDocumentationWrapper>
   );
 };
 

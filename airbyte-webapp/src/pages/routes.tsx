@@ -4,7 +4,6 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
-import { Workspace } from "core/domain/workspace/Workspace";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
@@ -16,6 +15,7 @@ import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
+import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
@@ -41,7 +41,7 @@ function useDemo() {
   useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
-const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
+const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
     () => ({
       workspace_id: workspace.workspaceId,
@@ -51,9 +51,10 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(workspace.workspaceId);
+  useTrackPageAnalytics();
 };
 
-const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
+const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
   return (
     <MainView>
       <Routes>

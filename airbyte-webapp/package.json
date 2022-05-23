@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.38.4-alpha",
+  "version": "0.39.1-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -12,7 +12,8 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
-    "license-check": "node ./scripts/license-check.js"
+    "license-check": "node ./scripts/license-check.js",
+    "generate-client": "orval"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
@@ -39,6 +40,7 @@
     "react-markdown": "^7.0.1",
     "react-pose": "^4.0.10",
     "react-query": "^3.34.19",
+    "react-reflex": "^4.0.6",
     "react-router-dom": "^6.3.0",
     "react-select": "^4.3.1",
     "react-table": "^7.7.0",
@@ -93,6 +95,7 @@
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
+    "orval": "^6.7.1",
     "prettier": "^2.6.2",
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",

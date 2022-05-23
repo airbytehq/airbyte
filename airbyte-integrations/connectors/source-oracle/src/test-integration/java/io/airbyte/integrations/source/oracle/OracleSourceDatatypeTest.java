@@ -56,7 +56,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 

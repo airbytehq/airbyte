@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { GAIcon } from "components/icons/GAIcon";
 import ToolTip from "components/ToolTip";
 
-import { ReleaseStage } from "core/domain/connector";
+import { ReleaseStage } from "core/request/AirbyteClient";
 
 const Stage = styled.div<{ $small: boolean }>`
   display: inline-block;
@@ -17,7 +17,7 @@ const Stage = styled.div<{ $small: boolean }>`
   color: ${({ theme }) => theme.textColor};
 `;
 
-interface Props {
+interface ReleaseStageBadgeProps {
   small?: boolean;
   stage?: ReleaseStage;
   /**
@@ -26,13 +26,13 @@ interface Props {
   tooltip?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<Props> = ({ stage, small, tooltip = true }) => {
-  if (!stage || stage === ReleaseStage.CUSTOM) {
+export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
+  if (!stage || stage === ReleaseStage.custom) {
     return null;
   }
 
   const badge =
-    stage === ReleaseStage.GENERALLY_AVAILABLE ? (
+    stage === ReleaseStage.generally_available ? (
       <GAIcon />
     ) : (
       <Stage $small={!!small}>

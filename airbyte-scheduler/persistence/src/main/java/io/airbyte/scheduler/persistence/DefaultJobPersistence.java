@@ -574,6 +574,32 @@ public class DefaultJobPersistence implements JobPersistence {
         true)));
   }
 
+  private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
+
+  @Override
+  public boolean isSchedulerMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SCHEDULER_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSchedulerMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SCHEDULER_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
+  }
+
   @Override
   public Optional<String> getVersion() throws IOException {
     final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
