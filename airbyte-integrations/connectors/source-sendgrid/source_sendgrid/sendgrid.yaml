@@ -1,24 +1,24 @@
 limit: 50
 
 decoder:
-  class_name: "airbyte_cdk.sources.lcc.decoders.json_decoder.JsonDecoder"
+  class_name: "airbyte_cdk.sources.configurable.decoders.json_decoder.JsonDecoder"
 
 cursor_state:
-  class_name: "airbyte_cdk.sources.lcc.states.dict_state.DictState"
+  class_name: "airbyte_cdk.sources.configurable.states.dict_state.DictState"
   d:
     created: "{{ last_record['created'] }}"
   state_type: INT
 
 metadata_paginator:
-  class_name: "airbyte_cdk.sources.lcc.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
+  class_name: "airbyte_cdk.sources.configurable.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
   interpolated_paginator:
-    class_name: "airbyte_cdk.sources.lcc.requesters.paginators.interpolated_paginator.InterpolatedPaginator"
+    class_name: "airbyte_cdk.sources.configurable.requesters.paginators.interpolated_paginator.InterpolatedPaginator"
     next_page_token_template:
       next_page_url: "{{ decoded_response['_metadata']['next'] }}"
     decoder: "*ref(decoder)"
 
 offset_paginator:
-  class_name: "airbyte_cdk.sources.lcc.requesters.paginators.offset_pagination.OffsetPagination"
+  class_name: "airbyte_cdk.sources.configurable.requesters.paginators.offset_pagination.OffsetPagination"
   page_size: "*ref(limit)"
   state: "*ref(cursor_state)"
 
@@ -27,7 +27,7 @@ offset_request_parameters:
   "limit": "*ref(limit)"
 
 offset_pagination_request_parameters:
-  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters: "*ref(offset_request_parameters)"
 
 cursor_request_parameters:
@@ -35,11 +35,11 @@ cursor_request_parameters:
   end_time: "{{ utc_now() }}"
 
 cursor_request_parameter_provider:
-  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters: "*ref(cursor_request_parameters)"
 
 cursor_offset_request_parameter_provider:
-  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters:
     offset: "{{ next_page_token['offset'] }}"
     limit: "*ref(limit)"
@@ -47,12 +47,12 @@ cursor_offset_request_parameter_provider:
     end_time: "{{ utc_now() }}"
 
 request_parameters_provider:
-  class_name: "airbyte_cdk.sources.lcc.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
 
 stream_slicer:
-  class_name: "airbyte_cdk.sources.lcc.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer"
+  class_name: "airbyte_cdk.sources.configurable.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer"
   start_time:
-    class_name: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
+    class_name: "airbyte_cdk.sources.configurable.interpolation.interpolated_string.InterpolatedString"
     string: "{{ stream_state['created'] }}"
     default: "{{ config['start_time'] }}"
   end_time: "{{ today_utc() }}"
@@ -61,29 +61,29 @@ stream_slicer:
   datetime_format: "%Y-%m-%d"
 
 next_page_url_from_token_partial:
-  class_name: "airbyte_cdk.sources.lcc.interpolation.interpolated_string.InterpolatedString"
+  class_name: "airbyte_cdk.sources.configurable.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
 
 retriever:
-  class_name: "airbyte_cdk.sources.lcc.retrievers.simple_retriever.SimpleRetriever"
+  class_name: "airbyte_cdk.sources.configurable.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ kwargs['name'] }}"
   state:
-    class_name: airbyte_cdk.sources.lcc.states.no_state.NoState
+    class_name: airbyte_cdk.sources.configurable.states.dict_state.DictState
   stream_slicer:
-    class_name: airbyte_cdk.sources.lcc.stream_slicers.single_slice.SingleSlice
+    class_name: airbyte_cdk.sources.configurable.stream_slicers.single_slice.SingleSlice
   paginator:
-    class_name: airbyte_cdk.sources.lcc.requesters.paginators.no_pagination.NoPagination
+    class_name: airbyte_cdk.sources.configurable.requesters.paginators.no_pagination.NoPagination
   primary_key: "{{ kwargs['primary_key'] }}"
 
 partial_stream:
-  class_name: "airbyte_cdk.sources.lcc.configurable_stream.ConfigurableStream"
+  class_name: "airbyte_cdk.sources.configurable.configurable_stream.ConfigurableStream"
   schema_loader:
-    class_name: airbyte_cdk.sources.lcc.schema.json_schema.JsonSchema
+    class_name: airbyte_cdk.sources.configurable.schema.json_schema.JsonSchema
     file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.json"
   cursor_field: []
 
 requester:
-  class_name: airbyte_cdk.sources.lcc.requesters.http_requester.HttpRequester
+  class_name: airbyte_cdk.sources.configurable.requesters.http_requester.HttpRequester
   name: "{{ kwargs['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
@@ -92,10 +92,10 @@ requester:
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_parameters_provider)"
   retrier:
-    class_name: airbyte_cdk.sources.lcc.requesters.retriers.default_retrier.DefaultRetrier
+    class_name: airbyte_cdk.sources.configurable.requesters.retriers.default_retrier.DefaultRetrier
 
 extractor:
-  class_name: airbyte_cdk.sources.lcc.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.configurable.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
 
 lists_stream:
@@ -334,18 +334,5 @@ spam_reports_stream:
       transform: ".[]"
 streams:
   - "*ref(lists_stream)"
-  - "*ref(campaigns_stream)"
-  - "*ref(contacts_stream)"
-  - "*ref(stats_automations_stream)"
-  - "*ref(segments_stream)"
-  - "*ref(single_sends_stream)"
-  - "*ref(templates_stream)"
-  - "*ref(global_suppressions_stream)"
-  - "*ref(suppression_groups_stream)"
-  - "*ref(suppression_group_members_stream)"
-  - "*ref(blocks_stream)"
-  - "*ref(bounces_stream)"
-  - "*ref(invalid_emails_stream)"
-  - "*ref(spam_reports_stream)"
 check:
-  class_name: airbyte_cdk.sources.lcc.checks.check_stream.CheckStream
+  class_name: airbyte_cdk.sources.configurable.checks.check_stream.CheckStream
