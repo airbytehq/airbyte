@@ -49,8 +49,6 @@ authenticator:
 
 
 def test_full_config():
-    # FIXME: some objects need to be checked
-    # FIXME: the ones with class: instead of class_name!
     content = """
 decoder:
   class_name: "airbyte_cdk.sources.configurable.decoders.json_decoder.JsonDecoder"
@@ -126,4 +124,4 @@ list_stream:
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert type(stream._retriever._extractor._decoder) == JsonDecoder
     assert stream._retriever._extractor._transform == ".result[]"
-    assert stream._schema_loader._kwargs == {"name": "lists"}
+    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
