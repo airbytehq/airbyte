@@ -8,7 +8,7 @@ import HeadTitle from "components/HeadTitle";
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
 import { EmailLinkErrorCodes } from "../services/auth/types";
-import { BottomBlock, FieldItem, Form } from "./auth/components/FormComponents";
+import { BottomBlock, BottomBlockStatusMessage, FieldItem, Form } from "./auth/components/FormComponents";
 
 const ValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -101,7 +101,7 @@ export const AcceptEmailInvite: React.FC = () => {
             <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.signup">
               <FormattedMessage id="login.signup" />
             </LoadingButton>
-            {status ?? <div className="message">{status}</div>}
+            {status && <BottomBlockStatusMessage>{status}</BottomBlockStatusMessage>}
           </BottomBlock>
         </Form>
       )}
