@@ -15,7 +15,7 @@ For more information about the grading system, see [Product Release Stages](http
 ## Sources
 
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
-| :------------------------------------------------------------------------------------------ | :------------------- | :------------------ |
+|:--------------------------------------------------------------------------------------------| :------------------- |:--------------------|
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
 | [Amazon Ads](sources/amazon-ads.md)                                                         | Alpha                | No                  |
@@ -132,7 +132,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
 | [Sendgrid](sources/sendgrid.md)                                                             | Alpha                | Yes                 |
 | [Sentry](sources/sentry.md)                                                                 | Alpha                | Yes                 |
-| [Shopify](sources/shopify.md)                                                               | Alpha                | No                 |
+| [Shopify](sources/shopify.md)                                                               | Alpha                | No                  |
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
 | [Slack](sources/slack.md)                                                                   | Alpha                | No                  |
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
@@ -164,6 +164,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
 | [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
+| [SFTP](sources/sftp.md)                                                                     | Alpha                | No                  |
 
 ## Destinations
 
