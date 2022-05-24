@@ -716,9 +716,6 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.replication_start_date_field = max(
-            pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=7, hours=1)
-        ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
@@ -731,7 +728,13 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
             end_date = pendulum.now("utc").strftime(self.time_format)
             if self._replication_end_date:
                 end_date = self._replication_end_date
-            params.update({self.replication_end_date_field: end_date})
+
+            start_date = max(
+                pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)
+            ).strftime(self.time_format)
+
+            params.update({self.replication_start_date_field: start_date,
+                           self.replication_end_date_field: end_date})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
