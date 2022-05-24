@@ -290,7 +290,7 @@ class StreamProcessor(object):
             )
 
             scd_new_data_table = self.add_to_outputs(
-                self.generate_scd_new_data_model(from_table, column_names),
+                self.generate_scd_new_data_model(from_table),
                 materialization_mode=forced_materialization_type,
                 is_intermediate=True,
                 suffix="scd_new_data",
@@ -306,18 +306,16 @@ class StreamProcessor(object):
                 partition_by=PartitionScheme.ACTIVE_ROW,
                 do_deletions=True,
                 column_names=column_names,
+                scd_new_data_table=scd_new_data_table,
             )
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
-                # TODO scd_new_data_table needs to be passed into add_to_outputs, not generate_final_model
-                self.generate_final_model(from_table, column_names, scd_new_data_table=scd_new_data_table, unique_key=self.get_unique_key())
-                + where_clause,
+                self.generate_final_model(from_table, column_names, unique_key=self.get_unique_key()) + where_clause,
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
-                scd_table=from_table,
                 column_names=column_names,
             )
         return self.find_children_streams(from_table, column_names)
@@ -681,7 +679,7 @@ where 1 = 1
 
         return col
 
-    def generate_scd_new_data_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+    def generate_scd_new_data_model(self, from_table: str) -> Any:
         jinja_variables = {
             "from_table": from_table,
             "quoted_col_emitted_at": self.get_emitted_at(in_jinja=True),
@@ -1023,9 +1021,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(
-        self, from_table: str, column_names: Dict[str, Tuple[str, str]], scd_new_data_table: str = None, unique_key: str = ""
-    ) -> Any:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
         template = Template(
             """
 -- Final base SQL model
@@ -1093,8 +1089,8 @@ where 1 = 1
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
         do_deletions: bool = False,
-        scd_table: str = "",
         column_names: Dict[str, Tuple[str, str]] = {},
+        scd_new_data_table: str = "",
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -1166,12 +1162,17 @@ where 1 = 1
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
                     hooks.append(
+                        f"delete from {{{{ {scd_new_data_table} }}}} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {{{{ {scd_new_data_table} }}}})",
+                    )
+                    hooks.append(
                         f"delete from {stg_schema}.{stg_table} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {stg_schema}.{stg_table})",
                     )
                 else:
-                    hooks.append(
-                        f"drop view {stg_schema}.{stg_table}",
-                    )
+                    # Note the different macro styles:
+                    # scd_new_data_table is a DBT ref() macro, so we wrap it in another {{ ... }} so that DBT will resolve it
+                    # stg_schema+stg_table are plain strings, so they need to be rendered as plain strings
+                    hooks.append(f"drop view {{{{ {scd_new_data_table} }}}}")
+                    hooks.append(f"drop view {stg_schema}.{stg_table}")
                 config["post_hook"] = "[" + ",".join(map(lambda hook: '"' + hook + '"', hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
