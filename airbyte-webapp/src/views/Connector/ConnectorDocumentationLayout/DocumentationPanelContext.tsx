@@ -5,7 +5,7 @@ const DocumentationPanelContext = createContext<ReturnType<typeof useDocumentati
 
 export const useDocumentationPanelState = () => {
   const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
-  const [documentationUrl, setDocumentationUrl] = useState("");
+  const [documentationUrl, setDocumentationUrl] = useState("docs");
 
   return {
     documentationPanelOpen,
@@ -18,7 +18,6 @@ export const useDocumentationPanelState = () => {
 export const useCloseDocumentationPanelEffect = () => {
   const { setDocumentationPanelOpen } = useDocumentationPanelState();
   useEffect(() => {
-    console.log("I'm here");
     return setDocumentationPanelOpen(false);
   }, [setDocumentationPanelOpen]);
 };

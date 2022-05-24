@@ -55,10 +55,12 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
-    setDocumentationPanelOpen(false);
     setSourceDefinitionId(sourceDefinitionId);
     const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-    setDocumentationUrl(connector?.documentationUrl || "");
+    if (connector?.documentationUrl !== undefined && connector.documentationUrl.length > 1) {
+      setDocumentationUrl(connector?.documentationUrl);
+      setDocumentationPanelOpen(true);
+    }
 
     if (afterSelectConnector) {
       afterSelectConnector();
