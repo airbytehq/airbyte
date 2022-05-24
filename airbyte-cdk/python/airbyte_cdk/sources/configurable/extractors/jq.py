@@ -17,7 +17,6 @@ class JqExtractor(HttpExtractor):
     def __init__(self, transform: str, decoder: Decoder, config, kwargs=None):
         if kwargs is None:
             kwargs = dict()
-        self._vars = vars
         self._interpolator = JinjaInterpolation()
         self._transform = transform
         self._config = config
