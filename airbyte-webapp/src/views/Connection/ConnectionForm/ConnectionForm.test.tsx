@@ -1,14 +1,18 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { Connection, ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
-import { Destination, Source } from "core/domain/connector";
-import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import {
+  ConnectionStatus,
+  DestinationRead,
+  NamespaceDefinitionType,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { render } from "utils/testutils";
 
-import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
+import ConnectionForm from "./ConnectionForm";
 
-const mockSource: Source = {
+const mockSource: SourceRead = {
   sourceId: "test-source",
   name: "test source",
   sourceName: "test-source-name",
@@ -17,7 +21,7 @@ const mockSource: Source = {
   connectionConfiguration: undefined,
 };
 
-const mockDestination: Destination = {
+const mockDestination: DestinationRead = {
   destinationId: "test-destination",
   name: "test destination",
   destinationName: "test destination name",
@@ -26,25 +30,25 @@ const mockDestination: Destination = {
   connectionConfiguration: undefined,
 };
 
-const mockConnection: Connection = {
+const mockConnection: WebBackendConnectionRead = {
   connectionId: "test-connection",
   name: "test connection",
   prefix: "test",
   sourceId: "test-source",
   destinationId: "test-destination",
-  status: ConnectionStatus.ACTIVE,
+  status: ConnectionStatus.active,
   schedule: null,
   syncCatalog: {
     streams: [],
   },
-  namespaceDefinition: ConnectionNamespaceDefinition.Source,
+  namespaceDefinition: NamespaceDefinitionType.source,
   namespaceFormat: "",
-  latestSyncJobStatus: null,
   operationIds: [],
   source: mockSource,
   destination: mockDestination,
   operations: [],
   catalogId: "",
+  isSyncing: false,
 };
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => {
@@ -63,23 +67,13 @@ jest.mock("services/workspaces/WorkspacesService", () => {
   };
 });
 
-const renderConnectionForm = (props: ConnectionFormProps) =>
-  render(
-    <ConfirmationModalService>
-      <ConnectionForm {...props} />
-    </ConfirmationModalService>
-  );
-
 describe("<ConnectionForm />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "edit",
-        connection: mockConnection,
-      });
-
+      const renderResult = await render(
+        <ConnectionForm onSubmit={jest.fn()} mode="edit" connection={mockConnection} />
+      );
       container = renderResult.container;
     });
     test("it renders relevant items", async () => {
@@ -95,12 +89,9 @@ describe("<ConnectionForm />", () => {
   });
   describe("readonly mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "readonly",
-        connection: mockConnection,
-      });
-
+      const renderResult = await render(
+        <ConnectionForm onSubmit={jest.fn()} mode="readonly" connection={mockConnection} />
+      );
       container = renderResult.container;
     });
     test("it renders only relevant items for the mode", async () => {

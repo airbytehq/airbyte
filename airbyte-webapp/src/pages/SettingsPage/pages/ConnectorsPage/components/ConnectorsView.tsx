@@ -5,7 +5,8 @@ import { CellProps } from "react-table";
 import HeadTitle from "components/HeadTitle";
 import Table from "components/Table";
 
-import { Connector, ConnectorDefinition, DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
+import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
 
 import ConnectorCell from "./ConnectorCell";
@@ -19,8 +20,8 @@ type ConnectorsViewProps = {
   type: "sources" | "destinations";
   isUpdateSuccess: boolean;
   hasNewConnectorVersion?: boolean;
-  usedConnectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
-  connectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
+  usedConnectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
+  connectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
   loading: boolean;
   error?: Error;
   onUpdate: () => void;

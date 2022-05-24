@@ -111,9 +111,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
             String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
   }
 
   @Override

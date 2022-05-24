@@ -124,8 +124,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
-    );
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
     dataSources.add(dataSource);
     return dataSource;
   }

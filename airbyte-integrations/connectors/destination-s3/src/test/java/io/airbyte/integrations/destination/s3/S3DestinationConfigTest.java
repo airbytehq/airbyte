@@ -46,7 +46,6 @@ class S3DestinationConfigTest {
     assertEquals(newBucketName, modifiedConfig.getBucketName());
     assertEquals(newBucketPath, modifiedConfig.getBucketPath());
     assertEquals(newBucketRegion, modifiedConfig.getBucketRegion());
-    assertEquals(newPartSize, modifiedConfig.getPartSize());
 
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) modifiedConfig.getS3CredentialConfig();
     assertEquals(newKey, credentialConfig.getAccessKeyId());
