@@ -9,14 +9,15 @@ from airbyte_cdk.sources.configurable.parsers.config_parser import ConfigParser
 
 
 class YamlParser(ConfigParser):
+    # FIXME: document
     def parse(self, config_str: str) -> Mapping[str, Any]:
         config = yaml.safe_load(config_str)
-        print(f"parsed_config: {config}")
         evaluated_config = dict()
         return self.preprocess_dict(config, evaluated_config, "")
 
     def preprocess_dict(self, config, evaluated_config, path):
         d = dict()
+        # FIXME: rename partial to ref
         if "partial" in config:
             partial_ref_string = config["partial"]
             d = deepcopy(self.preprocess(partial_ref_string, evaluated_config, path))
