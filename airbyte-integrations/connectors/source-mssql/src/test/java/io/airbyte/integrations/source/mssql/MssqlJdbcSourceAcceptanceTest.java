@@ -32,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "password_3435!";
   private static MSSQLServerContainer<?> dbContainer;
   private JsonNode config;
 
@@ -64,9 +66,6 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-
-      database.execute(ctx -> ctx.createStatement().execute("CREATE LOGIN Mary WITH PASSWORD = 'password_3435!'; " +
-              "CREATE USER Mary FOR LOGIN Mary;  "));
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put("database", dbName);
@@ -144,9 +143,9 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
-    ((ObjectNode) config).put("username", "Mary");
-    ((ObjectNode) config).put("password", "password_3435!");
-
+    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE LOGIN %s WITH PASSWORD = '%s'; ", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
+    ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());

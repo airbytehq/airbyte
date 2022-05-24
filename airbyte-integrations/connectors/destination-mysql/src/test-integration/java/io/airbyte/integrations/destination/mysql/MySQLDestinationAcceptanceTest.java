@@ -4,9 +4,13 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -18,12 +22,16 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -34,6 +42,9 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
@@ -260,4 +271,60 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     }
   }
 
+  @Test
+  void testCheckIncorrectPasswordFailure() {
+    JsonNode config = ((ObjectNode) getConfig()).put("password", "fake");
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() {
+    JsonNode config = ((ObjectNode) getConfig()).put("username", "fake");
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() {
+    JsonNode config = ((ObjectNode) getConfig()).put("host", "localhost2");
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() {
+    JsonNode config = ((ObjectNode) getConfig()).put("port", "0000");
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() {
+    JsonNode config = ((ObjectNode) getConfig()).put("database", "wrongdatabase");
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws SQLException {
+    final Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", db.getPassword());
+    connection.createStatement().execute("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    JsonNode config = ((ObjectNode) getConfig()).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
 }
