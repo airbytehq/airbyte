@@ -14,6 +14,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.*;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -283,10 +284,11 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
    */
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
+    System.out.println(data);
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", data));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
     return result;
   }
