@@ -196,7 +196,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
 
         today = pendulum.today(tz="UTC").date()
-        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
+        refresh_date = today - self.insights_lookback_period
 
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
