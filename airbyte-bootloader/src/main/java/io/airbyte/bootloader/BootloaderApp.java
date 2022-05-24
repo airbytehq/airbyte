@@ -69,6 +69,8 @@ public class BootloaderApp {
   private JobPersistence jobPersistence;
   private final Flyway configsFlyway;
   private final Flyway jobsFlyway;
+  private final DSLContext configsDslContext;
+  private final DSLContext jobsDslContext;
 
   /**
    * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
@@ -93,7 +95,9 @@ public class BootloaderApp {
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
     this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
 
     initPersistences(configsDslContext, jobsDslContext);
@@ -109,7 +113,9 @@ public class BootloaderApp {
     this.configs = configs;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
     this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
 
     initPersistences(configsDslContext, jobsDslContext);
@@ -132,6 +138,14 @@ public class BootloaderApp {
   }
 
   public void load() throws Exception {
+    LOGGER.info("Initializing databases...");
+    DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
+        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+
+    DatabaseCheckFactory.createJobsDatabaseInitializer(configsDslContext,
+        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+    LOGGER.info("Databases initialized.");
+
     LOGGER.info("Setting up config database and default workspace...");
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
@@ -207,14 +221,6 @@ public class BootloaderApp {
 
     try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         final DSLContext jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
-
-      LOGGER.info("Initializing databases...");
-      DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
-          configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
-
-      DatabaseCheckFactory.createJobsDatabaseInitializer(configsDslContext,
-          configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
-      LOGGER.info("Databases initialized.");
 
       // TODO Will be converted to an injected singleton during DI migration
       final Database configDatabase = getConfigDatabase(configsDslContext);
