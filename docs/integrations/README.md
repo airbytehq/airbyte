@@ -164,6 +164,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
 | [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
+| [SFTP](sources/sftp.md)                                                                     | Alpha                | No                  |
 
 ## Destinations
 
