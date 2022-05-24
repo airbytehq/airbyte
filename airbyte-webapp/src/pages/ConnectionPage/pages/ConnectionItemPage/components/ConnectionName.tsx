@@ -111,18 +111,17 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   };
 
   const onBlur = async () => {
-    const mustPassParameters = {
-      connectionId: connection.connectionId,
-      namespaceDefinition: connection.namespaceDefinition,
-      syncCatalog: connection.syncCatalog,
-      status: connection.status,
-      prefix: connection.prefix,
-    };
-
-    await updateConnection({
-      name: connectionName,
-      ...mustPassParameters,
-    });
+    // Update only when the name is changed
+    if (connection.name !== connectionName) {
+      await updateConnection({
+        name: connectionName,
+        connectionId: connection.connectionId,
+        namespaceDefinition: connection.namespaceDefinition,
+        syncCatalog: connection.syncCatalog,
+        status: connection.status,
+        prefix: connection.prefix,
+      });
+    }
 
     setEditingState(false);
   };

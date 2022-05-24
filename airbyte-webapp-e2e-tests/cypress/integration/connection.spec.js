@@ -21,7 +21,6 @@ describe("Connection main actions", () => {
 
     cy.get("div[data-id='replication-step']").click();
 
-    cy.get("div[data-testid='connectionName']").type('Connection Name');
     cy.get("div[data-testid='schedule']").click();
     cy.get("div[data-testid='Every 5 min']").click();
     cy.get("button[type=submit]").first().click();

@@ -15,9 +15,12 @@ type Props = {
 const MainComponent = styled.div`
   display: flex;
   padding: 10px;
+  width: 220px;
+  align-items: center;
 `;
 
 const Details = styled.div`
+  width: 160px;
   margin-left: 10px;
   display: flex;
   flex-direction: column;
@@ -25,8 +28,8 @@ const Details = styled.div`
 `;
 
 const EntityIcon = styled.div`
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
 `;
 
 const ConnectionName = styled.div`
@@ -44,6 +47,7 @@ const ConnectorDetails = styled.div`
 
 const ConnectorName = styled.div`
   font-size: 11px;
+  margin-top: 1px;
   color: #afafc1;
   text-align: left;
 `;
