@@ -9,7 +9,6 @@ import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefi
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 interface SourceFormProps {
@@ -41,7 +40,6 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
@@ -56,11 +54,8 @@ export const SourceForm: React.FC<SourceFormProps> = ({
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
+
     const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-    if (connector?.documentationUrl !== undefined && connector.documentationUrl.length > 1) {
-      setDocumentationUrl(connector?.documentationUrl);
-      setDocumentationPanelOpen(true);
-    }
 
     if (afterSelectConnector) {
       afterSelectConnector();
