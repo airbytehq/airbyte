@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.SourceConnection;
@@ -29,24 +28,20 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 import lombok.val;
 import org.flywaydb.core.Flyway;
-import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,21 +114,19 @@ public class BootloaderAppTest {
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
-      initializeConfigsDatabase(configsDslContext);
-      initializeJobsDatabase(jobsDslContext);
-
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
+
+      val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
       val bootloader =
           new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       bootloader.load();
 
-      val jobDatabase = new Database(jobsDslContext);
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
-      val configDatabase = new Database(configsDslContext);
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
@@ -174,16 +167,14 @@ public class BootloaderAppTest {
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
-      initializeConfigsDatabase(configsDslContext);
-      initializeJobsDatabase(jobsDslContext);
-
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
 
-      final Database configDatabase = new Database(configsDslContext);
-      final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
-      val jobsPersistence = new DefaultJobPersistence(configDatabase);
+      val configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
       val spiedSecretMigrator =
           spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
@@ -318,11 +309,11 @@ public class BootloaderAppTest {
     try (val configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         val jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
 
-      initializeConfigsDatabase(configsDslContext);
-      initializeJobsDatabase(jobsDslContext);
-
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
+
+      new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
       new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext,
           configsFlyway, jobsFlyway)
@@ -344,16 +335,6 @@ public class BootloaderAppTest {
 
   private void closeDataSource(final DataSource dataSource) throws Exception {
     DataSourceFactory.close(dataSource);
-  }
-
-  private void initializeConfigsDatabase(final DSLContext dslContext) throws IOException, DatabaseInitializationException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
-    DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
-  }
-
-  private void initializeJobsDatabase(final DSLContext dslContext) throws IOException, DatabaseInitializationException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
-    DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 
 }

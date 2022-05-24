@@ -35,6 +35,7 @@ import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
+import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -94,8 +95,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Timeout(value = 2,
            unit = TimeUnit.MINUTES)
   public void setupJobDatabase() throws DatabaseInitializationException, IOException {
-    initializeJobsDatabase(dslContext);
-    jobDatabase = new Database(dslContext);
+    jobDatabase = new JobsDatabaseTestProvider(dslContext, null).create(false);
   }
 
   @Test
