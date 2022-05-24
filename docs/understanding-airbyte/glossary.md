@@ -18,7 +18,7 @@ Stands for **E**xtract, **T**ransform, and **L**oad and **E**xtract, **L**oad, a
 
 **Extract**: Retrieve data from a [source](../integrations/sources/), which can be an application, database, anything really.
 
-**Load**: Move data to your [destination](../integrations/destinations/).
+**Load**: Move data to your [destination](../integrations/destinations/amazon-sqs.md).
 
 **Transform**: Clean up the data. This is referred to as [normalization](basic-normalization.md) in Airbyte and involves [deduplication](connections/incremental-deduped-history.md), changing data types, formats, and more.
 

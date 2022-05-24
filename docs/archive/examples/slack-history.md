@@ -102,9 +102,8 @@ Download \(or copy and paste\) this [html file](https://github.com/airbytehq/air
 
 ## 5. "Productionizing" Saving Slack History
 
-You can find instructions for how to host Airbyte on various cloud platforms [here](../../deploying-airbyte).
+You can find instructions for how to host Airbyte on various cloud platforms [here](../../deploying-airbyte/local-deployment.md).
 
 Documentation on how to host MeiliSearch on cloud platforms can be found [here](https://docs.meilisearch.com/running-production/#a-quick-introduction).
 
 If you want to use the UI mentioned in the section above, we recommend statically hosting it on S3, GCS, or equivalent.
-
