@@ -194,6 +194,16 @@ public class ConnectionManagerUtils {
     return connectionManagerWorkflow;
   }
 
+  static boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
+          getConnectionManagerName(connectionId));
+      return connectionManagerWorkflow.getState().isRunning();
+    } catch (final Exception e) {
+      return false;
+    }
+  }
+
   static WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
     final DescribeWorkflowExecutionRequest describeWorkflowExecutionRequest = DescribeWorkflowExecutionRequest.newBuilder()
         .setExecution(WorkflowExecution.newBuilder().setWorkflowId(getConnectionManagerName(connectionId)).build())

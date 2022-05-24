@@ -276,7 +276,7 @@ public class TemporalClient {
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
 
-    if (isWorkflowStateRunning(connectionId)) {
+    if (ConnectionManagerUtils.isWorkflowStateRunning(client, connectionId)) {
       // TODO Bmoric: Error is running
       return new ManualOperationResult(
           Optional.of("A sync is already running for: " + connectionId),
@@ -335,7 +335,7 @@ public class TemporalClient {
             Optional.of("Didn't manage to cancel a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (isWorkflowStateRunning(connectionId));
+    } while (ConnectionManagerUtils.isWorkflowStateRunning(client, connectionId));
 
     log.info("end of manual cancellation");
 
@@ -458,20 +458,6 @@ public class TemporalClient {
     try {
       ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
       return true;
-    } catch (final Exception e) {
-      return false;
-    }
-  }
-
-  /**
-   * Check if a workflow is reachable and has state {@link WorkflowState#isRunning()}
-   */
-  @VisibleForTesting
-  boolean isWorkflowStateRunning(final UUID connectionId) {
-    try {
-      final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
-
-      return connectionManagerWorkflow.getState().isRunning();
     } catch (final Exception e) {
       return false;
     }
