@@ -1,6 +1,6 @@
 import type { Url } from "url";
 
-import { Suspense, useMemo } from "react";
+import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useIntl } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
@@ -65,22 +65,18 @@ export const DocumentationPanel: React.FC = () => {
   transition where the documentation url is an empty string. */
   return isLoading || documentationUrl === "" ? (
     <LoadingPage />
-  ) : (
-    <Suspense fallback={<LoadingPage />}>
-      {docs ? (
-        <DocumentationContainer>
-          <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
-          {!docs.includes("<!DOCTYPE html>") ? (
-            <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
-          ) : (
-            <DocumentationContent content={formatMessage({ id: "connector.setupGuide.notFound" })} />
-          )}
-        </DocumentationContainer>
+  ) : docs ? (
+    <DocumentationContainer>
+      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+      {!docs.includes("<!DOCTYPE html>") ? (
+        <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
-        <ReflexElement className="right-pane" maxSize={1000}>
-          <FormattedMessage id="connector.setupGuide.notFound" />
-        </ReflexElement>
+        <DocumentationContent content={formatMessage({ id: "connector.setupGuide.notFound" })} />
       )}
-    </Suspense>
+    </DocumentationContainer>
+  ) : (
+    <ReflexElement className="right-pane" maxSize={1000}>
+      <FormattedMessage id="connector.setupGuide.notFound" />
+    </ReflexElement>
   );
 };
