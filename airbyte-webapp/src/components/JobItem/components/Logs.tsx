@@ -49,7 +49,7 @@ const Logs: React.FC<LogsProps> = ({ logsArray, logTimestamp }) => {
           lineClassName="logLine"
           highlightLineClassName="highlightLogLine"
           selectableLines
-          follow={matchingLineNumbers.length > 0 ? false : true}
+          follow={matchingLineNumbers.length === 0}
           style={{ background: "transparent" }}
           scrollToLine={matchingLineNumbers.length > 0 ? matchingLineNumbers[0] - 1 : undefined}
           highlight={matchingLineNumbers}
