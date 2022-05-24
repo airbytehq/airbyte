@@ -21,4 +21,5 @@ class SubstreamSlicer(StreamSlicer):
             self._state.update_state(parent_stream_slice=parent_stream_slice)
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh):
                 parent_id = self._interpolation.eval(self._parent_id, None, None, parent_record=parent_record)
+                self._state.update_state(parent_record=parent_record)
                 yield {**parent_stream_slice, **{"parent_id": parent_id}}
