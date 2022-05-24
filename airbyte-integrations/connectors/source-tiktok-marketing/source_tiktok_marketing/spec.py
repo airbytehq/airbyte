@@ -62,6 +62,18 @@ class SourceTiktokMarketingSpec(BaseModel):
         order=2,
     )
 
+    end_date: str = Field(
+        None,
+        title="End Date",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        description=(
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. "
+            "All data generated between start_date and this date will be replicated. "
+            "Not setting this option will result in always syncing the data till the current date."
+        ),
+        order=3,
+    )
+
     @classmethod
     def change_format_to_oneOf(cls, schema: dict) -> dict:
         new_schema = {}

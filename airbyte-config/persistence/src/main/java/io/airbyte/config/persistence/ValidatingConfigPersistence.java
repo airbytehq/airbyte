@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 /**
  * Validates that json input and outputs for the ConfigPersistence against their schemas.
  */
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class ValidatingConfigPersistence implements ConfigPersistence {
 
   private final JsonSchemaValidator schemaValidator;
@@ -73,13 +74,8 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
 
-    final Map<String, T> configIdToConfig = new HashMap<>() {
-
-      {
-        put(configId, config);
-      }
-
-    };
+    final Map<String, T> configIdToConfig = new HashMap<>();
+    configIdToConfig.put(configId, config);
 
     writeConfigs(configType, configIdToConfig);
   }

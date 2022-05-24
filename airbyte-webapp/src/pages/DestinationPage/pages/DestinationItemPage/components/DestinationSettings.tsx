@@ -4,8 +4,9 @@ import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Connector, Destination } from "core/domain/connector";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
+import { DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -16,12 +17,15 @@ const Content = styled.div`
   margin: 19px auto;
 `;
 
-type IProps = {
-  currentDestination: Destination;
-  connectionsWithDestination: Connection[];
+type DestinationsSettingsProps = {
+  currentDestination: DestinationRead;
+  connectionsWithDestination: WebBackendConnectionRead[];
 };
 
-const DestinationsSettings: React.FC<IProps> = ({ currentDestination, connectionsWithDestination }) => {
+const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
+  currentDestination,
+  connectionsWithDestination,
+}) => {
   const destinationSpecification = useGetDestinationDefinitionSpecification(currentDestination.destinationDefinitionId);
 
   const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);

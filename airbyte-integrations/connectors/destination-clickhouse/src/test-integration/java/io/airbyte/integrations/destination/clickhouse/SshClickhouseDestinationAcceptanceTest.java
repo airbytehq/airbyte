@@ -16,11 +16,10 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -154,9 +153,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
   }
 
   @Override

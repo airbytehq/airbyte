@@ -4,7 +4,7 @@ import { StripeCheckoutSessionRead, StripeCheckoutSessionCreate } from "./types"
 
 export class StripeService extends AirbyteRequestService {
   get url(): string {
-    return "stripe";
+    return "v1/stripe";
   }
 
   public async createCheckoutSession(params: StripeCheckoutSessionCreate): Promise<StripeCheckoutSessionRead> {

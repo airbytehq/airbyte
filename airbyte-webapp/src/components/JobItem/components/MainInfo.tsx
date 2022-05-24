@@ -4,14 +4,15 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton, StatusIcon } from "components";
+import { Button, StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
-import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
-import Status from "core/statuses";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import useLoadingState from "../../../hooks/useLoadingState";
+import { AttemptRead, JobStatus } from "../../../core/request/AirbyteClient";
 import { useCancelJob } from "../../../services/job/JobService";
+import { getJobId, getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 
 const MainView = styled(Row)<{
@@ -42,7 +43,7 @@ const AttemptCount = styled.div`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const CancelButton = styled(LoadingButton)`
+const CancelButton = styled(Button)`
   margin-right: 10px;
   padding: 3px 7px;
   z-index: 1;
@@ -79,9 +80,15 @@ const Text = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-type IProps = {
-  job: JobApiItem | JobInfo;
-  attempts?: Attempt[];
+const getJobConfig = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).configType ?? (job as JobsWithJobs).job.configType;
+
+const getJobCreatedAt = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).createdAt ?? (job as JobsWithJobs).job.createdAt;
+
+type MainInfoProps = {
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
+  attempts?: AttemptRead[];
   isOpen?: boolean;
   onExpand: () => void;
   isFailed?: boolean;
@@ -89,7 +96,7 @@ type IProps = {
   shortInfo?: boolean;
 };
 
-const MainInfo: React.FC<IProps> = ({
+const MainInfo: React.FC<MainInfoProps> = ({
   job,
   attempts = [],
   isOpen,
@@ -98,20 +105,21 @@ const MainInfo: React.FC<IProps> = ({
   shortInfo,
   isPartialSuccess,
 }) => {
-  const { isLoading, showFeedback, startAction } = useLoadingState();
   const cancelJob = useCancelJob();
 
-  const onCancelJob = (event: React.SyntheticEvent) => {
+  const onCancelJob = async (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    return startAction({ action: () => cancelJob(job.id) });
+    return cancelJob(Number(getJobId(job)));
   };
 
-  const isNotCompleted = job.status && [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
+  const jobStatus = getJobStatus(job);
+  const isNotCompleted =
+    jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
 
-  const jobStatus = isPartialSuccess ? (
+  const jobStatusLabel = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />
   ) : (
-    <FormattedMessage id={`sources.${job.status}`} />
+    <FormattedMessage id={`sources.${getJobStatus(job)}`} />
   );
 
   const getIcon = () => {
@@ -128,7 +136,7 @@ const MainInfo: React.FC<IProps> = ({
       <InfoCell>
         <Title isFailed={isFailed}>
           {getIcon()}
-          {jobStatus}
+          {jobStatusLabel}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
             <div>
@@ -137,27 +145,21 @@ const MainInfo: React.FC<IProps> = ({
                   <FormattedMessage id="sources.lastAttempt" />
                 </Text>
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={job.configType} />
+              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
             </div>
           ) : null}
         </Title>
       </InfoCell>
       <InfoCell>
         {!shortInfo && isNotCompleted && (
-          <CancelButton
-            secondary
-            disabled={isLoading}
-            isLoading={isLoading}
-            wasActive={showFeedback}
-            onClick={onCancelJob}
-          >
-            <FormattedMessage id={showFeedback ? "form.canceling" : "form.cancel"} />
+          <CancelButton secondary onClick={onCancelJob}>
+            <FormattedMessage id="form.cancel" />
           </CancelButton>
         )}
-        <FormattedTimeParts value={job.createdAt * 1000} hour="numeric" minute="2-digit">
+        <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
           {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
         </FormattedTimeParts>
-        <FormattedDateParts value={job.createdAt * 1000} month="2-digit" day="2-digit">
+        <FormattedDateParts value={getJobCreatedAt(job) * 1000} month="2-digit" day="2-digit">
           {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
         {attempts.length > 1 && (

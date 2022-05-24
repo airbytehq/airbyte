@@ -26,5 +26,6 @@ Put the contents of the `Snowflake Integration Test Config` secret on LastPass u
 1. Put the contents of the `destination snowflake - gcs copy test creds` secret into `secrets/copy_gcs_config.json`
 1. Put the contents of the `destination snowflake - s3 copy test creds` secret into `secrets/copy_s3_config.json`
 1. Put the contents of the `destination snowflake - azure blob copy test creds` secret into `secrets/copy_azure_blob_config.json`
+1. Put the contents of the `destination snowflake - s3 copy encrypted test creds` secret into `secrets/copy_s3_encrypted_config.json`
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.
