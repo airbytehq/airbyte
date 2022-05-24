@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import pytest
 from airbyte_cdk.sources.configurable.parsers.yaml_parser import YamlParser
 
 parser = YamlParser()
@@ -48,6 +48,16 @@ def test_refer_to_inner():
     """
     config = parser.parse(content)
     assert config["limit_ref"] == 50
+
+
+def test_refer_to_non_existant_struct():
+    content = """
+    dict:
+      limit: 50
+    limit_ref: "*ref(not_dict)"
+    """
+    with pytest.raises(KeyError):
+        parser.parse(content)
 
 
 def test_refer_in_dict():
