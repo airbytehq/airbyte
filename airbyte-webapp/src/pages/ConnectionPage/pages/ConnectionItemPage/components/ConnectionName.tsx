@@ -139,7 +139,7 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
       {editingState && (
         <EditingContainer>
           <InputContainer>
-            <StyledInput value={connectionName} onChange={inputChange} onBlur={onBlur} />
+            <StyledInput value={connectionName} onChange={inputChange} onBlur={onBlur} defaultFocus />
           </InputContainer>
         </EditingContainer>
       )}
