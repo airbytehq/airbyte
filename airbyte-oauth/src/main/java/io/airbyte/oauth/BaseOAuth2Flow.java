@@ -286,7 +286,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", data));
     }
     return result;
   }
