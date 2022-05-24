@@ -10,8 +10,12 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -21,6 +25,7 @@ import java.util.Objects;
 public class RecordSchemaValidator {
 
   private final Map<String, JsonNode> streams;
+  private static final Logger LOGGER = LoggerFactory.getLogger(RecordSchemaValidator.class);
 
   public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema
@@ -50,9 +55,18 @@ public class RecordSchemaValidator {
     try {
       validator.ensure(matchingSchema, messageData);
     } catch (final JsonValidationException e) {
+      final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
+      final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
+
+      final AtomicReference<String> validationMessagesToDisplay = new AtomicReference<>("");
+      for (int i = 0; i < invalidFields.size(); i++) {
+        final String newMessage = String.format("Expected %s to be %s. ", invalidFields.get(i), invalidRecordDataAndType.get(i)[1]);
+        validationMessagesToDisplay.set(validationMessagesToDisplay + newMessage);
+      }
+
       final String streamWithNamespace = message.getNamespace() == null ? message.getStream() : message.getNamespace() + "-" + message.getStream();
       throw new RecordSchemaValidationException(streamWithNamespace,
-          String.format("Record schema validation failed for %s. Expected schema: %s", streamWithNamespace, matchingSchema));
+          String.format("Record schema validation failed for %s. %s", streamWithNamespace, validationMessagesToDisplay));
     }
   }
 
