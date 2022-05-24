@@ -22,8 +22,8 @@ def connector_config():
     return AmazonSellerPartnerConfig(
         replication_start_date="2017-01-25T00:00:00Z",
         refresh_token="Atzr|IwEBIP-abc123",
-        lwa_app_id="amzn1.application-oa2-client.abc123",
-        lwa_client_secret="abc123",
+        client_id="amzn1.application-oa2-client.abc123",
+        client_secret="abc123",
         aws_access_key="aws_access_key",
         aws_secret_key="aws_secret_key",
         role_arn="arn:aws:iam::123456789098:role/some-role",
