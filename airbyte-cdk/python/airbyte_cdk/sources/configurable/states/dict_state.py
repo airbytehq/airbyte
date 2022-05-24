@@ -33,6 +33,10 @@ class DictState(State):
             self._state_type = StateType[state_type].value
         elif type(state_type) == type:
             self._state_type = state_type
+        elif type(state_type) == type:
+            self._state_type = state_type
+        else:
+            raise Exception(f"Unexpected type for state_type. Got {state_type}")
         self._interpolator = JinjaInterpolation()
         self._context = dict()
         self._config = config
