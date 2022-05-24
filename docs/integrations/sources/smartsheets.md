@@ -41,7 +41,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 6. Submit the form
 
 **For Airbyte OSS:**
-1. Navigate to the Airbute Open Source dashboard
+1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter the API access token from Prerequisites
 4. Enter the ID of the spreadsheet you want to sync
@@ -88,6 +88,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.12  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
 | 0.1.11  | 2022-04-27 | [12203](https://github.com/airbytehq/airbyte/pull/12203) | Doc improvements                                          |
 | 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
 | 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |

@@ -8,13 +8,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
@@ -35,7 +37,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -45,6 +47,26 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -105,28 +127,16 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     return jdbcDB.queryJsons(query);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickhouseDestination.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.has("password") ? config.get("password").asText() : null,
+            ClickhouseDestination.DRIVER_CLASS,
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())));
   }
 
   @Override
@@ -179,6 +189,11 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
   }
 
 }

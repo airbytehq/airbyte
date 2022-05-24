@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class CompressionTypeHelper {
 
+  private CompressionTypeHelper() {}
+
   /**
    * Sample expected input: { "compression_type": "No Compression" }
    */

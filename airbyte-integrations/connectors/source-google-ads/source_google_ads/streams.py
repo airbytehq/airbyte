@@ -48,7 +48,7 @@ def chunk_date_range(
     days_of_data_storage: int = None,
     range_days: int = None,
     time_zone=None,
-) -> Iterable[Mapping[str, any]]:
+) -> Iterable[Optional[Mapping[str, any]]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
@@ -64,7 +64,7 @@ def chunk_date_range(
 
     # As in to return some state when state in abnormal
     if start_date > end_date:
-        start_date = end_date
+        return [None]
 
     # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
@@ -99,7 +99,9 @@ class GoogleAdsStream(Stream, ABC):
             self._customer_id = customer_id
             yield {}
 
-    def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            return []
         account_responses = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=self._customer_id)
         for response in account_responses:
             yield from self.parse_response(response)

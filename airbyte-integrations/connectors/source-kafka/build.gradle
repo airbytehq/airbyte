@@ -19,7 +19,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-kafka')
-    integrationTestJavaImplementation "org.testcontainers:kafka:1.15.3"
+    integrationTestJavaImplementation libs.testcontainers.kafka
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

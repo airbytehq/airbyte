@@ -5,13 +5,10 @@
 
 import json
 import logging
-import subprocess
-import sys
 from typing import Dict
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
 
 @pytest.fixture(scope="session")
@@ -95,21 +92,3 @@ def test_fatal(logger, caplog):
     record = caplog.records[0]
     assert record.levelname == "CRITICAL"
     assert record.message == "Test fatal 1"
-
-
-def test_unhandled_logger():
-    cmd = "from airbyte_cdk.logger import init_logger; init_logger('airbyte'); raise 1"
-    expected_message = (
-        "exceptions must derive from BaseException\n"
-        "Traceback (most recent call last):\n"
-        '  File "<string>", line 1, in <module>\n'
-        "TypeError: exceptions must derive from BaseException"
-    )
-    log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level="FATAL", message=expected_message))
-    expected_output = log_message.json(exclude_unset=True)
-
-    with pytest.raises(subprocess.CalledProcessError) as err:
-        subprocess.check_output([sys.executable, "-c", cmd], stderr=subprocess.STDOUT)
-
-    assert not err.value.stderr, "nothing on the stderr"
-    assert err.value.output.decode("utf-8").strip() == expected_output, "Error should be printed in expected form"

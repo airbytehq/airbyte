@@ -72,6 +72,7 @@ This source is capable of syncing the following tables and their data:
 - [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
 - [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
 - [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Browse tree report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#browse-tree-report)
 
 ## Data type mapping
 
@@ -88,7 +89,10 @@ This source is capable of syncing the following tables and their data:
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                |
-| :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+|:---------|:-----------|:---------------------------------------------------------| :--------------------------------------------------------------------- |
+| `0.2.18` | 2022-05-06 | [\#12663](https://github.com/airbytehq/airbyte/pull/12663)| Add GET_XML_BROWSE_TREE_DATA report                                   |
+| `0.2.17` | 2022-05-19 | [\#12946](https://github.com/airbytehq/airbyte/pull/12946)| Add throttling exception managing in Orders streams                    |
+| `0.2.16` | 2022-05-04 | [\#12523](https://github.com/airbytehq/airbyte/pull/12523)| allow to use IAM user arn or IAM role arn                              |
 | `0.2.15` | 2022-01-25 | [\#9789](https://github.com/airbytehq/airbyte/pull/9789) | Add stream FbaReplacementsReports                                      |
 | `0.2.14` | 2022-01-19 | [\#9621](https://github.com/airbytehq/airbyte/pull/9621) | Add GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report        |
 | `0.2.13` | 2022-01-18 | [\#9581](https://github.com/airbytehq/airbyte/pull/9581) | Change createdSince parameter to dataStartTime                         |

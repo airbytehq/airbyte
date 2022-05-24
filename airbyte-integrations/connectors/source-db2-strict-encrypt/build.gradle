@@ -22,7 +22,7 @@ dependencies {
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(':airbyte-test-utils')
-    testImplementation "org.testcontainers:db2:1.15.3"
+    testImplementation libs.testcontainers.db2
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-db2')

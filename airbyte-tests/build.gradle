@@ -39,7 +39,7 @@ dependencies {
     implementation project(':airbyte-container-orchestrator')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'org.testcontainers:testcontainers:1.15.3'
+    implementation libs.testcontainers
 
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
@@ -54,14 +54,14 @@ dependencies {
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'
     acceptanceTestsImplementation 'io.temporal:temporal-sdk:1.8.1'
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
-    acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.3'
-    acceptanceTestsImplementation 'org.postgresql:postgresql:42.2.18'
+    acceptanceTestsImplementation libs.testcontainers.postgresql
+    acceptanceTestsImplementation libs.postgresql
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-tests')
 
-    automaticMigrationAcceptanceTestImplementation 'org.testcontainers:testcontainers:1.15.3'
+    automaticMigrationAcceptanceTestImplementation libs.testcontainers
 }
 
 // test should run using the current version of the docker compose configuration.

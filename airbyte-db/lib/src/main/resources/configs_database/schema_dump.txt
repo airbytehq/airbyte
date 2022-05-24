@@ -101,6 +101,8 @@ create table "public"."connection"(
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   "source_catalog_id" uuid null,
+  "schedule_type" schedule_type null,
+  "schedule_data" jsonb null,
   constraint "connection_pkey"
     primary key ("id")
 );

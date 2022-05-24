@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
  * {@link RedshiftInsertDestination} for more detail. The second inserts via streaming the data to
  * an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
  * production workloads, but does require users to set up an S3 bucket and pass in additional
- * credentials. See {@link RedshiftCopyS3Destination} for more detail. This class inspect the given
- * arguments to determine which strategy to use.
+ * credentials. See {@link RedshiftStagingS3Destination} for more detail. This class inspect the
+ * given arguments to determine which strategy to use.
  */
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
@@ -42,7 +42,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public static Map<DestinationType, Destination> getTypeToDestination() {
     return Map.of(
         DestinationType.INSERT_WITH_SUPER_TMP_TYPE, new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER),
-        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
+        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftStagingS3Destination(RedshiftDataTmpTableMode.SUPER));
   }
 
   public static DestinationType determineUploadMode(final JsonNode config) {
