@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from airbyte_cdk.sources.configurable.states.dict_state import DictState
+from airbyte_cdk.sources.configurable.states.dict_state import DictState, StateType
 
 config = {"name": "date"}
 name = "{{ config['name'] }}"
@@ -16,6 +16,13 @@ def test_empty_state_is_none():
     initial_state = state.get_state()
     expected_state = {}
     assert expected_state == initial_state
+
+
+def test_state_type():
+    state_type_string = DictState(dict_mapping, "INT", config)
+    state_type_type = DictState(dict_mapping, int, config)
+    state_type_enum = DictState(dict_mapping, StateType.INT, config)
+    assert state_type_string._state_type == state_type_type._state_type == state_type_enum._state_type
 
 
 def test_update_initial_state():
