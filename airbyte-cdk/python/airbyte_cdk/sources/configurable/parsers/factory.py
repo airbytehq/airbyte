@@ -5,17 +5,24 @@ from __future__ import annotations
 
 import copy
 import importlib
+from typing import Any, Mapping
 
 from airbyte_cdk.sources.configurable.create_partial import create
 from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.configurable.types import Config
 
 
 class LowCodeComponentFactory:
     def __init__(self):
         self._interpolator = JinjaInterpolation()
 
-    # FIXME: document this!
-    def create_component(self, component_definition, config):
+    def create_component(self, component_definition: Mapping[str, Any], config: Config):
+        """
+
+        :param component_definition: mapping defining the object to create. It should have at least one field: `class_name`
+        :param config: Connector's config
+        :return: the object to create
+        """
         kwargs = copy.deepcopy(component_definition)
         class_name = kwargs.pop("class_name")
         return self.build(class_name, config, **kwargs)
@@ -29,6 +36,7 @@ class LowCodeComponentFactory:
         updated_kwargs = dict()
         for k, v in kwargs.items():
             if type(v) == dict and "class_name" in v:
+                # propagate kwargs to inner objects
                 v["kwargs"] = self.merge_dicts(kwargs.get("kwargs", dict()), v.get("kwargs", dict()))
                 updated_kwargs[k] = self.create_component(v, config)()
             else:

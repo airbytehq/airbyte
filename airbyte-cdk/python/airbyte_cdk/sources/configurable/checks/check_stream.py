@@ -10,6 +10,10 @@ from airbyte_cdk.sources.source import Source
 
 
 class CheckStream(ConnectionChecker):
+    """
+    Checks the connections by trying to read records from one of the streams
+    """
+
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         stream = source.streams(config)[0]
         try:
