@@ -26,6 +26,7 @@ import org.slf4j.MDC;
  * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
  * {@link LogConfigs} interface via the {@link CloudLogs} interface.
  */
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.AvoidSynchronizedAtMethodLevel"})
 public class LogClientSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogClientSingleton.class);
