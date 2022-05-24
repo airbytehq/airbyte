@@ -25,7 +25,7 @@ const getFailureFromAttempt = (attempt: AttemptRead) => {
 const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
   const { formatMessage } = useIntl();
 
-  if (!attempts || attempts.length === 0) {
+  if (!attempts?.length) {
     return null;
   }
 
