@@ -54,13 +54,13 @@ const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
   const internalMessage = getInternalFailureMessage(attempt);
   return (
     <ExpandedFailureContainer>
-      {failure.timestamp ? (
+      {!!failure.timestamp && (
         <>
           <Button size="m" secondary onClick={() => jumpToLogTimestamp()}>
             view
           </Button>{" "}
         </>
-      ) : null}
+      )}
       {internalMessage}
     </ExpandedFailureContainer>
   );
