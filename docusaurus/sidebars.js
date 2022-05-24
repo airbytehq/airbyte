@@ -814,6 +814,10 @@ module.exports = {
               },
               {
                 type: 'doc',
+                id: "integrations/destinations/google-sheets",
+              },
+              {
+                type: 'doc',
                 id: "integrations/destinations/pubsub",
               },
               {
