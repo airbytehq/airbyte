@@ -13,13 +13,15 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.instance.DatabaseConstants;
+import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 
@@ -41,11 +43,15 @@ public class ReporterApp {
 
     try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
 
+      final Flyway flyway = FlywayFactory.create(dataSource, ReporterApp.class.getSimpleName(),
+          ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+
       // Ensure that the database resources are closed on application shutdown
       CloseableShutdownHook.registerRuntimeShutdownHook(dataSource, dslContext);
 
       // Ensure that the Configuration database is available
-      DatabaseCheckFactory.createConfigsDatabaseAvailabilityCheck(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS).check();
+      DatabaseCheckFactory.createConfigsDatabaseMigrationCheck(dslContext, flyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
+          configs.getConfigsDatabaseInitializationTimeoutMs()).check();
 
       configDatabase = new Database(dslContext);
 

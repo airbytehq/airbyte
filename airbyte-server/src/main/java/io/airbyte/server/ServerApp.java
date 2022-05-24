@@ -33,7 +33,6 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
@@ -141,13 +140,13 @@ public class ServerApp implements ServerRunnable {
                                            final Flyway jobsFlyway)
       throws DatabaseCheckException {
     LOGGER.info("Checking configs database flyway migration version..");
-    DatabaseCheckFactory.createConfigsDatabaseAvailabilityCheck(configsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
-    DatabaseCheckFactory.createConfigsDatabaseMigrationCheck(configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getConfigsDatabaseInitializationTimeoutMs()).check();
+    DatabaseCheckFactory
+        .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
+            configs.getConfigsDatabaseInitializationTimeoutMs())
+        .check();
 
     LOGGER.info("Checking jobs database flyway migration version..");
-    DatabaseCheckFactory.createJobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
-    DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
+    DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
         configs.getJobsDatabaseInitializationTimeoutMs()).check();
   }
 

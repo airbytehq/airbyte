@@ -34,7 +34,7 @@ public class DatabaseCheckFactory {
    *        milliseconds.
    * @return A configured {@link DatabaseAvailabilityCheck} for the {@code Configurations} database.
    */
-  public static DatabaseAvailabilityCheck createConfigsDatabaseAvailabilityCheck(final DSLContext dslContext, final long timeoutMs) {
+  public static ConfigsDatabaseAvailabilityCheck createConfigsDatabaseAvailabilityCheck(final DSLContext dslContext, final long timeoutMs) {
     return new ConfigsDatabaseAvailabilityCheck(dslContext, timeoutMs);
   }
 
@@ -48,7 +48,7 @@ public class DatabaseCheckFactory {
    *        milliseconds.
    * @return A configured {@link DatabaseAvailabilityCheck} for the {@code Jobs} database.
    */
-  public static DatabaseAvailabilityCheck createJobsDatabaseAvailabilityCheck(final DSLContext dslContext, final long timeoutMs) {
+  public static JobsDatabaseAvailabilityCheck createJobsDatabaseAvailabilityCheck(final DSLContext dslContext, final long timeoutMs) {
     return new JobsDatabaseAvailabilityCheck(dslContext, timeoutMs);
   }
 
@@ -56,32 +56,39 @@ public class DatabaseCheckFactory {
    * Constructs a new {@link DatabaseMigrationCheck} that verifies that the {@code Configurations}
    * database has been migrated to the requested minimum schema version.
    *
+   * @param dslContext The {@link DSLContext} instance used to communicate with the
+   *        {@code Configurations} database.
    * @param flyway The {@link Flyway} instance used to determine the current migration status.
    * @param minimumMigrationVersion The required minimum schema version.
    * @param timeoutMs Teh amount of time to wait for the migration to complete/match the requested
    *        minimum schema version, in milliseconds.
    * @return The configured {@link DatabaseMigrationCheck} for the {@code Configurations} database.
    */
-  public static DatabaseMigrationCheck createConfigsDatabaseMigrationCheck(final Flyway flyway,
+  public static DatabaseMigrationCheck createConfigsDatabaseMigrationCheck(final DSLContext dslContext,
+                                                                           final Flyway flyway,
                                                                            final String minimumMigrationVersion,
                                                                            final long timeoutMs) {
-    return new ConfigsDatabaseMigrationCheck(flyway, minimumMigrationVersion, timeoutMs);
+    return new ConfigsDatabaseMigrationCheck(createConfigsDatabaseAvailabilityCheck(dslContext, timeoutMs),
+        flyway, minimumMigrationVersion, timeoutMs);
   }
 
   /**
    * Constructs a new {@link DatabaseMigrationCheck} that verifies that the {@code Jobs} database has
    * been migrated to the requested minimum schema version.
    *
+   * @param dslContext The {@link DSLContext} instance used to communicate with the
+   *        {@code Configurations} database.
    * @param flyway The {@link Flyway} instance used to determine the current migration status.
    * @param minimumMigrationVersion The required minimum schema version.
    * @param timeoutMs Teh amount of time to wait for the migration to complete/match the requested
    *        minimum schema version, in milliseconds.
    * @return The configured {@link DatabaseMigrationCheck} for the {@code Jobs} database.
    */
-  public static DatabaseMigrationCheck createJobsDatabaseMigrationCheck(final Flyway flyway,
+  public static DatabaseMigrationCheck createJobsDatabaseMigrationCheck(final DSLContext dslContext,
+                                                                        final Flyway flyway,
                                                                         final String minimumMigrationVersion,
                                                                         final long timeoutMs) {
-    return new JobsDatabaseMigrationCheck(flyway, minimumMigrationVersion, timeoutMs);
+    return new JobsDatabaseMigrationCheck(createJobsDatabaseAvailabilityCheck(dslContext, timeoutMs), flyway, minimumMigrationVersion, timeoutMs);
   }
 
   /**

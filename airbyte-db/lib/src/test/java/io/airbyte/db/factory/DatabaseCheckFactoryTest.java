@@ -50,13 +50,16 @@ class DatabaseCheckFactoryTest {
 
   @Test
   void testCreateConfigsDatabaseMigrationCheck() {
+    final var dslContext = mock(DSLContext.class);
     final var flyway = mock(Flyway.class);
     final var minimumMigrationVersion = "1.2.3";
     final var timeoutMs = 500L;
-    final var check = DatabaseCheckFactory.createConfigsDatabaseMigrationCheck(flyway, minimumMigrationVersion, timeoutMs);
+    final var check = DatabaseCheckFactory.createConfigsDatabaseMigrationCheck(dslContext, flyway, minimumMigrationVersion, timeoutMs);
 
     Assertions.assertNotNull(check);
     Assertions.assertEquals(ConfigsDatabaseMigrationCheck.class, check.getClass());
+    Assertions.assertTrue(check.getDatabaseAvailabilityCheck().isPresent());
+    Assertions.assertEquals(ConfigsDatabaseAvailabilityCheck.class, check.getDatabaseAvailabilityCheck().get().getClass());
     Assertions.assertEquals(minimumMigrationVersion, check.getMinimumFlywayVersion());
     Assertions.assertEquals(timeoutMs, check.getTimeoutMs());
     Assertions.assertTrue(check.getFlyway().isPresent());
@@ -65,13 +68,16 @@ class DatabaseCheckFactoryTest {
 
   @Test
   void testCreateJobsDatabaseMigrationCheck() {
+    final var dslContext = mock(DSLContext.class);
     final var flyway = mock(Flyway.class);
     final var minimumMigrationVersion = "1.2.3";
     final var timeoutMs = 500L;
-    final var check = DatabaseCheckFactory.createJobsDatabaseMigrationCheck(flyway, minimumMigrationVersion, timeoutMs);
+    final var check = DatabaseCheckFactory.createJobsDatabaseMigrationCheck(dslContext, flyway, minimumMigrationVersion, timeoutMs);
 
     Assertions.assertNotNull(check);
     Assertions.assertEquals(JobsDatabaseMigrationCheck.class, check.getClass());
+    Assertions.assertTrue(check.getDatabaseAvailabilityCheck().isPresent());
+    Assertions.assertEquals(JobsDatabaseAvailabilityCheck.class, check.getDatabaseAvailabilityCheck().get().getClass());
     Assertions.assertEquals(minimumMigrationVersion, check.getMinimumFlywayVersion());
     Assertions.assertEquals(timeoutMs, check.getTimeoutMs());
     Assertions.assertTrue(check.getFlyway().isPresent());

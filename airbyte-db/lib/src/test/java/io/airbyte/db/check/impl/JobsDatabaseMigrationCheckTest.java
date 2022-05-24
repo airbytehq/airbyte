@@ -28,12 +28,13 @@ class JobsDatabaseMigrationCheckTest {
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
     final var flyway = mock(Flyway.class);
+    final var databaseAvailabilityCheck = mock(JobsDatabaseAvailabilityCheck.class);
 
     when(migrationInfo.getVersion()).thenReturn(migrationVersion);
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -45,12 +46,13 @@ class JobsDatabaseMigrationCheckTest {
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
     final var flyway = mock(Flyway.class);
+    final var databaseAvailabilityCheck = mock(JobsDatabaseAvailabilityCheck.class);
 
     when(migrationInfo.getVersion()).thenReturn(migrationVersion);
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -62,19 +64,38 @@ class JobsDatabaseMigrationCheckTest {
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
     final var flyway = mock(Flyway.class);
+    final var databaseAvailabilityCheck = mock(JobsDatabaseAvailabilityCheck.class);
 
     when(migrationInfo.getVersion()).thenReturn(migrationVersion);
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
   @Test
-  void checkDatabaseAvailabilityNullFlyway() {
+  void testMigrationCheckNullDatabaseAvailibilityCheck() {
     final var minimumVersion = "2.0.0";
-    final var check = new JobsDatabaseMigrationCheck(null, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    final var currentVersion = "1.2.3";
+    final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
+    final var migrationInfo = mock(MigrationInfo.class);
+    final var migrationInfoService = mock(MigrationInfoService.class);
+    final var flyway = mock(Flyway.class);
+
+    when(migrationInfo.getVersion()).thenReturn(migrationVersion);
+    when(migrationInfoService.current()).thenReturn(migrationInfo);
+    when(flyway.info()).thenReturn(migrationInfoService);
+
+    final var check = new JobsDatabaseMigrationCheck(null, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
+  }
+
+  @Test
+  void testMigrationCheckNullFlyway() {
+    final var minimumVersion = "2.0.0";
+    final var databaseAvailabilityCheck = mock(JobsDatabaseAvailabilityCheck.class);
+    final var check = new JobsDatabaseMigrationCheck(databaseAvailabilityCheck, null, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 

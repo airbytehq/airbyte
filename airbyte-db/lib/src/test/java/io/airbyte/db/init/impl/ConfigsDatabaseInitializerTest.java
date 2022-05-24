@@ -9,8 +9,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import io.airbyte.db.check.DatabaseCheckException;
+import io.airbyte.db.check.impl.ConfigsDatabaseAvailabilityCheck;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.DatabaseConstants;
 import java.io.IOException;
@@ -24,7 +24,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
 
   @Test
   void testInitializingSchema() throws IOException {
-    final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
+    final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
     final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
@@ -34,7 +34,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
 
   @Test
   void testInitializingSchemaAlreadyExists() throws IOException {
-    final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
+    final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
     final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
     dslContext.execute(initialSchema);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
@@ -45,7 +45,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
 
   @Test
   void testInitializationException() throws IOException, DatabaseCheckException {
-    final var databaseAvailabilityCheck = mock(DatabaseAvailabilityCheck.class);
+    final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
     final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
 
     doThrow(new DatabaseCheckException("test")).when(databaseAvailabilityCheck).check();

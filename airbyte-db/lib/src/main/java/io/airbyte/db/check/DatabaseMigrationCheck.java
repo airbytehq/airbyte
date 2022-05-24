@@ -30,29 +30,48 @@ public interface DatabaseMigrationCheck {
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
     final Optional<Flyway> flywayOptional = getFlyway();
 
-    if (flywayOptional.isPresent()) {
-      final var flyway = flywayOptional.get();
-      var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
-      getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
-      getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
+    // Verify that the database is up and reachable first
+    final Optional<DatabaseAvailabilityCheck> availabilityCheck = getDatabaseAvailabilityCheck();
+    if (availabilityCheck.isPresent()) {
+      try {
+        availabilityCheck.get().check();
+        if (flywayOptional.isPresent()) {
+          final var flyway = flywayOptional.get();
+          var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+          getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
+          getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
 
-      while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
-        if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
-          throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
-        }
+          while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
+            if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
+              throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
+            }
 
-        try {
-          Thread.sleep(sleepTime);
-        } catch (final InterruptedException e) {
-          throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+            try {
+              Thread.sleep(sleepTime);
+            } catch (final InterruptedException e) {
+              throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+            }
+            currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+          }
+          getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
+        } else {
+          throw new DatabaseCheckException("Flyway configuration not present.");
         }
-        currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+      } catch (final DatabaseCheckException e) {
+        throw new DatabaseCheckException("Database availability check failed.", e);
       }
-      getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
     } else {
-      throw new DatabaseCheckException("Flyway configuration not present.");
+      throw new DatabaseCheckException("Availability check not configured.");
     }
   }
+
+  /**
+   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and
+   * available.
+   *
+   * @return The {@link DatabaseAvailabilityCheck}.
+   */
+  Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck();
 
   /**
    * Retrieves the configured {@link Flyway} object to be used to check the migration status of the
