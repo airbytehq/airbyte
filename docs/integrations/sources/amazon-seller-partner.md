@@ -4,29 +4,42 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 ## Prerequisites
 
-- replication_start_date
-- refresh_token
+- app_id
 - lwa_app_id
 - lwa_client_secret
+- refresh_token
 - aws_access_key
 - aws_secret_key
 - role_arn
 - aws_environment
 - region
+- replication_start_date
 
 ## Step 1: Set up Amazon Seller Partner
 
 [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
-
+[Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
 
 ## Step 2: Set up the source connector in Airbyte
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
 3. On the source setup page, select **Amazon Seller Partner** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.
-5. Log in and Authorize to the Amazon Seller Partner account and click `Set up source`.
+5. Log in and Authorize to the Amazon Seller Partner account.
+6. Paste all other data to required fields using your IAM user.
+7. Click `Set up source`.
 
+**For Airbyte OSS:**
+
+1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
+2. Go to local Airbyte page.
+3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+4. On the Set up the source page, enter the name for the Amazon Seller Partner connector and select **Amazon Seller Partner** from the Source type dropdown. 
+5. Paste all data to required fields using your IAM user and developer account.
+6. Click `Set up source`.
 
 ## Supported sync modes
 
