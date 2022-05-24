@@ -15,7 +15,6 @@ class YamlConfigurableSource(ConfigurableSource):
         self._parser = YamlParser()
         self._source_config = self._read_config(path_to_yaml)
 
-    # FIXME: rename file
     @property
     def connection_checker(self):
         return self._factory.create_component(self._source_config["check"], dict())(source=self)
