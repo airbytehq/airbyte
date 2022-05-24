@@ -35,10 +35,11 @@ const InputContainer = styled.div<InputProps>`
   ${({ disabled, theme, light, error }) =>
     !disabled &&
     `
-  &:not(.input-container--disabled):hover {
-    background: ${light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${error ? theme.dangerColor : theme.greyColor20};
-  }`}
+      &:hover {
+        background: ${light ? theme.whiteColor : theme.greyColor20};
+        border-color: ${error ? theme.dangerColor : theme.greyColor20};
+      }
+    `}
 
   &.input-container--focused {
     background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
