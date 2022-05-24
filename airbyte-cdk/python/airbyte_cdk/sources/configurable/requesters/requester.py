@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from requests.auth import AuthBase
 
 
 class HttpMethod(Enum):
@@ -16,7 +16,7 @@ class HttpMethod(Enum):
 
 class Requester(ABC):
     @abstractmethod
-    def get_authenticator(self) -> HttpAuthenticator:
+    def get_authenticator(self) -> AuthBase:
         """
         Specifies the authenticator to use when submitting requests
         """
