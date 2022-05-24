@@ -73,6 +73,7 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.CyclomaticComplexity", "PMD.AvoidLiteralsInIfCondition"})
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
@@ -82,7 +83,7 @@ public class ConfigRepository {
 
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
-    this.database = new ExceptionWrappingDatabase(database);;
+    this.database = new ExceptionWrappingDatabase(database);
   }
 
   /**
@@ -698,9 +699,9 @@ public class ConfigRepository {
     });
   }
 
-  public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)
+  public SourceOAuthParameter getSourceOAuthParams(final UUID sourceOAuthParameterId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
+    return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameterId.toString(), SourceOAuthParameter.class);
   }
 
   public Optional<SourceOAuthParameter> getSourceOAuthParamByDefinitionIdOptional(final UUID workspaceId, final UUID sourceDefinitionId)
@@ -718,8 +719,8 @@ public class ConfigRepository {
     return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
   }
 
-  public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.getOauthParameterId().toString(), SourceOAuthParameter);
+  public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString(), sourceOAuthParameter);
   }
 
   public List<SourceOAuthParameter> listSourceOAuthParam() throws JsonValidationException, IOException {

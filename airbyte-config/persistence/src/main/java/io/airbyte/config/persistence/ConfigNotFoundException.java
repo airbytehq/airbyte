@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class ConfigNotFoundException extends Exception {
 
+  private static final long serialVersionUID = 836273627;
   private final String type;
   private final String configId;
 
