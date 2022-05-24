@@ -216,7 +216,7 @@ class SemiIncrementalMixin:
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        slice_value = latest_record[self.__slice_key]
+        slice_value = latest_record[self.__slice_key]["full_name"]
         updated_state = self.convert_cursor_value(latest_record[self.cursor_field])
         stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
         if stream_state_value:
@@ -1051,7 +1051,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
 
 
-class WorkflowRuns(GithubStream):
+class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
     API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
