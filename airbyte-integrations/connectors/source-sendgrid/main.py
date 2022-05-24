@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_sendgrid.sendgrid import SendgridSource
+from source_sendgrid import SourceSendgrid
 
 if __name__ == "__main__":
-    source = SendgridSource()
+    source = SourceSendgrid()
     launch(source, sys.argv[1:])
