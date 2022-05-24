@@ -12,7 +12,7 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def get_state(self):
+    def get_stream_state(self):
         pass
 
     def deep_copy(self):

@@ -23,6 +23,8 @@ class StateType(Enum):
 
 
 class DictState(State):
+    stream_state_field = "stream_state"
+
     def __init__(self, d: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
         if d is None:
             d = dict()
@@ -42,17 +44,20 @@ class DictState(State):
         self._config = config
 
     def update_state(self, **kwargs):
-        stream_state = kwargs.get("stream_state")
-        prev_state = self.get_state() or stream_state
+        stream_state = kwargs.get(self.stream_state_field)
+        prev_stream_state = self.get_stream_state() or stream_state
         self._context.update(**kwargs)
 
-        self._context["stream_state"] = self._compute_state(prev_state)
+        self._context[self.stream_state_field] = self._compute_state(prev_stream_state)
 
     def get_context(self):
         return self._context
 
-    def get_state(self):
-        return self._context.get("stream_state", {})
+    def get_state(self, state_field):
+        return self._context.get(state_field, {})
+
+    def get_stream_state(self):
+        return self.get_state(self.stream_state_field)
 
     def _compute_state(self, prev_state):
         updated_state = {
@@ -66,5 +71,5 @@ class DictState(State):
         else:
             next_state = updated_state
 
-        self._context["stream_state"] = next_state
+        self._context[self.stream_state_field] = next_state
         return next_state
