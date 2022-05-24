@@ -3,6 +3,9 @@
 #
 import inspect
 
+from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
+
 """
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
@@ -19,8 +22,12 @@ import inspect
 
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
+        interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
+        print(f"func: {func}")
+        print(f"keywords: {keywords}")
+        print(f"all_keywords: {all_keywords}")
 
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
@@ -35,19 +42,18 @@ def create(func, /, *args, **keywords):
         fully_created = _create_inner_objects(all_keywords, kwargs)
 
         # interpolate the parameters
-        print(f"kwargs: {kwargs}")
-        print(f"fully_created: {fully_created}")
-        # interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": {**fully_created, **kwargs}})
-        # print(f"interpolated_keywords: {interpolated_keywords}")
-        all_keywords.update(fully_created)
+        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": kwargs})
+        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v is not None}
+
+        all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
             all_keywords["config"] = config
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, kwargs)
-        print(f"kwargs to pass down: {kwargs_to_pass_down}")
-        ret = func(*args, *fargs, **{**all_keywords, **kwargs_to_pass_down})
+        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+        ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
         return ret
 
     newfunc.func = func
@@ -58,12 +64,10 @@ def create(func, /, *args, **keywords):
 
 
 def _get_kwargs_to_pass_to_func(func, kwargs):
-    argspec = inspect.getfullargspec(func)
-    args_to_pass_down = set(argspec.args)
-    print(f"args_to_pass_down: {args_to_pass_down}")
-    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in args_to_pass_down}
-    if "kwargs" == argspec.varkw:
-        kwargs_to_pass_down["kwargs"] = kwargs
+    kwargs_to_pass_down = set(inspect.getfullargspec(func).kwonlyargs)
+    args_to_pass_down = set(inspect.getfullargspec(func).args)
+    all_args = args_to_pass_down.union(kwargs_to_pass_down)
+    kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
     return kwargs_to_pass_down
 
 

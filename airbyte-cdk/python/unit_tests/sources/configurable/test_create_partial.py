@@ -42,3 +42,11 @@ def test_string_interpolation():
     partial = create(InterpolatedString, string=s)
     interpolated_string = partial()
     assert interpolated_string._string == s
+
+
+def test_string_interpolation_through_kwargs():
+    s = "{{ kwargs['name'] }}"
+    kwargs = {"name": "airbyte"}
+    partial = create(InterpolatedString, string=s, kwargs=kwargs)
+    interpolated_string = partial()
+    assert interpolated_string._string == "airbyte"
