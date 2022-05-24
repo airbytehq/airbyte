@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.checks.connection_checker import Connection
 
 class ConfigurableSource(AbstractSource):
     """
-    Base class for configurable Source. Concrete sources need to define the connection_checker to use
+    Base class for declarative Source. Concrete sources need to define the connection_checker to use
     """
 
     @property

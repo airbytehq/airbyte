@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.configurable_stream import ConfigurableStream
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 def test():
@@ -28,7 +28,7 @@ def test():
     retriever.stream_slices.return_value = stream_slices
     retriever.state_checkpoint_interval = checkpoint_interval
 
-    stream = ConfigurableStream(
+    stream = DeclarativeStream(
         name=name,
         primary_key=primary_key,
         cursor_field=cursor_field,

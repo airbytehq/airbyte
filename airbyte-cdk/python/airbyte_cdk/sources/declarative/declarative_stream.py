@@ -11,9 +11,9 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.streams.core import Stream
 
 
-class ConfigurableStream(Stream):
+class DeclarativeStream(Stream):
     """
-    ConfigurableStream is a Stream that delegates most of its logic to its schema_load and retriever
+    DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
 
     def __init__(self, name, primary_key, cursor_field, schema_loader: SchemaLoader, retriever):
