@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
@@ -45,6 +46,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
+  private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
 
   protected TestDestinationEnv testDestinationEnv;
 
@@ -77,7 +79,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     ((ObjectNode) invalidConfig).put("password", "fake");
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
   }
 
   @Test
@@ -86,7 +89,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     ((ObjectNode) invalidConfig).put("username", "");
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
   }
 
   @Test
@@ -95,7 +99,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     ((ObjectNode) invalidConfig).put("host", "localhost2");
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
   }
 
   @Test
@@ -104,7 +109,18 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     ((ObjectNode) invalidConfig).put("database", "wrongdatabase");
     var destination = new RedshiftDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectPermissions() throws Exception {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("username", USER_WITHOUT_CREDS);
+    var destination = new RedshiftDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
   }
 
   @Override
@@ -181,6 +197,11 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
+
+    final String createUser = String.format("create user %s with password '%s';",
+            USER_WITHOUT_CREDS, baseConfig.get("password").asText());
+    getDatabase().query(ctx -> ctx.execute(createUser));
+
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
@@ -191,6 +212,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
     getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
+    getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
   }
 
   protected Database getDatabase() {

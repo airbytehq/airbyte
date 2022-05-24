@@ -110,11 +110,13 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   private static void processingSQLException(SQLException e) {
-    if (e.getCause() != null) {
+    try {
       SQLException sqlException = (SQLException) e.getCause();
       throw new ConnectionErrorException(sqlException.getSQLState(), e.getMessage());
-    } else {
-      if (e.getSQLState() != null) {
+    } catch (ConnectionErrorException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      if (e.getCause() != null) {
         throw new ConnectionErrorException(e.getSQLState(), e.getMessage());
       } else {
         throw new ConnectionErrorException("unidentified", e.getMessage());
