@@ -1,7 +1,5 @@
 import type { Url } from "url";
 
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useIntl } from "react-intl";
@@ -14,7 +12,6 @@ import urls from "rehype-urls";
 import styled from "styled-components";
 
 import { LoadingPage, PageTitle } from "components";
-import { Button } from "components/base";
 import Markdown from "components/Markdown/Markdown";
 
 import { useConfig } from "config";
@@ -68,20 +65,7 @@ export const DocumentationPanel: React.FC = () => {
     <LoadingPage />
   ) : docs ? (
     <DocumentationContainer>
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="connector.setupGuide" />}
-        endComponent={
-          <Button
-            onClick={() => {
-              setDocumentationPanelOpen(false);
-            }}
-            iconOnly={true}
-          >
-            <FontAwesomeIcon icon={faTimes} />
-          </Button>
-        }
-      />
+      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
       {!docs.includes("<!DOCTYPE html>") ? (
         <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
