@@ -96,7 +96,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     if (oauthConfig.get(fieldName) != null) {
       return oauthConfig.get(fieldName).asText();
     } else {
-      throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow.", fieldName));
+      throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow. %s", fieldName, oauthConfig));
     }
   }
 
