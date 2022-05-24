@@ -75,7 +75,7 @@ class JobsDatabaseMigrationCheckTest {
   }
 
   @Test
-  void testMigrationCheckNullDatabaseAvailibilityCheck() {
+  void testMigrationCheckNullDatabaseAvailabilityCheck() {
     final var minimumVersion = "2.0.0";
     final var currentVersion = "1.2.3";
     final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
