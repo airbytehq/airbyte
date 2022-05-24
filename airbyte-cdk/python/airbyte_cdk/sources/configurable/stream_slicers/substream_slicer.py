@@ -19,7 +19,14 @@ class SubstreamSlicer(StreamSlicer):
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for parent_stream_slice in self._parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
             self._state.update_state(parent_stream_slice=parent_stream_slice)
-            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            self._state.update_state(parent_record=None)
+            empty = True
+            for parent_record in self._parent_stream.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
+            ):
+                empty = False
                 parent_id = self._interpolation.eval(self._parent_id, None, None, parent_record=parent_record)
                 self._state.update_state(parent_record=parent_record)
                 yield {**parent_stream_slice, **{"parent_id": parent_id}}
+            if empty:
+                yield {**parent_stream_slice, **{"parent_id": None}}
