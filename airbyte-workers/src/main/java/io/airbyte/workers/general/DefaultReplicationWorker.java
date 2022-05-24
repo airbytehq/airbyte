@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.analytics.TrackingClient;
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,6 +77,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
+  private final UUID workspaceId;
+  private final String dockerImage;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -81,7 +86,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
-                                  final RecordSchemaValidator recordSchemaValidator) {
+                                  final RecordSchemaValidator recordSchemaValidator,
+                                  final UUID workspaceId,
+                                  final String dockerImage) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -90,9 +97,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
+    this.workspaceId = workspaceId;
+    this.dockerImage = dockerImage;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
+  }
+
+  public DefaultReplicationWorker(final String jobId,
+                                  final int attempt,
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker messageTracker,
+                                  final RecordSchemaValidator recordSchemaValidator) {
+    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null, null);
   }
 
   /**
@@ -150,7 +169,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, workspaceId, dockerImage),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -289,7 +308,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final RecordSchemaValidator recordSchemaValidator) {
+                                                 final RecordSchemaValidator recordSchemaValidator,
+                                                 final UUID workspaceId,
+                                                 final String dockerImage) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -344,7 +365,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
+          final TrackingClient trackingClient = TrackingClientSingleton.get();
           validationErrors.forEach((stream, errorPair) -> {
+            if (workspaceId != null) {
+              final Map<String, Object> validationErrorMetadata = new HashMap<>();
+              validationErrorMetadata.put("docker_repo", dockerImage.split(":")[0]);
+              validationErrorMetadata.put("docker_version", dockerImage.split(":")[1]);
+              validationErrorMetadata.put("num_errors", errorPair.getRight().toString());
+              validationErrorMetadata.put("stream", stream);
+              trackingClient.track(workspaceId, "Record Schema Validation Errors", validationErrorMetadata);
+            }
             LOGGER.warn("{} schema validation errors found for stream {}. Error message: {}", errorPair.getRight(), stream, errorPair.getLeft());
           });
         }
