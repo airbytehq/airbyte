@@ -36,9 +36,9 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final String USERNAME = "new_user";
   private static final String DATABASE = "new_db";
-  private static final String PASSWORD = "new_password";
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -147,17 +147,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD )));
+            .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
     database.execute(connection -> connection.createStatement()
             .execute(String.format("create database %s;", DATABASE)));
     // deny access for database for all users from group public
     database.execute(connection -> connection.createStatement()
             .execute(String.format("revoke all on database %s from public;", DATABASE)));
-
-    ((ObjectNode) config).put("username", USERNAME);
-    ((ObjectNode) config).put("password", PASSWORD);
+    ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("database", DATABASE);
-
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());

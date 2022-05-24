@@ -56,6 +56,8 @@ import org.testcontainers.containers.OracleContainer;
 class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll
@@ -372,11 +374,9 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
-    executeOracleStatement("CREATE USER Mary IDENTIFIED BY password");
-
-    ((ObjectNode) config).put("username", "Mary");
-    ((ObjectNode) config).put("password", "password");
-
+    executeOracleStatement(String.format("CREATE USER %s IDENTIFIED BY %s", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION));
+    ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
