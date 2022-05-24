@@ -4,47 +4,31 @@
       "stream": {
         "name": "surveys",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_modified"
-        ]
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "date_modified"
-      ],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "survey_responses",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_modified"
-        ]
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "date_modified"
-      ],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "survey_pages",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
@@ -56,9 +40,7 @@
       "stream": {
         "name": "survey_questions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": []
       },

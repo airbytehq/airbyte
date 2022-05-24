@@ -33,8 +33,7 @@ class SurveymonkeyStream(HttpStream, ABC):
             if daily_limit_remaining and daily_limit_remaining<=0:
                 return response.headers.get('X-Ratelimit-App-Global-Day-Reset')
         """
-        minute_limit_remaining = int(response.headers.get(
-            "X-Ratelimit-App-Global-Minute-Remaining"))
+        minute_limit_remaining = int(response.headers.get("X-Ratelimit-App-Global-Minute-Remaining"))
         if minute_limit_remaining and minute_limit_remaining <= 1:
             return 60
 
@@ -104,8 +103,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         params["sort_order"] = "ASC"
         params["sort_by"] = "date_modified"
         params["per_page"] = 1000  # maybe as user input or bigger value
-        since_value = pendulum.parse(stream_state.get(
-            self.cursor_field)) if stream_state.get(self.cursor_field) else self._start_date
+        since_value = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state.get(self.cursor_field) else self._start_date
 
         since_value = max(since_value, self._start_date)
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
@@ -116,7 +114,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, ''))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, ""))}
 
 
 class Surveys(IncrementalSurveymonkeyStream):
@@ -133,20 +131,17 @@ class Surveys(IncrementalSurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         # params = super().request_params(stream_state=stream_state, **kwargs)
         survey_ids = self._survey_ids
-        result = super().parse_response(response=response,
-                                        stream_state=stream_state, **kwargs)
+        result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in result:
             substream = SurveyDetails(
                 survey_id=record["id"], start_date=self._start_date, survey_ids=survey_ids, authenticator=self.authenticator
             )
-            child_record = substream.read_records(
-                sync_mode=SyncMode.full_refresh)
+            child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
             if not survey_ids or record["id"] in survey_ids:
                 substream = SurveyDetails(
                     survey_id=record["id"], start_date=self._start_date, survey_ids=survey_ids, authenticator=self.authenticator
                 )
-                child_record = substream.read_records(
-                    sync_mode=SyncMode.full_refresh)
+                child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
                 yield from child_record
 
 
@@ -192,14 +187,12 @@ class SurveyPages(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date,
-                                survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = super().parse_response(response=response,
-                                      stream_state=stream_state, **kwargs)
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in data:
             record.pop("questions", None)
             yield record
@@ -215,14 +208,12 @@ class SurveyQuestions(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date,
-                                survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = super().parse_response(response=response,
-                                      stream_state=stream_state, **kwargs)
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for entry in data:
             page_id = entry["id"]
             questions = entry["questions"]
@@ -243,8 +234,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         return f"surveys/{survey_id}/responses/bulk"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date,
-                                survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
@@ -254,10 +244,9 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         and returning an updated state object.
         """
         survey_id = latest_record.get("survey_id")
-        return {self.cursor_field: max(
-            latest_record.get(self.cursor_field),
-            current_stream_state.get(survey_id, {}).get(self.cursor_field, '')
-        )}
+        return {
+            self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(survey_id, {}).get(self.cursor_field, ""))
+        }
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -265,8 +254,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         since_value_surv = stream_state.get(stream_slice["survey_id"])
         if since_value_surv:
             since_value = (
-                pendulum.parse(since_value_surv.get(self.cursor_field)) if since_value_surv.get(
-                    self.cursor_field) else self._start_date
+                pendulum.parse(since_value_surv.get(self.cursor_field)) if since_value_surv.get(self.cursor_field) else self._start_date
             )
             since_value = max(since_value, self._start_date)
         else:
