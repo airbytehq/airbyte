@@ -237,7 +237,7 @@ cmd_publish() {
   # To work for private repos we need a token as well
   DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
   DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
-  image_name="private-repo-test"
+  image_name="airbyte/private-repo-test"
   image_version="0.1.0"
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
   DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" -H "Authorization: JWT ${DOCKER_TOKEN}" ${TAG_URL})
