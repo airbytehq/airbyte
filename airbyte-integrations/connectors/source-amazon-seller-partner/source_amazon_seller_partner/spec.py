@@ -16,9 +16,9 @@ class AmazonSellerPartnerConfig(BaseModel):
 
     auth_type: str = Field(default="oauth2.0", const=True, order=1)
 
-    client_id: str = Field(description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
+    lwa_app_id: str = Field(description="Your Login with Amazon Client ID.", title="LWA Client Id", order=2)
 
-    client_secret: str = Field(
+    lwa_client_secret: str = Field(
         description="Your Login with Amazon Client Secret.", title="LWA Client Secret", airbyte_secret=True, order=3
     )
 
@@ -87,14 +87,14 @@ advanced_auth = AdvancedAuth(
         complete_oauth_server_input_specification={
             "type": "object",
             "additionalProperties": False,
-            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+            "properties": {"lwa_app_id": {"type": "string"}, "lwa_client_secret": {"type": "string"}},
         },
         complete_oauth_server_output_specification={
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                "lwa_app_id": {"type": "string", "path_in_connector_config": ["lwa_app_id"]},
+                "lwa_client_secret": {"type": "string", "path_in_connector_config": ["lwa_client_secret"]},
             },
         },
         oauth_user_input_from_connector_config_specification={

@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.*;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -236,13 +235,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
         .header("Content-Type", tokenReqContentType.contentType)
         .header("Accept", "application/json")
         .build();
-    System.out.println("=======================");
-    System.out.println(clientId);
-    System.out.println(clientSecret);
-    System.out.println(authCode);
-    System.out.println(redirectUrl);
-    System.out.println("=======================");
-
     // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -291,7 +283,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
    */
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
-    System.out.println(data);
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
     } else {

@@ -22,6 +22,14 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://sellercentral.amazon.com/apps/authorize/consent";
   private static final String ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
 
+  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
+    return getConfigValueUnsafe(oauthConfig, "lwa_app_id");
+  }
+
+  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
+    return getConfigValueUnsafe(oauthConfig, "lwa_client_secret");
+  }
+
   public AmazonSellerPartnerOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
