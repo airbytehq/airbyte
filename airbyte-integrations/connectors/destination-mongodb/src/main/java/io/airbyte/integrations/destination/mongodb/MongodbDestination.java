@@ -5,10 +5,12 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoTimeoutException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.util.MoreIterators;
@@ -82,7 +84,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final var databaseName = config.get(DATABASE).asText();
       final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
-        throw new MongodbDatabaseException(databaseName);
+        throw new ConnectionErrorException("incorrect_host_or_port_or_database", INCORRECT_HOST_OR_PORT_OR_DATABASE.getValue());
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
@@ -102,15 +104,25 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private Set<String> getDatabaseNames(final MongoDatabase mongoDatabase) {
     try {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
+    } catch (MongoTimeoutException e) {
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e.getMessage());
     } catch (Exception e) {
       try {
         var mongoException = (MongoCommandException) e.getCause();
-        String code = String.valueOf(mongoException.getCode());
+        var code = String.valueOf(mongoException.getCode());
         throw new ConnectionErrorException(code, e.getMessage());
       } catch (ConnectionErrorException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new ConnectionErrorException("", e.getMessage());
+        try {
+          var mongoException = (MongoCommandException) e;
+          var code = String.valueOf(mongoException.getCode());
+          throw new ConnectionErrorException(code, e.getMessage());
+        } catch (ConnectionErrorException ex1) {
+          throw ex1;
+        } catch (Exception exception) {
+          throw e;
+        }
       }
     }
   }
