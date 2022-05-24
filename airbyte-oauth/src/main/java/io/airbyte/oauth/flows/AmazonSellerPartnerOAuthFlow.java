@@ -93,4 +93,9 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
     return ACCESS_TOKEN_URL;
   }
 
+  @Override
+  public List<String> getDefaultOAuthOutputPath() {
+    return List.of();
+  }
+
 }
