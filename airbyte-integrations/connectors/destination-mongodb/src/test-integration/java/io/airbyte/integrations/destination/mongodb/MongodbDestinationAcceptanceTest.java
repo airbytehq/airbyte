@@ -4,13 +4,6 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
-import static com.mongodb.client.model.Projections.excludeId;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -20,13 +13,18 @@ import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.mongodb.client.model.Projections.excludeId;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -115,7 +113,8 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put("password", "fake");
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
   }
 
   @Test
@@ -125,7 +124,8 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     ((ObjectNode) invalidConfig.get(AUTH_TYPE)).put("username", "fakeusername");
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
   }
 
   @Test
@@ -134,7 +134,28 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     ((ObjectNode) invalidConfig).put(DATABASE, DATABASE_FAIL_NAME);
     var destination = new MongodbDestination();
     final AirbyteConnectionStatus actual = destination.check(invalidConfig);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectHost() {
+    final JsonNode invalidConfig = getConfig();
+    ((ObjectNode) invalidConfig).put(HOST, "localhost2");
+    var destination = new MongodbDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+  }
+
+  @Test
+  public void testCheckIncorrectPort() {
+    final JsonNode invalidConfig = getConfig();
+    ((ObjectNode) invalidConfig).put(PORT, 1234);
+    var destination = new MongodbDestination();
+    final AirbyteConnectionStatus actual = destination.check(invalidConfig);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
   }
 
   @Override
