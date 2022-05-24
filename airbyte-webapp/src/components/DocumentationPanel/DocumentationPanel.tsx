@@ -61,8 +61,6 @@ export const DocumentationPanel: React.FC = () => {
     setDocumentationPanelOpen(false);
   }, [setDocumentationPanelOpen, location.pathname]);
 
-  /* All connectors have a documentation url in their definition.  On some renders, there is a brief 
-  transition where the documentation url is an empty string. */
   return isLoading || documentationUrl === "" ? (
     <LoadingPage />
   ) : docs ? (
