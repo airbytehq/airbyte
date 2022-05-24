@@ -3,15 +3,13 @@
 #
 
 
-from abc import ABC
 from base64 import b64encode
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 from .streams import QualarooStream, Responses, Surveys
