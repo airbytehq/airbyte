@@ -9,6 +9,7 @@ from airbyte_cdk.sources.configurable.interpolation.interpolated_mapping import 
 def test():
     d = {
         "field": "value",
+        "number": 100,
         "field_to_interpolate_from_config": "{{ config['c'] }}",
         "field_to_interpolate_from_kwargs": "{{ kwargs['a'] }}",
     }
@@ -19,5 +20,6 @@ def test():
     interpolated = mapping.eval(config, **{"kwargs": kwargs})
 
     assert interpolated["field"] == "value"
+    assert interpolated["number"] == 100
     assert interpolated["field_to_interpolate_from_config"] == "VALUE_FROM_CONFIG"
     assert interpolated["field_to_interpolate_from_kwargs"] == "VALUE_FROM_KWARGS"
