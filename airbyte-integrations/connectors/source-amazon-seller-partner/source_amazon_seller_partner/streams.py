@@ -245,6 +245,9 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         if self._replication_end_date and sync_mode == SyncMode.full_refresh:
             params["dataEndTime"] = self._replication_end_date
+            # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
+            # when replication_end_date is present, we should use the user provided replication_start_date.
+            # user may provide a date range which is older than 90 days.
             params["dataStartTime"] = self._replication_start_date
 
         return params
