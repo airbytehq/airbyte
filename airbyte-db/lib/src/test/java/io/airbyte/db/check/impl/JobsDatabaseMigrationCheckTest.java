@@ -20,10 +20,12 @@ import org.junit.jupiter.api.Test;
  */
 class JobsDatabaseMigrationCheckTest {
 
+  private static final String CURRENT_VERSION = "1.2.3";
+
   @Test
   void testMigrationCheck() {
     final var minimumVersion = "1.0.0";
-    final var currentVersion = "1.2.3";
+    final var currentVersion = CURRENT_VERSION;
     final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
@@ -40,7 +42,7 @@ class JobsDatabaseMigrationCheckTest {
 
   @Test
   void testMigrationCheckEqualVersion() {
-    final var minimumVersion = "1.2.3";
+    final var minimumVersion = CURRENT_VERSION;
     final var currentVersion = minimumVersion;
     final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
     final var migrationInfo = mock(MigrationInfo.class);
@@ -59,7 +61,7 @@ class JobsDatabaseMigrationCheckTest {
   @Test
   void testMigrationCheckTimeout() {
     final var minimumVersion = "2.0.0";
-    final var currentVersion = "1.2.3";
+    final var currentVersion = CURRENT_VERSION;
     final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
@@ -77,7 +79,7 @@ class JobsDatabaseMigrationCheckTest {
   @Test
   void testMigrationCheckNullDatabaseAvailabilityCheck() {
     final var minimumVersion = "2.0.0";
-    final var currentVersion = "1.2.3";
+    final var currentVersion = CURRENT_VERSION;
     final var migrationVersion = MigrationVersion.fromVersion(currentVersion);
     final var migrationInfo = mock(MigrationInfo.class);
     final var migrationInfoService = mock(MigrationInfoService.class);
