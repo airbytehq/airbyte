@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link ConfigsDatabaseInitializer} class.
  */
-public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerTest {
+class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
 
   @Test
   void testInitializingSchema() throws IOException {

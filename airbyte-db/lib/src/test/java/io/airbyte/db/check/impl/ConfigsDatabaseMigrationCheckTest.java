@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link ConfigsDatabaseMigrationCheck} class.
  */
-public class ConfigsDatabaseMigrationCheckTest {
+class ConfigsDatabaseMigrationCheckTest {
 
   @Test
   void testMigrationCheck() {
@@ -33,7 +33,7 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -50,7 +50,7 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -67,14 +67,14 @@ public class ConfigsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new ConfigsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullFlyway() {
     final var minimumVersion = "2.0.0";
-    final var check = new ConfigsDatabaseMigrationCheck(null, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new ConfigsDatabaseMigrationCheck(null, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 

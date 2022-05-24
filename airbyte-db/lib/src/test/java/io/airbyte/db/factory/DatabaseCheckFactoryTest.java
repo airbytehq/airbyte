@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link DatabaseCheckFactory} class.
  */
-public class DatabaseCheckFactoryTest {
+class DatabaseCheckFactoryTest {
 
   @Test
   void testCreateConfigsDatabaseAvailabilityCheck() {

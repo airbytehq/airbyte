@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link JobsDatabaseMigrationCheck} class.
  */
-public class JobsDatabaseMigrationCheckTest {
+class JobsDatabaseMigrationCheckTest {
 
   @Test
   void testMigrationCheck() {
@@ -33,7 +33,7 @@ public class JobsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -50,7 +50,7 @@ public class JobsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertDoesNotThrow(() -> check.check());
   }
 
@@ -67,14 +67,14 @@ public class JobsDatabaseMigrationCheckTest {
     when(migrationInfoService.current()).thenReturn(migrationInfo);
     when(flyway.info()).thenReturn(migrationInfoService);
 
-    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
   @Test
   void checkDatabaseAvailabilityNullFlyway() {
     final var minimumVersion = "2.0.0";
-    final var check = new JobsDatabaseMigrationCheck(null, minimumVersion, AbstractDatabaseAvailabilityCheckTest.TIMEOUT_MS);
+    final var check = new JobsDatabaseMigrationCheck(null, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
