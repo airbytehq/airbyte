@@ -86,7 +86,6 @@ const SourceItemPage: React.FC = () => {
       <PageTitle
         title={<Breadcrumbs data={breadcrumbsData} />}
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
-        withLine
       />
 
       <Suspense fallback={<LoadingPage />}>

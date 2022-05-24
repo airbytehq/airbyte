@@ -87,7 +87,6 @@ const DestinationItemPage: React.FC = () => {
 
       <PageTitle
         title={<Breadcrumbs data={breadcrumbsData} />}
-        withLine
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />
 
