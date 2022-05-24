@@ -256,7 +256,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         survey_id = latest_record.get("survey_id")
         return {self.cursor_field: max(
             latest_record.get(self.cursor_field),
-            current_stream_state.get(survey_id, {}).get(self.cursor_field, 0)
+            current_stream_state.get(survey_id, {}).get(self.cursor_field, '')
         )}
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
