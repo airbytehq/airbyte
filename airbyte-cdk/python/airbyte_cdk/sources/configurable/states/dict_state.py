@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Mapping
+from typing import Mapping, Union
 
 from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.configurable.states.state import State
@@ -23,7 +23,7 @@ class StateType(Enum):
 
 
 class DictState(State):
-    def __init__(self, d: Mapping[str, str] = None, state_type="STR", config=None):
+    def __init__(self, d: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
         if d is None:
             d = dict()
         if config is None:
@@ -31,8 +31,8 @@ class DictState(State):
         self._d = d
         if type(state_type) == str:
             self._state_type = StateType[state_type].value
-        elif type(state_type) == type:
-            self._state_type = state_type
+        elif type(state_type) == StateType:
+            self._state_type = state_type.value
         elif type(state_type) == type:
             self._state_type = state_type
         else:
@@ -62,7 +62,6 @@ class DictState(State):
         updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
 
         if prev_state:
-            # FIXME: it's not always max - sometimes we just want the latest?
             next_state = {name: _get_max(name=name, val=value, other_state=prev_state) for name, value in updated_state.items()}
         else:
             next_state = updated_state
