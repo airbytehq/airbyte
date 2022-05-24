@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Mapping
+from typing import Mapping, Union
 
 from airbyte_cdk.sources.configurable.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.configurable.states.state import State
@@ -23,7 +23,7 @@ class StateType(Enum):
 
 
 class DictState(State):
-    def __init__(self, d: Mapping[str, str] = None, state_type="STR", config=None):
+    def __init__(self, d: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
         if d is None:
             d = dict()
         if config is None:
@@ -31,8 +31,8 @@ class DictState(State):
         self._d = d
         if type(state_type) == str:
             self._state_type = StateType[state_type].value
-        elif type(state_type) == type:
-            self._state_type = state_type
+        elif type(state_type) == StateType:
+            self._state_type = state_type.value
         elif type(state_type) == type:
             self._state_type = state_type
         else:
