@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
@@ -55,7 +56,7 @@ public class MetricsQueriesTest {
   private static Database configDb;
 
   @BeforeAll
-  static void setUpAll() throws IOException, SQLException {
+  static void setUpAll() throws IOException, SQLException, DatabaseInitializationException {
     final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withUsername(USER)
         .withPassword(PASS);

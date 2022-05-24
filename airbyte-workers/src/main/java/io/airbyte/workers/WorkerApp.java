@@ -23,11 +23,12 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -383,7 +384,7 @@ public class WorkerApp {
 
     TemporalUtils.configureTemporalNamespace(temporalService);
 
-    final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
+    final Database configDatabase = new Database(configsDslContext);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -392,7 +393,7 @@ public class WorkerApp {
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
-    final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
+    final Database jobDatabase = new Database(jobsDslContext);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     TrackingClientSingleton.initialize(
@@ -476,6 +477,13 @@ public class WorkerApp {
 
         // Ensure that the database resources are closed on application shutdown
         CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
+
+        // Ensure that the Configuration database is available
+        DatabaseCheckFactory.createConfigsDatabaseAvailabilityCheck(configsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
+        DatabaseCheckFactory.createJobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
+
+        // Ensure that the Jobs database is available
+        new JobsDatabaseAvailabilityCheck(jobsDslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS).check();
 
         launchWorkerApp(configs, configsDslContext, jobsDslContext);
       }

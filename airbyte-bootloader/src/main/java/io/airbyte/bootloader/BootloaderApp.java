@@ -21,12 +21,12 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -164,7 +164,7 @@ public class BootloaderApp {
   }
 
   private static Database getConfigDatabase(final DSLContext dslContext) throws IOException {
-    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
@@ -177,7 +177,7 @@ public class BootloaderApp {
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
-    return new JobsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   private static JobPersistence getJobPersistence(final Database jobDatabase) throws IOException {
@@ -207,6 +207,14 @@ public class BootloaderApp {
 
     try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         final DSLContext jobsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES)) {
+
+      LOGGER.info("Initializing databases...");
+      DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
+          configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+
+      DatabaseCheckFactory.createJobsDatabaseInitializer(configsDslContext,
+          configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+      LOGGER.info("Databases initialized.");
 
       // TODO Will be converted to an injected singleton during DI migration
       final Database configDatabase = getConfigDatabase(configsDslContext);

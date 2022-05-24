@@ -28,7 +28,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
     final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
-    Assertions.assertDoesNotThrow(() -> initializer.init());
+    Assertions.assertDoesNotThrow(() -> initializer.initialize());
     assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().get().stream().findFirst().get()));
   }
 
@@ -39,7 +39,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
     dslContext.execute(initialSchema);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
-    Assertions.assertDoesNotThrow(() -> initializer.init());
+    Assertions.assertDoesNotThrow(() -> initializer.initialize());
     assertTrue(initializer.hasTable(dslContext, initializer.getTableNames().get().stream().findFirst().get()));
   }
 
@@ -51,7 +51,7 @@ public class ConfigsDatabaseInitializerTest extends AbstractDatabaseInitializerT
     doThrow(new DatabaseCheckException("test")).when(databaseAvailabilityCheck).check();
 
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
-    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.init());
+    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.initialize());
   }
 
 }

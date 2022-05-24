@@ -21,10 +21,10 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
@@ -55,10 +55,13 @@ class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPersistenc
   public static void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+
+    initializeDatabase(dslContext);
+
+    database = new Database(dslContext);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new Database(dslContext);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);

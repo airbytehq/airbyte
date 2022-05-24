@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -29,8 +30,10 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.init.DatabaseInitializationException;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
@@ -84,12 +87,15 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+
+    initializeDatabase(dslContext);
+
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new Database(dslContext);
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
@@ -429,6 +435,11 @@ class ConfigRepositoryE2EReadWriteTest {
         }
       }
     }
+  }
+
+  private void initializeDatabase(final DSLContext dslContext) throws IOException, DatabaseInitializationException {
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 
 }

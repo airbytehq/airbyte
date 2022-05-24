@@ -24,10 +24,10 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
@@ -47,7 +47,10 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
   void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+
+    initializeDatabase(dslContext);
+
+    database = new Database(dslContext);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 

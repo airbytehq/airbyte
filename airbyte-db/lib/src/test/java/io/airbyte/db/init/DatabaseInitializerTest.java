@@ -60,7 +60,7 @@ public class DatabaseInitializerTest {
 
     };
 
-    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.init());
+    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.initialize());
   }
 
   @Test

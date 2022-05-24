@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -20,6 +21,10 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DatabaseCheckFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
+import io.airbyte.db.instance.DatabaseConstants;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -219,6 +224,11 @@ class BaseDatabaseConfigPersistenceTest {
     assertEquals(destination, configPersistence
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
             StandardDestinationDefinition.class));
+  }
+
+  protected static void initializeDatabase(final DSLContext dslContext) throws IOException, DatabaseInitializationException {
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 
 }
