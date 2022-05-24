@@ -82,12 +82,14 @@ const SetDefaultName: React.FC = () => {
 
   useEffect(() => {
     if (selectedService) {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         // We need to push this out one execution slot, so the form isn't still in its
         // initialization status and won't react to this call but would just take the initialValues instead.
         setFieldValue("name", selectedService.name);
       });
+      return () => clearTimeout(timeout);
     }
+    return;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
 
