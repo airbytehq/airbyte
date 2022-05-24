@@ -11,6 +11,7 @@ ENV VERSION ${VERSION}
 
 WORKDIR /app
 
+# This is automatically unzipped by Docker
 ADD bin/${APPLICATION}-${VERSION}.tar /app
 
 # wait for upstream dependencies to become available before starting server
