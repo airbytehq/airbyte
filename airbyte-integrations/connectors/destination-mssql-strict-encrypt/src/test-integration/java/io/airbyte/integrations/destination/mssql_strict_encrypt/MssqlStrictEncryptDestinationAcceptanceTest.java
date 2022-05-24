@@ -65,6 +65,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("username", db.getUsername())
+        .put("database", "test")
         .put("password", db.getPassword())
         .put("schema", "test_schema")
         .build());
@@ -81,6 +82,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", "wrong password")
+        .put("database", "test")
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("ssl", false)
