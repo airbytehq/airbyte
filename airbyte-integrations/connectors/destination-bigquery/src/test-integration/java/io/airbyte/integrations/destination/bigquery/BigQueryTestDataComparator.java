@@ -2,18 +2,20 @@ package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryTestDataComparator.class);
     private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+
+    private static final String BIGQUERY_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
     @Override
     protected List<String> resolveIdentifier(final String identifier) {
@@ -23,19 +25,63 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
         return result;
     }
 
-    private Instant getInstantFromEpoch(String epochValue) {
-        return Instant.ofEpochSecond(Long.parseLong(epochValue.replaceAll(".0$", "")));
+    private LocalDate parseDate(String dateValue) {
+        if (dateValue != null) {
+            var format = (dateValue.matches(".+Z") ? BIGQUERY_DATETIME_FORMAT : AIRBYTE_DATE_FORMAT);
+            return LocalDate.parse(dateValue, DateTimeFormatter.ofPattern(format));
+        } else {
+            return null;
+        }
+    }
+
+    private LocalDateTime parseDateTime(String dateTimeValue) {
+        if (dateTimeValue != null) {
+            var format = (dateTimeValue.matches(".+Z") ? BIGQUERY_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
+            return LocalDateTime.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
+        var destinationDate = parseDateTime(actualValue);
+        var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
+        // #13123 Normalization issue
+        if (expectedDate.isBefore(getBrokenDate().toLocalDateTime())) {
+            LOGGER.warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+            return true;
+        } else {
+            return expectedDate.equals(destinationDate);
+        }
+    }
+
+    @Override
+    protected boolean compareDateValues(String expectedValue, String actualValue) {
+        var destinationDate = parseDate(actualValue);
+        var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
+        return expectedDate.equals(destinationDate);
     }
 
     @Override
     protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-        return ZonedDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+        return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
     }
 
     @Override
-    protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
-        var format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT);
-        LocalDateTime dateTime = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
-        return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
+    protected boolean compareDateTimeWithTzValues(String airbyteMessageValue, String destinationValue) {
+        // #13123 Normalization issue
+        if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
+            LOGGER.warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+            return true;
+        }
+        else {
+            return super.compareDateTimeWithTzValues(airbyteMessageValue, destinationValue);
+        }
+    }
+
+    // #13123 Normalization issue
+    private ZonedDateTime getBrokenDate() {
+        return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     }
 }

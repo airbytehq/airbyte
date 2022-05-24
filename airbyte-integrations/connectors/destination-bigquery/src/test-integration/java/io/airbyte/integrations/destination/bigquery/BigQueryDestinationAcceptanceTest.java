@@ -7,25 +7,17 @@ package io.airbyte.integrations.destination.bigquery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.*;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.bigquery.BigQueryResultSet;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -35,13 +27,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -169,44 +157,25 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
                 String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+            .setUseLegacySql(false)
+            .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+            .build();
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
+    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            jsonMap.put(field.getName(), value);
-          }
-          return jsonMap;
-        })
-        .map(Jsons::jsonNode)
-        .collect(Collectors.toList());
+    return Streams.stream(queryResults.iterateAll())
+            .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
-  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
-    final FieldValue fieldValue = row.get(field.getName());
-    if (fieldValue.getValue() != null) {
-      return switch (field.getType().getStandardType()) {
-        case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
-        case INT64 -> fieldValue.getNumericValue().intValue();
-        case STRING -> fieldValue.getStringValue();
-        case BOOL -> fieldValue.getBooleanValue();
-        default -> fieldValue.getValue();
-      };
-    } else {
-      return null;
-    }
-  }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
