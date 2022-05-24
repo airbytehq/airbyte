@@ -22,7 +22,7 @@ class QualarooStream(HttpStream, ABC):
 
     extra_params = None
 
-    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str], **kwargs):
+    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str] = [], **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
         self._survey_ids = survey_ids
@@ -89,7 +89,8 @@ class Responses(ChildStreamMixin, QualarooStream):
         return f"nudges/{survey_id}/responses.json"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date,
+                                survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
@@ -98,5 +99,6 @@ class Responses(ChildStreamMixin, QualarooStream):
         # de-nest the answered_questions object if exists
         for rec in response_data:
             if "answered_questions" in rec:
-                rec["answered_questions"] = list(rec["answered_questions"].values())
+                rec["answered_questions"] = list(
+                    rec["answered_questions"].values())
         yield from response_data

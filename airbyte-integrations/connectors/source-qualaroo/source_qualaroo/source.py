@@ -31,7 +31,8 @@ class QualarooAuthenticator(HttpAuthenticator):
         token_header: str = "oauth_token",
     ):
         self._key = key
-        self._token = b64encode(b":".join((key.encode("latin1"), token.encode("latin1")))).strip().decode("ascii")
+        self._token = b64encode(b":".join(
+            (key.encode("latin1"), token.encode("latin1")))).strip().decode("ascii")
         self.auth_header = auth_header
         self.key_header = key_header
         self.token_header = token_header
@@ -60,7 +61,8 @@ class SourceQualaroo(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            response = requests.get(url, headers=authenticator.get_auth_header())
+            response = requests.get(
+                url, headers=authenticator.get_auth_header())
 
             response.raise_for_status()
             available_surveys = {row.get("id") for row in response.json()}
@@ -77,7 +79,8 @@ class SourceQualaroo(AbstractSource):
         """
         args = {}
         # convert start_date to epoch time for qualaroo API
-        args["start_date"] = pendulum.parse(config["start_date"]).strftime("%s")
+        args["start_date"] = pendulum.parse(
+            config["start_date"]).strftime("%s")
         args["survey_ids"] = config.get("survey_ids", [])
         args["authenticator"] = self._get_authenticator(config)
         return [Surveys(**args), Responses(**args)]
