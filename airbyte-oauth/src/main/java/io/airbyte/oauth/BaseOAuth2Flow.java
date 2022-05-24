@@ -236,6 +236,13 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
         .header("Content-Type", tokenReqContentType.contentType)
         .header("Accept", "application/json")
         .build();
+    System.out.println("=======================");
+    System.out.println(clientId);
+    System.out.println(clientSecret);
+    System.out.println(authCode);
+    System.out.println(redirectUrl);
+    System.out.println("=======================");
+
     // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
