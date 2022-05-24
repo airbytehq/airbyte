@@ -32,27 +32,13 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    ServiceJobs
 )
 
-from .spec import AmazonSellerPartnerConfig, advanced_auth
+from source_amazon_seller_partner.spec import AmazonSellerPartnerConfig, advanced_auth
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    @staticmethod
-    def _get_client_id(config: AmazonSellerPartnerConfig) -> str:
-        if "client_id" in config.dict():
-            return config.client_id
-        if "lwa_app_id" in config.dict():
-            return config.lwa_app_id
-        raise ValueError("Client ID is required")
-
-    @staticmethod
-    def _get_client_secret(config: AmazonSellerPartnerConfig) -> str:
-        if "client_secret" in config.dict():
-            return config.client_secret
-        if "lwa_client_secret" in config.dict():
-            return config.lwa_client_secret
-        raise ValueError("Client Secret is required")
 
     def _get_stream_kwargs(self, config: AmazonSellerPartnerConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
@@ -68,10 +54,11 @@ class SourceAmazonSellerPartner(AbstractSource):
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
-            client_id=self._get_client_id(config),
-            client_secret=self._get_client_secret(config),
+            client_id=config.lwa_app_id,
+            client_secret=config.lwa_client_secret,
             refresh_token=config.refresh_token,
             host=endpoint.replace("https://", ""),
+            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         stream_kwargs = {
             "url_base": endpoint,
@@ -85,7 +72,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def get_sts_credentials(self, config: AmazonSellerPartnerConfig) -> dict:
+    @staticmethod
+    def get_sts_credentials(config: AmazonSellerPartnerConfig) -> dict:
         """
         We can only use a IAM User arn entity or a IAM Role entity.
         If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
