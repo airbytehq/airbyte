@@ -297,7 +297,7 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=10))
+        monkeypatch.setattr(AdsInsights, "insights_lookback_period", pendulum.duration(days=10))
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
@@ -327,7 +327,7 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         yesterday, _ = set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
+        monkeypatch.setattr(AdsInsights, "insights_lookback_period", pendulum.duration(days=20))
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
