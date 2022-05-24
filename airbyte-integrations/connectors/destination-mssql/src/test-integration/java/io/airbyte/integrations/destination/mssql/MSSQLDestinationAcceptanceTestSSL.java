@@ -74,6 +74,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", "wrong password")
+        .put("database", "test")
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("ssl", false)
