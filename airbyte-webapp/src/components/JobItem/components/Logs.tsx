@@ -1,7 +1,14 @@
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 import styled from "styled-components";
+
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
+const dateTimeFormat = "YYYY-MM-DD HH:mm:ss";
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
@@ -76,13 +83,11 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
 
   const resolutionOffset = 1000; // the resolution of the timestamps is in seconds
   const matchingLineNumbers: number[] = [];
-  const matcher = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
 
   let lineCounter = lines.length - 1;
   while (lineCounter >= 0) {
-    const timeString = lines[lineCounter].match(matcher);
-    if (timeString) {
-      const datetime = Date.parse(`${timeString[0].replace(" ", "T")}Z`);
+    const datetime = dayjs.utc(lines[lineCounter], dateTimeFormat, false)?.toDate()?.getTime();
+    if (datetime) {
       if (
         datetime - resolutionOffset <= flooredMatchTimestamp &&
         datetime + resolutionOffset >= flooredMatchTimestamp
