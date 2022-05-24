@@ -164,107 +164,114 @@ cmd_bump_version() {
 }
 
 cmd_publish() {
-  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
-  [ -d "$path" ] || error "Path must be the root path of the integration"
-
-  local run_tests=$1; shift || run_tests=true
-  local publish_spec_to_cache
-  local spec_cache_writer_sa_key_file
-
-  while [ $# -ne 0 ]; do
-    case "$1" in
-    --publish_spec_to_cache)
-      publish_spec_to_cache=true
-      shift 1
-      ;;
-    --publish_spec_to_cache_with_key_file)
-      publish_spec_to_cache=true
-      spec_cache_writer_sa_key_file="$2"
-      shift 2
-      ;;
-    *)
-      error "Unknown option: $1"
-      ;;
-    esac
-  done
-
-  if [[ ! $path =~ "connectors" ]]
-  then
-     # Do not publish spec to cache in case this is not a connector
-     publish_spec_to_cache=false
-  fi
-
-  # setting local variables for docker image versioning
-  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
-  local versioned_image=$image_name:$image_version
-  local latest_image=$image_name:latest
-
-  echo "image_name $image_name"
-  echo "versioned_image $versioned_image"
-  echo "latest_image $latest_image"
-
-  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-  # time building, running tests to realize this version is a duplicate.
-  _error_if_tag_exists "$versioned_image"
-
-  # building the connector
-  cmd_build "$path" "$run_tests"
-
-  # in case curing the build / tests someone this version has been published.
-  _error_if_tag_exists "$versioned_image"
-
-  if [[ "airbyte/normalization" == "${image_name}" ]]; then
-    echo "Publishing normalization images (version: $versioned_image)"
-    GIT_REVISION=$(git rev-parse HEAD)
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
-    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
-    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
-    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
-  else
-    docker tag "$image_name:dev" "$versioned_image"
-    docker tag "$image_name:dev" "$latest_image"
-
-    echo "Publishing new version ($versioned_image)"
-    docker push "$versioned_image"
-    docker push "$latest_image"
-  fi
-  
+#  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+#  [ -d "$path" ] || error "Path must be the root path of the integration"
+#
+#  local run_tests=$1; shift || run_tests=true
+#  local publish_spec_to_cache
+#  local spec_cache_writer_sa_key_file
+#
+#  while [ $# -ne 0 ]; do
+#    case "$1" in
+#    --publish_spec_to_cache)
+#      publish_spec_to_cache=true
+#      shift 1
+#      ;;
+#    --publish_spec_to_cache_with_key_file)
+#      publish_spec_to_cache=true
+#      spec_cache_writer_sa_key_file="$2"
+#      shift 2
+#      ;;
+#    *)
+#      error "Unknown option: $1"
+#      ;;
+#    esac
+#  done
+#
+#  if [[ ! $path =~ "connectors" ]]
+#  then
+#     # Do not publish spec to cache in case this is not a connector
+#     publish_spec_to_cache=false
+#  fi
+#
+#  # setting local variables for docker image versioning
+#  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
+#  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+#  local versioned_image=$image_name:$image_version
+#  local latest_image=$image_name:latest
+#
+#  echo "image_name $image_name"
+#  echo "versioned_image $versioned_image"
+#  echo "latest_image $latest_image"
+#
+#  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+#  # time building, running tests to realize this version is a duplicate.
+#  _error_if_tag_exists "$versioned_image"
+#
+#  # building the connector
+#  cmd_build "$path" "$run_tests"
+#
+#  # in case curing the build / tests someone this version has been published.
+#  _error_if_tag_exists "$versioned_image"
+#
+#  if [[ "airbyte/normalization" == "${image_name}" ]]; then
+#    echo "Publishing normalization images (version: $versioned_image)"
+#    GIT_REVISION=$(git rev-parse HEAD)
+#    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+#    VERSION=$image_version GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+#    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
+#    VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
+#  else
+#    docker tag "$image_name:dev" "$versioned_image"
+#    docker tag "$image_name:dev" "$latest_image"
+#
+#    echo "Publishing new version ($versioned_image)"
+#    docker push "$versioned_image"
+#    docker push "$latest_image"
+#  fi
+#
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
   sleep 5
+  set -x
+  # To work for private repos we need a token as well
+  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+  image_name="private-repo-test"
+  image_version="0.1.0"
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
-  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${TAG_URL})
+  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" -H "Authorization: JWT ${DOCKER_TOKEN}" ${TAG_URL})
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
   fi
 
-  if [[ "true" == "${publish_spec_to_cache}" ]]; then
-    echo "Publishing and writing to spec cache."
+  exit 0
 
-    # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
-    local tmp_spec_file; tmp_spec_file=$(mktemp)
-    docker run --rm "$versioned_image" spec | \
-      # 1. filter out any lines that are not valid json.
-      jq -R "fromjson? | ." | \
-      # 2. grab any json that has a spec in it.
-      # 3. if there are more than one, take the first one.
-      # 4. if there are none, throw an error.
-      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
-      > "$tmp_spec_file"
-
-    # use service account key file is provided.
-    if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
-      echo "Using provided service account key"
-      gcloud auth activate-service-account --key-file "$spec_cache_writer_sa_key_file"
-    else
-      echo "Using environment gcloud"
-    fi
-
-    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
-  else
-    echo "Publishing without writing to spec cache."
-  fi
+#  if [[ "true" == "${publish_spec_to_cache}" ]]; then
+#    echo "Publishing and writing to spec cache."
+#
+#    # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+#    local tmp_spec_file; tmp_spec_file=$(mktemp)
+#    docker run --rm "$versioned_image" spec | \
+#      # 1. filter out any lines that are not valid json.
+#      jq -R "fromjson? | ." | \
+#      # 2. grab any json that has a spec in it.
+#      # 3. if there are more than one, take the first one.
+#      # 4. if there are none, throw an error.
+#      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+#      > "$tmp_spec_file"
+#
+#    # use service account key file is provided.
+#    if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
+#      echo "Using provided service account key"
+#      gcloud auth activate-service-account --key-file "$spec_cache_writer_sa_key_file"
+#    else
+#      echo "Using environment gcloud"
+#    fi
+#
+#    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+#  else
+#    echo "Publishing without writing to spec cache."
+#  fi
 }
 
 cmd_publish_external() {
