@@ -56,7 +56,8 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.MYSQL)) {
+            config.get("database").asText()),
+        SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
       database.query(ctx -> {

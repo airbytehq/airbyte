@@ -10,7 +10,7 @@ import { Button, ControlLabels, DropDown, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { OperationService } from "core/domain/connection";
-import { Transformation } from "core/domain/connection/operation";
+import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useGetService } from "core/servicesProvider";
 import { equal } from "utils/objects";
 
@@ -42,9 +42,9 @@ const SmallButton = styled(Button)`
 `;
 
 interface TransformationProps {
-  transformation: Transformation;
+  transformation: OperationCreate;
   onCancel: () => void;
-  onDone: (tr: Transformation) => void;
+  onDone: (tr: OperationCreate) => void;
   isNewTransformation?: boolean;
 }
 
@@ -61,7 +61,7 @@ const validationSchema = yup.object({
 });
 
 function prepareLabelFields(
-  errors: FormikErrors<Transformation>,
+  errors: FormikErrors<OperationRead>,
   name: string
 ): { error?: boolean; message?: React.ReactNode } {
   const error = getIn(errors, name);

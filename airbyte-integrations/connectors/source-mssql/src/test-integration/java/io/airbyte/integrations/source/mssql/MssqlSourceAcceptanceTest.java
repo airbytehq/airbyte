@@ -107,7 +107,8 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

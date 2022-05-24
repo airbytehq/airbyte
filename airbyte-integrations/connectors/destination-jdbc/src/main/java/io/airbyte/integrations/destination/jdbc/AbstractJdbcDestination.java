@@ -131,8 +131,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
-        getConnectionProperties(config)
-    );
+        getConnectionProperties(config));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
@@ -163,7 +162,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config, catalog);
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
+        catalog);
   }
 
 }

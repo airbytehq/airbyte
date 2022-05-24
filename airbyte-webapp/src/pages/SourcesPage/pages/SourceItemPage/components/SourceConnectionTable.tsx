@@ -5,14 +5,15 @@ import useSyncActions from "components/EntityTable/hooks";
 import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
-import { Connection } from "core/domain/connection";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+
 type IProps = {
-  connections: Connection[];
+  connections: WebBackendConnectionRead[];
 };
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {

@@ -69,7 +69,7 @@ const ServiceFormContextProvider: React.FC<{
       hasFeature(FeatureItem.AllowOAuthConnector) &&
       selectedConnector?.advancedAuth &&
       selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey)),
+        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
     [selectedConnector, hasFeature, values, getValues]
   );
 

@@ -34,8 +34,8 @@ import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCO
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration test
- * credentials contain S3 credentials - this automatically causes COPY to be selected.
+ * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
+ * test credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
 public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -226,9 +226,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
                 baseConfig.get("port").asInt(),
                 baseConfig.get("database").asText()),
             null,
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS
-        )
-    );
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
   }
 
   public RedshiftSQLNameTransformer getNamingResolver() {
@@ -243,6 +241,11 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  }
+
+  @Override
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 1;
   }
 
 }

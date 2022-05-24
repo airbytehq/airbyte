@@ -77,8 +77,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 config.get("port").asInt(),
                 config.get("database").asText()),
             SQLDialect.MYSQL,
-            Map.of("zeroDateTimeBehavior", "convertToNull"))
-    );
+            Map.of("zeroDateTimeBehavior", "convertToNull")));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
