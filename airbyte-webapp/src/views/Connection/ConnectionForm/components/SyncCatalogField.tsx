@@ -7,8 +7,8 @@ import { CheckBox } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
-import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
@@ -200,7 +200,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   );
 
   const sortedSchema = useMemo(
-    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
     [streams]
   );
 
@@ -208,7 +208,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
     const filters: Array<(s: SyncSchemaStream) => boolean> = [
       (_: SyncSchemaStream) => true,
       searchString
-        ? (stream: SyncSchemaStream) => stream.stream.name.toLowerCase().includes(searchString.toLowerCase())
+        ? (stream: SyncSchemaStream) => stream.stream?.name.toLowerCase().includes(searchString.toLowerCase())
         : null,
     ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 

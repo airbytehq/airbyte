@@ -6,6 +6,10 @@ package io.airbyte.workers.temporal.exception;
 
 public class UnreachableWorkflowException extends Exception {
 
+  public UnreachableWorkflowException(final String message) {
+    super(message);
+  }
+
   public UnreachableWorkflowException(final String message, final Throwable t) {
     super(message, t);
   }

@@ -8,13 +8,17 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 
-import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { equal } from "utils/objects";
 
+import {
+  ConnectionSchedule,
+  NamespaceDefinitionType,
+  WebBackendConnectionRead,
+} from "../../../core/request/AirbyteClient";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
@@ -107,7 +111,9 @@ interface ConnectionFormProps {
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
-  connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);
+  connection:
+    | WebBackendConnectionRead
+    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 }
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -188,7 +194,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <FormChangeTracker changed={dirty} formId={formId} />
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
-              {({ field, meta }: FieldProps<ScheduleProperties>) => (
+              {({ field, meta }: FieldProps<ConnectionSchedule>) => (
                 <FlexRow>
                   <LeftFieldCol>
                     <ConnectorLabel
@@ -221,7 +227,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
             </span>
-            {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
+            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
                   <FlexRow>

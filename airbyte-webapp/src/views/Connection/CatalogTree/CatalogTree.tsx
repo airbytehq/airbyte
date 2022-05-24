@@ -1,7 +1,8 @@
 import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
-import { AirbyteStreamConfiguration, DestinationSyncMode, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { AirbyteStreamConfiguration, DestinationSyncMode } from "core/request/AirbyteClient";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
@@ -16,7 +17,7 @@ interface CatalogTreeProps {
 
 const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupportedSyncModes, onChangeStream, mode }) => {
   const onUpdateStream = useCallback(
-    (id: string, newConfig: Partial<AirbyteStreamConfiguration>) => {
+    (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
