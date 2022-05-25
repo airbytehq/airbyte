@@ -124,7 +124,6 @@ jobs:
           source venv/bin/activate
           pip install --quiet tox==3.24.4
       - name: Install yq
-        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
@@ -154,9 +153,37 @@ jobs:
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           FORCE_BUMP: ${{ github.event.inputs.force }}
-        if: success()
         run: |
           ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
+      - name: Build ${{ github.event.inputs.connector }}
+        run: |
+          ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
+        id: build
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on GitHub virtual runners.
+          TZ: UTC
+      - name: Process Build ${{ github.event.inputs.connector }}
+        run: |
+          export publish_spec_to_cache=true
+          ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Test ${{ github.event.inputs.connector }}
+        if: github.event.inputs.run-tests == 'true'
+        run: |
+          ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
+      - name: Commit and Push Bump ${{ github.event.inputs.connector }}
+        if: success() && steps.bump-version.outputs.bumped == 'true'
+        run: |
+          git config user.name 'Octavia Squidington III'
+          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
+          if ! (git diff --quiet && git diff --staged --quiet); then
+            echo "Detected changed files and version bump"
+            git commit -a -m "auto-bump-version ${{github.event.inputs.connector}} ${{ steps.bump-version.outputs.master_version }} to ${{ steps.bump-version.outputs.bumped_version }}"
+            git pull origin ${{ github.event.inputs.gitref }}
+            git push origin ${{ github.event.inputs.gitref }}
+          fi
       - name: Prepare Sentry
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
@@ -211,27 +238,15 @@ jobs:
           SLACK_COLOR: DC143C
           SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
           SLACK_FOOTER: ""
-      - name: git config
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          git config user.name 'Octavia Squidington III'
-          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-      - name: git commit and push
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          git add -u
-          git commit -m "auto-bump connector version"
-          git pull origin ${{ github.event.inputs.gitref }}
-          git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.comment-id && success() && steps.bump-version.outputs.bumped == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
       - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && !success()
+        if: github.event.inputs.comment-id && !success() && steps.bump-version.outputs.bumped == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}

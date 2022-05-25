@@ -78,7 +78,6 @@ cmd_test() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
   ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
 }
@@ -93,25 +92,6 @@ cmd_bump_version() {
   local bump_version
   connector_path="$1"; shift || error "Missing target (path) $USAGE"
   bump_version="$1"; shift || error "Missing target (bump_version) $USAGE"
-
-  local publish_spec_to_cache
-  local spec_cache_writer_sa_key_file
-  while [ $# -ne 0 ]; do
-    case "$1" in
-    --publish_spec_to_cache)
-      publish_spec_to_cache=true
-      shift 1
-      ;;
-    --publish_spec_to_cache_with_key_file)
-      publish_spec_to_cache=true
-      spec_cache_writer_sa_key_file="$2"
-      shift 2
-      ;;
-    *)
-      error "Unknown option: $1"
-      ;;
-    esac
-  done
 
   # Set local constants
   connector=${connector_path#airbyte-integrations/connectors/}
@@ -198,7 +178,7 @@ cmd_bump_version() {
   echo "Woohoo! Successfully bumped $connector:$branch_version to $connector:$bumped_version"
 }
 
-# Generate new spec, publish to GCS, generate updated seeds.yaml file. Runs after cmd_bumped_version
+# Generate new spec, publish to GCS, generate updated seeds.yaml file. Runs after cmd_bump_version
 cmd_process_build() {
   local connector_path
   connector_path="$1"; shift || error "Missing target (path) $USAGE"
@@ -217,10 +197,16 @@ cmd_process_build() {
 _ensure_docker_image_registered() {
   local image_name; image_name="$1"
   local image_version; image_version="$1"
-  local tag_url="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
 
+  # Checking if the image was successfully registered on DockerHub
+  # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
   sleep 5
-  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" "${tag_url}")
+
+  # To work for private repos we need a token as well
+  DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
+  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+  TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
+  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" -H "Authorization: JWT ${DOCKER_TOKEN}" "${TAG_URL}")
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
   fi
