@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.streams import Stream
 
 
-class YamldeclarativeSource(DeclarativeSource):
+class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
         self._factory = LowCodeComponentFactory()
         self._parser = YamlParser()
