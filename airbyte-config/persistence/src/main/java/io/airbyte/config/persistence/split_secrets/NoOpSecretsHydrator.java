@@ -17,7 +17,7 @@ public class NoOpSecretsHydrator implements SecretsHydrator {
   }
 
   @Override
-  public JsonNode hydrateSecretCoordinate(JsonNode secretCoordinate) {
+  public JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinate) {
     return secretCoordinate;
   }
 

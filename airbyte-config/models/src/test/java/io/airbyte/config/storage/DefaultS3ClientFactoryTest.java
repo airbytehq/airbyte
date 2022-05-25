@@ -10,10 +10,11 @@ import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class DefaultS3ClientFactoryTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class DefaultS3ClientFactoryTest {
 
   @Test
-  public void testS3() {
+  void testS3() {
     final var s3Config = Mockito.mock(S3Config.class);
     Mockito.when(s3Config.getAwsAccessKey()).thenReturn("access-key");
     Mockito.when(s3Config.getAwsSecretAccessKey()).thenReturn("access-key-secret");
@@ -24,7 +25,7 @@ public class DefaultS3ClientFactoryTest {
   }
 
   @Test
-  public void testS3RegionNotSet() {
+  void testS3RegionNotSet() {
     final var s3Config = Mockito.mock(S3Config.class);
     // Missing bucket and access key.
     Mockito.when(s3Config.getAwsAccessKey()).thenReturn("");

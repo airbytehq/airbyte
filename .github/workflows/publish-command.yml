@@ -155,10 +155,11 @@ jobs:
           SENTRY_PROJECT: airbyte-connectors
       - name: Publish ${{ github.event.inputs.connector }}
         run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
+          DOCKER_USERNAME: airbytebot
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
