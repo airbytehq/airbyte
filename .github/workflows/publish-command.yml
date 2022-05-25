@@ -21,9 +21,17 @@ on:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
       auto-bump-version:
-        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
-        required: true
-        default: "true"
+        description: "Set to major, minor, or patch to automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
+        required: false
+        default: "patch"
+        options:
+          - "major"
+          - "minor"
+          - "patch"
+      force:
+        description: "Force entire build and bump pipeline to execute, even if bump as already happened"
+        default: "false"
+        required: false
 
 jobs:
   find_valid_pat:
@@ -141,6 +149,14 @@ jobs:
           DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
           echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+      - name: Bump ${{ github.event.inputs.connector }} Version
+        id: bump-version
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          FORCE_BUMP: ${{ github.event.inputs.force }}
+        if: success()
+        run: |
+          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
       - name: Prepare Sentry
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
@@ -195,31 +211,6 @@ jobs:
           SLACK_COLOR: DC143C
           SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
           SLACK_FOOTER: ""
-      - name: Check if connector in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
-          sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
-          destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
-          if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
-          then exit 1
-          fi
-      - name: Bump version in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
-          sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
-          destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
-          if [ -z "$sourcename" ]
-          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
-          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
-          fi
-      - name: Run gradle process changes
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          ./gradlew :airbyte-config:init:processResources
       - name: git config
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |

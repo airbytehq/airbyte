@@ -232,7 +232,7 @@ jobs:
   #          body: |
   #            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   #      - name: Set publish label
-  #        if: success()
+  #        if: success() F
   #        run: |
   #          echo "set some label on PR"
   # In case of self-hosted EC2 errors, remove this block.
