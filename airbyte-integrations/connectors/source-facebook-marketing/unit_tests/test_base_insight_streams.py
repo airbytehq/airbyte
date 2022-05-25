@@ -297,7 +297,7 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "insights_lookback_period", pendulum.duration(days=10))
+
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
@@ -311,7 +311,7 @@ class TestBaseInsightsStream:
             "time_increment": 1,
         }
 
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=10)
         stream.state = state
         assert stream._completed_slices == {pendulum.Date(2020, 3, 21), pendulum.Date(2020, 3, 22), pendulum.Date(2020, 3, 23)}
 
@@ -327,11 +327,11 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         yesterday, _ = set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "insights_lookback_period", pendulum.duration(days=20))
+
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=20)
 
         records = read_full_refresh(stream)
         assert len(records) == (yesterday - start_date).days + 1
