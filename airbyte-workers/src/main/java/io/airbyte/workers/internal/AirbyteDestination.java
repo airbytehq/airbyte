@@ -49,7 +49,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    *
    * @throws Exception - throws if there is any failure when flushing.
    */
-  void notifyEndOfStream() throws Exception;
+  void notifyEndOfInput() throws Exception;
 
   /**
    * Means no more data will be emitted by the Destination. This may be because all data has already

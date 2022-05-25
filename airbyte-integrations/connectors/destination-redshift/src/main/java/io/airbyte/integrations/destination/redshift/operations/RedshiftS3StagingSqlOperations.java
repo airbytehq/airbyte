@@ -11,7 +11,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -33,10 +32,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   private final ObjectMapper objectMapper;
 
   public RedshiftS3StagingSqlOperations(NamingConventionTransformer nameTransformer,
-                                        AmazonS3 s3Client,
-                                        S3DestinationConfig s3Config,
-                                        RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(redshiftDataTmpTableMode);
+      AmazonS3 s3Client,
+      S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
@@ -84,11 +81,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void copyIntoTmpTableFromStage(JdbcDatabase database,
-                                        String stageName,
-                                        String stagingPath,
-                                        List<String> stagedFiles,
-                                        String dstTableName,
-                                        String schemaName)
+      String stageName,
+      String stagingPath,
+      List<String> stagedFiles,
+      String dstTableName,
+      String schemaName)
       throws Exception {
     LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
     final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
@@ -104,12 +101,12 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final var copyQuery = String.format(
         """
-        COPY %s.%s FROM '%s'
-        CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'
-        CSV GZIP
-        REGION '%s' TIMEFORMAT 'auto'
-        STATUPDATE OFF
-        MANIFEST;""",
+            COPY %s.%s FROM '%s'
+            CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'
+            CSV GZIP
+            REGION '%s' TIMEFORMAT 'auto'
+            STATUPDATE OFF
+            MANIFEST;""",
         schemaName,
         tmpTableName,
         getFullS3Path(s3Config.getBucketName(), manifestPath),

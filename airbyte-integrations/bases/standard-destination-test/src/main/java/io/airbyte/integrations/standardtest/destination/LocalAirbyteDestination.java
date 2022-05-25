@@ -40,7 +40,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void notifyEndOfStream() {
+  public void notifyEndOfInput() {
     // nothing to do here
   }
 

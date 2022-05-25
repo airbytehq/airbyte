@@ -5,41 +5,45 @@
       "type": ["null", "integer"]
     },
     "time": {
-       "type": ["null", "string"],
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "emitted_at": {
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "identity": {
       "type": ["null", "string"]
     },
     "page": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "referrer": {
       "type": ["null", "string"]
     },
     "user_agent": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "nudge_id": {
       "type": ["null", "integer"]
     },
     "nudge_name": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "anon_visitor_id": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "ip_address": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "answered_questions": {
       "type": "array",
       "items": {
-        "type":["null",  "object"]
+        "type": ["null", "object"]
       }
     },
     "properties": {
-      "type":["null",  "object"]
+      "type": ["null", "object"]
     },
     "nps": {
       "type": ["null", "object"],
@@ -48,20 +52,20 @@
           "type": ["null", "integer"]
         },
         "reason": {
-           "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "respondent_id": {
           "type": ["null", "integer"]
         },
         "time": {
-           "type": ["null", "string"],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "category": {
-           "type": ["null", "string"]
+          "type": ["null", "string"]
         },
         "response_uri": {
-           "type": ["null", "string"]
+          "type": ["null", "string"]
         }
       }
     }
