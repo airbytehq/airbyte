@@ -135,6 +135,10 @@ jobs:
           source venv/bin/activate
           tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
+      # Needed for Sentry steps
+      - name: Set Connector Name Env Variable
+        run: |
+          echo "CONNECTOR_IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           source venv/bin/activate
@@ -179,9 +183,9 @@ jobs:
         run: |
           curl -sL https://sentry.io/get-cli/ | bash
       - name: Create Sentry Release
-        if: startsWith(github.event.inputs.connector, 'connectors')
+        if: startsWith(github.event.inputs.connector, 'connectors') && steps.bump-version.outputs.bumped == 'true'
         run: |
-          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
+          sentry-cli releases set-commits "${{ env.CONNECTOR_IMAGE_NAME }}@${{ steps.bump-version.outputs.bumped_version }}" --auto --ignore-missing
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
@@ -214,9 +218,9 @@ jobs:
             git push origin ${{ github.event.inputs.gitref }}
           fi
       - name: Finalize Sentry release
-        if: startsWith(github.event.inputs.connector, 'connectors')
+        if: startsWith(github.event.inputs.connector, 'connectors') && steps.bump-version.outputs.bumped == 'true'
         run: |
-          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+          sentry-cli releases finalize "${{ env.CONNECTOR_IMAGE_NAME }}@${{ steps.bump-version.outputs.bumped_version }}"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j

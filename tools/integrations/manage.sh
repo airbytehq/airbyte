@@ -281,13 +281,11 @@ cmd_publish() {
     docker tag "$image_name:dev" "$latest_image"
 
     echo "Publishing new version ($versioned_image)"
-    # TODO
 #    docker push "$versioned_image"
 #    docker push "$latest_image"
   fi
 
   _ensure_docker_image_registered "$image_name" "$image_version"
-#  _publish_spec_to_cache "$image_name" "$image_version"
 }
 
 cmd_publish_external() {
