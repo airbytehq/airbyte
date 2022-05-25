@@ -4,12 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -17,15 +11,20 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
+import org.postgresql.jdbc.PgResultSetMetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.*;
+import java.time.chrono.IsoEra;
 import java.util.Collections;
-import org.postgresql.jdbc.PgResultSetMetaData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.db.jdbc.JdbcConstants.*;
 
 public class PostgresSourceOperations extends JdbcSourceOperations {
 
@@ -80,9 +79,14 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       putBoolean(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("bytea")) {
       putString(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("time") || columnTypeName.equalsIgnoreCase("timetz")) {
-      putString(json, columnName, resultSet, colIndex);
-    } else {
+    } else if (columnTypeName.equalsIgnoreCase("time")) {
+      putTime(json, columnName, resultSet, colIndex);
+    } else if (columnTypeName.equalsIgnoreCase("timetz")){
+      putTimeWithTimezone(json,columnName,resultSet,colIndex);
+    } else if(columnTypeName.equalsIgnoreCase("timestamptz")){
+      putTimestampWithTimezone(json,columnName,resultSet,colIndex);
+    }
+    else {
       // https://www.postgresql.org/docs/14/datatype.html
       switch (columnType) {
         case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -105,6 +109,25 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    LocalDate date = getDateTimeObject(resultSet, index, LocalDate.class);
+    node.put(columnName, resolveEra(date, date.toString()));
+  }
+
+  @Override
+  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
+    node.put(columnName, time.toString());
+  }
+
+  @Override
+  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
+    LocalDate date = timestamp.toLocalDate();
+    node.put(columnName, resolveEra(date, timestamp.toString()));
+  }
+
+  @Override
   public JDBCType getFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
@@ -116,6 +139,10 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         return JDBCType.VARCHAR;
+      } else if(typeName.equalsIgnoreCase("timestamptz")){
+        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
+      }else if (typeName.equalsIgnoreCase("timetz")){
+        return JDBCType.TIME_WITH_TIMEZONE;
       }
 
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
@@ -136,6 +163,12 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+
       default -> JsonSchemaType.STRING;
     };
   }
