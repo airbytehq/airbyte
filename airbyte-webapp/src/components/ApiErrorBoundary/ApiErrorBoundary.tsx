@@ -1,6 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useQueryErrorResetBoundary } from "react-query";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useLocation } from "react-use";
 import { LocationSensorState } from "react-use/lib/useLocation";
 
@@ -24,6 +25,7 @@ enum ErrorId {
 interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
+  navigate: NavigateFunction;
 }
 
 interface ApiErrorBoundaryProps {
@@ -68,7 +70,7 @@ class ApiErrorBoundary extends React.Component<
 
   render(): React.ReactNode {
     const { errorId, didRetry, message } = this.state;
-    const { onRetry, children } = this.props;
+    const { onRetry, navigate, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
@@ -90,7 +92,13 @@ class ApiErrorBoundary extends React.Component<
     return !errorId ? (
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
     ) : (
-      <ErrorOccurredView message={<FormattedMessage id="errorView.unknownError" />} />
+      <ErrorOccurredView
+        message={<FormattedMessage id="errorView.unknownError" />}
+        ctaButtonText={<FormattedMessage id="ui.goBack" />}
+        onCtaButtonClick={() => {
+          navigate("..");
+        }}
+      />
     );
   }
 }
@@ -98,9 +106,10 @@ class ApiErrorBoundary extends React.Component<
 const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <ApiErrorBoundary {...props} location={location} onRetry={reset}>
+    <ApiErrorBoundary {...props} location={location} navigate={navigate} onRetry={reset}>
       {children}
     </ApiErrorBoundary>
   );
