@@ -112,6 +112,8 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
+**Note**: Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
+
 ## Performance considerations
 
 This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
@@ -120,6 +122,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                      |
 |:---------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| `0.1.39` | 2022-05-18 | [12914](https://github.com/airbytehq/airbyte/pull/12914) | Fix GAQL query validation and log auth errors instead of failing the sync                    |
 | `0.1.38` | 2022-05-12 | [12807](https://github.com/airbytehq/airbyte/pull/12807) | Documentation updates                                                                        |
 | `0.1.37` | 2022-05-06 | [12651](https://github.com/airbytehq/airbyte/pull/12651) | Improve integration and unit tests                                                           |
 | `0.1.36` | 2022-04-19 | [12158](https://github.com/airbytehq/airbyte/pull/12158) | Fix `*_labels` streams data type                                                             |
