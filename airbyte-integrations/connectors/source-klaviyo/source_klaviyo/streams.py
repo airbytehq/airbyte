@@ -5,7 +5,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import datetime
-import time
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
