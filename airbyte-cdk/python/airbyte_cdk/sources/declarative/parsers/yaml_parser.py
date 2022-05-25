@@ -62,7 +62,6 @@ class YamlParser(ConfigParser):
         elif type(value) == dict:
             return self.preprocess_dict(value, evaluated_config, path)
         elif type(value) == list:
-            evaluated_list = [self.preprocess(v, evaluated_config, path) for v in value]
-            return evaluated_list
+            return [self.preprocess(v, evaluated_config, path) for v in value]
         else:
             return value
