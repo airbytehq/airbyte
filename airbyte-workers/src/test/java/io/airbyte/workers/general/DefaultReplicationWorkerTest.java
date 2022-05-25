@@ -299,7 +299,7 @@ class DefaultReplicationWorkerTest {
   void testDestinationRunnableDestinationFailure() throws Exception {
     final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
 
-    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).notifyEndOfStream();
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).notifyEndOfInput();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,

@@ -1085,7 +1085,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
@@ -1344,7 +1344,7 @@ public abstract class DestinationAcceptanceTest {
         .format("Added %s messages to each of %s streams", currentRecordNumberForStream,
             currentStreamNumber));
     // Close destination
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
   }
 
   private final static String LOREM_IPSUM =
