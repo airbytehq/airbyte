@@ -97,10 +97,10 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-      ((ObjectNode) config).put("username", "fake");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus());
-      assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    ((ObjectNode) config).put("username", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
   }
 
   @Test
@@ -113,9 +113,10 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-      ((ObjectNode) config).put("host", "localhost2");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(Status.FAILED, actual.getStatus());
-      assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
+    ((ObjectNode) config).put("host", "localhost2");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
   }
+
 }

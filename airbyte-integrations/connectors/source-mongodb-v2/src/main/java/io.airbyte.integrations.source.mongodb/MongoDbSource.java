@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonType;
 import org.bson.Document;
@@ -146,19 +145,19 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      */
     try {
       final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-                      .append("authorizedCollections", true)
-                      .append("nameOnly", true))
-              .append("filter", "{ 'type': 'collection' }");
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
+          .append("filter", "{ 'type': 'collection' }");
       var names = StreamSupport.stream(database.getDatabaseNames().spliterator(), false).toList();
       if (!names.contains(database.getName())) {
         throw new ConnectionErrorException("incorrect_host_or_port_or_database", INCORRECT_HOST_OR_PORT_OR_DATABASE.getValue());
       }
       return document.toBsonDocument()
-              .get("cursor").asDocument()
-              .getArray("firstBatch")
-              .stream()
-              .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-              .collect(Collectors.toSet());
+          .get("cursor").asDocument()
+          .getArray("firstBatch")
+          .stream()
+          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+          .collect(Collectors.toSet());
     } catch (MongoTimeoutException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     } catch (Exception e) {
@@ -269,8 +268,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public void close() throws Exception {}
+
   @Override
   public ConnectorType getConnectorType() {
     return ConnectorType.MONGO;
   }
+
 }

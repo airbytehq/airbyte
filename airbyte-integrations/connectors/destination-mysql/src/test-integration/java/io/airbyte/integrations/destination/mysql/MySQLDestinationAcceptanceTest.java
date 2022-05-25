@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -304,7 +303,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
   }
 
   @Test
@@ -319,7 +318,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Test
   public void testUserHasNoPermissionToDataBase() throws SQLException {
     final Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", db.getPassword());
-    connection.createStatement().execute("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    connection.createStatement()
+        .execute("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
     JsonNode config = ((ObjectNode) getConfig()).put("username", USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     MySQLDestination destination = new MySQLDestination();
@@ -327,4 +327,5 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
   }
+
 }

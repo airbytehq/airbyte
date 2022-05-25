@@ -12,7 +12,8 @@ public enum ConnectionErrorType {
   INCORRECT_HOST_OR_PORT("Incorrect host or port"),
   INCORRECT_HOST_OR_PORT_OR_DATABASE("Some of provided parameters are incorrect: host, port or database name"),
   INCORRECT_USERNAME_OR_HOST("Incorrect username or host"),
-  INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED("Some of provided parameters are incorrect: username, password, database name or user access denied"),
+  INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED(
+      "Some of provided parameters are incorrect: username, password, database name or user access denied"),
   INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE("Some of provided parameters are incorrect: username, password or database name"),
   INCORRECT_CLUSTER("Incorrect cluster"),
   INCORRECT_DB_NAME("Incorrect data base name"),

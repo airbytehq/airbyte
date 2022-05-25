@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.exception.ConnectionErrorException;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
@@ -73,11 +73,11 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     } catch (final ConnectionErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-              .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getCustomErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage(messages);
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()

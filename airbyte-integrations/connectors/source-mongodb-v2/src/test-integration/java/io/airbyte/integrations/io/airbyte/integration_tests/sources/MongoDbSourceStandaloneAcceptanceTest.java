@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
@@ -15,19 +20,13 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.List;
-
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -109,51 +108,51 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
   @Test
   public void testCheckIncorrectHost() throws Exception {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", STANDALONE.getType())
-            .put("host", "localhost2")
-            .put("port", mongoDBContainer.getFirstMappedPort())
-            .put("tls", false)
-            .build());
+        .put("instance", STANDALONE.getType())
+        .put("host", "localhost2")
+        .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
+        .build());
 
     JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance_type", instanceConfig)
-            .put("database", DATABASE_NAME)
-            .put("auth_source", "admin")
-            .build());
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
   }
 
   @Test
   public void testCheckIncorrectPort() throws Exception {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", STANDALONE.getType())
-            .put("host", mongoDBContainer.getHost())
-            .put("port", 1234)
-            .put("tls", false)
-            .build());
+        .put("instance", STANDALONE.getType())
+        .put("host", mongoDBContainer.getHost())
+        .put("port", 1234)
+        .put("tls", false)
+        .build());
 
     JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance_type", instanceConfig)
-            .put("database", DATABASE_NAME)
-            .put("auth_source", "admin")
-            .build());
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
   }
 
   @Test
   public void testCheckIncorrectDataBase() throws Exception {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", STANDALONE.getType())
-            .put("host", mongoDBContainer.getHost())
-            .put("port", mongoDBContainer.getFirstMappedPort())
-            .put("tls", false)
-            .build());
+        .put("instance", STANDALONE.getType())
+        .put("host", mongoDBContainer.getHost())
+        .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
+        .build());
 
     JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance_type", instanceConfig)
-            .put("database", "wrongdatabase")
-            .put("auth_source", "admin")
-            .build());
+        .put("instance_type", instanceConfig)
+        .put("database", "wrongdatabase")
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_HOST_OR_PORT_OR_DATABASE);
   }
 

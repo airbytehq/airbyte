@@ -81,4 +81,5 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public ConnectorType getConnectorType() {
     return ConnectorType.REDSHIFT;
   }
+
 }

@@ -74,4 +74,4 @@ public class MySQLDestinationTest {
     assertEquals(MySQLDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
- }
+}

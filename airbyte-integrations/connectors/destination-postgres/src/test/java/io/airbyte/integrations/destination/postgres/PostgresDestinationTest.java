@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -22,25 +28,18 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresDestinationTest {
 
@@ -188,12 +187,12 @@ public class PostgresDestinationTest {
     final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
 
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD )));
+        .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD)));
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("create database %s;", DATABASE)));
+        .execute(String.format("create database %s;", DATABASE)));
     // deny access for database for all users from group public
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("revoke all on database %s from public;", DATABASE)));
+        .execute(String.format("revoke all on database %s from public;", DATABASE)));
 
     ((ObjectNode) config).put("username", USERNAME);
     ((ObjectNode) config).put("password", PASSWORD);

@@ -117,4 +117,5 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public ConnectorType getConnectorType() {
     return ConnectorType.SNOWFLAKE;
   }
+
 }

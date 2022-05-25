@@ -7,9 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_SCHEMA_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -114,27 +112,27 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-      ((ObjectNode) config).put("username", "fake");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-      assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
+    ((ObjectNode) config).put("username", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-      ((ObjectNode) config).put("host", "localhost2");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-      assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+    ((ObjectNode) config).put("host", "localhost2");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-      ((ObjectNode) config).put("port", "30000");
-      final AirbyteConnectionStatus actual = source.check(config);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-      assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
-    }
+    ((ObjectNode) config).put("port", "30000");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
+  }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
@@ -147,12 +145,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
+        .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("create database %s;", DATABASE)));
+        .execute(String.format("create database %s;", DATABASE)));
     // deny access for database for all users from group public
     database.execute(connection -> connection.createStatement()
-            .execute(String.format("revoke all on database %s from public;", DATABASE)));
+        .execute(String.format("revoke all on database %s from public;", DATABASE)));
     ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("database", DATABASE);
@@ -160,4 +158,5 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_ACCESS_PERMISSION.getValue(), actual.getMessage());
   }
+
 }

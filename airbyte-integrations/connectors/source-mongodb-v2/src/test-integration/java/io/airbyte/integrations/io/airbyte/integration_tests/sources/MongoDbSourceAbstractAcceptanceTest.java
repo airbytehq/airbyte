@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -23,8 +25,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptanceTest {
 

@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
 import org.jooq.DSLContext;
-
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -114,4 +113,5 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
+
 }

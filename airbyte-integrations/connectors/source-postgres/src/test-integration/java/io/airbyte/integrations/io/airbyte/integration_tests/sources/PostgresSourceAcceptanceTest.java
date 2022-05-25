@@ -5,7 +5,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -27,12 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 
 public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -139,4 +133,5 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
+
 }

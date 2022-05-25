@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,21 +23,14 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
@@ -199,7 +198,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
 
     final String createUser = String.format("create user %s with password '%s';",
-            USER_WITHOUT_CREDS, baseConfig.get("password").asText());
+        USER_WITHOUT_CREDS, baseConfig.get("password").asText());
     getDatabase().query(ctx -> ctx.execute(createUser));
 
     final JsonNode configForSchema = Jsons.clone(baseConfig);

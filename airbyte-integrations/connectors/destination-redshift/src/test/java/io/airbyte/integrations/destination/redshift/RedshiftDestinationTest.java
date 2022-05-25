@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.destination.redshift.RedshiftDestination.DestinationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("RedshiftDestination")
 public class RedshiftDestinationTest {

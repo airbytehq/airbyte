@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
@@ -11,19 +15,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.sql.JDBCType;
 import java.sql.SQLException;
-
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 
 // Run as part of integration tests, instead of unit tests, because there is no test container for
 // Redshift.
@@ -95,7 +94,7 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put("port", "0000");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(),  actual.getMessage());
+    Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
   }
 
   @Test
@@ -105,4 +104,5 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());
   }
+
 }
