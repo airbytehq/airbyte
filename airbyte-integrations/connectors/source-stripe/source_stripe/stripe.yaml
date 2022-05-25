@@ -1,0 +1,58 @@
+limit: 100
+
+
+decoder:
+  class_name: "airbyte_cdk.sources.configurable.decoders.json_decoder.JsonDecoder"
+request_parameters_provider:
+  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  request_parameters:
+    limit: "*ref(limit)"
+state:
+  class_name: airbyte_cdk.sources.configurable.states.dict_state.DictState
+retriever:
+  class_name: "airbyte_cdk.sources.configurable.retrievers.simple_retriever.SimpleRetriever"
+  name: "{{ kwargs['name'] }}"
+  state: "*ref(state)"
+  stream_slicer:
+    class_name: airbyte_cdk.sources.configurable.stream_slicers.single_slice.SingleSlice
+  paginator:
+    class_name: airbyte_cdk.sources.configurable.requesters.paginators.no_pagination.NoPagination
+  primary_key: "{{ kwargs['primary_key'] }}"
+partial_stream:
+  class_name: "airbyte_cdk.sources.configurable.configurable_stream.ConfigurableStream"
+  schema_loader:
+    class_name: airbyte_cdk.sources.configurable.schema.json_schema.JsonSchema
+    file_path: "./source_stripe/schemas/{{kwargs['name']}}.json"
+  cursor_field: [ ]
+requester:
+  class_name: airbyte_cdk.sources.configurable.requesters.http_requester.HttpRequester
+  name: "{{ kwargs['name'] }}"
+  url_base: "https://api.stripe.com/v1/"
+  http_method: "GET"
+  authenticator:
+    class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
+    token: "{{ config['client_secret'] }}"
+  request_parameters_provider: "*ref(request_parameters_provider)"
+  retrier:
+    class_name: airbyte_cdk.sources.configurable.requesters.retriers.default_retrier.DefaultRetrier
+extractor:
+  class_name: airbyte_cdk.sources.configurable.extractors.jq.JqExtractor
+  decoder: "*ref(decoder)"
+
+invoices_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "invoices"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "invoices"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".data[]"
+streams:
+  - "*ref(invoices_stream)"
+check:
+  class_name: airbyte_cdk.sources.configurable.checks.check_stream.CheckStream

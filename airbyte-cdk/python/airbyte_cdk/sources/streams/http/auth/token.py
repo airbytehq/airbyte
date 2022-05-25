@@ -11,7 +11,6 @@ from deprecated import deprecated
 from .core import HttpAuthenticator
 
 
-@deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.TokenAuthenticator instead")
 class TokenAuthenticator(HttpAuthenticator):
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method

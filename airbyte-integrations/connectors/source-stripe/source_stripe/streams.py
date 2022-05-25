@@ -23,10 +23,7 @@ class StripeStream(HttpStream, ABC):
         self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        if bool(decoded_response.get("has_more", "False")) and decoded_response.get("data", []):
-            last_object_id = decoded_response["data"][-1]["id"]
-            return {"starting_after": last_object_id}
+        return None
 
     def request_params(
         self,

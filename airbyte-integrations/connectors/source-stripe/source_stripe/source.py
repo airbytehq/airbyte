@@ -3,40 +3,20 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
-
-import pendulum
-import stripe
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from source_stripe.streams import (
-    BalanceTransactions,
-    BankAccounts,
-    Charges,
-    CheckoutSessions,
-    CheckoutSessionsLineItems,
-    Coupons,
-    CustomerBalanceTransactions,
-    Customers,
-    Disputes,
-    Events,
-    InvoiceItems,
-    InvoiceLineItems,
-    Invoices,
-    PaymentIntents,
-    Payouts,
-    Plans,
-    Products,
-    PromotionCodes,
-    Refunds,
-    SubscriptionItems,
-    Subscriptions,
-    Transfers,
-)
+from airbyte_cdk.sources.configurable.yaml_configurable_source import YamlConfigurableSource
 
 
+class SourceStripe(YamlConfigurableSource):
+    """
+    This is a sample low-code connector.
+    It still uses the existing spec.yaml file
+    """
+
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "./source_stripe/stripe.yaml"})
+
+
+"""
 class SourceStripe(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -75,3 +55,4 @@ class SourceStripe(AbstractSource):
             Subscriptions(**incremental_args),
             Transfers(**incremental_args),
         ]
+"""
