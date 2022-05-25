@@ -373,6 +373,7 @@ class Issues(IncrementalJiraStream):
             "parent",
             "priority",
             "project",
+            "resolutiondate",
             "security",
             "status",
             "subtasks",
