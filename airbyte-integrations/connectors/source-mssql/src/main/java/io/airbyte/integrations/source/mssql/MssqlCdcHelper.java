@@ -90,24 +90,20 @@ public class MssqlCdcHelper {
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
-    }
     // new replication method config since version 0.4.0
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
       return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+    }
+    // legacy replication method config before version 0.4.0
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
+      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
     }
     return false;
   }
 
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
-      return SnapshotIsolation.SNAPSHOT;
-    }
     // new replication method config since version 0.4.0
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
@@ -119,10 +115,6 @@ public class MssqlCdcHelper {
 
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
-      return DataToSync.EXISTING_AND_NEW;
-    }
     // new replication method config since version 0.4.0
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
