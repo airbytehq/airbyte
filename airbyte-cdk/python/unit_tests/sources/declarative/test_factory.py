@@ -108,6 +108,9 @@ list_stream:
     extractor:
       ref: "*ref(extractor)"
       transform: ".result[]"
+check:
+  class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
+  stream_names: ["list_stream"]
     """
     config = parser.parse(content)
 
@@ -125,3 +128,8 @@ list_stream:
     assert type(stream._retriever._extractor._decoder) == JsonDecoder
     assert stream._retriever._extractor._transform == ".result[]"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
+
+    checker = factory.create_component(config["check"], input_config)()
+    streams_to_check = checker._stream_names
+    assert len(streams_to_check) == 1
+    assert list(streams_to_check)[0] == "list_stream"

@@ -33,17 +33,29 @@ class LowCodeComponentFactory:
         module = ".".join(split[:-1])
         class_name = split[-1]
 
-        updated_kwargs = dict()
-        for k, v in kwargs.items():
-            if type(v) == dict and "class_name" in v:
-                # propagate kwargs to inner objects
-                v["kwargs"] = self.merge_dicts(kwargs.get("kwargs", dict()), v.get("kwargs", dict()))
-                updated_kwargs[k] = self.create_component(v, config)()
-            else:
-                updated_kwargs[k] = v
+        updated_kwargs = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs.items()}
 
         class_ = getattr(importlib.import_module(module), class_name)
         return create(class_, config=config, **updated_kwargs)
 
-    def merge_dicts(self, d1, d2):
+    def _merge_dicts(self, d1, d2):
         return {**d1, **d2}
+
+    def _create_subcomponent(self, v, kwargs, config):
+        if type(v) == dict and "class_name" in v:
+            # propagate kwargs to inner objects
+            v["kwargs"] = self._merge_dicts(kwargs.get("kwargs", dict()), v.get("kwargs", dict()))
+            return self.create_component(v, config)()
+        elif type(v) == list:
+            return [
+                self._create_subcomponent(sub, self._merge_dicts(kwargs.get("kwargs", dict()), self._get_subcomponent_kwargs(sub)), config)
+                for sub in v
+            ]
+        else:
+            return v
+
+    def _get_subcomponent_kwargs(self, sub: Any):
+        if type(sub) == dict:
+            return sub.get("kwargs", {})
+        else:
+            return {}
