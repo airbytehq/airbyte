@@ -253,6 +253,7 @@ class HttpStream(Stream, ABC):
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
+        self.logger.info(f"args: {args}")
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(

@@ -3,12 +3,14 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
 
 
 class Paginator(ABC):
     @abstractmethod
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: Union[requests.Response, Mapping[str, Any]], last_records: List[Mapping[str, Any]]
+    ) -> Optional[Mapping[str, Any]]:
         pass

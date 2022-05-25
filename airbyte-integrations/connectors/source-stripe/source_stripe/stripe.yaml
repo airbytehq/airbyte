@@ -7,6 +7,7 @@ request_parameters_provider:
   class_name: "airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters:
     limit: "*ref(limit)"
+    starting_after: "{{ next_page_token['starting_after'] }}"
 state:
   class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 retriever:
@@ -57,6 +58,10 @@ invoices_stream:
 substream_retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.substream_retriever.SubstreamRetriever"
   ref: "*ref(retriever)"
+  parent_extractor:
+    class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
+    decoder: "*ref(decoder)"
+    transform: ".lines.data[]"
 
 substream_slicer:
   class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"

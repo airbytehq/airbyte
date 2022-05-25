@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from typing import List
+from typing import Any, List, Mapping, Union
 
 import pyjq
 import requests
@@ -23,7 +23,10 @@ class JqExtractor(HttpExtractor):
         self._kwargs = kwargs
         self._decoder = decoder
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self._decoder.decode(response)
+    def extract_records(self, response: Union[requests.Response, Mapping[str, Any]]) -> List[Record]:
+        if type(response) == requests.Response:
+            response_body = self._decoder.decode(response)
+        else:
+            response_body = response
         script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
         return pyjq.all(script, response_body)
