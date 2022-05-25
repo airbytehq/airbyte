@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -39,7 +38,6 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,6 +81,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     source = new MssqlSource();
+
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -90,7 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
+        .put("replication", replicationConfig)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -271,18 +274,15 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSnapshotIsolationDisabled() {
-    //disabled the snapshot
-   JsonNode replication_config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("replication_method", "CDC")
-            .put("is_cdc_only", "false")
-            .put("is_snapshot_disabled", "true")
-            .build());
-    Jsons.replaceNestedValue(config, Arrays.asList(new String[]{"replication_method"}),replication_config);
-    // snapshot isolation enabled by setup so assert check passes
+    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_type", "CDC")
+        .put("data_to_sync", "New Changes Only")
+        // set snapshot_isolation level to "Read Committed" to disable snapshot
+        .put("snapshot_isolation", "Read Committed")
+        .build());
+    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
-    // now disable snapshot isolation and assert that check fails
     switchSnapshotIsolation(false, dbName);
-    // snapshot isolation disabled and snapshot validation is disabled so assert check passes
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
