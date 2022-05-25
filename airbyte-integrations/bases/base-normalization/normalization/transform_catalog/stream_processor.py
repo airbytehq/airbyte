@@ -1119,7 +1119,7 @@ where 1 = 1
                 # This delete query depends on the _stg model, so run it before we drop/update the _stg view
                 if do_deletions:
                     final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
-                    # final_table_name = self.final_table_name
+                    active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
                     deletion_hook = Template(
                         """
                         {{ '{%' }}
@@ -1130,15 +1130,29 @@ where 1 = 1
                             ) is not none
                         {{ '%}' }}
 
+                        -- Delete records which are no longer active.
+                        -- Find the records which are being updated by querying the _scd_new_data model
+                        -- Then join that against the SCD model to find the records which have no row with _airbyte_active_row = 1
                         delete from {{ '{{ this.schema }}' }}.{{ quoted_final_table_name }} where {{ unique_key }} in (
-                            select
-                                {{ '{{' }} dbt_utils.surrogate_key([
-                                    {%- for primary_key in primary_keys %}
-                                        {{ primary_key }},
-                                    {%- endfor %}
-                                ]) {{ '}}' }} as {{ unique_key }}
-                            from {{stg_schema}}.{{stg_table}}
-                            where 1=1 {{ incremental_clause }}
+                            with modified_ids as (
+                                select
+                                    {{ '{{' }} dbt_utils.surrogate_key([
+                                        {%- for primary_key in primary_keys %}
+                                            {{ primary_key }},
+                                        {%- endfor %}
+                                    ]) {{ '}}' }} as {{ unique_key }}
+                                from {{ quoted_scd_new_data_table }}
+                                where 1=1
+                                    {{ incremental_clause }}
+                            )
+                            select modified_ids.{{ unique_key }}
+                            from (
+                                select * from {{ '{{ this }}' }}
+                                where {{ active_row_column_name }} =  1
+                            ) scd_active_rows
+                            right outer join modified_ids on modified_ids.{{ unique_key }} = scd_active_rows.{{ unique_key }}
+                            group by modified_ids.{{ unique_key }}
+                            having count(scd_active_rows.{{ unique_key }}) = 0
                         )
 
                         {{ '{% else %}' }}
@@ -1154,8 +1168,12 @@ where 1 = 1
                         primary_keys=self.list_primary_keys(column_names),
                         stg_schema=stg_schema,
                         stg_table=stg_table,
-                        # TODO should this be using the final table?
-                        incremental_clause=self.get_incremental_clause("this"),
+                        incremental_clause=self.get_incremental_clause(
+                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name)
+                        ),
+                        scd_new_data_table=scd_new_data_table,
+                        quoted_scd_new_data_table=jinja_call(scd_new_data_table),
+                        active_row_column_name=active_row_column_name,
                     )
                     hooks.append(deletion_hook)
 
