@@ -4,6 +4,98 @@ This page guides you through the process of setting up the BigQuery destination 
 
 ## Prerequisites
 
+* [A Google Cloud Project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console#before-you-begin)
+* [A BigQuery Dataset into which Airbyte can sync your data](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset)
+    
+    Note that queries written in BigQuery can only reference Datasets in the same physical location. If you plan on combining the Airbyte-synced data with data from other datasets in your queries, create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) for more information.
+
+* A [Google Cloud service account](https://cloud.google.com/iam/docs/service-accounts) with the `BigQuery User`(`roles/bigquery.user`) and `BigQuery Data Editor`(`roles/bigquery.dataEditor`) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). We recommend using the service account exclusively for Airbyte for ease of permissioning and auditing. 
+
+    `BigQuery User`(`roles/bigquery.user`) role permissions:
+
+    ```
+    bigquery.bireservations.get
+    bigquery.capacityCommitments.get
+    bigquery.capacityCommitments.list
+    bigquery.config.get
+    bigquery.datasets.create
+    bigquery.datasets.get
+    bigquery.datasets.getIamPolicy
+    bigquery.jobs.create
+    bigquery.jobs.list
+    bigquery.models.list
+    bigquery.readsessions.*
+    bigquery.reservationAssignments.list
+    bigquery.reservationAssignments.search
+    bigquery.reservations.get
+    bigquery.reservations.list
+    bigquery.routines.list
+    bigquery.savedqueries.get
+    bigquery.savedqueries.list
+    bigquery.tables.list
+    bigquery.transfers.get
+    resourcemanager.projects.get
+    resourcemanager.projects.list
+    ```
+    
+    `BigQuery Data Editor` (`roles/bigquery.dataEditor`) role permissions:
+    ```
+    bigquery.config.get
+    bigquery.datasets.create
+    bigquery.datasets.get
+    bigquery.datasets.getIamPolicy
+    bigquery.datasets.updateTag
+    bigquery.models.*
+    bigquery.routines.*
+    bigquery.tables.create
+    bigquery.tables.createSnapshot
+    bigquery.tables.delete
+    bigquery.tables.export
+    bigquery.tables.get
+    bigquery.tables.getData
+    bigquery.tables.getIamPolicy
+    bigquery.tables.list
+    bigquery.tables.restoreSnapshot
+    bigquery.tables.update
+    bigquery.tables.updateData
+    bigquery.tables.updateTag
+    resourcemanager.projects.get
+    resourcemanager.projects.list
+    ```
+
+* [A service account key in the JSON format to authenticate your service account](https://cloud.google.com/iam/docs/service-accounts#service_account_keys)
+
+## Set up BigQuery as a destination in Airbyte Cloud and OSS
+
+To set up BigQuery as a destination in Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ New destination**.
+3. On the Set up the destination page, select **BigQuery** from the Destination type dropdown. 
+4. For Name, enter a name for the BigQuery connector. 
+???
+???
+???
+
+
+
+
+
+
+---------------------------------
+
+### Sync overview
+
+#### Output schema
+
+Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
+
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
+
+## Prerequisites
+
 * [A Google Cloud Project with BigQuery enabled](https://docs.airbyte.com/integrations/destinations/bigquery#google-cloud-project)
 * [A BigQuery Dataset into which Airbyte can sync your data](https://docs.airbyte.com/integrations/destinations/bigquery#bigquery-dataset-for-airbyte-syncs)
 * [A Google Cloud Service Account with the "BigQuery User" and "BigQuery Data Editor" roles in your GCP project](https://docs.airbyte.com/integrations/destinations/bigquery#service-account)

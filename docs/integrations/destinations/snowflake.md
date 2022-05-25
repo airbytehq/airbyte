@@ -1,12 +1,12 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, then setting up the data loading method (internal stage, AWS S3, GCS bucket, or Azure Blob Storage), and then configuring the Snowflake destination connector using the Airbyte UI.
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, GCS bucket, or Azure Blob Storage), and configuring the Snowflake destination connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 ## Prerequisites
 
-- A Snowflake account with the[ ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
+- A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
 - (Optional) An AWS, Google Cloud Storage, or Azure account.
 
 ## Step 1: Set up Airbyte-specific entities in Snowflake
@@ -94,12 +94,9 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 ## Step 2: Set up a data loading method
 
-By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data.
+By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also store data externally using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage (GCS) bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
 
 Make sure the database and schema have the `USAGE` privilege.
-
-You can also store data externally using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage (GCS) bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
-
 
 ### Using an Amazon S3 bucket
 
@@ -135,7 +132,7 @@ To use a GCS bucket:
 
 ### Using Azure Blob Storage
 
-To use Azure Blob Storage, you will need to [create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) and [container](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container), and provide a [SAS Token](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to access the container. We recommend creating a dedicated container for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
+To use Azure Blob Storage, [create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) and [container](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container), and provide a [SAS Token](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to access the container. We recommend creating a dedicated container for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
 
 
 ## Step 3: Set up Snowflake as a destination in Airbyte
