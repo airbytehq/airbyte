@@ -18,10 +18,7 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
-import java.sql.JDBCType;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -68,6 +65,16 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     }
 
     return jsonNode;
+  }
+
+  @Override
+  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      Date date = Date.valueOf(value);
+      preparedStatement.setDate(parameterIndex, date);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
