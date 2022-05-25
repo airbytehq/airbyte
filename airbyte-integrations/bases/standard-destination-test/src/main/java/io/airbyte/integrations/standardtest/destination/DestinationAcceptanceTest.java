@@ -709,7 +709,7 @@ public abstract class DestinationAcceptanceTest {
             .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 3)
-                .put("currency", generateBigString(0))
+                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
                 .put("date", "2020-10-10T00:00:00Z")
                 .put("HKD", 10.5)
                 .put("NZD", 1.14)
@@ -730,6 +730,10 @@ public abstract class DestinationAcceptanceTest {
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
+  }
+
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 0;
   }
 
   /**
@@ -1081,7 +1085,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
@@ -1340,7 +1344,7 @@ public abstract class DestinationAcceptanceTest {
         .format("Added %s messages to each of %s streams", currentRecordNumberForStream,
             currentStreamNumber));
     // Close destination
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
   }
 
   private final static String LOREM_IPSUM =

@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
  * wherever that cloud storage is used and then, based on the configuration, spin up the correct
  * client. This configuration object allows us to do that.
  */
+@SuppressWarnings("PMD.ShortMethodName")
 public class CloudStorageConfigs {
 
   public enum WorkerStorageType {
@@ -88,7 +89,7 @@ public class CloudStorageConfigs {
     return gcsConfig;
   }
 
-  public static abstract class S3ApiWorkerStorageConfig {
+  public static class S3ApiWorkerStorageConfig {
 
     private final String bucketName;
     private final String awsAccessKey;

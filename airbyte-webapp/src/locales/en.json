@@ -1,8 +1,6 @@
 {
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
   "notifications.error.health": "Cannot reach server",
-  "notifications.error.somethingWentWrong": "Something went wrong",
-  "notifications.error.noMessage": "No error message",
 
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
@@ -51,7 +49,6 @@
   "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
-  "form.canceling": "Canceling",
   "form.submit": "Submit",
   "form.delete": "Delete",
   "form.change": "Change",
@@ -497,7 +494,9 @@
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
+  "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
+  "errorView.unknownError": "Unknown error occurred",
 
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",

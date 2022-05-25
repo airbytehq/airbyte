@@ -350,7 +350,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
 
         try {
-          destination.notifyEndOfStream();
+          destination.notifyEndOfInput();
         } catch (final Exception e) {
           throw new DestinationException("Destination process end of stream notification failed", e);
         }
