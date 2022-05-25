@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { Button, H2 } from "components";
 
@@ -15,7 +16,9 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, o
     <div className={styles.errorOccurredView}>
       <div className={styles.content}>
         <img src="/images/octavia/biting-nails.png" alt="Octavia" className={styles.octavia} />
-        <H2 center>Oops! Something went wrong...</H2>
+        <H2 center>
+          <FormattedMessage id="errorView.title" />
+        </H2>
         <p className={styles.message}>{message}</p>
         {onCtaButtonClick && ctaButtonText && (
           <Button size="xl" onClick={onCtaButtonClick}>
