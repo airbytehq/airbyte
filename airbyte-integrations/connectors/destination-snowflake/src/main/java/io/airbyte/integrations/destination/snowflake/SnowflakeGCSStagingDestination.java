@@ -36,6 +36,8 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
+
 public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGCSStagingDestination.class);
@@ -54,7 +56,10 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+
+    try  {
+      final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations));
@@ -90,8 +95,13 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final JsonNode config) {
-    return SnowflakeDatabase.getDatabase(config);
+  protected DataSource getDataSource(final JsonNode config) {
+    return SnowflakeDatabase.createDataSource(config);
+  }
+
+  @Override
+  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+    return SnowflakeDatabase.getDatabase(dataSource);
   }
 
   @Override
@@ -112,7 +122,7 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
     GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     return new StagingConsumerFactory().create(
         outputRecordCollector,
-        getDatabase(config),
+        getDatabase(getDataSource(config)),
         new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
