@@ -125,6 +125,20 @@ public class Job {
     return JobStatus.TERMINAL_STATUSES.contains(getStatus());
   }
 
+  public void validateStatusTransition(final JobStatus newStatus) throws IllegalStateException {
+    final Set<JobStatus> validNewStatuses = JobStatus.VALID_STATUS_CHANGES.get(status);
+
+    if (!validNewStatuses.contains(newStatus)) {
+      throw new IllegalStateException(String.format(
+          "Transitioning Job %d from JobStatus %s to %s is not allowed. The only valid statuses that an be transitioned to from %s are %s",
+          id,
+          status,
+          newStatus,
+          status,
+          JobStatus.VALID_STATUS_CHANGES.get(status)));
+    }
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
