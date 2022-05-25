@@ -77,7 +77,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   }
 
   public static Configuration getHadoopConfig(final GcsDestinationConfig config) {
-    final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
+    final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getGcsCredentialConfig();
     final Configuration hadoopConfig = new Configuration();
 
     // the default org.apache.hadoop.fs.s3a.S3AFileSystem does not work for GCS
@@ -99,7 +99,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
 

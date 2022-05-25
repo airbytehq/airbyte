@@ -1,46 +1,25 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
-import { Destination, Source } from "core/domain/connector";
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
+
+import { useDestinationList } from "hooks/services/useDestinationHook";
+import { useSourceList } from "hooks/services/useSourceHook";
 
 type IProps = {
-  errorStatus?: number;
-  source: Source;
-  destination: Destination;
-  afterSubmitConnection: () => void;
+  onNextStep: () => void;
 };
 
-const ConnectionStep: React.FC<IProps> = ({
-  source,
-  destination,
-  afterSubmitConnection,
-}) => {
+const ConnectionStep: React.FC<IProps> = ({ onNextStep: afterSubmitConnection }) => {
+  const { sources } = useSourceList();
+  const { destinations } = useDestinationList();
+
   return (
-    <>
-      <TitlesBlock
-        title={
-          <FormattedMessage
-            id="onboarding.createConnection"
-            values={{
-              name: (name: React.ReactNode[]) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
-            }}
-          />
-        }
-      >
-        <FormattedMessage id="onboarding.createConnection.text" />
-      </TitlesBlock>
-      <CreateConnectionContent
-        noTitles
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-      />
-    </>
+    <CreateConnectionContent
+      noTitles
+      source={sources[0]}
+      destination={destinations[0]}
+      afterSubmitConnection={afterSubmitConnection}
+    />
   );
 };
 

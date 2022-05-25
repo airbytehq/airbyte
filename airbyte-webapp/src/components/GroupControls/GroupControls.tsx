@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+
 import { Label, TextWithHTML } from "components";
 
 const GroupTitle = styled.div`
@@ -29,12 +30,7 @@ type GroupControlsProps = {
   name?: string;
 };
 
-const GroupControls: React.FC<GroupControlsProps> = ({
-  title,
-  description,
-  children,
-  name,
-}) => {
+const GroupControls: React.FC<GroupControlsProps> = ({ title, description, children, name }) => {
   return (
     <FormGroup data-testid={name}>
       <GroupTitle>{title}</GroupTitle>

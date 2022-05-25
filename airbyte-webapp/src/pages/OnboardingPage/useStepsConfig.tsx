@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+
 import { StepType } from "./types";
 
 const useStepsConfig = (
@@ -16,7 +17,7 @@ const useStepsConfig = (
     if (hasSources) {
       if (hasDestinations) {
         if (hasConnections) {
-          return StepType.FINAl;
+          return StepType.FINAL;
         }
         return StepType.SET_UP_CONNECTION;
       }
@@ -29,9 +30,7 @@ const useStepsConfig = (
   const updateStep = useCallback(
     (step: StepType) => {
       setCurrentStep(step);
-      if (afterUpdateStep) {
-        afterUpdateStep();
-      }
+      afterUpdateStep?.();
     },
     [setCurrentStep, afterUpdateStep]
   );
@@ -69,7 +68,7 @@ const useStepsConfig = (
         //     : undefined
       },
       {
-        id: StepType.FINAl,
+        id: StepType.FINAL,
         name: <FormattedMessage id="onboarding.final" />,
       },
     ],

@@ -1,106 +1,105 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import React, { useEffect, useState } from "react";
 
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/domain/connector";
-
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { JobInfo } from "core/domain/job";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
-  availableServices: DestinationDefinition[];
-  onSubmit: (values: {
+type Props = {
+  onNextStep: () => void;
+  onSuccess: () => void;
+};
+
+const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  const { data: destinationDefinitionSpecification, isLoading } =
+    useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const [successRequest, setSuccessRequest] = useState(false);
+  const [error, setError] = useState<{
+    status: number;
+    response: JobInfo;
+    message: string;
+  } | null>(null);
+
+  const { mutateAsync: createDestination } = useCreateDestination();
+  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
+
+  const getDestinationDefinitionById = (id: string) =>
+    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
+  const onSubmitDestinationStep = async (values: {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
-  hasSuccess?: boolean;
-  error?: null | { message?: string; status?: number };
-  afterSelectConnector?: () => void;
-};
+  }) => {
+    setError(null);
+    const destinationConnector = getDestinationDefinitionById(values.serviceType);
 
-const DestinationStep: React.FC<IProps> = ({
-  onSubmit,
-  availableServices,
-  hasSuccess,
-  error,
-  afterSelectConnector,
-}) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState<
-    string | null
-  >(null);
-  const {
-    data: destinationDefinitionSpecification,
-    isLoading,
-  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
+    try {
+      await createDestination({
+        values,
+        destinationConnector,
+      });
 
-  const analyticsService = useAnalyticsService();
+      setSuccessRequest(true);
+      onSuccess();
+      setTimeout(() => {
+        setSuccessRequest(false);
+        onNextStep();
+      }, 2000);
+    } catch (e) {
+      setError(e);
+    }
+  };
 
-  const onDropDownSelect = (destinationDefinition: string) => {
-    const destinationConnector = availableServices.find(
-      (s) => s.destinationDefinitionId === destinationDefinition
-    );
-    analyticsService.track("New Destination - Action", {
-      action: "Select a connector",
+  const onDropDownSelect = (destinationDefinitionId: string) => {
+    setDocumentationPanelOpen(false);
+    const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
+    setDocumentationUrl(destinationConnector?.documentationUrl || "");
+
+    trackNewDestinationAction("Select a connector", {
       connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
+      connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });
 
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    setDestinationDefinitionId(destinationDefinition);
+    setError(null);
+    setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
-    await onSubmit({
+  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+    await onSubmitDestinationStep({
       ...values,
-      destinationDefinitionId:
-        destinationDefinitionSpecification?.destinationDefinitionId,
+      destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <>
-      <TitlesBlock
-        title={
-          <FormattedMessage
-            id="onboarding.createFirstDestination"
-            values={{
-              name: (name: React.ReactNode[]) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
-            }}
-          />
-        }
-      >
-        <FormattedMessage id="onboarding.createFirstDestination.text" />
-      </TitlesBlock>
-      <ConnectorCard
-        full
-        formType="destination"
-        onServiceSelect={onDropDownSelect}
-        onSubmit={onSubmitForm}
-        hasSuccess={hasSuccess}
-        availableServices={availableServices}
-        errorMessage={errorMessage}
-        selectedConnectorDefinitionSpecification={
-          destinationDefinitionSpecification
-        }
-        isLoading={isLoading}
-      />
-    </>
+    <ConnectorCard
+      full
+      formType="destination"
+      onServiceSelect={onDropDownSelect}
+      onSubmit={onSubmitForm}
+      hasSuccess={successRequest}
+      availableServices={destinationDefinitions}
+      errorMessage={errorMessage}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      isLoading={isLoading}
+    />
   );
 };
 

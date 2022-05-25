@@ -1,36 +1,22 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import useRouter from "hooks/useRouter";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
-import { Button } from "components";
 
-const ResetSection = styled.div`
-  margin-top: 30px;
-  display: flex;
-  justify-content: space-around;
-`;
-
-export const StartOverErrorView: React.FC<{
+interface StartOverErrorViewProps {
   message?: string;
   onReset?: () => void;
-}> = ({ message, onReset }) => {
-  const { push } = useRouter();
+  hideHeader?: boolean;
+}
+
+export const StartOverErrorView: React.FC<StartOverErrorViewProps> = ({ message, onReset, hideHeader }) => {
   return (
     <ErrorOccurredView
       message={message ?? <FormattedMessage id="errorView.notFound" />}
-    >
-      <ResetSection>
-        <Button
-          onClick={() => {
-            push("..");
-            onReset?.();
-          }}
-        >
-          <FormattedMessage id="errorView.startOver" />
-        </Button>
-      </ResetSection>
-    </ErrorOccurredView>
+      onBackClick={() => {
+        onReset?.();
+      }}
+      hideHeader={hideHeader}
+    />
   );
 };

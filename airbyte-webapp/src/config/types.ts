@@ -1,6 +1,7 @@
 import { SegmentAnalytics } from "core/analytics/types";
-import { UiConfig } from "./uiConfig";
 import { Feature } from "hooks/services/Feature";
+
+import { UiConfig } from "./uiConfig";
 
 declare global {
   interface Window {
@@ -14,6 +15,7 @@ declare global {
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
+    LAUNCHDARKLY_KEY?: string;
     analytics: SegmentAnalytics;
   }
 }
@@ -28,6 +30,7 @@ export type Config = {
   isDemo: boolean;
   version?: string;
   integrationUrl: string;
+  launchDarkly?: string;
 };
 
 export type DeepPartial<T> = {
@@ -39,6 +42,4 @@ export type Provider<T> = () => T;
 
 export type ValueProvider<T> = ProviderAsync<DeepPartial<T>>[];
 
-export type ConfigProvider<T extends Config = Config> = ProviderAsync<
-  DeepPartial<T>
->;
+export type ConfigProvider<T extends Config = Config> = ProviderAsync<DeepPartial<T>>;

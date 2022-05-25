@@ -59,22 +59,19 @@ public class DatabricksDestinationConfig {
   }
 
   public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
-    return new S3DestinationConfig(
-        "",
+    return S3DestinationConfig.create(
         dataSource.get("s3_bucket_name").asText(),
         dataSource.get("s3_bucket_path").asText(),
-        dataSource.get("s3_bucket_region").asText(),
-        dataSource.get("s3_access_key_id").asText(),
-        dataSource.get("s3_secret_access_key").asText(),
-        getDefaultParquetConfig());
+        dataSource.get("s3_bucket_region").asText())
+        .withAccessKeyCredential(
+            dataSource.get("s3_access_key_id").asText(),
+            dataSource.get("s3_secret_access_key").asText())
+        .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()))
+        .get();
   }
 
   public String getDatabricksServerHostname() {
     return databricksServerHostname;
-  }
-
-  private static S3ParquetFormatConfig getDefaultParquetConfig() {
-    return new S3ParquetFormatConfig(new ObjectMapper().createObjectNode());
   }
 
   public String getDatabricksHttpPath() {

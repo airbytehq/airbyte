@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -86,7 +87,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
           MqttDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
           MqttDestination.COLUMN_NAME_DATA, recordMessage.getData()));
 
-      final MqttMessage message = new MqttMessage(payload.toString().getBytes());
+      final MqttMessage message = new MqttMessage(payload.toString().getBytes(Charsets.UTF_8));
       message.setRetained(config.isRetainedMessage());
       message.setQos(config.getQos());
 

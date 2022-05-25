@@ -9,14 +9,8 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.*;
-import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
-import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
-import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
-import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
+import io.airbyte.oauth.flows.facebook.*;
+import io.airbyte.oauth.flows.google.*;
 import java.net.http.HttpClient;
 import java.util.Map;
 
@@ -26,6 +20,7 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(final ConfigRepository configRepository, final HttpClient httpClient) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        .put("airbyte/source-amazon-ads", new AmazonAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
@@ -40,6 +35,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-lever-hiring", new LeverOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-microsoft-teams", new MicrosoftTeamsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-bing-ads", new MicrosoftBingAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-retently", new RetentlyOAuthFlow(configRepository, httpClient))
@@ -62,6 +58,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
 

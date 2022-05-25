@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { useIntl } from "react-intl";
+import { useToggle } from "react-use";
 import styled from "styled-components";
 import { Theme } from "theme";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 
 import Button from "../Button";
 
@@ -18,41 +20,43 @@ const getBackgroundColor = (props: IStyleProps) => {
   return props.theme.greyColor0;
 };
 
-export type InputProps = {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+}
 
-const InputComponent = styled.input<InputProps>`
-  outline: none;
+const InputContainer = styled.div<InputProps>`
   width: 100%;
-  padding: 7px 18px 7px 8px;
+  position: relative;
+  background: ${(props) => getBackgroundColor(props)};
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
   border-radius: 4px;
+
+  &:hover {
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.greyColor20)};
+    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
+  }
+
+  &.input-container--focused {
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
+    border-color: ${({ theme }) => theme.primaryColor};
+  }
+`;
+
+const InputComponent = styled.input<InputProps & { isPassword?: boolean }>`
+  outline: none;
+  width: ${({ isPassword }) => (isPassword ? "calc(100% - 22px)" : "100%")};
+  padding: 7px 8px 7px 8px;
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;
-  border: 1px solid
-    ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor0};
-  background: ${(props) => getBackgroundColor(props)};
+  border: none;
+  background: none;
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
 
   &::placeholder {
     color: ${({ theme }) => theme.greyColor40};
-  }
-
-  &:hover {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor20};
-  }
-
-  &:focus {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.primaryColor12};
-    border-color: ${({ theme }) => theme.primaryColor};
   }
 
   &:disabled {
@@ -61,41 +65,53 @@ const InputComponent = styled.input<InputProps>`
   }
 `;
 
-const Container = styled.div`
-  width: 100%;
-  position: relative;
-`;
-
 const VisibilityButton = styled(Button)`
   position: absolute;
-  right: 2px;
-  top: 7px;
+  right: 0px;
+  top: 0;
+  display: flex;
+  height: 100%;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  border: none;
 `;
 
 const Input: React.FC<InputProps> = (props) => {
-  const [isContentVisible, setIsContentVisible] = useState(false);
+  const { formatMessage } = useIntl();
+  const [isContentVisible, setIsContentVisible] = useToggle(false);
+  const [focused, toggleFocused] = useToggle(false);
 
-  if (props.type === "password") {
-    return (
-      <Container>
-        <InputComponent
-          {...props}
-          type={isContentVisible ? "text" : "password"}
-        />
-        {props.disabled ? null : (
-          <VisibilityButton
-            iconOnly
-            onClick={() => setIsContentVisible(!isContentVisible)}
-            type="button"
-          >
-            <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} />
-          </VisibilityButton>
-        )}
-      </Container>
-    );
-  }
+  const isPassword = props.type === "password";
+  const isVisibilityButtonVisible = isPassword && !props.disabled;
+  const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
+  const onInputFocusChange = () => toggleFocused();
 
-  return <InputComponent {...props} />;
+  return (
+    <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
+      <InputComponent
+        {...props}
+        type={type}
+        isPassword={isPassword}
+        onFocus={onInputFocusChange}
+        onBlur={onInputFocusChange}
+        data-testid="input"
+      />
+      {isVisibilityButtonVisible ? (
+        <VisibilityButton
+          iconOnly
+          onClick={() => setIsContentVisible()}
+          type="button"
+          aria-label={formatMessage({
+            id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
+          })}
+          data-testid="toggle-password-visibility-button"
+        >
+          <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />
+        </VisibilityButton>
+      ) : null}
+    </InputContainer>
+  );
 };
 
 export default Input;

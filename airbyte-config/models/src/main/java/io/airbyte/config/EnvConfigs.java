@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -59,8 +60,10 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
+  public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
@@ -127,6 +130,9 @@ public class EnvConfigs implements Configs {
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
   public static final String DISCOVER_JOB_KUBE_NODE_SELECTORS = "DISCOVER_JOB_KUBE_NODE_SELECTORS";
+  public static final String SPEC_JOB_KUBE_ANNOTATIONS = "SPEC_JOB_KUBE_ANNOTATIONS";
+  public static final String CHECK_JOB_KUBE_ANNOTATIONS = "CHECK_JOB_KUBE_ANNOTATIONS";
+  public static final String DISCOVER_JOB_KUBE_ANNOTATIONS = "DISCOVER_JOB_KUBE_ANNOTATIONS";
 
   private static final String REPLICATION_ORCHESTRATOR_CPU_REQUEST = "REPLICATION_ORCHESTRATOR_CPU_REQUEST";
   private static final String REPLICATION_ORCHESTRATOR_CPU_LIMIT = "REPLICATION_ORCHESTRATOR_CPU_LIMIT";
@@ -144,6 +150,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
+  private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
@@ -321,7 +328,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public SecretPersistenceType getSecretPersistenceType() {
-    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.TESTING_CONFIG_DB_TABLE.name());
     return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
@@ -484,8 +491,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -494,8 +501,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getSpecJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getSpecJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -504,8 +511,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getCheckJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getCheckJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -514,33 +521,86 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getDiscoverJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
-   * Parse string containing node selectors into a map. Each kv-pair is separated by a `,`
+   * Returns a map of annotations from its own environment variable. The value of the env is a string
+   * that represents one or more annotations. Each kv-pair is separated by a `,`
    * <p>
-   * For example:- The following represents two node selectors
+   * For example:- The following represents two annotations
    * <p>
    * airbyte=server,type=preemptive
    *
-   * @param envString string that represents one or more node selector labels.
+   * @return map containing kv pairs of annotations
+   */
+  @Override
+  public Map<String, String> getJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Spec job pods specifically.
+   *
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
-  private Optional<Map<String, String>> getNodeSelectorsFromEnvString(final String envString) {
-    final Map<String, String> selectors = Splitter.on(",")
-        .splitToStream(envString)
+  @Override
+  public Map<String, String> getSpecJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Check job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Map<String, String> getCheckJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Discover job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Map<String, String> getDiscoverJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The
+   * key and the value are separated by '='.
+   * <p>
+   * For example:- The following represents two map entries
+   * </p>
+   * key1=value1,key2=value2
+   *
+   * @param input string
+   * @return map containing kv pairs
+   */
+  public Map<String, String> splitKVPairsFromEnvString(String input) {
+    if (input == null) {
+      input = "";
+    }
+    final Map<String, String> map = Splitter.on(",")
+        .splitToStream(input)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
-        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
-
-    return selectors.isEmpty() ? Optional.empty() : Optional.of(selectors);
+        .collect(Collectors.toMap(s -> s[0].trim(), s -> s[1].trim()));
+    return map.isEmpty() ? null : map;
   }
 
   @Override
   public String getJobKubeMainContainerImagePullPolicy() {
     return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY, DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY);
+  }
+
+  @Override
+  public String getJobKubeSidecarContainerImagePullPolicy() {
+    return getEnvOrDefault(JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY, DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY);
   }
 
   /**

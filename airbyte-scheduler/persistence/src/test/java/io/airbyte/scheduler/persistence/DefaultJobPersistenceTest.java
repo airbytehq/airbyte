@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,6 +31,8 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
@@ -37,6 +40,8 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -57,8 +62,11 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -96,9 +104,10 @@ class DefaultJobPersistenceTest {
 
   private static PostgreSQLContainer<?> container;
   private Database jobDatabase;
-  private Database configDatabase;
   private Supplier<Instant> timeSupplier;
   private JobPersistence jobPersistence;
+  private DataSource dataSource;
+  private DSLContext dslContext;
 
   @BeforeAll
   public static void dbSetup() {
@@ -166,7 +175,9 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     jobDatabase = databaseProviders.createNewJobsDatabase();
     resetDb();
 
@@ -179,7 +190,8 @@ class DefaultJobPersistenceTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    jobDatabase.close();
+    dslContext.close();
+    DataSourceFactory.close(dataSource);
   }
 
   private void resetDb() throws SQLException {
@@ -497,6 +509,24 @@ class DefaultJobPersistenceTest {
         }
       });
     });
+  }
+
+  @Test
+  void testSecretMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSecretMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSecretMigrationDone();
+    isMigrated = jobPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
+  }
+
+  @Test
+  void testSchedulerMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSchedulerMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSchedulerMigrationDone();
+    isMigrated = jobPersistence.isSchedulerMigrated();
+    assertTrue(isMigrated);
   }
 
   private long createJobAt(final Instant created_at) throws IOException {
@@ -1145,6 +1175,45 @@ class DefaultJobPersistenceTest {
       assertEquals(expectedIncompleteJob, actualIncompleteJob);
     }
 
+    @Test
+    @DisplayName("Should only list jobs for the requested connection and with the requested statuses and config types")
+    public void testListJobsWithStatusesAndConfigTypesForConnection() throws IOException, InterruptedException {
+      final UUID desiredConnectionId = UUID.randomUUID();
+      final UUID otherConnectionId = UUID.randomUUID();
+
+      // desired connection, statuses, and config types
+      final long desiredJobId1 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(desiredJobId1, jobPersistence.createAttempt(desiredJobId1, LOG_PATH));
+      final long desiredJobId2 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      final long desiredJobId3 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(desiredJobId3, jobPersistence.createAttempt(desiredJobId3, LOG_PATH));
+      final long desiredJobId4 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+
+      // right connection id and status, wrong config type
+      final long otherJobId1 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SPEC_JOB_CONFIG).orElseThrow();
+      // right config type and status, wrong connection id
+      final long otherJobId2 = jobPersistence.enqueueJob(otherConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      // right connection id and config type, wrong status
+      final long otherJobId3 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
+      jobPersistence.failAttempt(otherJobId3, jobPersistence.createAttempt(otherJobId3, LOG_PATH));
+
+      final List<Job> actualJobs = jobPersistence.listJobsForConnectionWithStatuses(desiredConnectionId,
+          Set.of(ConfigType.SYNC, ConfigType.CHECK_CONNECTION_DESTINATION), Set.of(JobStatus.PENDING, JobStatus.SUCCEEDED));
+
+      final Job expectedDesiredJob1 = createJob(desiredJobId1, SYNC_JOB_CONFIG, JobStatus.SUCCEEDED,
+          Lists.newArrayList(createAttempt(0L, desiredJobId1, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob2 =
+          createJob(desiredJobId2, SYNC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob3 = createJob(desiredJobId3, CHECK_JOB_CONFIG, JobStatus.SUCCEEDED,
+          Lists.newArrayList(createAttempt(0L, desiredJobId3, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          NOW.getEpochSecond(), desiredConnectionId.toString());
+      final Job expectedDesiredJob4 =
+          createJob(desiredJobId4, CHECK_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());
+
+      assertEquals(Sets.newHashSet(expectedDesiredJob1, expectedDesiredJob2, expectedDesiredJob3, expectedDesiredJob4), Sets.newHashSet(actualJobs));
+    }
+
   }
 
   @Nested
@@ -1355,11 +1424,11 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  @DisplayName("When listing job statuses with specified connection id and timestamp")
-  class ListJobStatusWithConnection {
+  @DisplayName("When listing job statuses and timestamps with specified connection id and timestamp")
+  class ListJobStatusAndTimestampWithConnection {
 
     @Test
-    @DisplayName("Should list only job statuses of specified connection id")
+    @DisplayName("Should list only job statuses and timestamps of specified connection id")
     public void testConnectionIdFiltering() throws IOException {
       jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,
           DEFAULT_MINIMUM_RECENCY_COUNT);
@@ -1369,7 +1438,7 @@ class DefaultJobPersistenceTest {
       final long wrongConnectionSyncJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SYNC_JOB_CONFIG).orElseThrow();
       final int wrongSyncJobAttemptNumber0 = jobPersistence.createAttempt(wrongConnectionSyncJobId, LOG_PATH);
       jobPersistence.failAttempt(wrongConnectionSyncJobId, wrongSyncJobAttemptNumber0);
-      assertEquals(0, jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH).size());
+      assertEquals(0, jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH).size());
 
       // create a connection with relevant connection id
       final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
@@ -1377,9 +1446,10 @@ class DefaultJobPersistenceTest {
       jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
 
       // check to see current status of only relevantly scoped job
-      final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
-      assertEquals(jobStatuses.size(), 1);
-      assertEquals(JobStatus.INCOMPLETE, jobStatuses.get(0));
+      final List<JobWithStatusAndTimestamp> jobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
+      assertEquals(jobs.size(), 1);
+      assertEquals(JobStatus.INCOMPLETE, jobs.get(0).getStatus());
     }
 
     @Test
@@ -1395,9 +1465,10 @@ class DefaultJobPersistenceTest {
       jobPersistence.failJob(syncJobId);
 
       // Check to see current status of all jobs from beginning of time, expecting only 1 job
-      final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
-      assertEquals(jobStatuses.size(), 1);
-      assertEquals(JobStatus.FAILED, jobStatuses.get(0));
+      final List<JobWithStatusAndTimestamp> initialJobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
+      assertEquals(initialJobs.size(), 1);
+      assertEquals(JobStatus.FAILED, initialJobs.get(0).getStatus());
 
       // Edit time supplier to return later time
       final Instant timeAfterFirstJob = NOW.plusSeconds(60);
@@ -1410,22 +1481,25 @@ class DefaultJobPersistenceTest {
 
       // Check to see current status of all jobs from beginning of time, expecting both jobs in createAt
       // descending order (most recent first)
-      final List<JobStatus> allQueryJobStatuses =
-          jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
-      assertEquals(2, allQueryJobStatuses.size());
-      assertEquals(JobStatus.SUCCEEDED, allQueryJobStatuses.get(0));
-      assertEquals(JobStatus.FAILED, allQueryJobStatuses.get(1));
+      final List<JobWithStatusAndTimestamp> allQueryJobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
+      assertEquals(2, allQueryJobs.size());
+      assertEquals(JobStatus.SUCCEEDED, allQueryJobs.get(0).getStatus());
+      assertEquals(JobStatus.FAILED, allQueryJobs.get(1).getStatus());
 
       // Look up jobs with a timestamp after the first job. Expecting only the second job status
-      final List<JobStatus> timestampFilteredJobStatuses =
-          jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), timeAfterFirstJob);
-      assertEquals(1, timestampFilteredJobStatuses.size());
-      assertEquals(JobStatus.SUCCEEDED, timestampFilteredJobStatuses.get(0));
+      final List<JobWithStatusAndTimestamp> timestampFilteredJobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), timeAfterFirstJob);
+      assertEquals(1, timestampFilteredJobs.size());
+      assertEquals(JobStatus.SUCCEEDED, timestampFilteredJobs.get(0).getStatus());
+      assertTrue(timeAfterFirstJob.getEpochSecond() <= timestampFilteredJobs.get(0).getCreatedAtInSecond());
+      assertTrue(timeAfterFirstJob.getEpochSecond() <= timestampFilteredJobs.get(0).getUpdatedAtInSecond());
 
       // Check to see if timestamp filtering is working by only looking up jobs with timestamp after
       // second job. Expecting no job status output
       final Instant timeAfterSecondJob = timeAfterFirstJob.plusSeconds(60);
-      assertEquals(0, jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), timeAfterSecondJob).size());
+      assertEquals(0,
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), timeAfterSecondJob).size());
     }
 
     @Test
@@ -1453,12 +1527,12 @@ class DefaultJobPersistenceTest {
 
       // Check to see current status of all jobs from beginning of time, expecting all jobs in createAt
       // descending order (most recent first)
-      final List<JobStatus> allJobStatuses =
-          jobPersistence.listJobStatusWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
-      assertEquals(3, allJobStatuses.size());
-      assertEquals(JobStatus.CANCELLED, allJobStatuses.get(0));
-      assertEquals(JobStatus.SUCCEEDED, allJobStatuses.get(1));
-      assertEquals(JobStatus.FAILED, allJobStatuses.get(2));
+      final List<JobWithStatusAndTimestamp> allJobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), Instant.EPOCH);
+      assertEquals(3, allJobs.size());
+      assertEquals(JobStatus.CANCELLED, allJobs.get(0).getStatus());
+      assertEquals(JobStatus.SUCCEEDED, allJobs.get(1).getStatus());
+      assertEquals(JobStatus.FAILED, allJobs.get(2).getStatus());
     }
 
     @Test
@@ -1482,10 +1556,11 @@ class DefaultJobPersistenceTest {
       jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
 
       // expect order to be from most recent to least recent
-      final List<JobStatus> allJobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, configTypes, Instant.EPOCH);
-      assertEquals(2, allJobStatuses.size());
-      assertEquals(JobStatus.INCOMPLETE, allJobStatuses.get(0));
-      assertEquals(JobStatus.FAILED, allJobStatuses.get(1));
+      final List<JobWithStatusAndTimestamp> allJobs =
+          jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, configTypes, Instant.EPOCH);
+      assertEquals(2, allJobs.size());
+      assertEquals(JobStatus.INCOMPLETE, allJobs.get(0).getStatus());
+      assertEquals(JobStatus.FAILED, allJobs.get(1).getStatus());
     }
 
   }

@@ -1,10 +1,12 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import withMock from "storybook-addon-mock";
 
-import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
-import withMock from "storybook-addon-mock";
+
+import { ServiceForm } from "./ServiceForm";
 
 const TempConnector = {
   name: "Service",
@@ -49,13 +51,8 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
     args.selectedConnectorDefinitionSpecification &&
     !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    if (
-      isSourceDefinitionSpecification(
-        args.selectedConnectorDefinitionSpecification
-      )
-    ) {
-      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
-        TempConnector.sourceDefinitionId;
+    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
     }
   }
 
@@ -74,6 +71,14 @@ export const Common = Template.bind({});
 Common.args = {
   selectedConnectorDefinitionSpecification: {
     ...TempConnector,
+    destinationDefinitionId: "some-id",
+    jobInfo: {
+      id: "some-id",
+      createdAt: Date.now(),
+      endedAt: Date.now() + 1,
+      configType: "get_spec",
+      succeeded: true,
+    },
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -152,6 +157,14 @@ export const Oneof = Template.bind({});
 Oneof.args = {
   selectedConnectorDefinitionSpecification: {
     ...TempConnector,
+    destinationDefinitionId: "some-other-id",
+    jobInfo: {
+      id: "some-id",
+      createdAt: Date.now(),
+      endedAt: Date.now() + 1,
+      configType: "get_spec",
+      succeeded: true,
+    },
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",

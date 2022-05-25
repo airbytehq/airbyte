@@ -1,12 +1,12 @@
 import type { AnalyticsService } from "core/analytics/AnalyticsService";
 
 export const useAnalyticsService = (): AnalyticsService => {
-  return ({
+  return {
     page: jest.fn(),
     reset: jest.fn(),
     alias: jest.fn(),
     track: jest.fn(),
     identify: jest.fn(),
     group: jest.fn(),
-  } as unknown) as AnalyticsService;
+  } as unknown as AnalyticsService;
 };

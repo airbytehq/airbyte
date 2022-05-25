@@ -11,9 +11,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean usesNewScheduler() {
-    log.info("New Scheduler: " + Boolean.parseBoolean(System.getenv("NEW_SCHEDULER")));
+    // TODO: sweep this method along with the scheduler
+    log.info("New Scheduler: true (post-migration)");
 
-    return Boolean.parseBoolean(System.getenv("NEW_SCHEDULER"));
+    // After migrating all OSS users onto the new temporal scheduler, this should always return true.
+    return true;
   }
 
   @Override
@@ -26,6 +28,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean exposeSecretsInExport() {
     return Boolean.parseBoolean(System.getenv("EXPOSE_SECRETS_IN_EXPORT"));
+  }
+
+  @Override
+  public boolean forceSecretMigration() {
+    return Boolean.parseBoolean(System.getenv("FORCE_MIGRATE_SECRET_STORE"));
   }
 
 }

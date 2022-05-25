@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -243,6 +242,7 @@ class BigQueryDestinationTest {
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
@@ -277,6 +277,7 @@ class BigQueryDestinationTest {
 
     final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
+    consumer.start();
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
@@ -285,7 +286,7 @@ class BigQueryDestinationTest {
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
-        .collect(toList());
+        .toList();
     assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
@@ -340,6 +341,7 @@ class BigQueryDestinationTest {
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);

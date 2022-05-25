@@ -9,6 +9,7 @@ import java.util.Objects;
 /**
  * Represents a minimal io.fabric8.kubernetes.api.model.Toleration
  */
+@SuppressWarnings("PMD.ShortVariable")
 public class TolerationPOJO {
 
   private final String key;

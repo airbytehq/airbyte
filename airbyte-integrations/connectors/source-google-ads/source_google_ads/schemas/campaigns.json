@@ -35,6 +35,9 @@
     "campaign.campaign_budget": {
       "type": ["null", "string"]
     },
+    "campaign_budget.amount_micros": {
+      "type": ["null", "integer"]
+    },
     "campaign.commission.commission_rate_micros": {
       "type": ["null", "integer"]
     },
@@ -238,6 +241,21 @@
     },
     "campaign.video_brand_safety_suitability": {
       "type": ["null", "string"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "integer"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_views": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p100_rate": {
+      "type": ["null", "number"]
     },
     "segments.date": {
       "type": ["null", "string"],

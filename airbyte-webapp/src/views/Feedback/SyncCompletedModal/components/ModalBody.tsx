@@ -1,8 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { H3, Button } from "components/base";
+
 import FeedbackButton from "./FeedbackButton";
 
 const Body = styled.div`

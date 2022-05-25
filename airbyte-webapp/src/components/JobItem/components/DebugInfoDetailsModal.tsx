@@ -1,15 +1,15 @@
 import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { useIntl, FormattedMessage } from "react-intl";
 
-import Modal from "components/Modal";
 import { Button } from "components";
+import Modal from "components/Modal";
 
-import { JobDebugInfoMeta } from "core/domain/job";
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 
 export type IProps = {
   onClose: () => void;
-  jobDebugInfo: JobDebugInfoMeta;
+  jobDebugInfo: JobDebugInfoRead;
 };
 
 const Content = styled.div`
@@ -40,7 +40,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
       },
       {
         key: formatMessage({ id: "sources.airbyteVersion" }),
-        value: jobDebugInfo.airbyteVersion,
+        value: jobDebugInfo.job.airbyteVersion,
       }
     );
   };
@@ -51,8 +51,8 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         id: "ui.keyValuePairV2",
       },
       {
-        key: jobDebugInfo.sourceDefinition.name,
-        value: jobDebugInfo.sourceDefinition.dockerImageTag,
+        key: jobDebugInfo.job.sourceDefinition.name,
+        value: jobDebugInfo.job.sourceDefinition.dockerImageTag,
       }
     );
 
@@ -73,8 +73,8 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         id: "ui.keyValuePairV2",
       },
       {
-        key: jobDebugInfo.destinationDefinition.name,
-        value: jobDebugInfo.destinationDefinition.dockerImageTag,
+        key: jobDebugInfo.job.destinationDefinition.name,
+        value: jobDebugInfo.job.destinationDefinition.dockerImageTag,
       }
     );
 
@@ -94,9 +94,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
     const sourceDetails = getSourceDetails();
     const destinationDetails = getDestinationDetails();
 
-    navigator.clipboard.writeText(
-      [airbyteVersionDetails, sourceDetails, destinationDetails].join("\n")
-    );
+    navigator.clipboard.writeText([airbyteVersionDetails, sourceDetails, destinationDetails].join("\n"));
   };
 
   return (

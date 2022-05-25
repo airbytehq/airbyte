@@ -35,6 +35,11 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
             project.sourceAcceptanceTest.dependsOn(project.airbyteDockerTest)
         }
 
+        // make sure we create the integrationTest task once
+        if (!project.tasks.findByName('integrationTest')) {
+            project.task('integrationTest')
+        }
+
         project.integrationTest.dependsOn(project.sourceAcceptanceTest)
     }
 }

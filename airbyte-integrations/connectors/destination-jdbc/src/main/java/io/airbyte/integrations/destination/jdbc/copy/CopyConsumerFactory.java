@@ -5,7 +5,9 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+import static java.util.stream.Collectors.toSet;
 
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +37,7 @@ public class CopyConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                  final DataSource dataSource,
                                                   final JdbcDatabase database,
                                                   final SqlOperations sqlOperations,
                                                   final ExtendedNameTransformer namingResolver,
@@ -58,7 +62,7 @@ public class CopyConsumerFactory {
             recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
             removeStagingFilePrinter(pairToCopier),
             DEFAULT_MAX_BATCH_SIZE_BYTES),
-        onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
+        onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount, dataSource),
         catalog,
         sqlOperations::isValidData);
   }
@@ -118,26 +122,28 @@ public class CopyConsumerFactory {
   private static OnCloseFunction onCloseFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                                  final JdbcDatabase database,
                                                  final SqlOperations sqlOperations,
-                                                 final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+                                                 final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount,
+                                                 final DataSource dataSource) {
     return (hasFailed) -> {
       pairToIgnoredRecordCount
           .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
-      closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, database, sqlOperations);
+      closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations, dataSource);
     };
   }
 
-  private static void closeAsOneTransaction(final List<StreamCopier> streamCopiers,
+  private static void closeAsOneTransaction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                             boolean hasFailed,
                                             final JdbcDatabase db,
-                                            final SqlOperations sqlOperations)
+                                            final SqlOperations sqlOperations,
+                                            final DataSource dataSource)
       throws Exception {
     Exception firstException = null;
+    final List<StreamCopier> streamCopiers = new ArrayList<>(pairToCopier.values());
     try {
       final List<String> queries = new ArrayList<>();
       for (final var copier : streamCopiers) {
         try {
           copier.closeStagingUploader(hasFailed);
-
           if (!hasFailed) {
             copier.createDestinationSchema();
             copier.createTemporaryTable();
@@ -156,13 +162,16 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
+        sqlOperations.onDestinationCloseOperations(db,
+            pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {
       for (final var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
-      db.close();
+
+      DataSourceFactory.close(dataSource);
     }
     if (firstException != null) {
       throw firstException;

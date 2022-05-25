@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
@@ -108,7 +107,7 @@ class BigQueryGcsDestinationTest extends BigQueryDestinationTest {
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
-    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    this.s3Client = gcsDestinationConfig.getS3Client();
 
     tornDown = false;
     addShutdownHook();

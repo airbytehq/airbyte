@@ -15,6 +15,7 @@ from airbyte_api_client.model.source_definition_id_request_body import SourceDef
 from octavia_cli.generate.definitions import (
     BaseDefinition,
     DefinitionNotFoundError,
+    DefinitionSpecification,
     DestinationDefinition,
     DestinationDefinitionSpecification,
     SourceDefinition,
@@ -94,28 +95,28 @@ class TestDestinationDefinition:
 
 class TestSourceDefinitionSpecification:
     def test_init(self, mock_api_client):
-        assert SourceDefinitionSpecification.__base__ == SourceDefinition
-        source_specification = SourceDefinitionSpecification(mock_api_client, "source_id")
+        assert SourceDefinitionSpecification.__base__ == DefinitionSpecification
+        source_specification = SourceDefinitionSpecification(mock_api_client, "workspace_id", "source_id")
         assert source_specification.api == source_definition_specification_api.SourceDefinitionSpecificationApi
         assert source_specification.get_function_name == "get_source_definition_specification"
 
 
 class TestDestinationDefinitionSpecification:
     def test_init(self, mock_api_client):
-        assert DestinationDefinitionSpecification.__base__ == DestinationDefinition
-        destination_specification = DestinationDefinitionSpecification(mock_api_client, "source_id")
+        assert DestinationDefinitionSpecification.__base__ == DefinitionSpecification
+        destination_specification = DestinationDefinitionSpecification(mock_api_client, "workspace_id", "source_id")
         assert destination_specification.api == destination_definition_specification_api.DestinationDefinitionSpecificationApi
         assert destination_specification.get_function_name == "get_destination_definition_specification"
 
 
 def test_factory(mock_api_client):
-    source_definition = factory("source", mock_api_client, "source_definition_id")
+    source_definition = factory("source", mock_api_client, "workspace_id", "source_definition_id")
     assert isinstance(source_definition, SourceDefinition)
     assert isinstance(source_definition.specification, SourceDefinitionSpecification)
 
-    destination_definition = factory("destination", mock_api_client, "destination_definition_id")
+    destination_definition = factory("destination", mock_api_client, "workspace_id", "destination_definition_id")
     assert isinstance(destination_definition, DestinationDefinition)
     assert isinstance(destination_definition.specification, DestinationDefinitionSpecification)
 
     with pytest.raises(ValueError):
-        factory("random", mock_api_client, "random_definition_id")
+        factory("random", mock_api_client, "workspace_id", "random_definition_id")

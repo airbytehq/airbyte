@@ -23,10 +23,7 @@ const ContentWrapperElement = pose.div(itemConfig);
 
 const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
   return (
-    <ContentWrapperElement
-      pose={!isOpen ? "closed" : "open"}
-      withParent={false}
-    >
+    <ContentWrapperElement pose={!isOpen ? "closed" : "open"} withParent={false}>
       {children}
     </ContentWrapperElement>
   );

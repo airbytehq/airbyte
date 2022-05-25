@@ -6,23 +6,20 @@ package io.airbyte.db.instance.configs;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.BaseDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 import java.util.function.Function;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance.class);
-  private static final Set<String> INITIAL_EXPECTED_TABLES = Collections.singleton("airbyte_configs");
-  private static final String DATABASE_LOGGING_NAME = "airbyte configs";
-  private static final String SCHEMA_PATH = "configs_database/schema.sql";
+
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if airbyte_configs has been created and seeded...");
@@ -38,19 +35,17 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private Database database;
 
-  public ConfigsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
-    super(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH), DATABASE_LOGGING_NAME, INITIAL_EXPECTED_TABLES,
+  public ConfigsDatabaseInstance(final DSLContext dslContext) throws IOException {
+    super(dslContext, DatabaseConstants.CONFIGS_DATABASE_LOGGING_NAME,
+        MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH),
+        DatabaseConstants.CONFIGS_INITIAL_EXPECTED_TABLES,
         IS_CONFIGS_DATABASE_READY);
   }
 
   @Override
   public boolean isInitialized() throws IOException {
     if (database == null) {
-      database = Databases.createPostgresDatabaseWithRetry(
-          username,
-          password,
-          connectionString,
-          isDatabaseConnected(databaseName));
+      database = Database.createWithRetry(dslContext, isDatabaseConnected(databaseName));
     }
 
     return new ExceptionWrappingDatabase(database).transaction(ctx -> {
@@ -73,11 +68,7 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
     if (database == null) {
-      database = Databases.createPostgresDatabaseWithRetry(
-          username,
-          password,
-          connectionString,
-          isDatabaseConnected(databaseName));
+      database = Database.createWithRetry(dslContext, isDatabaseConnected(databaseName));
     }
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {

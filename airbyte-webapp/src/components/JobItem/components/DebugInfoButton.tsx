@@ -1,17 +1,15 @@
+import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 
-import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
-
 import { Button } from "components";
 
-import { JobDebugInfoMeta } from "core/domain/job";
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
+import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
 type IProps = {
-  jobDebugInfo: JobDebugInfoMeta;
+  jobDebugInfo: JobDebugInfoRead;
 };
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
@@ -29,12 +27,7 @@ const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
       >
         <FontAwesomeIcon icon={faFileAlt} />
       </Button>
-      {isModalOpen && (
-        <DebugInfoDetailsModal
-          jobDebugInfo={jobDebugInfo}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      {isModalOpen && <DebugInfoDetailsModal jobDebugInfo={jobDebugInfo} onClose={() => setIsModalOpen(false)} />}
     </>
   );
 };

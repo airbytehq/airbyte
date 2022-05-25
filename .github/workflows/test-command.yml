@@ -90,8 +90,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
       - name: Install Pyenv and Tox
-        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv
@@ -156,7 +159,7 @@ jobs:
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
             ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
-            > ${{env.PYTHON_SHORT_TEST_SUMMARY_INFO}}
+            > ${{env.TEST_SUMMARY_INFO}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
@@ -165,7 +168,7 @@ jobs:
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
             > :bug: ${{env.GRADLE_SCAN_LINK}}
-            > ${{env.PYTHON_SHORT_TEST_SUMMARY_INFO}}
+            > ${{env.TEST_SUMMARY_INFO}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner

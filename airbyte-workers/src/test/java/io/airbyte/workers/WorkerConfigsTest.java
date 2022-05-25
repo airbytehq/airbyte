@@ -12,7 +12,6 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +48,7 @@ public class WorkerConfigsTest {
   @BeforeEach
   public void setup() {
     configs = mock(EnvConfigs.class);
-    when(configs.getJobKubeNodeSelectors()).thenReturn(Optional.of(DEFAULT_NODE_SELECTORS));
+    when(configs.getJobKubeNodeSelectors()).thenReturn(DEFAULT_NODE_SELECTORS);
     when(configs.getJobMainContainerCpuRequest()).thenReturn(DEFAULT_CPU_REQUEST);
     when(configs.getJobMainContainerCpuLimit()).thenReturn(DEFAULT_CPU_LIMIT);
     when(configs.getJobMainContainerMemoryRequest()).thenReturn(DEFAULT_MEMORY_REQUEST);
@@ -61,39 +60,39 @@ public class WorkerConfigsTest {
   public void testDefaultNodeSelectors() {
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
 
-    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, defaultWorkerConfigs.getworkerKubeNodeSelectors().get());
+    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, defaultWorkerConfigs.getworkerKubeNodeSelectors());
   }
 
   @Test
   @DisplayName("spec, check, and discover workerConfigs use job-specific node selectors if set")
   public void testCustomNodeSelectors() {
-    when(configs.getCheckJobKubeNodeSelectors()).thenReturn(Optional.of(CHECK_NODE_SELECTORS));
-    when(configs.getSpecJobKubeNodeSelectors()).thenReturn(Optional.of(SPEC_NODE_SELECTORS));
-    when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(Optional.of(DISCOVER_NODE_SELECTORS));
+    when(configs.getCheckJobKubeNodeSelectors()).thenReturn(CHECK_NODE_SELECTORS);
+    when(configs.getSpecJobKubeNodeSelectors()).thenReturn(SPEC_NODE_SELECTORS);
+    when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(DISCOVER_NODE_SELECTORS);
 
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
     final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
 
-    Assertions.assertEquals(SPEC_NODE_SELECTORS, specWorkerConfigs.getworkerKubeNodeSelectors().get());
-    Assertions.assertEquals(CHECK_NODE_SELECTORS, checkWorkerConfigs.getworkerKubeNodeSelectors().get());
-    Assertions.assertEquals(DISCOVER_NODE_SELECTORS, discoverWorkerConfigs.getworkerKubeNodeSelectors().get());
+    Assertions.assertEquals(SPEC_NODE_SELECTORS, specWorkerConfigs.getworkerKubeNodeSelectors());
+    Assertions.assertEquals(CHECK_NODE_SELECTORS, checkWorkerConfigs.getworkerKubeNodeSelectors());
+    Assertions.assertEquals(DISCOVER_NODE_SELECTORS, discoverWorkerConfigs.getworkerKubeNodeSelectors());
   }
 
   @Test
   @DisplayName("spec, check, and discover workerConfigs use default node selectors when custom selectors are not set")
   public void testNodeSelectorsFallbackToDefault() {
-    when(configs.getCheckJobKubeNodeSelectors()).thenReturn(Optional.empty());
-    when(configs.getSpecJobKubeNodeSelectors()).thenReturn(Optional.empty());
-    when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(Optional.empty());
+    when(configs.getCheckJobKubeNodeSelectors()).thenReturn(null);
+    when(configs.getSpecJobKubeNodeSelectors()).thenReturn(null);
+    when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(null);
 
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
     final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
 
-    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, specWorkerConfigs.getworkerKubeNodeSelectors().get());
-    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, checkWorkerConfigs.getworkerKubeNodeSelectors().get());
-    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, discoverWorkerConfigs.getworkerKubeNodeSelectors().get());
+    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, specWorkerConfigs.getworkerKubeNodeSelectors());
+    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, checkWorkerConfigs.getworkerKubeNodeSelectors());
+    Assertions.assertEquals(DEFAULT_NODE_SELECTORS, discoverWorkerConfigs.getworkerKubeNodeSelectors());
   }
 
   @Test

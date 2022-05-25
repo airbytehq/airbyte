@@ -21,6 +21,15 @@
         "$ref": "rich_text.json"
       }
     },
+    "last_edited_by": {
+      "$ref": "user.json"
+    },
+    "created_by": {
+      "$ref": "user.json"
+    },
+    "archived": {
+      "type": "boolean"
+    },
     "icon": {
       "$ref": "icon.json"
     },

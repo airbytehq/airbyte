@@ -9,8 +9,8 @@ from octavia_cli.generate import commands
 
 
 @pytest.fixture
-def context_object(mocker):
-    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mocker.Mock(), "WORKSPACE_ID": "foo"}
+def context_object(mock_api_client, mock_telemetry_client):
+    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "foo", "TELEMETRY_CLIENT": mock_telemetry_client}
 
 
 def test_generate_initialized(mocker, context_object):
@@ -54,7 +54,7 @@ def test_generate_source_or_destination(mocker, context_object, command, resourc
     result = runner.invoke(command, ["uuid", resource_name], obj=context_object)
     assert result.exit_code == 0
     assert result.output == f"✅ - Created the {definition_type} template for {resource_name} in expected_output_path.\n"
-    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], "uuid")
+    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "uuid")
     commands.ConnectorSpecificationRenderer.assert_called_with(resource_name, commands.definitions.factory.return_value)
     mock_renderer.write_yaml.assert_called_with(project_path=".")
 

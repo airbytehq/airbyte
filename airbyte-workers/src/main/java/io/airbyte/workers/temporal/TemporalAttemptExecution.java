@@ -14,6 +14,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -57,7 +58,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   final Supplier<INPUT> inputSupplier,
                                   final CancellationHandler cancellationHandler,
                                   final JobPersistence jobPersistence,
-                                  final String airbyteVersion) {
+                                  final String airbyteVersion,
+                                  final Supplier<ActivityExecutionContext> activityContext) {
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
@@ -66,7 +68,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
         cancellationHandler,
         jobPersistence,
-        () -> Activity.getExecutionContext().getInfo().getWorkflowId(), airbyteVersion);
+        () -> activityContext.get().getInfo().getWorkflowId(),
+        airbyteVersion);
   }
 
   @VisibleForTesting

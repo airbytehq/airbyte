@@ -104,8 +104,19 @@
 
 {% macro default__unnest_cte(from_table, stream_name, column_col) -%}{%- endmacro %}
 
-{# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
 {% macro redshift__unnest_cte(from_table, stream_name, column_col) -%}
+
+    {# -- based on https://docs.aws.amazon.com/redshift/latest/dg/query-super.html #}
+    {% if redshift_super_type() -%}
+        with joined as (
+            select
+                table_alias._airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
+                _airbyte_nested_data
+            from {{ from_table }} as table_alias, table_alias.{{ column_col }} as _airbyte_nested_data
+        )
+    {%- else -%}
+
+    {# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
     {%- if not execute -%}
         {{ return('') }}
     {% endif %}
@@ -134,6 +145,7 @@ joined as (
     -- to the number of items in {{ from_table }}.{{ column_col }}
     where numbers.generated_number <= json_array_length({{ column_col }}, true)
 )
+    {%- endif %}
 {%- endmacro %}
 
 {% macro mysql__unnest_cte(from_table, stream_name, column_col) -%}

@@ -1,16 +1,18 @@
-import React, { useMemo } from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import React, { useMemo } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
-import ContentCard from "components/ContentCard";
 import { Button, ControlLabels, DropDown } from "components";
-import ImageBlock from "components/ImageBlock";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import ContentCard from "components/ContentCard";
+
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { useSourceList } from "../../../../../hooks/services/useSourceHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
+import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 
 type IProps = {
   type: "source" | "destination";
@@ -50,13 +52,11 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const dropDownData = useMemo(() => {
     if (type === "source") {
       return sources.map((item) => {
-        const sourceDef = sourceDefinitions.find(
-          (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
-        );
+        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
           label: item.name,
           value: item.sourceId,
-          img: <ImageBlock img={sourceDef?.icon} />,
+          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       });
     } else {
@@ -67,7 +67,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       });
     }
@@ -81,9 +81,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const initialValues = { entityId: "" };
   return (
     <>
-      <ContentCard
-        title={<FormattedMessage id={`connectionForm.${type}Existing`} />}
-      >
+      <ContentCard title={<FormattedMessage id={`connectionForm.${type}Existing`} />}>
         <Formik
           initialValues={initialValues}
           validationSchema={existingEntityValidationSchema}

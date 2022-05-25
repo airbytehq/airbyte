@@ -255,6 +255,90 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
         },
         "should_fail": True,
     },
+    {
+        "test_id": "no_common_property_for_all_oneof_subobjects",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option1": {"type": "string"},
+                                "option2": {"type": "string"},
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option3": {"type": "string"},
+                                "option4": {"type": "string"},
+                            },
+                        },
+                    ],
+                }
+            },
+        },
+        "should_fail": True,
+    },
+    {
+        "test_id": "two_common_properties_with_const_keyword",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common1": {"type": "string", "const": "common1"},
+                                "common2": {"type": "string", "const": "common2"},
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common1": {"type": "string", "const": "common1"},
+                                "common2": {"type": "string", "const": "common2"},
+                            },
+                        },
+                    ],
+                }
+            },
+        },
+        "should_fail": True,
+    },
+    {
+        "test_id": "default_keyword_in_common_property",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option1", "default": "option1"},
+                                "option1": {"type": "string"},
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option2", "default": "option2"},
+                                "option2": {"type": "string"},
+                            },
+                        },
+                    ],
+                }
+            },
+        },
+        "should_fail": True,
+    },
 )
 def test_oneof_usage(connector_spec, should_fail):
     t = _TestSpec()

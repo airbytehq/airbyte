@@ -11,9 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "requests_mock~=1.8"]
 
 setup(
     name="source_pipedrive",

@@ -1,4 +1,5 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
+
 import { User } from "packages/cloud/lib/domain/users";
 
 export const actions = {
@@ -15,6 +16,7 @@ export type AuthServiceState = {
   currentUser: User | null;
   emailVerified: boolean;
   loading: boolean;
+  loggedOut: boolean;
 };
 
 export const initialState: AuthServiceState = {
@@ -22,48 +24,37 @@ export const initialState: AuthServiceState = {
   currentUser: null,
   emailVerified: false,
   loading: false,
+  loggedOut: false,
 };
 
-export const authStateReducer = createReducer<AuthServiceState, Actions>(
-  initialState
-)
-  .handleAction(
-    actions.authInited,
-    (state): AuthServiceState => {
-      return {
-        ...state,
-        inited: true,
-      };
-    }
-  )
-  .handleAction(
-    actions.loggedIn,
-    (state, action): AuthServiceState => {
-      return {
-        ...state,
-        currentUser: action.payload.user,
-        emailVerified: action.payload.emailVerified,
-        inited: true,
-        loading: false,
-      };
-    }
-  )
-  .handleAction(
-    actions.emailVerified,
-    (state, action): AuthServiceState => {
-      return {
-        ...state,
-        emailVerified: action.payload,
-      };
-    }
-  )
-  .handleAction(
-    actions.loggedOut,
-    (state): AuthServiceState => {
-      return {
-        ...state,
-        currentUser: null,
-        emailVerified: false,
-      };
-    }
-  );
+export const authStateReducer = createReducer<AuthServiceState, Actions>(initialState)
+  .handleAction(actions.authInited, (state): AuthServiceState => {
+    return {
+      ...state,
+      inited: true,
+    };
+  })
+  .handleAction(actions.loggedIn, (state, action): AuthServiceState => {
+    return {
+      ...state,
+      currentUser: action.payload.user,
+      emailVerified: action.payload.emailVerified,
+      inited: true,
+      loading: false,
+      loggedOut: false,
+    };
+  })
+  .handleAction(actions.emailVerified, (state, action): AuthServiceState => {
+    return {
+      ...state,
+      emailVerified: action.payload,
+    };
+  })
+  .handleAction(actions.loggedOut, (state): AuthServiceState => {
+    return {
+      ...state,
+      currentUser: null,
+      emailVerified: false,
+      loggedOut: true,
+    };
+  });

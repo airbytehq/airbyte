@@ -183,15 +183,14 @@ class OperationsHandlerTest {
   }
 
   @Test
-  void testDeleteOperation() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testDeleteOperation() throws IOException {
     final OperationIdRequestBody operationIdRequestBody = new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
 
     final OperationsHandler spiedOperationsHandler = spy(operationsHandler);
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
 
     spiedOperationsHandler.deleteOperation(operationIdRequestBody);
 
-    verify(configRepository).writeStandardSyncOperation(standardSyncOperation.withTombstone(true));
+    verify(configRepository).deleteStandardSyncOperation(standardSyncOperation.getOperationId());
   }
 
   @Test
