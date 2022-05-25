@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -38,6 +39,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,7 +83,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     source = new MssqlSource();
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -266,6 +267,23 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     // now disable snapshot isolation and assert that check fails
     switchSnapshotIsolation(false, dbName);
     assertThrows(RuntimeException.class, () -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+  }
+
+  @Test
+  void testAssertSnapshotIsolationDisabled() {
+    //disabled the snapshot
+   JsonNode replication_config = Jsons.jsonNode(ImmutableMap.builder()
+            .put("replication_method", "CDC")
+            .put("is_cdc_only", "false")
+            .put("is_snapshot_disabled", "true")
+            .build());
+    Jsons.replaceNestedValue(config, Arrays.asList(new String[]{"replication_method"}),replication_config);
+    // snapshot isolation enabled by setup so assert check passes
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+    // now disable snapshot isolation and assert that check fails
+    switchSnapshotIsolation(false, dbName);
+    // snapshot isolation disabled and snapshot validation is disabled so assert check passes
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
   // Ensure the CDC check operations are included when CDC is enabled
