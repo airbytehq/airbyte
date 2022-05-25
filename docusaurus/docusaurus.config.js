@@ -20,9 +20,26 @@ const config = {
     projectName: 'airbyte', // Usually your repo name.
 
     plugins:    [
-                    [
-                        require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false}
-                    ]
+                  [
+                    require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false},
+                  ],
+                  [
+                    '@docusaurus/plugin-client-redirects',
+                    {
+                      fromExtensions: ['html', 'htm'], // /myPage.html -> /myPage
+                      redirects: [
+                        // /docs/oldDoc -> /docs/newDoc
+                        {
+                          from: '/upgrading-airbyte',
+                          to: '/operator-guides/upgrading-airbyte',
+                        },
+//                        {
+//                         from: '/some-lame-path',
+//                         to: '/a-much-cooler-uri',
+//                        },
+                      ],
+                    },
+                  ],
                 ],
 
     presets: [
