@@ -4,7 +4,7 @@
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.parsers.factory import LowCodeComponentFactory
+from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
     InterpolatedRequestParameterProvider,
@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 
-factory = LowCodeComponentFactory()
+factory = DeclarativeComponentFactory()
 
 parser = YamlParser()
 

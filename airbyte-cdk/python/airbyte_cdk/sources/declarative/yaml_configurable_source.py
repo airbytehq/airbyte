@@ -4,14 +4,14 @@
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.declarative.parsers.factory import LowCodeComponentFactory
+from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.streams import Stream
 
 
 class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
-        self._factory = LowCodeComponentFactory()
+        self._factory = DeclarativeComponentFactory()
         self._parser = YamlParser()
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
