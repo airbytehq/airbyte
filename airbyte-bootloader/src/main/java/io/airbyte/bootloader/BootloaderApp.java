@@ -142,7 +142,7 @@ public class BootloaderApp {
     DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
         configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
 
-    DatabaseCheckFactory.createJobsDatabaseInitializer(configsDslContext,
+    DatabaseCheckFactory.createJobsDatabaseInitializer(jobsDslContext,
         configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
     LOGGER.info("Databases initialized.");
 
