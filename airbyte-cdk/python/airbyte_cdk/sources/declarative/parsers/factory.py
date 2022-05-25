@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class LowCodeComponentFactory:
+class DeclarativeComponentFactory:
     def __init__(self):
         self._interpolator = JinjaInterpolation()
 

@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import pytest
+from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 
 parser = YamlParser()
@@ -56,7 +57,7 @@ def test_refer_to_non_existant_struct():
       limit: 50
     limit_ref: "*ref(not_dict)"
     """
-    with pytest.raises(KeyError):
+    with pytest.raises(UndefinedReferenceException):
         parser.parse(content)
 
 

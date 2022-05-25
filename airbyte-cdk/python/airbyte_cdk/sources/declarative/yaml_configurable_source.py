@@ -4,16 +4,16 @@
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.declarative.parsers.factory import LowCodeComponentFactory
+from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.streams import Stream
 
 
-class YamldeclarativeSource(DeclarativeSource):
+class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
-        self._factory = LowCodeComponentFactory()
+        self._factory = DeclarativeComponentFactory()
         self._parser = YamlParser()
-        self._source_config = self._read_config(path_to_yaml)
+        self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
     # FIXME: rename file
     @property
@@ -23,7 +23,7 @@ class YamldeclarativeSource(DeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [self._factory.create_component(stream_config, config)() for stream_config in self._source_config["streams"]]
 
-    def _read_config(self, path_to_yaml_file):
+    def _read_and_parse_yaml_file(self, path_to_yaml_file):
         with open(path_to_yaml_file, "r") as f:
             config_content = f.read()
             return self._parser.parse(config_content)
