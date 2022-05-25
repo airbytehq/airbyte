@@ -42,7 +42,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
-  private final AtomicBoolean endOfDestinationInput = new AtomicBoolean(false);
+  private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
   private Process destinationProcess = null;
   private BufferedWriter writer = null;
@@ -85,7 +85,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void accept(final AirbyteMessage message) throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfDestinationInput.get());
+    Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
 
     writer.write(Jsons.serialize(message));
     writer.newLine();
@@ -93,11 +93,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void notifyEndOfInput() throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfDestinationInput.get());
+    Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
 
     writer.flush();
     writer.close();
-    endOfDestinationInput.set(true);
+    inputHasEnded.set(true);
   }
 
   @Override
@@ -107,7 +107,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       return;
     }
 
-    if (!endOfDestinationInput.get()) {
+    if (!inputHasEnded.get()) {
       notifyEndOfInput();
     }
 
