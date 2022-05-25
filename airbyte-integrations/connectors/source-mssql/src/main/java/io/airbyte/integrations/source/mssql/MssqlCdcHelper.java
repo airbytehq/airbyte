@@ -93,6 +93,9 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod == null || replicationMethod.isNull()) {
+      return false;
+    }
     // legacy replication method config before version 0.4.0
     if (replicationMethod.isTextual()) {
       return ReplicationMethod.valueOf(replicationMethod.asText()) == ReplicationMethod.CDC;
