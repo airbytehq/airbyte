@@ -141,7 +141,7 @@ Publishing a connector can be done using the `/publish` command as outlined in t
 * **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
 * **run-tests** - Defaults to true. Should always run the tests as part of the publish flow so that if tests fail, the connector is not published.
 * **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
-* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
+* **bump-version** - Defaults to `patch`, bumps version of a connector for you in the Dockerfile, Seed Specs, and Definitions files. Valid values are `patch`, `minor`, and `major`
 
 ## Using credentials in CI
 

@@ -20,7 +20,7 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
-      auto-bump-version:
+      bump-version:
         description: "Set to major, minor, or patch to automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
         required: false
         default: "patch"
@@ -141,13 +141,6 @@ jobs:
           ci_credentials ${{ github.event.inputs.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      - name: Set Name and Version Environment Vars
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          source tools/lib/lib.sh
-          DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
-          echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Bump ${{ github.event.inputs.connector }} Version
         id: bump-version
         env:
@@ -155,6 +148,20 @@ jobs:
           FORCE_BUMP: ${{ github.event.inputs.force }}
         run: |
           ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
+      - name: Add Version Bump Success Comment
+        if: github.event.inputs.comment-id && success() && steps.bump-version.outputs.bumped == 'true'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
+      - name: Add Version Bump Failure Comment
+        if: github.event.inputs.comment-id && !success() && steps.bump-version.outputs.bumped == 'true'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: Couldn't auto-bump version for ${{github.event.inputs.connector}}
       - name: Build ${{ github.event.inputs.connector }}
         run: |
           ./tools/integrations/manage.sh build airbyte-integrations/${{ github.event.inputs.connector }}
@@ -238,20 +245,6 @@ jobs:
           SLACK_COLOR: DC143C
           SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
           SLACK_FOOTER: ""
-      - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && success() && steps.bump-version.outputs.bumped == 'true'
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
-      - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && !success() && steps.bump-version.outputs.bumped == 'true'
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: Couldn't auto-bump version for ${{github.event.inputs.connector}}
       - name: Add Final Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
