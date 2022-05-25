@@ -155,7 +155,7 @@ jobs:
       ############################
       - name: Bump Connector Version
         if: github.event.inputs.bump-version != 'false' && success()
-        run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }}
+        run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.auto-bump-version }}
       - name: Commit and Push Version Bump
         if: github.event.inputs.bump-version != 'false' && success()
         run: |

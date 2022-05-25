@@ -43,35 +43,6 @@ cmd_build() {
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
-
-  if [ "$run_tests" = false ] ; then
-    echo "Skipping integration tests..."
-  else
-    echo "Running integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
-  fi
-}
-
-# Experimental version of the above for a new way to build/tag images
-cmd_build_experiment() {
-  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
-  [ -d "$path" ] || error "Path must be the root path of the integration"
-
-  echo "Building $path"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
-
-  # After this happens this image should exist: "image_name:dev"
-  # Re-tag with CI candidate label
-  local image_name; image_name=$(_get_docker_image_name "$path/Dockerfile")
-  local image_version; image_version=$(_get_docker_image_version "$path/Dockerfile")
-  local image_candidate_tag; image_candidate_tag="$image_version-candidate-$PR_NUMBER"
-
-  # If running via the bump-build-test-connector job, re-tag gradle built image following candidate image pattern
-  if [[ "$GITHUB_JOB" == "bump-build-test-connector" ]]; then
-    docker tag "$image_name:dev" "$image_name:$image_candidate_tag"
-    # TODO: docker push "$image_name:$image_candidate_tag"
-  fi
 }
 
 cmd_test() {
@@ -323,7 +294,7 @@ cmd_publish() {
   fi
 
   _ensure_docker_image_registered "$image_name" "$image_version"
-  _publish_spec_to_cache "$image_name" "$image_version"
+#  _publish_spec_to_cache "$image_name" "$image_version"
 }
 
 cmd_publish_external() {

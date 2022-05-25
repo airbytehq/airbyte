@@ -157,7 +157,7 @@ jobs:
           ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
       - name: Build ${{ github.event.inputs.connector }}
         run: |
-          ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
+          ./tools/integrations/manage.sh build airbyte-integrations/${{ github.event.inputs.connector }}
         id: build
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
