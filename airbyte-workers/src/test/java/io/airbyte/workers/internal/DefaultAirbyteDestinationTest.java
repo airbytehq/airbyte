@@ -138,7 +138,7 @@ class DefaultAirbyteDestinationTest {
 
     verify(outputStream, never()).close();
 
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     verify(outputStream).close();
 
@@ -171,7 +171,7 @@ class DefaultAirbyteDestinationTest {
 
     when(process.isAlive()).thenReturn(false);
 
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     destination.close();
 
