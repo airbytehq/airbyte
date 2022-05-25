@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.generated.HealthCheckRead;
 import io.airbyte.config.persistence.ConfigRepository;
 import org.junit.jupiter.api.Test;
 

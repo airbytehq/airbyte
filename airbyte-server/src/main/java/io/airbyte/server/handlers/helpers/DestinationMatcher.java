@@ -6,8 +6,8 @@ package io.airbyte.server.handlers.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationSearch;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationSearch;
 import org.apache.logging.log4j.util.Strings;
 
 public class DestinationMatcher implements Matchable<DestinationRead> {

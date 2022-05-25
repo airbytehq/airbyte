@@ -6,8 +6,8 @@ package io.airbyte.server.handlers.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceSearch;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceSearch;
 import org.apache.logging.log4j.util.Strings;
 
 public class SourceMatcher implements Matchable<SourceRead> {

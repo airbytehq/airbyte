@@ -4,8 +4,8 @@
 
 package io.airbyte.server.handlers.helpers;
 
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionSearch;
 import org.apache.logging.log4j.util.Strings;
 
 public class ConnectionMatcher implements Matchable<ConnectionRead> {

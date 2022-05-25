@@ -4,8 +4,8 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.InvalidInputExceptionInfo;
-import io.airbyte.api.model.InvalidInputProperty;
+import io.airbyte.api.model.generated.InvalidInputExceptionInfo;
+import io.airbyte.api.model.generated.InvalidInputProperty;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.List;

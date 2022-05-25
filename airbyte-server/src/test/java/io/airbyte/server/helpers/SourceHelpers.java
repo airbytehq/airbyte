@@ -5,7 +5,7 @@
 package io.airbyte.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;

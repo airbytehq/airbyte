@@ -5,8 +5,8 @@
 package io.airbyte.metrics.lib;
 
 import io.airbyte.config.FailureReason.FailureOrigin;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 
 /**
  * Keep track of all metric tags.

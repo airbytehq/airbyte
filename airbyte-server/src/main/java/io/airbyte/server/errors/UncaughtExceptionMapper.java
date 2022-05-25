@@ -4,7 +4,7 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.KnownExceptionInfo;
+import io.airbyte.api.model.generated.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

@@ -5,7 +5,7 @@
 package io.airbyte.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
