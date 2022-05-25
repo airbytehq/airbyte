@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
  * A {@link SecretCoordinate} is a reference to a specific secret at a specific version in a
  * {@link SecretPersistence}.
  */
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SecretsHelpers {
 
   public static final String COORDINATE_FIELD = "_secret";
