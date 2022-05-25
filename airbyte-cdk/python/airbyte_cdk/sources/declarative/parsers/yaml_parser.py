@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 import yaml
 from airbyte_cdk.sources.declarative.parsers.config_parser import ConfigParser
+from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
 
 
 class YamlParser(ConfigParser):
@@ -58,7 +59,10 @@ class YamlParser(ConfigParser):
             if ref_key is None:
                 return value
             else:
-                return evaluated_config[ref_key]
+                try:
+                    return evaluated_config[ref_key]
+                except KeyError:
+                    raise UndefinedReferenceException(path, ref_key)
         elif type(value) == dict:
             return self.preprocess_dict(value, evaluated_config, path)
         elif type(value) == list:
