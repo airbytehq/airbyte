@@ -88,7 +88,7 @@ public interface DatabaseInitializer {
       // Verify that all the required tables are present
       if (tableNames.get().stream().allMatch(tableName -> hasTable(ctx, tableName))) {
         getLogger().info("The {} database is initialized", getDatabaseName());
-      } else if (shouldInitialize()) {
+      } else {
         getLogger().info("The {} database has not been initialized; initializing it with schema: \n{}", getDatabaseName(),
             getInitialSchema());
         ctx.execute(getInitialSchema());
@@ -99,15 +99,6 @@ public interface DatabaseInitializer {
       getLogger().warn("Initial collection of table names is empty.  Cannot perform schema check.");
       return false;
     }
-  }
-
-  /**
-   * Tests whether to initialize the database if it fails the check of existing tables.
-   *
-   * @return {@code true} if the database should be initialized, {@code false} otherwise.
-   */
-  default boolean shouldInitialize() {
-    return true;
   }
 
   /**
