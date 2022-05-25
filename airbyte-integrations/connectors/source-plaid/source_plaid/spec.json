@@ -34,6 +34,13 @@
         "description": "The date from which you'd like to replicate data for Plaid in the format YYYY-MM-DD. All data generated after this date will be replicated.",
         "examples": ["2021-03-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "min_last_updated_datetime": {
+        "title": "Min Last Updated DateTime",
+        "type": "string",
+        "description": "(Capital One Institutions Only) The oldest acceptable date from which balance should be pulled.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
     }
   }

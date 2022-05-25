@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from plaid.api import plaid_api
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
+from plaid.model.accounts_balance_get_request_options import AccountsBalanceGetRequestOptions
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
@@ -32,6 +33,16 @@ class PlaidStream(Stream):
         self.client = plaid_api.PlaidApi(api_client)
         self.access_token = config["access_token"]
         self.start_date = datetime.datetime.strptime(config.get("start_date"), "%Y-%m-%d").date() if config.get("start_date") else None
+        self.min_last_updated_datetime = datetime.datetime.strptime(
+            config.get(
+                "min_last_updated_datetime",
+                datetime.datetime.combine(
+                    datetime.date.fromtimestamp(0),
+                    datetime.datetime.min.time()
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            ),
+            "%Y-%m-%dT%H:%M:%S%z"
+        )
 
 
 class BalanceStream(PlaidStream):
@@ -50,7 +61,9 @@ class BalanceStream(PlaidStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        balance_response = self.client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token))
+        options = AccountsBalanceGetRequestOptions()
+        options.min_last_updated_datetime = self.min_last_updated_datetime
+        balance_response = self.client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token, options=options))
         for balance in balance_response["accounts"]:
             message_dict = balance["balances"].to_dict()
             message_dict["account_id"] = balance["account_id"]
