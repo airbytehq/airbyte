@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.*;
@@ -22,16 +20,14 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +152,6 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .collect(Collectors.toList());
   }
 
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
@@ -174,9 +169,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
-            .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
+        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
-
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
