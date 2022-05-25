@@ -1282,7 +1282,7 @@ class PropertyHistory(IncrementalStream):
                     continue
                 if versions:
                     for version in versions:
-                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_rfc3339_string()
                         version["property"] = key
                         version["vid"] = vid
                         yield version
