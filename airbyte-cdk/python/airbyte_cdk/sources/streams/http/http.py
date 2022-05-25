@@ -26,6 +26,7 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
 
 logging.getLogger("vcr").setLevel(logging.ERROR)
+request_count = 0
 
 
 class HttpStream(Stream, ABC):
@@ -300,6 +301,9 @@ class HttpStream(Stream, ABC):
             except HTTPError as exc:
                 self.logger.error(response.text)
                 raise exc
+        global request_count
+        request_count += 1
+        self.logger.info(f"sent {request_count} request")
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -335,6 +339,54 @@ class HttpStream(Stream, ABC):
             user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
             backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
             return backoff_handler(user_backoff_handler)(request, request_kwargs)
+
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
+        # default logic to grab error from common fields
+        def _try_get_error(value):
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                return ", ".join(_try_get_error(v) for v in value)
+            elif isinstance(value, dict):
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
+                )
+                return _try_get_error(new_value)
+            return None
+
+        try:
+            body = response.json()
+            return _try_get_error(body)
+        except requests.exceptions.JSONDecodeError:
+            return None
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
+        The method should be overriden as needed to handle any additional exception types.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        if isinstance(exception, requests.HTTPError):
+            return self.parse_response_error_message(exception.response)
+        return None
 
     def read_records(
         self,
