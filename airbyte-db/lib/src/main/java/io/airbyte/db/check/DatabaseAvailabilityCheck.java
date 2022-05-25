@@ -52,6 +52,8 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
             throw new DatabaseCheckException("Unable to wait for database to be ready.", e);
           }
           totalTime += sleepTime;
+        } else {
+          getLogger().info("Database available.");
         }
       } else {
         throw new DatabaseCheckException("Database configuration not present.");
