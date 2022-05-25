@@ -156,7 +156,6 @@ cmd_process_build() {
   dockerfile="$connector_path/Dockerfile"
   local image_name; image_name=$(_get_docker_image_name "$dockerfile")
   bumped_version=$(_get_docker_image_version "$dockerfile")
-  local tmp_spec_file; tmp_spec_file=$(mktemp)
 
   _publish_spec_to_cache "$image_name" "$bumped_version"
   ./gradlew :airbyte-config:init:processResources
@@ -230,7 +229,6 @@ cmd_publish() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
   local spec_cache_writer_sa_key_file
 
@@ -271,12 +269,6 @@ cmd_publish() {
   # time building, running tests to realize this version is a duplicate.
   _error_if_tag_exists "$versioned_image"
 
-  # building the connector
-  cmd_build "$path" "$run_tests"
-
-  # in case curing the build / tests someone this version has been published.
-  _error_if_tag_exists "$versioned_image"
-
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
@@ -289,8 +281,9 @@ cmd_publish() {
     docker tag "$image_name:dev" "$latest_image"
 
     echo "Publishing new version ($versioned_image)"
-    docker push "$versioned_image"
-    docker push "$latest_image"
+    # TODO
+#    docker push "$versioned_image"
+#    docker push "$latest_image"
   fi
 
   _ensure_docker_image_registered "$image_name" "$image_version"

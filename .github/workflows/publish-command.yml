@@ -163,27 +163,10 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on GitHub virtual runners.
           TZ: UTC
-      - name: Process Build ${{ github.event.inputs.connector }}
-        run: |
-          export publish_spec_to_cache=true
-          ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - name: Test ${{ github.event.inputs.connector }}
         if: github.event.inputs.run-tests == 'true'
         run: |
           ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
-      - name: Commit and Push Bump ${{ github.event.inputs.connector }}
-        if: success() && steps.bump-version.outputs.bumped == 'true'
-        run: |
-          git config user.name 'Octavia Squidington III'
-          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-          if ! (git diff --quiet && git diff --staged --quiet); then
-            echo "Detected changed files and version bump"
-            git commit -a -m "auto-bump-version ${{github.event.inputs.connector}} ${{ steps.bump-version.outputs.master_version }} to ${{ steps.bump-version.outputs.bumped_version }}"
-            git pull origin ${{ github.event.inputs.gitref }}
-            git push origin ${{ github.event.inputs.gitref }}
-          fi
       - name: Prepare Sentry
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
@@ -199,13 +182,30 @@ jobs:
       - name: Publish ${{ github.event.inputs.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_USERNAME: airbytebot
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+      - name: Process Build ${{ github.event.inputs.connector }}
+        run: |
+          export publish_spec_to_cache=true
+          ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Commit and Push Bump ${{ github.event.inputs.connector }}
+        if: success() && steps.bump-version.outputs.bumped == 'true'
+        run: |
+          git config user.name 'Octavia Squidington III'
+          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
+          if ! (git diff --quiet && git diff --staged --quiet); then
+            echo "Detected changed files and version bump"
+            git commit -a -m "auto-bump-version ${{github.event.inputs.connector}} ${{ steps.bump-version.outputs.master_version }} to ${{ steps.bump-version.outputs.bumped_version }}"
+            git pull origin ${{ github.event.inputs.gitref }}
+            git push origin ${{ github.event.inputs.gitref }}
+          fi
       - name: Finalize Sentry release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
