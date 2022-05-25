@@ -79,6 +79,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         config.get("port").asText(),
         config.get("database").asText()));
 
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
+    }
+
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");

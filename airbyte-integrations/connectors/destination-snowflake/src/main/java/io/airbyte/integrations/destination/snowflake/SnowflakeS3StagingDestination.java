@@ -144,4 +144,5 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
       return loadingMethod.get("purge_staging_data").asBoolean();
     }
   }
+
 }

@@ -32,8 +32,6 @@
               "credentials": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "client_id": {
@@ -70,8 +68,6 @@
               "credentials": {
                 "type": "string",
                 "const": "access_token",
-                "enum": ["access_token"],
-                "default": "access_token",
                 "order": 0
               },
               "access_token": {

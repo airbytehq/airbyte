@@ -76,7 +76,7 @@ Setup a virtual env:
 ```text
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]" # [dev] installs development-only dependencies
+pip install -e ".[tests]" # [tests] installs test-only dependencies
 ```
 
 #### Iteration

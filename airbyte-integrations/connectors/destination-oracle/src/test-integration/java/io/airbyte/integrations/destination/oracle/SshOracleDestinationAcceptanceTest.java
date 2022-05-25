@@ -162,7 +162,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     return new Database(dslContext);
   }
 

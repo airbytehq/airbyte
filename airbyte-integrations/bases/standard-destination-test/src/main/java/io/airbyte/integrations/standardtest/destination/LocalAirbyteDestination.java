@@ -8,7 +8,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
 
