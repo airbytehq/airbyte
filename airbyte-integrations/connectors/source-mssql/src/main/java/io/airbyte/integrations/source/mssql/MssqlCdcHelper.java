@@ -34,6 +34,25 @@ public class MssqlCdcHelper {
     return false;
   }
 
+  @VisibleForTesting
+  static boolean needSnapshotIsolation(final JsonNode config) {
+    // in legacy replication method config before version 0.4.0,
+    // there is no snapshot_isolation parameter, but snapshot level
+    // is chosen by default
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod == null || replicationMethod.isNull()) {
+      return true;
+    }
+    final JsonNode snapshotIsolation = replicationMethod.get("snapshot_isolation");
+    if (snapshotIsolation == null || snapshotIsolation.isNull()) {
+      return true;
+    }
+
+    // in new replication method config since version 0.4.0,
+    // there is a snapshot_isolation parameter
+    return snapshotIsolation.asText().equalsIgnoreCase("snapshot");
+  }
+
   static Properties getDebeziumProperties(final JsonNode config) {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");

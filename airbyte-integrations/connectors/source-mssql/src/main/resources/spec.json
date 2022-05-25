@@ -149,7 +149,7 @@
                 "order": 1
               },
               "snapshot_isolation": {
-                "title": "Initial Snapshot Isolation Level",
+                "title": "Initial Snapshot Isolation Level. If you choose the \"Snapshot\" level as the initial snapshot isolation level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
                 "type": "string",
                 "default": "Snapshot",
                 "enum": ["Snapshot", "Read Committed"],

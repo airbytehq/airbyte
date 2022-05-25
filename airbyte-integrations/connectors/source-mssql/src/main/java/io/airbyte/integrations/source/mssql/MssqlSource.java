@@ -38,7 +38,12 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -312,19 +317,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final JsonNode replicationMethod = config.get("replication_method");
-    if (replicationMethod == null || replicationMethod.isNull()) {
-      return;
-    }
-
-    final JsonNode snapshotIsolation = replicationMethod.get("snapshot_isolation");
-    final boolean needSnapshot =
-        // legacy replication method config does not have a snapshot isolation setting,
-        // but it is enabled by default
-        snapshotIsolation == null || snapshotIsolation.isNull() ||
-            // new replication method config has a snapshot isolation enum field
-            snapshotIsolation.asText().equalsIgnoreCase("snapshot");
-    if (!needSnapshot) {
+    if (!MssqlCdcHelper.needSnapshotIsolation(config)) {
       return;
     }
 
