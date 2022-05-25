@@ -96,6 +96,7 @@ const StyledInput = styled(Input)`
 const ConnectionName: React.FC<Props> = ({ connection }) => {
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [connectionName, setConnectionName] = useState(connection.name);
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
@@ -113,6 +114,7 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   const onBlur = async () => {
     // Update only when the name is changed
     if (connection.name !== connectionName) {
+      setLoading(true);
       await updateConnection({
         name: connectionName,
         connectionId: connection.connectionId,
@@ -121,6 +123,7 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
         status: connection.status,
         prefix: connection.prefix,
       });
+      setLoading(false);
     }
 
     setEditingState(false);
@@ -139,7 +142,13 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
       {editingState && (
         <EditingContainer>
           <InputContainer>
-            <StyledInput value={connectionName} onChange={inputChange} onBlur={onBlur} defaultFocus />
+            <StyledInput
+              value={connectionName}
+              onChange={inputChange}
+              onBlur={onBlur}
+              disabled={loading}
+              defaultFocus
+            />
           </InputContainer>
         </EditingContainer>
       )}
