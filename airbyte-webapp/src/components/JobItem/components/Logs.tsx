@@ -75,21 +75,18 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
   if (!matchTimestamp || !lines || lines.length === 0) {
     return [];
   }
-  const flooredMatchTimestamp = Math.floor(matchTimestamp / 1000) * 1000;
-
-  const resolutionOffset = 1000; // the resolution of the timestamps is in seconds
+  const matchTimestampSeconds = Math.floor(matchTimestamp / 1000);
   const matchingLineNumbers: number[] = [];
 
   let lineCounter = lines.length - 1;
   while (lineCounter >= 0) {
     const datetime = dayjs.utc(lines[lineCounter], DATE_TIME_FORMAT, false)?.toDate()?.getTime();
     if (datetime) {
-      if (
-        datetime - resolutionOffset <= flooredMatchTimestamp &&
-        datetime + resolutionOffset >= flooredMatchTimestamp
-      ) {
+      // The resolution of the timestamps in the logs is seconds (no ms), so this will not need to be rounded
+      const datetimeSeconds = datetime / 1000;
+      if (datetimeSeconds + 1 === matchTimestampSeconds) {
         matchingLineNumbers.push(lineCounter + 1);
-      } else if (datetime - (resolutionOffset * 2 + 1) <= flooredMatchTimestamp) {
+      } else if (datetimeSeconds < matchTimestampSeconds) {
         break; // Once we've reached a timestamp earlier than our search, we can stop seeking
       }
     }
