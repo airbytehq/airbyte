@@ -205,7 +205,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
-        run: apt-get install -y automake
+        run: apt-get install -y automake build-essential git libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |
