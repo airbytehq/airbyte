@@ -214,7 +214,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
-    if (isCdc(config)) {
+    if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
@@ -233,7 +233,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
-    if (isCdc(config)) {
+    if (MssqlCdcHelper.isCdc(config)) {
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
       checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
       checkOperations.add(database -> assertSqlServerAgentRunning(database));
@@ -348,9 +348,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      Properties props = MssqlCdcProperties.getDebeziumProperties(sourceConfig);
+      final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
           props, catalog, true);
@@ -361,21 +361,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
-    }
-  }
-
-  private static boolean isCdc(final JsonNode config) {
-    if (config.hasNonNull("replication_method")) {
-      final JsonNode replication_config = config.get("replication_method");
-      if (replication_config.hasNonNull("replication_method")) {
-        return ReplicationMethod.valueOf(replication_config.get("replication_method").asText())
-            .equals(ReplicationMethod.CDC);
-      } else {
-        return ReplicationMethod.valueOf(replication_config.asText())
-            .equals(ReplicationMethod.CDC);
-      }
-    } else {
-      return false;
     }
   }
 

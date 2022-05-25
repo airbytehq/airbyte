@@ -5,9 +5,34 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.source.mssql.MssqlSource.ReplicationMethod;
+import io.debezium.annotation.VisibleForTesting;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MssqlCdcProperties {
+public class MssqlCdcHelper {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcHelper.class);
+
+  @VisibleForTesting
+  static boolean isCdc(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+
+    // legacy replication method config before version 0.4.0
+    if (replicationMethod.isTextual()) {
+      return ReplicationMethod.valueOf(replicationMethod.asText()) == ReplicationMethod.CDC;
+    }
+
+    // new replication method config since version 0.4.0
+    if (replicationMethod.isObject()) {
+      return replicationMethod.hasNonNull("replication_type") &&
+          ReplicationMethod.valueOf(replicationMethod.get("replication_type").asText()) == ReplicationMethod.CDC;
+    }
+
+    LOGGER.warn("Unexpected replication method: {}, default to non CDC", replicationMethod);
+    return false;
+  }
 
   static Properties getDebeziumProperties(final JsonNode config) {
     final Properties props = new Properties();

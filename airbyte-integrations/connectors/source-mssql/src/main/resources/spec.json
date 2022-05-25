@@ -5,7 +5,7 @@
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -109,15 +109,16 @@
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database.",
         "default": "STANDARD",
+        "additionalProperties": true,
         "order": 8,
         "oneOf": [
           {
             "title": "Standard",
             "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
+            "required": ["replication_type"],
             "properties": {
-              "method": {
+              "replication_type": {
                 "type": "string",
                 "const": "Standard",
                 "enum": ["Standard"],
@@ -130,9 +131,9 @@
             "title": "Logical Replication (CDC)",
             "additionalProperties": false,
             "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-            "required": ["method"],
+            "required": ["replication_type"],
             "properties": {
-              "method": {
+              "replication_type": {
                 "type": "string",
                 "const": "CDC",
                 "enum": ["CDC"],
