@@ -1,3 +1,5 @@
+// Definition of repositories we publish to. A separate file lets us include this when needed,
+// without polluting configuration.
 repositories {
     maven {
         name = 'cloudrepo'
