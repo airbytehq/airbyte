@@ -2,30 +2,30 @@ limit: 100
 
 
 decoder:
-  class_name: "airbyte_cdk.sources.configurable.decoders.json_decoder.JsonDecoder"
+  class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 request_parameters_provider:
-  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
   request_parameters:
     limit: "*ref(limit)"
 state:
-  class_name: airbyte_cdk.sources.configurable.states.dict_state.DictState
+  class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 retriever:
-  class_name: "airbyte_cdk.sources.configurable.retrievers.simple_retriever.SimpleRetriever"
+  class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ kwargs['name'] }}"
   state: "*ref(state)"
   stream_slicer:
-    class_name: airbyte_cdk.sources.configurable.stream_slicers.single_slice.SingleSlice
+    class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
-    class_name: airbyte_cdk.sources.configurable.requesters.paginators.no_pagination.NoPagination
+    class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
   primary_key: "{{ kwargs['primary_key'] }}"
 partial_stream:
-  class_name: "airbyte_cdk.sources.configurable.configurable_stream.ConfigurableStream"
+  class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
-    class_name: airbyte_cdk.sources.configurable.schema.json_schema.JsonSchema
+    class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
     file_path: "./source_stripe/schemas/{{kwargs['name']}}.json"
   cursor_field: [ ]
 requester:
-  class_name: airbyte_cdk.sources.configurable.requesters.http_requester.HttpRequester
+  class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ kwargs['name'] }}"
   url_base: "https://api.stripe.com/v1/"
   http_method: "GET"
@@ -34,48 +34,48 @@ requester:
     token: "{{ config['client_secret'] }}"
   request_parameters_provider: "*ref(request_parameters_provider)"
   retrier:
-    class_name: airbyte_cdk.sources.configurable.requesters.retriers.default_retrier.DefaultRetrier
+    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 extractor:
-  class_name: airbyte_cdk.sources.configurable.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
 
 invoices_stream:
-  partial: "*ref(partial_stream)"
+  ref: "*ref(partial_stream)"
   kwargs:
     name: "invoices"
     primary_key: "id"
   retriever:
-    partial: "*ref(retriever)"
+    ref: "*ref(retriever)"
     requester:
-      partial: "*ref(requester)"
+      ref: "*ref(requester)"
       path: "invoices"
     extractor:
-      partial: "*ref(extractor)"
+      ref: "*ref(extractor)"
       transform: ".data[]"
 
 
 substream_retriever:
-  class_name: "airbyte_cdk.sources.configurable.retrievers.substream_retriever.SubstreamRetriever"
-  partial: "*ref(retriever)"
+  class_name: "airbyte_cdk.sources.declarative.retrievers.substream_retriever.SubstreamRetriever"
+  ref: "*ref(retriever)"
 
 substream_slicer:
-  class_name: "airbyte_cdk.sources.configurable.stream_slicers.substream_slicer.SubstreamSlicer"
-  parent_stream: "*ref(invoices_stream)"
+  class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"
   parent_id: "{{ parent_record['id'] }}"
   state: "*ref(state)"
 
 invoice_line_items_stream:
-  partial: "*ref(partial_stream)"
+  ref: "*ref(partial_stream)"
   kwargs:
     name: "invoice_line_items"
     primary_key: "id"
+    parent_stream: "*ref(invoices_stream)"
   retriever:
-    partial: "*ref(substream_retriever)"
+    ref: "*ref(substream_retriever)"
     requester:
-      partial: "*ref(requester)"
+      ref: "*ref(requester)"
       path: "invoices/{{ stream_slice['parent_id'] }}/lines"
     extractor:
-      partial: "*ref(extractor)"
+      ref: "*ref(extractor)"
       transform: ".data[]"
     stream_slicer: "*ref(substream_slicer)"
 
@@ -83,4 +83,4 @@ streams:
   - "*ref(invoices_stream)"
   - "*ref(invoice_line_items_stream)"
 check:
-  class_name: airbyte_cdk.sources.configurable.checks.check_stream.CheckStream
+  class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream

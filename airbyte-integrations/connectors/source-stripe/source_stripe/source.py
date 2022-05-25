@@ -3,10 +3,10 @@
 #
 
 
-from airbyte_cdk.sources.configurable.yaml_configurable_source import YamlConfigurableSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
-class SourceStripe(YamlConfigurableSource):
+class SourceStripe(YamlDeclarativeSource):
     """
     This is a sample low-code connector.
     It still uses the existing spec.yaml file
