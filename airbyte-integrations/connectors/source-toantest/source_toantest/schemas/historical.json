@@ -1,0 +1,61 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1651895458.json", 
+	"title": "historical", 
+	"type": "object",
+	"properties": {
+		"success": {
+			"$id": "#root/success", 
+			"title": "Success", 
+			"type": "boolean",
+			"default": true
+		},
+		"timestamp": {
+			"$id": "#root/timestamp", 
+			"title": "Timestamp", 
+			"type": "integer",
+			"default": 0
+		},
+		"historical": {
+			"$id": "#root/historical", 
+			"title": "Historical", 
+			"type": "boolean",
+			"default": true
+		},
+		"base": {
+			"$id": "#root/base", 
+			"title": "Base", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"date": {
+			"$id": "#root/date", 
+			"title": "Date", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"rates": {
+			"$id": "#root/rates", 
+			"title": "Rates", 
+			"type": "object",
+			"properties": {
+				"USD": {
+					"$id": "#root/rates/USD", 
+					"title": "Usd", 
+					"type": "number",
+					"default": 0.0
+				},
+				"VND": {
+					"$id": "#root/rates/VND", 
+					"title": "Vnd", 
+					"type": "number",
+					"default": 0.0
+				}
+			}
+		}
+
+	}
+}

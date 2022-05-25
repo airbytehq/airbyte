@@ -1,0 +1,63 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sftp",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "header1": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "header2": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "header3": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "header4": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "_ab_file_last_modified": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "_ab_file_path": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "_ab_file_last_modified"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

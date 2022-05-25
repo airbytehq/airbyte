@@ -1,0 +1,224 @@
+{
+  "streams":[
+      {
+          "stream":{
+              "name":"lists",
+              "json_schema":{
+                  "definitions": {},
+                  "$schema": "http://json-schema.org/draft-07/schema#", 
+                  "$id": "https://example.com/object1650447447.json", 
+                  "title": "Root", 
+                  "type": "array",
+                  "default": [],
+                  "items":{
+                      "$id": "#root/items", 
+                      "title": "Items", 
+                      "type": "object",
+                      "properties": {
+                          "list_id": {
+                              "$id": "#root/items/list_id", 
+                              "title": "List_id", 
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^.*$"
+                          },
+                          "list_name": {
+                              "$id": "#root/items/list_name", 
+                              "title": "List_name", 
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^.*$"
+                          }
+                      }
+                  }
+              
+              }
+          }
+          ,"sync_mode": "full_refresh"
+          ,"destination_sync_mode": "overwrite"
+      },
+      {
+          "stream":{
+              "name":"list_members",
+              "json_schema":{
+                  "definitions": {},
+                  "$schema": "http://json-schema.org/draft-07/schema#", 
+                  "$id": "https://example.com/object1650520531.json", 
+                  "title": "Root", 
+                  "type": "object",
+                  "properties": {
+                      "records": {
+                          "$id": "#root/records", 
+                          "title": "Records", 
+                          "type": "array",
+                          "default": [],
+                          "items":{
+                              "$id": "#root/records/items", 
+                              "title": "Items", 
+                              "type": "object",
+                              "properties": {
+                                  "id": {
+                                      "$id": "#root/records/items/id", 
+                                      "title": "Id", 
+                                      "type": "string",
+                                      "default": "",
+                                      "pattern": "^.*$"
+                                  },
+                                  "email": {
+                                      "$id": "#root/records/items/email", 
+                                      "title": "Email", 
+                                      "type": "string",
+                                      "default": "",
+                                      "pattern": "^.*$"
+                                  }
+                              }
+                          }
+              
+                      }
+                  }
+              }                
+          }
+          ,"sync_mode": "full_refresh"
+          ,"destination_sync_mode": "overwrite"
+      },
+      {
+          "stream":{
+              "name":"profiles",
+              "json_schema":{
+                  "$schema":"http://json-schema.org/draft-07/schema#",
+                  "type":"object",
+                  "properties":{
+                     "object":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "id":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$address1":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$address2":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$city":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$country":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$latitude":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$longitude":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$region":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$zip":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$email":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$title":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$phone_number":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$organization":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$first_name":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$last_name":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$timezone":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$id":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "$source":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "created":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     },
+                     "updated":{
+                        "type":[
+                           "null",
+                           "string"
+                        ]
+                     }
+                  }
+               }
+          }
+          ,"sync_mode": "full_refresh"
+          ,"destination_sync_mode": "overwrite"
+      }
+  ]
+}

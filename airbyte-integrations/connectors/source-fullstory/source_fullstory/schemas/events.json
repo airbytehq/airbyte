@@ -1,0 +1,289 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1651648035.json", 
+	"title": "events", 
+	"type": "object",
+	"additionalProperties": true,
+	"properties": {
+		"IndvId": {
+			"$id": "#root/IndvId", 
+			"title": "Indvid", 
+			"type": "integer",
+			"default": 0
+		},
+		"UserId": {
+			"$id": "#root/UserId", 
+			"title": "Userid", 
+			"type": "integer",
+			"default": 0
+		},
+		"SessionId": {
+			"$id": "#root/SessionId", 
+			"title": "Sessionid", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageId": {
+			"$id": "#root/PageId", 
+			"title": "Pageid", 
+			"type": "integer",
+			"default": 0
+		},
+		"EventStart": {
+			"$id": "#root/EventStart", 
+			"title": "Eventstart", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"EventPageOffset": {
+			"$id": "#root/EventPageOffset", 
+			"title": "Eventpageoffset", 
+			"type": "integer",
+			"default": 0
+		},
+		"EventSessionOffset": {
+			"$id": "#root/EventSessionOffset", 
+			"title": "Eventsessionoffset", 
+			"type": "integer",
+			"default": 0
+		},
+		"EventType": {
+			"$id": "#root/EventType", 
+			"title": "Eventtype", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageStart": {
+			"$id": "#root/PageStart", 
+			"title": "Pagestart", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageUrl": {
+			"$id": "#root/PageUrl", 
+			"title": "Pageurl", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageRefererUrl": {
+			"$id": "#root/PageRefererUrl", 
+			"title": "Pagerefererurl", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageIp": {
+			"$id": "#root/PageIp", 
+			"title": "Pageip", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageBrowser": {
+			"$id": "#root/PageBrowser", 
+			"title": "Pagebrowser", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageBrowserVersion": {
+			"$id": "#root/PageBrowserVersion", 
+			"title": "Pagebrowserversion", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageDevice": {
+			"$id": "#root/PageDevice", 
+			"title": "Pagedevice", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PagePlatform": {
+			"$id": "#root/PagePlatform", 
+			"title": "Pageplatform", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageOperatingSystem": {
+			"$id": "#root/PageOperatingSystem", 
+			"title": "Pageoperatingsystem", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageScreenWidth": {
+			"$id": "#root/PageScreenWidth", 
+			"title": "Pagescreenwidth", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageScreenHeight": {
+			"$id": "#root/PageScreenHeight", 
+			"title": "Pagescreenheight", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageViewportWidth": {
+			"$id": "#root/PageViewportWidth", 
+			"title": "Pageviewportwidth", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageViewportHeight": {
+			"$id": "#root/PageViewportHeight", 
+			"title": "Pageviewportheight", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageNumInfos": {
+			"$id": "#root/PageNumInfos", 
+			"title": "Pagenuminfos", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageNumWarnings": {
+			"$id": "#root/PageNumWarnings", 
+			"title": "Pagenumwarnings", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageNumErrors": {
+			"$id": "#root/PageNumErrors", 
+			"title": "Pagenumerrors", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageClusterId": {
+			"$id": "#root/PageClusterId", 
+			"title": "Pageclusterid", 
+			"type": "integer",
+			"default": 0
+		},
+		"LoadDomContentTime": {
+			"$id": "#root/LoadDomContentTime", 
+			"title": "Loaddomcontenttime", 
+			"type": "integer",
+			"default": 0
+		},
+		"LoadFirstPaintTime": {
+			"$id": "#root/LoadFirstPaintTime", 
+			"title": "Loadfirstpainttime", 
+			"type": "integer",
+			"default": 0
+		},
+		"LoadEventTime": {
+			"$id": "#root/LoadEventTime", 
+			"title": "Loadeventtime", 
+			"type": "integer",
+			"default": 0
+		},
+		"SessionStart": {
+			"$id": "#root/SessionStart", 
+			"title": "Sessionstart", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"UserCreated": {
+			"$id": "#root/UserCreated", 
+			"title": "Usercreated", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"UserAppKey": {
+			"$id": "#root/UserAppKey", 
+			"title": "Userappkey", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"UserDisplayName": {
+			"$id": "#root/UserDisplayName", 
+			"title": "Userdisplayname", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"UserEmail": {
+			"$id": "#root/UserEmail", 
+			"title": "Useremail", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"user_language_str": {
+			"$id": "#root/user_language_str", 
+			"title": "User_language_str", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"user_role_str": {
+			"$id": "#root/user_role_str", 
+			"title": "User_role_str", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"user_companyName_str": {
+			"$id": "#root/user_companyName_str", 
+			"title": "User_companyname_str", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"user_isAdmin_bool": {
+			"$id": "#root/user_isAdmin_bool", 
+			"title": "User_isadmin_bool", 
+			"type": "boolean",
+			"default": true
+		},
+		"PageLatLong": {
+			"$id": "#root/PageLatLong", 
+			"title": "Pagelatlong", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageUserAgent": {
+			"$id": "#root/PageUserAgent", 
+			"title": "Pageuseragent", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"PageDuration": {
+			"$id": "#root/PageDuration", 
+			"title": "Pageduration", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageActiveDuration": {
+			"$id": "#root/PageActiveDuration", 
+			"title": "Pageactiveduration", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageNumEvents": {
+			"$id": "#root/PageNumEvents", 
+			"title": "Pagenumevents", 
+			"type": "integer",
+			"default": 0
+		},
+		"PageNumDerivedEvents": {
+			"$id": "#root/PageNumDerivedEvents", 
+			"title": "Pagenumderivedevents", 
+			"type": "integer",
+			"default": 0
+		}
+	}
+}

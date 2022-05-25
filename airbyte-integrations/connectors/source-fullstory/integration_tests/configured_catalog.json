@@ -1,0 +1,226 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "individuals",
+        "json_schema": {
+          "definitions": {},
+          "$schema": "http://json-schema.org/draft-07/schema#", 
+          "$id": "https://example.com/object1651647940.json", 
+          "title": "individuals", 
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "IndvId": {
+              "$id": "#root/IndvId", 
+              "title": "Indvid", 
+              "type": "integer",
+              "default": 0
+            },
+            "user_impersonatedEmail_str": {
+              "$id": "#root/user_impersonatedEmail_str", 
+              "title": "User_impersonatedemail_str", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "user_role_str": {
+              "$id": "#root/user_role_str", 
+              "title": "User_role_str", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "user_isAdmin_bool": {
+              "$id": "#root/user_isAdmin_bool", 
+              "title": "User_isadmin_bool", 
+              "type": "boolean",
+              "default": true
+            },
+            "user_language_str": {
+              "$id": "#root/user_language_str", 
+              "title": "User_language_str", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "user_companyName_str": {
+              "$id": "#root/user_companyName_str", 
+              "title": "User_companyname_str", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "Created": {
+              "$id": "#root/Created", 
+              "title": "Created", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "Uid": {
+              "$id": "#root/Uid", 
+              "title": "Uid", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "DisplayName": {
+              "$id": "#root/DisplayName", 
+              "title": "Displayname", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "Email": {
+              "$id": "#root/Email", 
+              "title": "Email", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "NumSessions": {
+              "$id": "#root/NumSessions", 
+              "title": "Numsessions", 
+              "type": "integer",
+              "default": 0
+            },
+            "NumPages": {
+              "$id": "#root/NumPages", 
+              "title": "Numpages", 
+              "type": "integer",
+              "default": 0
+            },
+            "NumEvents": {
+              "$id": "#root/NumEvents", 
+              "title": "Numevents", 
+              "type": "integer",
+              "default": 0
+            },
+            "TotalSec": {
+              "$id": "#root/TotalSec", 
+              "title": "Totalsec", 
+              "type": "integer",
+              "default": 0
+            },
+            "ActiveSec": {
+              "$id": "#root/ActiveSec", 
+              "title": "Activesec", 
+              "type": "integer",
+              "default": 0
+            },
+            "AvgSessionSec": {
+              "$id": "#root/AvgSessionSec", 
+              "title": "Avgsessionsec", 
+              "type": "integer",
+              "default": 0
+            },
+            "AvgSessionActiveSec": {
+              "$id": "#root/AvgSessionActiveSec", 
+              "title": "Avgsessionactivesec", 
+              "type": "integer",
+              "default": 0
+            },
+            "MaxSessionSec": {
+              "$id": "#root/MaxSessionSec", 
+              "title": "Maxsessionsec", 
+              "type": "integer",
+              "default": 0
+            },
+            "LastSessionNumPages": {
+              "$id": "#root/LastSessionNumPages", 
+              "title": "Lastsessionnumpages", 
+              "type": "integer",
+              "default": 0
+            },
+            "LastSessionNumEvents": {
+              "$id": "#root/LastSessionNumEvents", 
+              "title": "Lastsessionnumevents", 
+              "type": "integer",
+              "default": 0
+            },
+            "LastSessionSec": {
+              "$id": "#root/LastSessionSec", 
+              "title": "Lastsessionsec", 
+              "type": "integer",
+              "default": 0
+            },
+            "LastSessionActiveSec": {
+              "$id": "#root/LastSessionActiveSec", 
+              "title": "Lastsessionactivesec", 
+              "type": "integer",
+              "default": 0
+            },
+            "LastSessionStart": {
+              "$id": "#root/LastSessionStart", 
+              "title": "Lastsessionstart", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastPage": {
+              "$id": "#root/LastPage", 
+              "title": "Lastpage", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastIp": {
+              "$id": "#root/LastIp", 
+              "title": "Lastip", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastLatLong": {
+              "$id": "#root/LastLatLong", 
+              "title": "Lastlatlong", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastEventStart": {
+              "$id": "#root/LastEventStart", 
+              "title": "Lasteventstart", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastBrowser": {
+              "$id": "#root/LastBrowser", 
+              "title": "Lastbrowser", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastDevice": {
+              "$id": "#root/LastDevice", 
+              "title": "Lastdevice", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastPlatform": {
+              "$id": "#root/LastPlatform", 
+              "title": "Lastplatform", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "LastOperatingSystem": {
+              "$id": "#root/LastOperatingSystem", 
+              "title": "Lastoperatingsystem", 
+              "type": "string",
+              "default": "",
+              "pattern": "^.*$"
+            }
+          }
+        }
+        ,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

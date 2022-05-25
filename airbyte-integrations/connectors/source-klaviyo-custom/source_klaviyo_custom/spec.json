@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "https://developers.klaviyo.com/en/reference/api-overview",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Klaviyo Custom Spec",
+    "type": "object",
+    "required": ["api_key"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "Klaviyo Private API Key to authenticate"
+      }
+    }
+  }
+}
