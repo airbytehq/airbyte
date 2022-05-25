@@ -1,0 +1,67 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.27.1
+      X-WSSE:
+      - UsernameToken Username="Marlow005", PasswordDigest="YjgxYTA1NTQ4YWVmM2MzZDdkMTg4ZWJmOTQ0ODgzNDgwMWE4MmQzNw==",
+        Nonce="dbc53b22cc90d2a1db2d4a41c320cb48", Created="2022-05-12T02:42:50+00:00"
+    method: GET
+    uri: https://api.emarsys.net/api/v2/contactlist
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA4XOTQvCMAwG4L8iOa/QvG330atHBQ/zJjKG7WHgx5hVHGP/3Q4Rpggekzd5koE6
+        3x775cV5sjJ5VVv/CGRps6KEXB1qsruBGhdbmTbQLI2Kybk+xR2SgAaq8tbdfR/bh87XwU/DiJGQ
+        EDALKS0yC4556Nvp1Ji8yaJgxbJIP0jzl2RjYaz6RaacKpNnevYlMwCuSu/durmGb5QFswAWwISa
+        fIbuxyenF0SxJAEAAA==
+    headers:
+      Cache-Control:
+      - max-age=0, no-cache, no-store, must-revalidate
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '184'
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Thu, 12 May 2022 02:42:52 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=15552000; includeSubDomains; preload
+      Vary:
+      - Accept-Encoding
+      X-Af:
+      - suite45-web5
+      X-Emarsys-Request-Id:
+      - 169834f1-1228-4bed-b7af-8f9b62246684#540962
+      X-Hf:
+      - suite-haproxy01d
+      X-Kong-Proxy-Latency:
+      - '42'
+      X-Kong-Upstream-Latency:
+      - '65'
+      X-Ratelimit-Limit:
+      - '1000'
+      X-Ratelimit-Remaining:
+      - '998'
+      X-Ratelimit-Reset:
+      - '1652323432'
+      X-Suite-Response-Time:
+      - '13'
+    status:
+      code: 200
+      message: OK
+version: 1

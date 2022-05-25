@@ -1,0 +1,7 @@
+{
+  "username": "user1",
+  "password": "secret",
+  "contact_fields": ["email", "last_name", "first_name"],
+  "limit": 10000,
+  "recurring_contact_lists": []
+}
