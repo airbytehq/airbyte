@@ -57,6 +57,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.19  | 2022-05-25 | [13204](https://github.com/airbytehq/airbyte/pull/13204) | Fixed `conversation_parts` stream schema definition                       |
 | 0.1.18   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.17  | 2022-04-29 | [12374](https://github.com/airbytehq/airbyte/pull/12374)  | Fixed filtering of conversation_parts |
 | 0.1.16  | 2022-03-23 | [11206](https://github.com/airbytehq/airbyte/pull/11206)  | Added conversation_id field to conversation_part records |
