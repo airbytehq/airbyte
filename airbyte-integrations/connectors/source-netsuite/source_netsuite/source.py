@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from multiprocessing import Pool
@@ -16,13 +16,18 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
+rest_path = "/services/rest/"
+record_path = rest_path + "record/v1/"
+metadata_path = record_path + "metadata-catalog/"
+
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
-    def __init__(self, auth: OAuth1, name: str, record_url: str, start_datetime: str, concurrency_limit: int = 1):
+    def __init__(self, auth: OAuth1, name: str, base_url: str, start_datetime: str, concurrency_limit: int = 1):
         self.obj_name = name
-        self.record_url = record_url
+        self.base_url = base_url
         self.start_datetime = start_datetime
         self.concurrency_limit = concurrency_limit
+        self.schemas = {}  # stores subschemas to reduce API calls
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -33,17 +38,55 @@ class NetsuiteStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return self.record_url
+        return self.base_url
 
     def path(self, **kwargs) -> str:
-        return self.obj_name
+        return record_path + self.obj_name
+
+    def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
+        # try to retrieve the schema from the cache
+        schema = self.schemas.get(ref)
+        if not schema:
+            url = self.url_base + ref
+            headers = {"Accept": "application/schema+json"}
+            resp = requests.get(url, headers=headers, auth=self._session.auth)
+            # some schemas, like transaction, do not exist because they refer to multiple
+            # record types, e.g. sales order/invoice ... in this case we can't retrieve
+            # the correct schema, so we just put the json in a string
+            if resp.status_code == 404:
+                schema = {
+                    "title": ref,
+                    "type": "string",
+                }
+            else:
+                resp.raise_for_status
+                schema = resp.json()
+            self.schemas[ref] = schema
+        return schema
+
+    def build_schema(self, subrecord: Any) -> Mapping[str, Any]:
+        # recursively build a schema with subschemas
+        if type(subrecord) == dict:
+            # Netsuite schemas do not specify if fields can be null, or not
+            # as Airbyte expects, so we have to allow every field to be null
+            property_type = subrecord.get("type")
+            # ensure there is a type and null has not already been added
+            if property_type and (type(property_type) != list or (type(property_type) == list and "null" not in property_type)):
+                subrecord["type"] = [property_type, "null"]
+            ref = subrecord.get("$ref")
+            if ref:
+                schema = self.get_schema(ref)
+                return self.build_schema(schema)
+            else:
+                return {k: self.build_schema(v) for k, v in subrecord.items()}
+        elif type(subrecord) == list:
+            return [self.build_schema(r) for r in subrecord]
+        else:
+            return subrecord
 
     def get_json_schema(self, **kwargs) -> dict:
-        url = self.url_base + "metadata-catalog/" + self.name
-        headers = {"Accept": "application/schema+json"}
-        resp = requests.get(url, headers=headers, auth=self._session.auth)
-        resp.raise_for_status()
-        return resp.json()
+        schema = self.get_schema(metadata_path + self.name)
+        return self.build_schema(schema)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp = response.json()
@@ -141,37 +184,33 @@ class SourceNetsuite(AbstractSource):
     def base_url(self, config: Mapping[str, Any]) -> str:
         realm = config["realm"]
         subdomain = realm.lower().replace("_", "-")
-        return f"https://{subdomain}.suitetalk.api.netsuite.com/services/rest/"
-
-    def record_url(self, config: Mapping[str, Any]) -> str:
-        return self.base_url(config) + "record/v1/"
+        return f"https://{subdomain}.suitetalk.api.netsuite.com"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth = self.auth(config)
         record_types = config.get("record_types")
+        base_url = self.base_url(config)
         # if record types are specified make sure they are valid
         if record_types:
             params = {"select": ",".join(record_types)}
-            requests.get(self.record_url(config), auth=auth, params=params)
+            url = base_url + metadata_path
+            requests.get(url, auth=auth, params=params)
         else:
             # we could request the entire metadata catalog here, but this request returns much faster
-            url = self.base_url(config) + "*"
+            url = base_url + rest_path + "*"
             requests.options(url, auth=auth).raise_for_status()
         return True, None
 
-    def record_types(self, record_url: str, auth: OAuth1) -> List[str]:
+    def record_types(self, base_url: str, auth: OAuth1) -> List[str]:
         # get the names of all the record types in an org
-        url = record_url + "metadata-catalog"
+        url = base_url + metadata_path
         records = requests.get(url, auth=auth).json().get("items")
         return [r["name"] for r in records]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        record_url = self.record_url(config)
+        base_url = self.base_url(config)
         auth = self.auth(config)
         start_datetime = config["start_datetime"]
         concurrency_limit = config.get("concurrency_limit")
-        record_types = config.get("record_types") or self.record_types(record_url, auth)
-        return [
-            IncrementalNetsuiteStream(auth, name, record_url, start_datetime, concurrency_limit)
-            for name in record_types
-        ]
+        record_types = config.get("record_types") or self.record_types(base_url, auth)
+        return [IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in record_types]

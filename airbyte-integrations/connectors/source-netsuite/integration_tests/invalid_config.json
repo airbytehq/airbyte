@@ -3,5 +3,7 @@
   "consumer_key": "3qdf34rafdasfasdf3qf",
   "consumer_secret": "asdf32143t453qfdsafe",
   "token_id": "eaesf3q4535123423rqsf13rqwrfe",
-  "token_secret": "f3rqfeeert34251qf314r3rfef"
+  "token_secret": "f3rqfeeert34251qf314r3rfef",
+  "start_datetime": "2022-01-01T00:00:00Z",
+  "record_types": ["currency", "customer"]
 }

@@ -24,6 +24,14 @@ def test_check_connection(mocker, requests_mock):
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
+def test_check_connection_record_types(mocker, requests_mock):
+    source = SourceNetsuite()
+    requests_mock.get("https://12345.suitetalk.api.netsuite.com/services/rest/record/v1/metadata-catalog/?select=currency%2Ccustomer")
+    logger_mock = MagicMock()
+    record_types_config = {**config, "record_types": ["currency", "customer"]}
+    assert source.check_connection(logger_mock, record_types_config) == (True, None)
+
+
 def test_streams(mocker):
     source = SourceNetsuite()
     source.record_types = MagicMock(return_value=["salesorder", "customer"])

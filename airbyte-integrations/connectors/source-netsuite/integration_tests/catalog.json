@@ -1,7 +1,7 @@
 {
   "streams": [
     {
-      "name": "invoice",
+      "name": "currency",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": "updateDateTime",
@@ -12,16 +12,6 @@
     },
     {
       "name": "customer",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "updateDateTime",
-      "source_defined_primary_key": [["id"]],
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "salesorder",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": "updateDateTime",

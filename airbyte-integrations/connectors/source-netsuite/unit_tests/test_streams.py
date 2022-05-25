@@ -24,7 +24,7 @@ config = {
 def make_stream():
     src = SourceNetsuite()
     auth = src.auth(config)
-    url = src.record_url(config)
+    url = src.base_url(config)
     return NetsuiteStream(auth, "invoice", url, config["start_datetime"])
 
 

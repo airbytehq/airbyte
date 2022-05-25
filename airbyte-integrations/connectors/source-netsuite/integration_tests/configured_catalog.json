@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "invoice",
+        "name": "currency",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
