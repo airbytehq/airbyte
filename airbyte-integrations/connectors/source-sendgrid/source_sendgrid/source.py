@@ -2,32 +2,20 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from .streams import (
-    Blocks,
-    Bounces,
-    Campaigns,
-    Contacts,
-    GlobalSuppressions,
-    InvalidEmails,
-    Lists,
-    Scopes,
-    Segments,
-    SingleSends,
-    SpamReports,
-    StatsAutomations,
-    SuppressionGroupMembers,
-    SuppressionGroups,
-    Templates,
-)
+from airbyte_cdk.sources.declarative.yaml_configurable_source import YamldeclarativeSource
 
 
+class SourceSendgrid(YamldeclarativeSource):
+    """
+    This is a sample low-code connector.
+    It still uses the existing spec.yaml file
+    """
+
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "./source_sendgrid/sendgrid.yaml"})
+
+
+"""
 class SourceSendgrid(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
@@ -59,3 +47,4 @@ class SourceSendgrid(AbstractSource):
         ]
 
         return streams
+"""
