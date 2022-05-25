@@ -21,6 +21,7 @@ class SubstreamSlicer(StreamSlicer):
             self._state.update_state(parent_stream_slice=parent_stream_slice)
             self._state.update_state(parent_record=None)
             empty = True
+
             for parent_record in self._parent_stream.read_records(
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):

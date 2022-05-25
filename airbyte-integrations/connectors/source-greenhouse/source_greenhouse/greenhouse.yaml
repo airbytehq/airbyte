@@ -18,7 +18,7 @@ partial_stream:
   schema_loader:
     class_name: airbyte_cdk.sources.configurable.schema.json_schema.JsonSchema
     file_path: "./source_greenhouse/schemas/{{kwargs['name']}}.json"
-  cursor_field: []
+  cursor_field: [ ]
 requester:
   class_name: airbyte_cdk.sources.configurable.requesters.http_requester.HttpRequester
   name: "{{ kwargs['name'] }}"
@@ -50,7 +50,8 @@ applications_stream:
 substream_slicer:
   class_name: "airbyte_cdk.sources.configurable.stream_slicers.substream_slicer.SubstreamSlicer"
   parent_stream: "*ref(applications_stream)"
-  parent_id: "{{ parent_record['id'] }}"
+  slice_definition:
+    parent_id: "{{ parent_record['id'] }}"
   state: "*ref(state)"
 applications_demographics_answers_stream:
   partial: "*ref(partial_stream)"

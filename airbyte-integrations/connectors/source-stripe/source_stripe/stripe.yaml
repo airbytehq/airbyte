@@ -52,7 +52,35 @@ invoices_stream:
     extractor:
       partial: "*ref(extractor)"
       transform: ".data[]"
+
+
+substream_retriever:
+  class_name: "airbyte_cdk.sources.configurable.retrievers.substream_retriever.SubstreamRetriever"
+  partial: "*ref(retriever)"
+
+substream_slicer:
+  class_name: "airbyte_cdk.sources.configurable.stream_slicers.substream_slicer.SubstreamSlicer"
+  parent_stream: "*ref(invoices_stream)"
+  parent_id: "{{ parent_record['id'] }}"
+  state: "*ref(state)"
+
+invoice_line_items_stream:
+  partial: "*ref(partial_stream)"
+  kwargs:
+    name: "invoice_line_items"
+    primary_key: "id"
+  retriever:
+    partial: "*ref(substream_retriever)"
+    requester:
+      partial: "*ref(requester)"
+      path: "invoices/{{ stream_slice['parent_id'] }}/lines"
+    extractor:
+      partial: "*ref(extractor)"
+      transform: ".data[]"
+    stream_slicer: "*ref(substream_slicer)"
+
 streams:
   - "*ref(invoices_stream)"
+  - "*ref(invoice_line_items_stream)"
 check:
   class_name: airbyte_cdk.sources.configurable.checks.check_stream.CheckStream
