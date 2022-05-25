@@ -13,6 +13,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
@@ -70,6 +71,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(ex.getCustomErrorCode(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
               .withMessage(messages);
@@ -112,14 +114,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   private static void processingSQLException(SQLException e) {
     try {
       SQLException sqlException = (SQLException) e.getCause();
-      throw new ConnectionErrorException(sqlException.getSQLState(), e.getMessage());
+      throw new ConnectionErrorException(sqlException.getSQLState(), e);
     } catch (ConnectionErrorException ex) {
       throw ex;
     } catch (Exception ex) {
       if (e.getCause() != null) {
-        throw new ConnectionErrorException(e.getSQLState(), e.getMessage());
+        throw new ConnectionErrorException(e.getSQLState(), e);
       } else {
-        throw new ConnectionErrorException("unidentified", e.getMessage());
+        throw new ConnectionErrorException("unidentified", e);
       }
     }
   }

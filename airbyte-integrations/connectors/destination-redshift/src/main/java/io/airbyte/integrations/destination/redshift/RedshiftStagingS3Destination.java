@@ -18,6 +18,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
@@ -68,9 +69,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      LOGGER.error("Exception while checking connection: ", e);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(e.getCustomErrorCode(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
               .withStatus(AirbyteConnectionStatus.Status.FAILED)
               .withMessage(messages);

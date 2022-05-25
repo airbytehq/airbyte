@@ -20,6 +20,7 @@ import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
@@ -88,9 +89,9 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      LOGGER.error("Check failed.", e);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(e.getCustomErrorCode(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
               .withStatus(AirbyteConnectionStatus.Status.FAILED)
               .withMessage(messages);
@@ -105,19 +106,19 @@ public class MongodbDestination extends BaseConnector implements Destination {
     try {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
     } catch (MongoTimeoutException e) {
-      throw new ConnectionErrorException(String.valueOf(e.getCode()), e.getMessage());
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     } catch (Exception e) {
       try {
         var mongoException = (MongoCommandException) e.getCause();
         var code = String.valueOf(mongoException.getCode());
-        throw new ConnectionErrorException(code, e.getMessage());
+        throw new ConnectionErrorException(code, e);
       } catch (ConnectionErrorException ex) {
         throw ex;
       } catch (Exception ex) {
         try {
           var mongoException = (MongoCommandException) e;
           var code = String.valueOf(mongoException.getCode());
-          throw new ConnectionErrorException(code, e.getMessage());
+          throw new ConnectionErrorException(code, e);
         } catch (ConnectionErrorException ex1) {
           throw ex1;
         } catch (Exception exception) {

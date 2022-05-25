@@ -17,6 +17,11 @@ public class ConnectionErrorException extends RuntimeException {
     this.customErrorCode = errorCode;
   }
 
+  public ConnectionErrorException(String errorCode, Throwable exception) {
+    super(exception);
+    this.customErrorCode = errorCode;
+  }
+
   public String getCustomErrorCode() {
     return this.customErrorCode;
   }

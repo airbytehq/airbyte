@@ -9,6 +9,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -73,6 +74,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       LOGGER.info("Exception while checking connection: ", ex);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(ex.getCustomErrorCode(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
               .withStatus(AirbyteConnectionStatus.Status.FAILED)
               .withMessage(messages);

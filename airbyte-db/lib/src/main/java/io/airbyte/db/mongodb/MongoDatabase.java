@@ -54,7 +54,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       throw e;
     } catch (final MongoConfigurationException e) {
       LOGGER.error(e.getMessage());
-      throw new ConnectionErrorException(String.valueOf(e.getCode()), e.getMessage());
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     } catch (final Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
