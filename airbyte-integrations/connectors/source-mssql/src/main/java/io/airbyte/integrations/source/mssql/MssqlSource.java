@@ -120,10 +120,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
-   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
-   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
-   * with the ToString() function in the final Select query. Reference:
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be converted to a nvarchar(4000) data type by
+   * calling the ToString() method. So we make a separate query to get Table's MetaData, check is there any hierarchyid columns, and wrap required
+   * fields with the ToString() function in the final Select query. Reference:
    * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
    *
    * @return the list with Column names updated to handle functions (if nay) properly
@@ -313,40 +312,52 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final JsonNode replication_config = config.get("replication_method");
-    if (!replication_config.hasNonNull("is_snapshot_disabled") ||
-        !replication_config.get("is_snapshot_disabled").asBoolean()) {
-      final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-        final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-        final PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, config.get("database").asText());
-        LOGGER.info(String.format(
-            "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-            config.get("database").asText(), sql));
-        return ps;
-      }, sourceOperations::rowToJson);
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod == null || replicationMethod.isNull()) {
+      return;
+    }
 
-      if (queryResponse.size() < 1) {
-        throw new RuntimeException(String.format(
-            "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-            config.get("database").asText()));
-      }
-      if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-        throw new RuntimeException(String.format(
-            "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-                + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-            config.get("database").asText()));
-      }
+    final JsonNode snapshotIsolation = replicationMethod.get("snapshot_isolation");
+    final boolean needSnapshot =
+        // legacy replication method config does not have a snapshot isolation setting,
+        // but it is enabled by default
+        snapshotIsolation == null || snapshotIsolation.isNull() ||
+            // new replication method config has a snapshot isolation enum field
+            snapshotIsolation.asText().equalsIgnoreCase("snapshot");
+    if (!needSnapshot) {
+      return;
+    }
+
+    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
+      final PreparedStatement ps = connection.prepareStatement(sql);
+      ps.setString(1, config.get("database").asText());
+      LOGGER.info(String.format(
+          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+          config.get("database").asText(), sql));
+      return ps;
+    }, sourceOperations::rowToJson);
+
+    if (queryResponse.size() < 1) {
+      throw new RuntimeException(String.format(
+          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+          config.get("database").asText()));
+    }
+    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
+      throw new RuntimeException(String.format(
+          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
+          config.get("database").asText()));
     }
   }
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);

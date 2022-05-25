@@ -270,18 +270,15 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSnapshotIsolationDisabled() {
-    // disabled the snapshot
-    JsonNode replication_config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_method", "CDC")
-        .put("is_cdc_only", "false")
-        .put("is_snapshot_disabled", "true")
+    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_type", "CDC")
+        .put("data_to_sync", "New Changes Only")
+        // set snapshot_isolation level to "Read Committed" to disable snapshot
+        .put("snapshot_isolation", "Read Committed")
         .build());
-    Jsons.replaceNestedValue(config, Arrays.asList(new String[] {"replication_method"}), replication_config);
-    // snapshot isolation enabled by setup so assert check passes
+    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
-    // now disable snapshot isolation and assert that check fails
     switchSnapshotIsolation(false, dbName);
-    // snapshot isolation disabled and snapshot validation is disabled so assert check passes
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
