@@ -19,24 +19,30 @@ class YamlParser(ConfigParser):
         :param config_str: yaml string to parse
         :return:
         """
-        config = yaml.safe_load(config_str)
+        input_mapping = yaml.safe_load(config_str)
         evaluated_config = {}
-        return self.preprocess_dict(config, evaluated_config, "")
+        return self.preprocess_dict(input_mapping, evaluated_config, "")
 
-    def preprocess_dict(self, config, evaluated_config, path):
+    def preprocess_dict(self, input_mapping, evaluated_mapping, path):
+        """
+        :param input_mapping: mapping produced by parsing yaml
+        :param evaluated_mapping: mapping produced by dereferencing the content of input_mapping
+        :param path: curent path in configuration traversal
+        :return:
+        """
         d = {}
-        if self.ref_tag in config:
-            partial_ref_string = config[self.ref_tag]
-            d = deepcopy(self.preprocess(partial_ref_string, evaluated_config, path))
+        if self.ref_tag in input_mapping:
+            partial_ref_string = input_mapping[self.ref_tag]
+            d = deepcopy(self.preprocess(partial_ref_string, evaluated_mapping, path))
 
-        for attribute, value in config.items():
+        for attribute, value in input_mapping.items():
             if attribute == self.ref_tag:
                 continue
             full_path = self.resolve_value(attribute, path)
-            if full_path in evaluated_config:
+            if full_path in evaluated_mapping:
                 raise Exception(f"Databag already contains attribute={attribute} with path {full_path}")
-            processed_value = self.preprocess(value, evaluated_config, full_path)
-            evaluated_config[full_path] = processed_value
+            processed_value = self.preprocess(value, evaluated_mapping, full_path)
+            evaluated_mapping[full_path] = processed_value
             d[attribute] = processed_value
 
         return d
