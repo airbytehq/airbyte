@@ -18,6 +18,10 @@
   padding: 400px 30px 30px 30px;
 }
 
+.container > *:last-child {
+  padding-bottom: 150px;
+}
+
 .noScroll {
   overflow: hidden;
   max-height: 100%;
@@ -44,4 +48,10 @@
 .rotatedHeader {
   transform: rotate(-90deg);
   white-space: nowrap;
+}
+
+.panelGrabber {
+  height: 100vh;
+  padding: 6px;
+  display: flex;
 }
