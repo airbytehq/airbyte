@@ -93,7 +93,7 @@ const DestinationItemPage: React.FC = () => {
       />
 
       <Suspense fallback={<LoadingPage />}>
-        <ApiErrorBoundary hideHeader>
+        <ApiErrorBoundary>
           <Routes>
             <Route
               path="/settings"

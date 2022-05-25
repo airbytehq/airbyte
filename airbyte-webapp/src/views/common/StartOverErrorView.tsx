@@ -6,17 +6,16 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 interface StartOverErrorViewProps {
   message?: string;
   onReset?: () => void;
-  hideHeader?: boolean;
 }
 
-export const StartOverErrorView: React.FC<StartOverErrorViewProps> = ({ message, onReset, hideHeader }) => {
+export const StartOverErrorView: React.FC<StartOverErrorViewProps> = ({ message, onReset }) => {
   return (
     <ErrorOccurredView
       message={message ?? <FormattedMessage id="errorView.notFound" />}
-      onBackClick={() => {
+      ctaButtonText={<FormattedMessage id="errorView.home" />}
+      onCtaButtonClick={() => {
         onReset?.();
       }}
-      hideHeader={hideHeader}
     />
   );
 };
