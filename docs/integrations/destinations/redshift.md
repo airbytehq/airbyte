@@ -136,8 +136,9 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :-----       | :------ |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                 | 
 | 0.3.36  | 2022-05-23 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.3.35  | 2022-05-18 | [12940](https://github.com/airbytehq/airbyte/pull/12940) | Fixed maximum record size for SUPER type |
 | 0.3.34  | 2022-05-16 | [12869](https://github.com/airbytehq/airbyte/pull/12869) | Fixed NPE in S3 staging check  |

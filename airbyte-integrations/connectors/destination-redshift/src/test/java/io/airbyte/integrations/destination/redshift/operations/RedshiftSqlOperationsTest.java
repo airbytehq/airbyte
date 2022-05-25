@@ -15,14 +15,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 
 @DisplayName("RedshiftSqlOperations")
 public class RedshiftSqlOperationsTest {
 
     private static final Random RANDOM = new Random();
-
-    private static final RedshiftDataTmpTableMode redshiftDataTmpTableMode = RedshiftDataTmpTableMode.SUPER;
 
     private String generateBigString(final int addExtraCharacters) {
         final int length = RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + addExtraCharacters;
@@ -44,7 +41,7 @@ public class RedshiftSqlOperationsTest {
                 .put("NZD", 1.14)
                 .build());
 
-        RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
+        RedshiftSqlOperations uut = new RedshiftSqlOperations();
         boolean isValid = uut.isValidData(testNode);
         assertEquals(true, isValid);
     }
@@ -60,7 +57,7 @@ public class RedshiftSqlOperationsTest {
                 .put("NZD", 1.14)
                 .build());
 
-        RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
+        RedshiftSqlOperations uut = new RedshiftSqlOperations();
         boolean isValid = uut.isValidData(testNode);
         assertEquals(false, isValid);
     }
@@ -91,7 +88,7 @@ public class RedshiftSqlOperationsTest {
                 .put("key20", generateBigString(-1))
                 .build());
 
-        RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
+        RedshiftSqlOperations uut = new RedshiftSqlOperations();
         boolean isValid = uut.isValidData(testNode);
         assertEquals(false, isValid);
     }
