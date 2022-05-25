@@ -1,14 +1,10 @@
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import utc from "dayjs/plugin/utc";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 import styled from "styled-components";
 
-dayjs.extend(customParseFormat);
-dayjs.extend(utc);
-const dateTimeFormat = "YYYY-MM-DD HH:mm:ss";
+const DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
@@ -86,7 +82,7 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
 
   let lineCounter = lines.length - 1;
   while (lineCounter >= 0) {
-    const datetime = dayjs.utc(lines[lineCounter], dateTimeFormat, false)?.toDate()?.getTime();
+    const datetime = dayjs.utc(lines[lineCounter], DATE_TIME_FORMAT, false)?.toDate()?.getTime();
     if (datetime) {
       if (
         datetime - resolutionOffset <= flooredMatchTimestamp &&
