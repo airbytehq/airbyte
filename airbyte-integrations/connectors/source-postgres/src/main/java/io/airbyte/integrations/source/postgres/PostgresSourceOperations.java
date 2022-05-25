@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -11,20 +17,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
-import org.postgresql.jdbc.PgResultSetMetaData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.time.*;
-import java.time.chrono.IsoEra;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
-
-import static io.airbyte.db.jdbc.JdbcConstants.*;
+import org.postgresql.jdbc.PgResultSetMetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresSourceOperations extends JdbcSourceOperations {
 
@@ -81,12 +85,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       putString(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("time")) {
       putTime(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("timetz")){
-      putTimeWithTimezone(json,columnName,resultSet,colIndex);
-    } else if(columnTypeName.equalsIgnoreCase("timestamptz")){
-      putTimestampWithTimezone(json,columnName,resultSet,colIndex);
-    }
-    else {
+    } else if (columnTypeName.equalsIgnoreCase("timetz")) {
+      putTimeWithTimezone(json, columnName, resultSet, colIndex);
+    } else if (columnTypeName.equalsIgnoreCase("timestamptz")) {
+      putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+    } else {
       // https://www.postgresql.org/docs/14/datatype.html
       switch (columnType) {
         case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -139,9 +142,9 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         return JDBCType.VARCHAR;
-      } else if(typeName.equalsIgnoreCase("timestamptz")){
+      } else if (typeName.equalsIgnoreCase("timestamptz")) {
         return JDBCType.TIMESTAMP_WITH_TIMEZONE;
-      }else if (typeName.equalsIgnoreCase("timetz")){
+      } else if (typeName.equalsIgnoreCase("timetz")) {
         return JDBCType.TIME_WITH_TIMEZONE;
       }
 

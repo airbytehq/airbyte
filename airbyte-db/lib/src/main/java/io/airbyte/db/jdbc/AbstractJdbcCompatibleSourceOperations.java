@@ -250,7 +250,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
-  protected <DateTime> DateTime getDateTimeObject (ResultSet resultSet, int index, Class<DateTime> clazz) throws SQLException {
+  protected <DateTime> DateTime getDateTimeObject(ResultSet resultSet, int index, Class<DateTime> clazz) throws SQLException {
     return resultSet.getObject(index, clazz);
   }
 
@@ -266,7 +266,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected String resolveEra(LocalDate date, String value) {
-    return isBCE(date) ? value.substring(1) + " BC": value;
+    return isBCE(date) ? value.substring(1) + " BC" : value;
   }
 
   private static boolean isBCE(LocalDate date) {

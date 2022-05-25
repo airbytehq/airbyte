@@ -15,7 +15,6 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -240,8 +239,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("'1999-01-08'","'1991-02-10 BC'", "null")
-            .addExpectedValues("1999-01-08","1990-02-10 BC", null)
+            .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
+            .addExpectedValues("1999-01-08", "1990-02-10 BC", null)
             .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {
