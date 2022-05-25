@@ -96,6 +96,9 @@ list_stream:
   kwargs:
     name: "lists"
     primary_key: "id"
+    extractor:
+      ref: "*ref(extractor)"
+      transform: ".result[]"
   retriever:
     ref: "*ref(retriever)"
     requester:
@@ -105,9 +108,6 @@ list_stream:
         default: "marketing/lists"
     paginator:
       ref: "*ref(metadata_paginator)"
-    extractor:
-      ref: "*ref(extractor)"
-      transform: ".result[]"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]

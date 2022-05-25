@@ -33,6 +33,10 @@ class DeclarativeComponentFactory:
         module = ".".join(split[:-1])
         class_name = split[-1]
 
+        # create components in kwargs before propagating them
+        if "kwargs" in kwargs:
+            kwargs["kwargs"] = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs["kwargs"].items()}
+
         updated_kwargs = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs.items()}
 
         class_ = getattr(importlib.import_module(module), class_name)
@@ -45,6 +49,9 @@ class DeclarativeComponentFactory:
         if type(v) == dict and "class_name" in v:
             # propagate kwargs to inner objects
             v["kwargs"] = self._merge_dicts(kwargs.get("kwargs", dict()), v.get("kwargs", dict()))
+
+            print(f"kwargs: {kwargs}")
+
             return self.create_component(v, config)()
         elif type(v) == list:
             return [
