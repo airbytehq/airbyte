@@ -18,7 +18,7 @@ For more information about the grading system, see [Product Release Stages](http
 | :------------------------------------------------------------------------------------------ | :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
-| [Amazon Ads](sources/amazon-ads.md)                                                         | Alpha                | No                  |
+| [Amazon Ads](sources/amazon-ads.md)                                                         | Beta                 | No                  |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md)                                   | Alpha                | No                  |
 | [Amazon SQS](sources/amazon-sqs.md)                                                         | Alpha                | Yes                 |
 | [Amplitude](sources/amplitude.md)                                                           | Beta                 | Yes                 |
@@ -63,7 +63,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Ads](sources/google-ads.md)                                                         | Beta                 | Yes                 |
 | [Google Analytics v4](sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
-| [Google Search Console](sources/google-search-console.md)                                   | Alpha                | Yes                 |
+| [Google Search Console](sources/google-search-console.md)                                   | Beta                 | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Alpha                | Yes                 |
@@ -72,7 +72,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Beta                 | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Beta                 | Yes                 |
-| [Intercom](sources/intercom.md)                                                             | Beta                 | Yes                 |
+| [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
 | [Iterable](sources/iterable.md)                                                             | Alpha                | Yes                 |
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
@@ -201,7 +201,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Redis](sources/redis.md)                                  | Alpha                | Yes                 |
 | [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
 | [Rockset](destinations/rockset.md)                         | Alpha                | Yes                 |
-| [S3](destinations/s3.md)                                   | Beta                 | Yes                 |
+| [S3](destinations/s3.md)                                   | Generally Available  | Yes                 |
 | [Scylla](destinations/scylla.md)                           | Alpha                | Yes                 |
 | [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
 | [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
