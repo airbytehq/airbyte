@@ -24,6 +24,7 @@
     "@fullstory/browser": "^1.5.1",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
+    "classnames": "^2.3.1",
     "dayjs": "^1.11.0",
     "firebase": "^9.6.10",
     "flat": "^5.0.2",
@@ -54,6 +55,7 @@
     "remark-gfm": "^3.0.0",
     "rxjs": "^7.5.5",
     "sanitize-html": "^2.7.0",
+    "sass": "^1.51.0",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
     "yup": "^0.32.11"
