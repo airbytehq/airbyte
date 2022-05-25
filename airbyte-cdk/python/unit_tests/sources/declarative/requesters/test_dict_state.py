@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from airbyte_cdk.sources.declarative.states.dict_state import DictState, StateType
 
 config = {"name": "date"}
