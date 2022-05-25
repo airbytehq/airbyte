@@ -1,10 +1,10 @@
-import dayjs from "dayjs";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 import styled from "styled-components";
 
-const DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+const TIMESTAMP_MATCHER =
+  /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
@@ -75,19 +75,23 @@ const getMatchingLineNumbers = (matchTimestamp: number | undefined, lines: strin
   if (!matchTimestamp || !lines || lines.length === 0) {
     return [];
   }
+
   const matchTimestampSeconds = Math.floor(matchTimestamp / 1000);
   const matchingLineNumbers: number[] = [];
 
   let lineCounter = lines.length - 1;
   while (lineCounter >= 0) {
-    const datetime = dayjs.utc(lines[lineCounter], DATE_TIME_FORMAT, false)?.toDate()?.getTime();
-    if (datetime) {
+    const timeString = lines[lineCounter].match(TIMESTAMP_MATCHER);
+    if (timeString) {
       // The resolution of the timestamps in the logs is seconds (no ms), so this will not need to be rounded
-      const datetimeSeconds = datetime / 1000;
-      if (datetimeSeconds + 1 === matchTimestampSeconds) {
+      // Log timestamps are always in UTC
+      const datetimeSeconds = Date.parse(`${timeString[0].replace(" ", "T")}Z`) / 1000;
+      // Due to the fuzziness of timestamp matching, and how the platform may take some time to build the failureReason timestamp from the log line, we are matching line numbers with +/- 1 second from the failure timestamp
+      if (datetimeSeconds >= matchTimestampSeconds - 1 && datetimeSeconds <= matchTimestampSeconds + 1) {
         matchingLineNumbers.push(lineCounter + 1);
       } else if (datetimeSeconds < matchTimestampSeconds) {
-        break; // Once we've reached a timestamp earlier than our search, we can stop seeking
+        // Once we've reached a timestamp earlier than our search, we can stop seeking
+        break;
       }
     }
     lineCounter--;

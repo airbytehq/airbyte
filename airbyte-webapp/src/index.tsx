@@ -4,8 +4,6 @@ import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom";
 import "react-reflex/styles.css";
 
-import "./globals";
-
 // We do not follow default config approach since we want to init sentry asap
 Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN || window.REACT_APP_SENTRY_DSN,
