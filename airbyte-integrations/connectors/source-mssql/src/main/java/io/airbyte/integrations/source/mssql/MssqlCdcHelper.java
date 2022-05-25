@@ -116,7 +116,7 @@ public class MssqlCdcHelper {
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
-      SnapshotIsolation.from(snapshotIsolation.asText());
+      return SnapshotIsolation.from(snapshotIsolation.asText());
     }
     return SnapshotIsolation.SNAPSHOT;
   }
@@ -131,7 +131,7 @@ public class MssqlCdcHelper {
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
-      DataToSync.from(dataToSync.asText());
+      return DataToSync.from(dataToSync.asText());
     }
     return DataToSync.EXISTING_AND_NEW;
   }
