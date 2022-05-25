@@ -33,7 +33,7 @@ class YamlParser(ConfigParser):
                 continue
             full_path = self.resolve_value(attribute, path)
             if full_path in evaluated_config:
-                raise Exception(f"Databag already contains attribute={attribute}")
+                raise Exception(f"Databag already contains attribute={attribute} with path {full_path}")
             processed_value = self.preprocess(value, evaluated_config, full_path)
             evaluated_config[full_path] = processed_value
             d[attribute] = processed_value
