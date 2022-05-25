@@ -57,6 +57,13 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 * If the limitations below prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
 * If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
+### CDC Config
+
+| Parameter | Type | Default | Description |
+| :--- | :---: | :---: | :--- |
+| Data to Sync | Enum: `Existing and New`, `New Changes Only` | `Existing and New` | What data should be synced under the CDC. `Existing and New` will read existing data as a snapshot, and sync new changes through CDC. `New Changes Only` will skip the initial snapshot, and only sync new changes through CDC. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode) for details. Under the hood, this parameter sets the `snapshot.mode` in Debezium. |
+| Snapshot Isolation Level | Enum: `Snapshot`, `Read Committed` | `Snapshot` | Mode to control which transaction isolation level is used and how long the connector locks tables that are designated for capture. If you don't know which one to choose, just use the default one. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode) for details. Under the hood, this parameter sets the `snapshot.isolation.mode` in Debezium. |
+
 #### CDC Limitations
 
 * Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
@@ -294,6 +301,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :----------------------------------------------------- | :------------------------------------- |
+| 0.4.0   | 2022-05-25 | [12759](https://github.com/airbytehq/airbyte/pull/12759) | For CDC, Add option to ignore existing data and only sync new changes from the database. |
 | 0.3.22  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.3.21  | 2022-04-11 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0 |
 | 0.3.19  | 2022-03-31 | [11495](https://github.com/airbytehq/airbyte/pull/11495) | Adds Support to Chinese MSSQL Server Agent |
