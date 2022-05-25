@@ -149,7 +149,7 @@
                 "order": 1
               },
               "snapshot_isolation": {
-                "title": "Snapshot Isolation Level",
+                "title": "Initial Snapshot Isolation Level",
                 "type": "string",
                 "default": "Snapshot",
                 "enum": ["Snapshot", "Read Committed"],
