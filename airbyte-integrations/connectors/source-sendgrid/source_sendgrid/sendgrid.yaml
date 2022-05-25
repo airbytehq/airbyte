@@ -336,3 +336,5 @@ streams:
   - "*ref(lists_stream)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
+  stream_names:
+    - "lists_stream"
