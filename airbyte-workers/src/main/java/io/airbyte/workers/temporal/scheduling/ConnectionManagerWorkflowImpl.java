@@ -122,6 +122,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       if (workflowState.isDeleted()) {
+        if (workflowState.isRunning()) {
+          log.info("Cancelling the current running job because a connection deletion was requested");
+          reportCancelled(false);
+        }
         log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
         return;
@@ -700,6 +704,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
   private void reportCancelledAndContinueWith(final boolean isReset, final ConnectionUpdaterInput connectionUpdaterInput) {
+    reportCancelled(isReset);
+    resetNewConnectionInput(connectionUpdaterInput);
+    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+  }
+
+  private void reportCancelled(final boolean isReset) {
     workflowState.setContinueAsReset(isReset);
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
@@ -721,8 +731,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               attemptNumber,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
-    resetNewConnectionInput(connectionUpdaterInput);
-    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
 }
