@@ -4,26 +4,12 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.instance.DatabaseInstance;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
@@ -43,11 +29,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.UUID;
-import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 
 @Slf4j
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
@@ -107,25 +89,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final String driverClassName = "org.postgresql.Driver";
-    final DataSource configsDataSource =
-        DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), driverClassName,
-            configs.getConfigDatabaseUrl());
-    final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
-    final DatabaseInstance configsDatabaseInstance =
-        new ConfigsDatabaseInstance(configsDslContext);
-    final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
-        .copySecrets(false)
-        .build();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
-    final JobPersistence jobPersistence = new DefaultJobPersistence(configDatabase);
-    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(Long.valueOf(jobRunConfig.getJobId()));
-
     log.info("Setting up replication worker...");
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
@@ -135,8 +98,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        workspaceId,
-        sourceLauncherConfig.getDockerImage());
+        configs);
 
     log.info("Running replication worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
