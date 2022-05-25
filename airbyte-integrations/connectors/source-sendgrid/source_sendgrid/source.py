@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.yaml_configurable_source import YamldeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
-class SourceSendgrid(YamldeclarativeSource):
+class SourceSendgrid(YamlDeclarativeSource):
     """
     This is a sample low-code connector.
     It still uses the existing spec.yaml file

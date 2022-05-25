@@ -15,7 +15,6 @@ class YamlDeclarativeSource(DeclarativeSource):
         self._parser = YamlParser()
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
-    # FIXME: rename file
     @property
     def connection_checker(self):
         return self._factory.create_component(self._source_config["check"], dict())(source=self)
