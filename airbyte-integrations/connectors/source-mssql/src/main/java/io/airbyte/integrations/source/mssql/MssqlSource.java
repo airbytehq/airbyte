@@ -313,29 +313,29 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final JsonNode  replication_config =config.get("replication_method");
-    if(!replication_config.hasNonNull("is_snapshot_disabled") ||
-            !replication_config.get("is_snapshot_disabled").asBoolean()) {
+    final JsonNode replication_config = config.get("replication_method");
+    if (!replication_config.hasNonNull("is_snapshot_disabled") ||
+        !replication_config.get("is_snapshot_disabled").asBoolean()) {
       final List<JsonNode> queryResponse = database.queryJsons(connection -> {
         final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
         final PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, config.get("database").asText());
         LOGGER.info(String.format(
-                "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-                config.get("database").asText(), sql));
+            "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+            config.get("database").asText(), sql));
         return ps;
       }, sourceOperations::rowToJson);
 
       if (queryResponse.size() < 1) {
         throw new RuntimeException(String.format(
-                "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-                config.get("database").asText()));
+            "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+            config.get("database").asText()));
       }
       if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
         throw new RuntimeException(String.format(
-                "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-                        + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-                config.get("database").asText()));
+            "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+                + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
+            config.get("database").asText()));
       }
     }
   }
@@ -350,10 +350,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      Properties props=MssqlCdcProperties.getDebeziumProperties(sourceConfig);
+      Properties props = MssqlCdcProperties.getDebeziumProperties(sourceConfig);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
-              props, catalog, true);
+          props, catalog, true);
       return handler.getIncrementalIterators(
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
@@ -365,14 +365,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   private static boolean isCdc(final JsonNode config) {
-    if(config.hasNonNull("replication_method")){
+    if (config.hasNonNull("replication_method")) {
       final JsonNode replication_config = config.get("replication_method");
-      if(replication_config.hasNonNull("replication_method")){
+      if (replication_config.hasNonNull("replication_method")) {
         return ReplicationMethod.valueOf(replication_config.get("replication_method").asText())
-                .equals(ReplicationMethod.CDC);
-      }else{
+            .equals(ReplicationMethod.CDC);
+      } else {
         return ReplicationMethod.valueOf(replication_config.asText())
-                .equals(ReplicationMethod.CDC);
+            .equals(ReplicationMethod.CDC);
       }
     } else {
       return false;
@@ -417,7 +417,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     return stream;
   }
-
 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
     final JsonNode config = sslMethod.get("ssl_method");

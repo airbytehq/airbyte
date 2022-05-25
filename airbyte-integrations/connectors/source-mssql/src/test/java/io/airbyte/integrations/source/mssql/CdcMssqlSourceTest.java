@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -271,13 +270,13 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSnapshotIsolationDisabled() {
-    //disabled the snapshot
-   JsonNode replication_config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("replication_method", "CDC")
-            .put("is_cdc_only", "false")
-            .put("is_snapshot_disabled", "true")
-            .build());
-    Jsons.replaceNestedValue(config, Arrays.asList(new String[]{"replication_method"}),replication_config);
+    // disabled the snapshot
+    JsonNode replication_config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_method", "CDC")
+        .put("is_cdc_only", "false")
+        .put("is_snapshot_disabled", "true")
+        .build());
+    Jsons.replaceNestedValue(config, Arrays.asList(new String[] {"replication_method"}), replication_config);
     // snapshot isolation enabled by setup so assert check passes
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     // now disable snapshot isolation and assert that check fails
@@ -343,15 +342,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
         DataSourceFactory.create(config.get("username").asText(),
-        config.get("password").asText(),
-        DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName)),
+            config.get("password").asText(),
+            DRIVER_CLASS,
+            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                dbName)),
         new MssqlSourceOperations(),
-            AdaptiveStreamingQueryConfig::new
-    );
+        AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 
