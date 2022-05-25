@@ -126,9 +126,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be converted to a nvarchar(4000) data type by
-   * calling the ToString() method. So we make a separate query to get Table's MetaData, check is there any hierarchyid columns, and wrap required
-   * fields with the ToString() function in the final Select query. Reference:
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
+   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
+   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
+   * with the ToString() function in the final Select query. Reference:
    * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
    *
    * @return the list with Column names updated to handle functions (if nay) properly
@@ -347,11 +348,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);

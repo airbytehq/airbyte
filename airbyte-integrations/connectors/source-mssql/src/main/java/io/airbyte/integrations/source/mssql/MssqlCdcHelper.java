@@ -11,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Before version 0.4.0, the "replication_method" parameter is just an enum with
- * two possible values: STANDARD and CDC. Debezium "snapshot.mode" defaults "snapshot",
- * and "snapshot.isolation.mode" defaults to "snapshot".
+ * Before version 0.4.0, the "replication_method" parameter is just an enum with two possible
+ * values: STANDARD and CDC. Debezium "snapshot.mode" defaults "snapshot", and
+ * "snapshot.isolation.mode" defaults to "snapshot".
  * <p/>
- * Version 0.4.0 changed the "replication_method" parameter to an "oneOf" field.
- * The CDC replication type has more details configurations for Debezium.
+ * Version 0.4.0 changed the "replication_method" parameter to an "oneOf" field. The CDC replication
+ * type has more details configurations for Debezium.
  */
 public class MssqlCdcHelper {
 
@@ -26,12 +26,13 @@ public class MssqlCdcHelper {
   }
 
   /**
-   * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows while we snapshot.
-   * References:
+   * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
+   * while we snapshot. References:
    * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
    * https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
+
     SNAPSHOT("Snapshot", "snapshot"),
     READ_COMMITTED("Read Committed", "read_committed");
 
@@ -55,10 +56,12 @@ public class MssqlCdcHelper {
       }
       throw new IllegalArgumentException("Unexpected snapshot isolation level: " + jsonValue);
     }
+
   }
 
   // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
+
     EXISTING_AND_NEW("Existing and New", "initial"),
     NEW_CHANGES_ONLY("New Changes Only", "schema_only");
 
@@ -82,6 +85,7 @@ public class MssqlCdcHelper {
       }
       throw new IllegalArgumentException("Unexpected data to sync setting: " + value);
     }
+
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcHelper.class);
