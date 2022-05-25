@@ -139,6 +139,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.38  | 2022-05-25 | [13163](https://github.com/airbytehq/airbyte/pull/13163) | Fix inconsistent comparison |
 | 0.1.37  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
 | 0.1.36  | 2022-03-22 | [9850](https://github.com/airbytehq/airbyte/pull/9850) | Added `BalanceTransactions` stream |
 | 0.1.35  | 2022-03-07 | [10915](https://github.com/airbytehq/airbyte/pull/10915) | Fix a bug which caused `full-refresh` syncs of child REST entities configured for `incremental` |
