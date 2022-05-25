@@ -10,15 +10,17 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Before version 0.4.0, the "replication_method" parameter is just an enum with two possible
- * values: STANDARD and CDC. Debezium "snapshot.mode" defaults "snapshot", and
- * "snapshot.isolation.mode" defaults to "snapshot".
- * <p/>
- * Version 0.4.0 changed the "replication_method" parameter to an "oneOf" field. The CDC replication
- * type has more details configurations for Debezium.
- */
 public class MssqlCdcHelper {
+
+  // legacy replication method config before version 0.4.0
+  // it is an enum with possible values: STANDARD and CDC
+  private static final String LEGACY_REPLICATION_FIELD = "replication_method";
+  // new replication method config since version 0.4.0
+  // it is an oneOf object
+  private static final String REPLICATION_FIELD = "replication";
+  private static final String REPLICATION_TYPE_FIELD = "replication_type";
+  private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
+  private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
   public enum ReplicationMethod {
     STANDARD,
@@ -92,51 +94,46 @@ public class MssqlCdcHelper {
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
-    final JsonNode replicationMethod = config.get("replication_method");
-    if (replicationMethod == null || replicationMethod.isNull()) {
-      return false;
-    }
     // legacy replication method config before version 0.4.0
-    if (replicationMethod.isTextual()) {
-      return ReplicationMethod.valueOf(replicationMethod.asText()) == ReplicationMethod.CDC;
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
+      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
     }
     // new replication method config since version 0.4.0
-    if (replicationMethod.isObject()) {
-      return replicationMethod.hasNonNull("replication_type") &&
-          ReplicationMethod.valueOf(replicationMethod.get("replication_type").asText()) == ReplicationMethod.CDC;
+    if (config.hasNonNull(REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
     }
-    LOGGER.warn("Unexpected replication method: {}, default to non CDC", replicationMethod);
     return false;
   }
 
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // legacy replication method config before version 0.4.0
-    final JsonNode replicationMethod = config.get("replication_method");
-    if (replicationMethod == null || replicationMethod.isNull()) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
       return SnapshotIsolation.SNAPSHOT;
     }
     // new replication method config since version 0.4.0
-    final JsonNode snapshotIsolation = replicationMethod.get("snapshot_isolation");
-    if (snapshotIsolation == null || snapshotIsolation.isNull()) {
-      return SnapshotIsolation.SNAPSHOT;
+    if (config.hasNonNull(REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+      final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
+      SnapshotIsolation.from(snapshotIsolation.asText());
     }
-    return SnapshotIsolation.from(snapshotIsolation.asText());
+    return SnapshotIsolation.SNAPSHOT;
   }
 
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // legacy replication method config before version 0.4.0
-    final JsonNode replicationMethod = config.get("replication_method");
-    if (replicationMethod == null || replicationMethod.isNull()) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
       return DataToSync.EXISTING_AND_NEW;
     }
     // new replication method config since version 0.4.0
-    final JsonNode dataToSync = replicationMethod.get("data_to_sync");
-    if (dataToSync == null || dataToSync.isNull()) {
-      return DataToSync.EXISTING_AND_NEW;
+    if (config.hasNonNull(REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+      final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
+      DataToSync.from(dataToSync.asText());
     }
-    return DataToSync.from(dataToSync.asText());
+    return DataToSync.EXISTING_AND_NEW;
   }
 
   @VisibleForTesting

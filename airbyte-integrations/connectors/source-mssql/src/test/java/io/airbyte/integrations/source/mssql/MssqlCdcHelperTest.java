@@ -27,11 +27,11 @@ class MssqlCdcHelperTest {
     assertTrue(MssqlCdcHelper.isCdc(LEGACY_CDC_CONFIG));
 
     // new replication method config since version 0.4.0
-    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of("replication_type", "STANDARD"))));
     assertFalse(MssqlCdcHelper.isCdc(newNonCdc));
 
-    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
@@ -45,14 +45,14 @@ class MssqlCdcHelperTest {
     assertEquals(SnapshotIsolation.SNAPSHOT, MssqlCdcHelper.getSnapshotIsolationConfig(LEGACY_CDC_CONFIG));
 
     // new replication method config since version 0.4.0
-    final JsonNode newCdcNonSnapshot = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdcNonSnapshot = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
             "snapshot_isolation", "Read Committed"))));
     assertEquals(SnapshotIsolation.READ_COMMITTED, MssqlCdcHelper.getSnapshotIsolationConfig(newCdcNonSnapshot));
 
-    final JsonNode newCdcSnapshot = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdcSnapshot = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
@@ -66,14 +66,14 @@ class MssqlCdcHelperTest {
     assertEquals(DataToSync.EXISTING_AND_NEW, MssqlCdcHelper.getDataToSyncConfig(LEGACY_CDC_CONFIG));
 
     // new replication method config since version 0.4.0
-    final JsonNode newCdcExistingAndNew = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdcExistingAndNew = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
             "snapshot_isolation", "Read Committed"))));
     assertEquals(DataToSync.EXISTING_AND_NEW, MssqlCdcHelper.getDataToSyncConfig(newCdcExistingAndNew));
 
-    final JsonNode newCdcNewOnly = Jsons.jsonNode(Map.of("replication_method",
+    final JsonNode newCdcNewOnly = Jsons.jsonNode(Map.of("replication",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "New Changes Only",

@@ -81,6 +81,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     source = new MssqlSource();
+
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -88,7 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
+        .put("replication", replicationConfig)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -275,7 +280,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
         .build());
-    Jsons.replaceNestedValue(config, List.of("replication_method"), replicationConfig);
+    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
     switchSnapshotIsolation(false, dbName);
     assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
