@@ -7,8 +7,6 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.debezium.annotation.VisibleForTesting;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MssqlCdcHelper {
 
@@ -89,8 +87,6 @@ public class MssqlCdcHelper {
     }
 
   }
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcHelper.class);
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
