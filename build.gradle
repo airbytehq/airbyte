@@ -18,7 +18,6 @@ plugins {
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.5'
     id 'version-catalog'
-    id 'java-library'
     id 'maven-publish'
 }
 
