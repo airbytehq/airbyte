@@ -19,11 +19,11 @@ class YamlParser(ConfigParser):
         :return:
         """
         config = yaml.safe_load(config_str)
-        evaluated_config = dict()
+        evaluated_config = {}
         return self.preprocess_dict(config, evaluated_config, "")
 
     def preprocess_dict(self, config, evaluated_config, path):
-        d = dict()
+        d = {}
         if self.ref_tag in config:
             partial_ref_string = config[self.ref_tag]
             d = deepcopy(self.preprocess(partial_ref_string, evaluated_config, path))
