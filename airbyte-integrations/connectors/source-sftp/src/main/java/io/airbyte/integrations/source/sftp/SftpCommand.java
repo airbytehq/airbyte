@@ -119,7 +119,8 @@ public class SftpCommand {
 
     private void checkIfConnected() {
         if (!client.isConnected()) {
-            throw new RuntimeException("SFTP client is not connected");
+            LOGGER.info("SFTP client is not connected.");
+            client.connect();
         }
     }
 }
