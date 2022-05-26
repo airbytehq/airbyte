@@ -51,13 +51,13 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
     var destinationDate = parseDateTime(actualValue);
     var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     // #13123 Normalization issue
-//    if (expectedDate.isBefore(getBrokenDate().toLocalDateTime())) {
-//      LOGGER
-//          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
-//      return true;
-//    } else {
+    if (expectedDate.isBefore(getBrokenDate().toLocalDateTime())) {
+      LOGGER
+          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      return true;
+    } else {
       return expectedDate.equals(destinationDate);
-//    }
+    }
   }
 
   @Override
@@ -75,13 +75,13 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareDateTimeWithTzValues(String airbyteMessageValue, String destinationValue) {
     // #13123 Normalization issue
-//    if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
-//      LOGGER
-//          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
-//      return true;
-//    } else {
+    if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
+      LOGGER
+          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      return true;
+    } else {
       return super.compareDateTimeWithTzValues(airbyteMessageValue, destinationValue);
-//    }
+    }
   }
 
   // #13123 Normalization issue
