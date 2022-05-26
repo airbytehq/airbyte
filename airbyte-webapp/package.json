@@ -22,6 +22,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.17",
     "@fullstory/browser": "^1.5.1",
+    "@headlessui/react": "^1.6.3",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
     "classnames": "^2.3.1",
