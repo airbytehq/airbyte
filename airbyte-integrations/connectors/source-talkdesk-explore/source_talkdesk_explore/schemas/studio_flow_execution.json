@@ -42,21 +42,21 @@
     },
     "time_in_step": {
       "type": "number",
-      "examples": [6.712963e-07]
+      "examples": [6.712963e-7]
     },
     "timestamp": {
-        "type": "string",
-        "format": "date-time",
-        "examples": ["2022-01-19 09:57:46"]
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2022-01-19 09:57:46"]
     },
     "studio_flow_executions_aggregated.flow_execution_finished_time": {
-        "type": "string",
-        "format": "date-time",
-        "examples": ["2022-01-19 09:57:54"]
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2022-01-19 09:57:54"]
     },
     "step_execution_order": {
-        "type": "integer",
-        "examples": [0]
+      "type": "integer",
+      "examples": [0]
     }
   }
 }

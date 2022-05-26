@@ -1,15 +1,19 @@
-from typing import Optional, Mapping, MutableMapping, Any, Iterable
-import requests
-from datetime import datetime
-from abc import abstractmethod
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import json
+from abc import abstractmethod
+from datetime import datetime
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import SyncMode
+import requests
 from airbyte_cdk.logger import AirbyteLogger
-
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = AirbyteLogger()
+
 
 class GenerateReportStream(HttpStream):
     """This stream is specifically for generating the report in Talkdesk.
@@ -17,6 +21,7 @@ class GenerateReportStream(HttpStream):
     - Returns: ID of the generated report
 
     """
+
     primary_key = None
 
     def __init__(self, base_path, start_date, timezone, **kwargs):
@@ -27,15 +32,15 @@ class GenerateReportStream(HttpStream):
 
     @property
     def url_base(self) -> str:
-        return f"https://api.talkdeskapp.com/data/"
-    
+        return "https://api.talkdeskapp.com/data/"
+
     @property
     def http_method(self) -> str:
         return "POST"
-    
+
     def path(self, **kwargs) -> str:
         return self.base_path
-    
+
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
@@ -50,15 +55,15 @@ class GenerateReportStream(HttpStream):
                 "from": self.start_date,
                 "to": now,
                 "timezone": self.timezone,
-            }
+            },
         }
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        id_obj = {"id": response_json['job']['id']}
+        id_obj = {"id": response_json["job"]["id"]}
         logger.info(f"Generated report with ID '{id_obj['id']}'")
 
         return [id_obj]
@@ -74,14 +79,14 @@ class ReadReportStream(HttpStream):
 
     @property
     def url_base(self) -> str:
-        return f"https://api.talkdeskapp.com/data/"
-    
+        return "https://api.talkdeskapp.com/data/"
+
     def path(self, **kwargs) -> str:
-        latest_state = kwargs.get('stream_state').get(self.cursor_field, None)
+        latest_state = kwargs.get("stream_state").get(self.cursor_field, None)
 
         if not latest_state:
             latest_state = self.start_date
-        
+
         # Check and set latest_state to necessary date-time format
         try:
             datetime.strptime(latest_state, "%Y-%m-%dT%H:%M:%S")
@@ -93,18 +98,15 @@ class ReadReportStream(HttpStream):
                 logger.error("stream_state is in unhandled date-time format. Required format: %Y-%m-%dT%H:%M:%S")
 
         generate_report = GenerateReportStream(
-            base_path=self.base_path,
-            start_date=latest_state,
-            timezone=self.timezone,
-            authenticator=self.authenticator
+            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator
         )
         report_id = next(generate_report.read_records(SyncMode.full_refresh))
 
         return self.base_path + f"/{report_id['id']}"
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
-    
+
     def should_retry(self, response: requests.Response) -> bool:
         """
         Retry conditions:
@@ -115,7 +117,7 @@ class ReadReportStream(HttpStream):
         2. When the report is requested but is not ready to be fetched:
          - In that case, the response will have the following format:
          ```
-         {"job": {"id": "369f88a5-d5a3-42c6-a135-8aec4215553e", "name": "Calls", 
+         {"job": {"id": "369f88a5-d5a3-42c6-a135-8aec4215553e", "name": "Calls",
          "created_at": "2022-01-13T10:17:15", "status": "processing", "type": "calls", "format": "json", ...}}
          ```
          The retry function will be looking for a response in this format with 'status' different than 'completed'.
@@ -156,6 +158,7 @@ class IncrementalReadReportStream(ReadReportStream):
     and 'get_updated_state' methods.
 
     """
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -176,7 +179,6 @@ class IncrementalReadReportStream(ReadReportStream):
 
 
 class Calls(IncrementalReadReportStream):
-
     @property
     def primary_key(self) -> str:
         return "call_id"
@@ -189,8 +191,8 @@ class Calls(IncrementalReadReportStream):
     def cursor_field(self) -> str:
         return "end_at"
 
-class UserStatus(IncrementalReadReportStream):
 
+class UserStatus(IncrementalReadReportStream):
     @property
     def primary_key(self) -> str:
         return "user_id"
@@ -203,8 +205,8 @@ class UserStatus(IncrementalReadReportStream):
     def cursor_field(self) -> str:
         return "status_end_at"
 
-class StudioFlowExecution(IncrementalReadReportStream):
 
+class StudioFlowExecution(IncrementalReadReportStream):
     @property
     def primary_key(self) -> str:
         return "flow_id"
@@ -217,8 +219,8 @@ class StudioFlowExecution(IncrementalReadReportStream):
     def cursor_field(self) -> str:
         return "studio_flow_executions_aggregated.flow_execution_finished_time"
 
-class Contacts(IncrementalReadReportStream):
 
+class Contacts(IncrementalReadReportStream):
     @property
     def primary_key(self) -> str:
         return "contact_id"
@@ -231,8 +233,8 @@ class Contacts(IncrementalReadReportStream):
     def cursor_field(self) -> str:
         return "finished_at"
 
-class RingAttempts(IncrementalReadReportStream):
 
+class RingAttempts(IncrementalReadReportStream):
     @property
     def primary_key(self) -> str:
         return "ring_attempt_id"

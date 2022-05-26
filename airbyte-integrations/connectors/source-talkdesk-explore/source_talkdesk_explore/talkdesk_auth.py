@@ -1,6 +1,11 @@
-import requests
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import base64
-from typing import Dict, Mapping, Any
+from typing import Any, Dict, Mapping
+
+import requests
 
 
 class TalkdeskAuth:
@@ -10,19 +15,18 @@ class TalkdeskAuth:
     # TODO: Implement 'Signed JWT' and 'Authorization Code' auth methods.
 
     Docs: https://docs.talkdesk.com/docs/authentication
-    
+
     """
+
     def __init__(self, config: Mapping[str, Any]):
         self.api_key = config.get("api_key", None)
         self.auth_url = config.get("auth_url", None)
-    
+
     def _encode_key(self, key: str) -> bytes:
         """Encode 'str' API key to bytes"""
-        base64_bytes = base64.b64encode(
-            key.encode("ascii")
-        )
+        base64_bytes = base64.b64encode(key.encode("ascii"))
         return base64_bytes.decode("ascii")
-    
+
     def request_bearer_token(self) -> Dict:
         headers = {
             "Authorization": f"Basic {self._encode_key(self.api_key)}",

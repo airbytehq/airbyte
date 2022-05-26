@@ -27,7 +27,9 @@
         "title": "AUTH URL",
         "type": "string",
         "description": "Talkdesk Auth URL. Only 'client_credentials' auth type supported at the moment.",
-        "examples": ["https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"],
+        "examples": [
+          "https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"
+        ],
         "order": 2
       },
       "api_key": {
