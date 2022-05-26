@@ -73,7 +73,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     } catch (final ConnectionErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-          .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

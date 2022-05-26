@@ -49,8 +49,6 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
       this.connectionString = new ConnectionString(connectionString);
       mongoClient = MongoClients.create(this.connectionString);
       database = mongoClient.getDatabase(databaseName);
-    } catch (ConnectionErrorException e) {
-      throw e;
     } catch (final MongoConfigurationException e) {
       LOGGER.error(e.getMessage());
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);

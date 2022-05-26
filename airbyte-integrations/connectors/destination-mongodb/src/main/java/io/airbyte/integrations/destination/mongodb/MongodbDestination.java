@@ -89,7 +89,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-          .getErrorMessage(e.getCustomErrorCode(), e);
+          .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

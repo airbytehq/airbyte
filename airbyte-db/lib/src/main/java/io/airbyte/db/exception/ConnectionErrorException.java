@@ -6,7 +6,7 @@ package io.airbyte.db.exception;
 
 public class ConnectionErrorException extends RuntimeException {
 
-  private String customErrorCode;
+  private String errorCode;
 
   public ConnectionErrorException(String errorMessage) {
     super(errorMessage);
@@ -14,16 +14,16 @@ public class ConnectionErrorException extends RuntimeException {
 
   public ConnectionErrorException(String errorCode, String errorMessage) {
     super(errorMessage);
-    this.customErrorCode = errorCode;
+    this.errorCode = errorCode;
   }
 
   public ConnectionErrorException(String errorCode, Throwable exception) {
     super(exception);
-    this.customErrorCode = errorCode;
+    this.errorCode = errorCode;
   }
 
-  public String getCustomErrorCode() {
-    return this.customErrorCode;
+  public String getErrorCode() {
+    return this.errorCode;
   }
 
 }

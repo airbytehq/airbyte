@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.errors;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.DEFAULT;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
@@ -36,13 +37,13 @@ public class ErrorMessageFactory {
       REDSHIFT, new RedshiftErrorMessage(),
       GCS, new GcsErrorMessage(),
       SNOWFLAKE, new SnowflakeErrorMessage(),
-      ConnectorType.DEFAULT, new DefaultErrorMessage());
+      DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorType type) {
     if (MAP.containsKey(type)) {
       return MAP.get(type);
     }
-    return MAP.get(ConnectorType.DEFAULT);
+    return MAP.get(DEFAULT);
   }
 
 }

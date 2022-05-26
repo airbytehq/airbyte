@@ -75,7 +75,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-          .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

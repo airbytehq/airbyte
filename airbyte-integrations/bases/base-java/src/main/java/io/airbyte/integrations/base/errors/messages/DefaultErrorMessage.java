@@ -9,8 +9,8 @@ import io.airbyte.integrations.base.errors.utils.ConnectorType;
 public class DefaultErrorMessage extends ErrorMessage {
 
   @Override
-  public String getErrorMessage(String stateCode, Exception exception) {
-    return getDefaultErrorMessage(stateCode, exception);
+  public String getErrorMessage(String errorCode, Exception exception) {
+    return getDefaultErrorMessage(errorCode, exception);
   }
 
   @Override

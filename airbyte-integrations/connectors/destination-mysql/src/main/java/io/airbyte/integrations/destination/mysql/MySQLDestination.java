@@ -87,7 +87,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-          .getErrorMessage(e.getCustomErrorCode(), e);
+          .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

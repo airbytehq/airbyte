@@ -69,7 +69,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-          .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -104,24 +104,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
     } catch (SQLException e) {
-      processingSQLException(e);
-    } catch (Exception e) {
+      throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e : e.getCause());
+     } catch (Exception e) {
       throw new Exception(e);
-    }
-  }
-
-  private static void processingSQLException(SQLException e) {
-    try {
-      SQLException sqlException = (SQLException) e.getCause();
-      throw new ConnectionErrorException(sqlException.getSQLState(), e);
-    } catch (ConnectionErrorException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      if (e.getCause() != null) {
-        throw new ConnectionErrorException(e.getSQLState(), e);
-      } else {
-        throw new ConnectionErrorException("unidentified", e);
-      }
     }
   }
 

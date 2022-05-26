@@ -6,20 +6,19 @@ package io.airbyte.integrations.base.errors.utils;
 
 public enum ConnectionErrorType {
 
-  INCORRECT_USERNAME_OR_PASSWORD("Incorrect username or password"),
-  INCORRECT_CREDENTIALS("Incorrect credentials"),
-  INCORRECT_BUCKET_NAME("Incorrect bucket name"),
-  INCORRECT_HOST_OR_PORT("Incorrect host or port"),
-  INCORRECT_HOST_OR_PORT_OR_DATABASE("Some of provided parameters are incorrect: host, port or database name"),
-  INCORRECT_USERNAME_OR_HOST("Incorrect username or host"),
+  INCORRECT_USERNAME_OR_PASSWORD("Invalid credentials: incorrect username or password."),
+  INCORRECT_CREDENTIALS("Incorrect credentials."),
+  INCORRECT_BUCKET_NAME("Invalid credentials: incorrect bucket name."),
+  INCORRECT_HOST_OR_PORT("Invalid credentials: incorrect host or port."),
+  INCORRECT_HOST_OR_PORT_OR_DATABASE("Invalid credentials: incorrect host, port or database name."),
+  INCORRECT_USERNAME_OR_HOST("Invalid credentials: incorrect username or host."),
   INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED(
-      "Some of provided parameters are incorrect: username, password, database name or user access denied"),
-  INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE("Some of provided parameters are incorrect: username, password or database name"),
-  INCORRECT_CLUSTER("Incorrect cluster"),
-  INCORRECT_DB_NAME("Incorrect data base name"),
-  INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED("Incorrect data base name or user access denied"),
-  INCORRECT_SCHEMA_NAME("Incorrect schema name"),
-  INCORRECT_ACCESS_PERMISSION("Insufficient privilege");
+      "Invalid credentials: username, password, database name or user access denied."),
+  INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE("Invalid credentials: username, password or database name."),
+  INCORRECT_CLUSTER("Invalid credentials: incorrect cluster."),
+  INCORRECT_DB_NAME("Invalid credentials: incorrect database name."),
+  INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED("Invalid credentials: incorrect database name or user access denied."),
+  INCORRECT_ACCESS_PERMISSION("Invalid credentials: user access denied.");
 
   private final String value;
 

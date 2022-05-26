@@ -11,20 +11,20 @@ import java.util.Map;
 
 public abstract class ErrorMessage {
 
+  private static final String DEFAULT_ERROR_MESSAGE = "Standard error code: %s. \n Error Message: %s.";
   protected final Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
 
   public abstract ConnectorType getConnectorType();
 
-  public String getDefaultErrorMessage(String stateCode, Exception exception) {
-    return "some standard message stateCode - " + stateCode +
-        " and error - " + exception.getMessage();
+  public String getDefaultErrorMessage(String errorCode, Exception exception) {
+    return String.format(DEFAULT_ERROR_MESSAGE, errorCode, exception.getMessage());
   }
 
-  public String getErrorMessage(String stateCode, Exception exception) {
-    if (CONSTANTS.containsKey(stateCode)) {
-      return CONSTANTS.get(stateCode).getValue();
+  public String getErrorMessage(String errorCode, Exception exception) {
+    if (CONSTANTS.containsKey(errorCode)) {
+      return CONSTANTS.get(errorCode).getValue();
     }
-    return getDefaultErrorMessage(stateCode, exception);
+    return getDefaultErrorMessage(errorCode, exception);
   }
 
 }

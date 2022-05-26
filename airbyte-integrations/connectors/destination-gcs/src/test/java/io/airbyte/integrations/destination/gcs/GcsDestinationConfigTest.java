@@ -43,13 +43,4 @@ class GcsDestinationConfigTest {
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) formatConfig;
     assertEquals("deflate-5", avroFormatConfig.getCodecFactory().toString());
   }
-
-  @Test
-  void testCheckIncorrectSignatureFailure() throws IOException {
-    var config = Jsons.deserialize(MoreResources.readResource("test_config.json"));
-    var destination = new GcsDestination();
-    var actual = destination.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_CREDENTIALS.getValue());
-  }
-
 }
