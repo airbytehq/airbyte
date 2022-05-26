@@ -24,9 +24,6 @@ COPY --from=builder /install /usr/local
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
-# bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
-
 # copy payload code only
 COPY main.py ./
 COPY source_rki_covid ./source_rki_covid

@@ -7,7 +7,7 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -16,7 +16,7 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -27,7 +27,8 @@
         "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -37,8 +38,8 @@
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -49,7 +50,8 @@
         "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -59,8 +61,8 @@
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -70,8 +72,8 @@
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -81,8 +83,8 @@
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
