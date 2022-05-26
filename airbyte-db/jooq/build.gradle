@@ -39,7 +39,7 @@ jooq {
                         excludes = 'airbyte_configs_migrations'
                     }
                     target {
-                        packageName = 'io.airbyte.db.instance.configs.jooq'
+                        packageName = 'io.airbyte.db.instance.configs.jooq.generated'
                         directory = 'build/generated/configsDatabase/src/main/java'
                     }
                 }
@@ -57,7 +57,7 @@ jooq {
                         excludes = 'airbyte_jobs_migrations'
                     }
                     target {
-                        packageName = 'io.airbyte.db.instance.jobs.jooq'
+                        packageName = 'io.airbyte.db.instance.jobs.jooq.generated'
                         directory = 'build/generated/jobsDatabase/src/main/java'
                     }
                 }
