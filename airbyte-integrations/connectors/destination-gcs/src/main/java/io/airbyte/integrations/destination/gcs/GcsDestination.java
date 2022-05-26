@@ -70,6 +70,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
