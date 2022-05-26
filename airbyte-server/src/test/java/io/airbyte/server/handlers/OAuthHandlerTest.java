@@ -9,8 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
-import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;

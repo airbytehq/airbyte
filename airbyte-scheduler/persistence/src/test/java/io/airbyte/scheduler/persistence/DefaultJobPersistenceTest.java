@@ -4,9 +4,9 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
-import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
-import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
