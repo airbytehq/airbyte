@@ -10,11 +10,11 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 
 
 class SubstreamSlicer(StreamSlicer):
-    def __init__(self, parent_stream, state: DictState, parent_id, **kwargs):
+    def __init__(self, parent_stream, state: DictState, slice_definition: Mapping[str, Any], **kwargs):
         self._parent_stream = parent_stream
         self._state = state
         self._interpolation = JinjaInterpolation()
-        self._parent_id = parent_id
+        self._slice_definition = slice_definition
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for parent_stream_slice in self._parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
@@ -26,8 +26,10 @@ class SubstreamSlicer(StreamSlicer):
                 sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
             ):
                 empty = False
-                parent_id = self._interpolation.eval(self._parent_id, None, None, parent_record=parent_record)
+                slice_definition = {
+                    k: self._interpolation.eval(v, None, None, parent_record=parent_record) for k, v in self._slice_definition.items()
+                }
                 self._state.update_state(parent_record=parent_record)
-                yield {**parent_stream_slice, **{"parent_id": parent_id}}
+                yield {**parent_stream_slice, **slice_definition}
             if empty:
-                yield {**parent_stream_slice, **{"parent_id": None}}
+                yield {**parent_stream_slice, **{k: None for k, v in self._slice_definition.items()}}

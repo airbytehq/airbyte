@@ -1,26 +1,26 @@
 decoder:
-  class_name: "airbyte_cdk.sources.configurable.decoders.json_decoder.JsonDecoder"
+  class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 request_parameters_provider:
-  class_name: "airbyte_cdk.sources.configurable.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  class_name: "airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
 state:
-  class_name: airbyte_cdk.sources.configurable.states.dict_state.DictState
+  class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 retriever:
-  class_name: "airbyte_cdk.sources.configurable.retrievers.simple_retriever.SimpleRetriever"
+  class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ kwargs['name'] }}"
   state: "*ref(state)"
   stream_slicer:
-    class_name: airbyte_cdk.sources.configurable.stream_slicers.single_slice.SingleSlice
+    class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
-    class_name: airbyte_cdk.sources.configurable.requesters.paginators.no_pagination.NoPagination
+    class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
   primary_key: "{{ kwargs['primary_key'] }}"
 partial_stream:
-  class_name: "airbyte_cdk.sources.configurable.configurable_stream.ConfigurableStream"
+  class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
-    class_name: airbyte_cdk.sources.configurable.schema.json_schema.JsonSchema
+    class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
     file_path: "./source_greenhouse/schemas/{{kwargs['name']}}.json"
   cursor_field: [ ]
 requester:
-  class_name: airbyte_cdk.sources.configurable.requesters.http_requester.HttpRequester
+  class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ kwargs['name'] }}"
   url_base: "https://harvest.greenhouse.io/v1/"
   http_method: "GET"
@@ -30,45 +30,45 @@ requester:
     password: ""
   request_parameters_provider: "*ref(request_parameters_provider)"
   retrier:
-    class_name: airbyte_cdk.sources.configurable.requesters.retriers.default_retrier.DefaultRetrier
+    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 extractor:
-  class_name: airbyte_cdk.sources.configurable.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"
 applications_stream:
-  partial: "*ref(partial_stream)"
+  ref: "*ref(partial_stream)"
   kwargs:
     name: "applications"
     primary_key: "id"
   retriever:
-    partial: "*ref(retriever)"
+    ref: "*ref(retriever)"
     requester:
-      partial: "*ref(requester)"
+      ref: "*ref(requester)"
       path: "applications"
     extractor:
-      partial: "*ref(extractor)"
+      ref: "*ref(extractor)"
       transform: ".[]"
 substream_slicer:
-  class_name: "airbyte_cdk.sources.configurable.stream_slicers.substream_slicer.SubstreamSlicer"
+  class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"
   parent_stream: "*ref(applications_stream)"
   slice_definition:
     parent_id: "{{ parent_record['id'] }}"
   state: "*ref(state)"
 applications_demographics_answers_stream:
-  partial: "*ref(partial_stream)"
+  ref: "*ref(partial_stream)"
   kwargs:
     name: "applications_demographics_answers"
     primary_key: "id"
   retriever:
-    partial: "*ref(retriever)"
+    ref: "*ref(retriever)"
     requester:
-      partial: "*ref(requester)"
+      ref: "*ref(requester)"
       path: "applications/{{ stream_slice['parent_id'] }}/demographics/answers"
     extractor:
-      partial: "*ref(extractor)"
+      ref: "*ref(extractor)"
       transform: ".[]"
     stream_slicer: "*ref(substream_slicer)"
 streams:
   - "*ref(applications_stream)"
   - "*ref(applications_demographics_answers_stream)"
 check:
-  class_name: airbyte_cdk.sources.configurable.checks.check_stream.CheckStream
+  class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
