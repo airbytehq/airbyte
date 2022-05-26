@@ -777,7 +777,7 @@
   sourceType: api
   releaseStage: alpha
 - name: RKI Covid
-  sourceDefinitionId: db04ecd1-42e7-4115-9cec-95812905c626
+  sourceDefinitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
   dockerRepository: airbyte/source-rki-covid
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/rki-covid
