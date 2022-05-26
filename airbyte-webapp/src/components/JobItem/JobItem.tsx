@@ -55,10 +55,8 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
   const [isOpen, setIsOpen] = useState(linkedJobId === getJobId(job));
   const scrollAnchor = useRef<HTMLDivElement>(null);
-  const [logTimestamp, setLogTimestamp] = useState<number>();
   const onExpand = () => {
     setIsOpen(!isOpen);
-    setLogTimestamp(undefined);
   };
 
   const didSucceed = didJobSucceed(job);
@@ -93,8 +91,8 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
           >
             {isOpen && (
               <>
-                <ErrorDetails attempts={getJobAttemps(job)} setLogTimestamp={setLogTimestamp} />
-                <JobLogs job={job} jobIsFailed={!didSucceed} logTimestamp={logTimestamp} />
+                <ErrorDetails attempts={getJobAttemps(job)} />
+                <JobLogs job={job} jobIsFailed={!didSucceed} />
               </>
             )}
           </Suspense>

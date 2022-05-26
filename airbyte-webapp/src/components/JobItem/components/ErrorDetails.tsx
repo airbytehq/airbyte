@@ -1,13 +1,11 @@
+import dayjs from "dayjs";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
-
-import { Button } from "components/base";
 
 import { AttemptRead } from "core/request/AirbyteClient";
 
 type IProps = {
   attempts?: AttemptRead[];
-  setLogTimestamp: (t: number) => void;
 };
 
 const ExpandedFailureContainer = styled.div`
@@ -18,11 +16,15 @@ const ExpandedFailureContainer = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
+const FailureDateDisplay = styled.span`
+  font-style: italic;
+`;
+
 const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary?.failures[0];
 };
 
-const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
+const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
   const { formatMessage } = useIntl();
 
   if (!attempts?.length) {
@@ -45,21 +47,11 @@ const ErrorDetails: React.FC<IProps> = ({ attempts, setLogTimestamp }) => {
     return null;
   }
 
-  const jumpToLogTimestamp = () => {
-    if (failure.timestamp) {
-      setLogTimestamp(failure.timestamp);
-    }
-  };
-
   const internalMessage = getInternalFailureMessage(attempt);
   return (
     <ExpandedFailureContainer>
       {!!failure.timestamp && (
-        <>
-          <Button size="m" secondary onClick={() => jumpToLogTimestamp()}>
-            view
-          </Button>{" "}
-        </>
+        <FailureDateDisplay>{dayjs.utc(failure.timestamp).format("YYYY-MM-DD HH:mm:ss")} - </FailureDateDisplay>
       )}
       {internalMessage}
     </ExpandedFailureContainer>
