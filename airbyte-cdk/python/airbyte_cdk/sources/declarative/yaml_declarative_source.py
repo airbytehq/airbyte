@@ -12,7 +12,6 @@ from airbyte_cdk.sources.streams import Stream
 class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
         self._factory = DeclarativeComponentFactory()
-        self._parser = YamlParser()
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
     @property
@@ -25,4 +24,4 @@ class YamlDeclarativeSource(DeclarativeSource):
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         with open(path_to_yaml_file, "r") as f:
             config_content = f.read()
-            return self._parser.parse(config_content)
+            return YamlParser().parse(config_content)
