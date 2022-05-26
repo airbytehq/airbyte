@@ -57,9 +57,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       ALTER TABLE %1$s RENAME %3$s_reserve to %3$s;
       """;
 
-
-  public RedshiftSqlOperations() {
-  }
+  public RedshiftSqlOperations() {}
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {

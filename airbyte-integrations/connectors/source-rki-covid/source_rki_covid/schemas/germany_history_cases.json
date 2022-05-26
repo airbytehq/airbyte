@@ -9,8 +9,5 @@
       "type": "string"
     }
   },
-  "required": [
-    "cases",
-    "date"
-  ]
+  "required": ["cases", "date"]
 }

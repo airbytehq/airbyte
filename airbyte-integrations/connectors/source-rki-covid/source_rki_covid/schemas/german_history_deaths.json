@@ -9,8 +9,5 @@
       "type": "string"
     }
   },
-  "required": [
-    "date",
-    "deaths"
-  ]
+  "required": ["date", "deaths"]
 }

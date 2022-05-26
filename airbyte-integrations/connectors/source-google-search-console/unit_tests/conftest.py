@@ -17,8 +17,8 @@ def config_fixture(requests_mock):
             "auth_type": "Client",
             "client_id": "client_id",
             "client_secret": "client_secret",
-            "refresh_token": "refresh_token"
-        }
+            "refresh_token": "refresh_token",
+        },
     }
 
     return config

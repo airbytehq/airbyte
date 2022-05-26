@@ -42,11 +42,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -101,11 +97,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -160,11 +152,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -219,11 +207,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -278,11 +262,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -337,11 +317,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "cases7Days",
-            "date",
-            "incidence7Days"
-          ]
+          "required": ["cases7Days", "date", "incidence7Days"]
         }
       },
       "required": [
@@ -357,12 +333,5 @@
       ]
     }
   },
-  "required": [
-    "A00-A04",
-    "A05-A14",
-    "A15-A34",
-    "A35-A59",
-    "A60-A79",
-    "A80+"
-  ]
+  "required": ["A00-A04", "A05-A14", "A15-A34", "A35-A59", "A60-A79", "A80+"]
 }

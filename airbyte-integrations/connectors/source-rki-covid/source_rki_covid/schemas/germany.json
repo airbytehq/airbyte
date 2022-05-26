@@ -33,11 +33,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "cases",
-        "deaths",
-        "recovered"
-      ]
+      "required": ["cases", "deaths", "recovered"]
     },
     "r": {
       "type": "object",
@@ -55,10 +51,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "date",
-            "value"
-          ]
+          "required": ["date", "value"]
         },
         "rValue7Days": {
           "type": "object",
@@ -70,21 +63,13 @@
               "type": "string"
             }
           },
-          "required": [
-            "date",
-            "value"
-          ]
+          "required": ["date", "value"]
         },
         "lastUpdate": {
           "type": "string"
         }
       },
-      "required": [
-        "lastUpdate",
-        "rValue4Days",
-        "rValue7Days",
-        "value"
-      ]
+      "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]
     },
     "hospitalization": {
       "type": "object",
@@ -102,12 +87,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "cases7Days",
-        "date",
-        "incidence7Days",
-        "lastUpdate"
-      ]
+      "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]
     },
     "meta": {
       "type": "object",
