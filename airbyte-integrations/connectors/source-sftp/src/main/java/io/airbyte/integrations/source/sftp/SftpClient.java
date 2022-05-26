@@ -119,7 +119,7 @@ public class SftpClient {
         session.setTimeout(connectionTimeoutMillis);
     }
 
-    public void disconnect() throws Exception {
+    public void disconnect() {
         LOGGER.info("Disconnecting from the server");
         if (channelSftp != null) {
             channelSftp.disconnect();

@@ -29,6 +29,14 @@ public class SftpSource extends BaseConnector implements Source {
         new IntegrationRunner(new SftpSource()).run(args);
     }
 
+    /**
+     * Check SFTP connection status and existence of working directory if set
+     * with the provided Json configuration.
+     *
+     * @param config - json configuration for connecting SFTP
+     * @return AirbyteConnectionStatus status of the connection result.
+     * @throws Exception - any exception.
+     */
     @Override
     public AirbyteConnectionStatus check(JsonNode config) throws Exception {
         final SftpClient client = new SftpClient(config);
@@ -52,8 +60,16 @@ public class SftpSource extends BaseConnector implements Source {
     }
 
 
+    /**
+     * Discover the current schema in the SFTP server in the provided folder.
+     * For each discovered file it will return stream with file name and parsed Schema
+     *
+     * @param config - json configuration for connecting SFTP
+     * @return Description of the schema.
+     * @throws Exception - any exception.
+     */
     @Override
-    public AirbyteCatalog discover(JsonNode config) throws Exception {
+    public AirbyteCatalog discover(JsonNode config)  {
         final SftpClient client = new SftpClient(config);
         try {
             final SftpCommand command = new SftpCommand(client, config);
