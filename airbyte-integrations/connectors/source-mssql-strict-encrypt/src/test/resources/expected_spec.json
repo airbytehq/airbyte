@@ -124,7 +124,7 @@
                 "const": "CDC",
                 "enum": ["CDC"],
                 "default": "CDC",
-                "order":0
+                "order": 0
               },
               "data_to_sync": {
                 "title": "Data to Sync",
