@@ -167,7 +167,7 @@ public class PostgresDestinationTest {
   @Test
   public void testCheckIncorrectPortFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("port", "0000");
+    ((ObjectNode) config).put("port", "30000");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
