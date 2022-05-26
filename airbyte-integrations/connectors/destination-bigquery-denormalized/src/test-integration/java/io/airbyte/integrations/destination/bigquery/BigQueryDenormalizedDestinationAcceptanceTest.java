@@ -9,21 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.*;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import io.airbyte.db.bigquery.BigQueryResultSet;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -32,6 +22,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -42,13 +33,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -111,6 +97,26 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new BigQueryDenormalizedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected void assertNamespaceNormalization(final String testCaseId,
                                               final String expectedNormalizedNamespace,
                                               final String actualNormalizedNamespace) {
@@ -142,43 +148,30 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
-      throws Exception {
-    return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    result.add(namingResolver.getIdentifier(identifier));
-    return result;
+          throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration
-            .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+            QueryJobConfiguration
+                    .newBuilder(
+                            String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
+                                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+//                    .setUseLegacySql(false)
+                    .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+                    .build();
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
+    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            if (!isAirbyteColumn(field.getName()) && value != null) {
-              jsonMap.put(field.getName(), value);
-            }
-          }
-          return jsonMap;
-        })
-        .map(Jsons::jsonNode)
-        .collect(Collectors.toList());
+    return Streams.stream(queryResults.iterateAll())
+            .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
   private boolean isAirbyteColumn(final String name) {
