@@ -130,12 +130,12 @@ public class Jsons {
   }
 
   /**
-   * Use string length an estimation for byte size, because all ASCII characters are one byte
-   * long in UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can
-   * convert the string to byte[] and use the length of the byte[]. However, if we do
-   * this conversion a lot, it will take up a considerable amount of memory. Given that
-   * the byte size of the serialized JSON is already an estimation of the actual size
-   * of the JSON object, using a cheap operation seems a good compromise.
+   * Use string length an estimation for byte size, because all ASCII characters are one byte long in
+   * UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can convert the
+   * string to byte[] and use the length of the byte[]. However, if we do this conversion a lot, it
+   * will take up a considerable amount of memory. Given that the byte size of the serialized JSON is
+   * already an estimation of the actual size of the JSON object, using a cheap operation seems a good
+   * compromise.
    */
   public static int getEstimatedByteSize(final JsonNode jsonNode) {
     return serialize(jsonNode).length();
