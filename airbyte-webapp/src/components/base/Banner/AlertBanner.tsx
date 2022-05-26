@@ -1,41 +1,50 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Link } from "components/Link";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
-const Container = styled.div<{ errorType?: string }>`
-  height: 30px;
-  width: 100%;
-  background: ${({ errorType, theme }) => (errorType === "credits" ? theme.redColor : theme.warningColor)};
-  color: ${({ theme }) => theme.blackColor};
-  text-align: center;
-  position: fixed;
-  z-index: 3;
-  font-size: 12px;
-  line-height: 30px;
-`;
-const CreditsLink = styled(Link)`
-  color: ${({ theme }) => theme.blackColor};
-`;
+import styles from "./AlertBanner.module.scss";
 
 interface AlertBannerProps {
-  alertType: string;
+  alertTypes: string[];
   id: CreditStatus | string;
 }
 
-export const AlertBanner: React.FC<AlertBannerProps> = ({ alertType: errorType, id }) => (
-  <Container errorType={errorType}>
-    {errorType === "credits" ? (
-      <FormattedMessage
-        id={id}
-        values={{ lnk: (content: React.ReactNode) => <CreditsLink to={CloudRoutes.Credits}>{content}</CreditsLink> }}
-      />
-    ) : (
-      <FormattedMessage id={id} />
-    )}
-  </Container>
-);
+export const AlertBanner: React.FC<AlertBannerProps> = ({ alertTypes, id }) => {
+  let alertToDisplay: string;
+  alertTypes.length > 1
+    ? (alertToDisplay = alertTypes[0])
+    : alertTypes.includes("deleted")
+    ? (alertToDisplay = "deleted")
+    : alertTypes.includes("credits")
+    ? (alertToDisplay = "credits")
+    : alertTypes.includes("trial")
+    ? (alertToDisplay = "trial")
+    : (alertToDisplay = alertTypes[0]);
+
+  return (
+    <div
+      className={`${styles.alertBannerContainer}, ${
+        alertToDisplay === "deleted" ? styles.attentionBackground : styles.beigeBackground
+      }`}
+    >
+      {alertToDisplay === "credits" ? (
+        <FormattedMessage
+          id={id}
+          values={{
+            lnk: (content: React.ReactNode) => (
+              <Link to={CloudRoutes.Credits} className={styles.blackText}>
+                {content}
+              </Link>
+            ),
+          }}
+        />
+      ) : (
+        <FormattedMessage id={id} />
+      )}
+    </div>
+  );
+};

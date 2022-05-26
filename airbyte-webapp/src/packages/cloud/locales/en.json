@@ -132,5 +132,8 @@
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
+  "trial.remainingTimeMessage": "You are using a trial of Airbyte.  Your trial ends in",
+  "trial.remainingTimeMessage.unit": "days",
+
   "webapp.cannotReachServer": "Cannot reach server."
 }
