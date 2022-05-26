@@ -259,6 +259,8 @@ cmd_publish() {
 
     docker manifest push $latest_image
     docker manifest push $versioned_image
+    docker manifest rm $latest_image
+    docker manifest rm $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
     sleep 5
@@ -266,7 +268,7 @@ cmd_publish() {
     do
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
       echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
-      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}"
+      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
       curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
     done
 
