@@ -43,7 +43,7 @@ lists_stream:
     url_base: "*ref(url_base)"
   schema_loader:
     class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"
-    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.json"
+    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.yaml"
   retriever:
     class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
     state:

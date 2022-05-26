@@ -4,6 +4,7 @@
 import json
 from typing import Any, Mapping, Union
 
+import yaml
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 
@@ -18,4 +19,7 @@ class JsonSchema(SchemaLoader):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         with open(self._file_path.eval(self._config, **self._kwargs), "r") as f:
-            return json.loads(f.read())
+            if self._file_path._string.endswith("json"):
+                return json.loads(f.read())
+            else:
+                return yaml.safe_load(f.read())
