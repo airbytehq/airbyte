@@ -414,7 +414,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -893,6 +893,14 @@
   dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
+  sourceType: api
+  releaseStage: alpha
+- name: TalkDesk Explore
+  sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
+  dockerRepository: airbyte/source-talkdesk-explore
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/talkdesk-explore
+  icon: talkdesk-explore.svg
   sourceType: api
   releaseStage: alpha
 - name: Tempo

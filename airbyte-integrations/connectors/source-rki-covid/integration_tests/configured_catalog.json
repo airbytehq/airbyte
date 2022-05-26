@@ -2,15 +2,6 @@
   "streams": [
     {
       "stream": {
-        "name": "germany",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "germany_age_groups",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
