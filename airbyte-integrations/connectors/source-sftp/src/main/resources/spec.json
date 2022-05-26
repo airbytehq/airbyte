@@ -4,16 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "SFTP Source Spec",
     "type": "object",
-    "required": ["user_name", "host_address", "port"],
+    "required": ["user", "host", "port"],
     "additionalProperties": true,
     "properties": {
-      "user_name": {
+      "user": {
         "title": "User Name",
         "description": "The server user",
         "type": "string",
         "order": 0
       },
-      "host_address": {
+      "host": {
         "title": "Host Address",
         "description": "The server host address",
         "type": "string",

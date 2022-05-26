@@ -2,17 +2,22 @@ package io.airbyte.integrations.source.sftp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
 import io.airbyte.integrations.source.sftp.enums.SupportedFileExtension;
 import io.airbyte.integrations.source.sftp.parsers.SftpFileParser;
 import io.airbyte.integrations.source.sftp.parsers.SftpFileParserFactory;
 import io.airbyte.integrations.source.sftp.util.JsonSchemaGenerator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -24,9 +29,11 @@ public class SftpCommand {
     private final SftpClient client;
     private final Set<SupportedFileExtension> selectedFileExtensions;
     private final Pattern filePattern;
+    private final SftpFileParserFactory sftpFileParserFactory;
 
     public SftpCommand(SftpClient client, JsonNode config) {
         this.client = client;
+        sftpFileParserFactory = new SftpFileParserFactory();
         String commaSeparatedFileExtension = config.has("file_type") ? config.get("file_type").asText() : "";
         Set<String> selectedFileExtension = Set.of(commaSeparatedFileExtension.split(FILE_TYPE_SEPARATOR));
         selectedFileExtensions = selectedFileExtension.stream()
@@ -71,7 +78,7 @@ public class SftpCommand {
 
     private Set<String> getFileNames() {
         checkIfConnected();
-        Vector<ChannelSftp.LsEntry> entries = new Vector<>();
+        Vector<LsEntry> entries = new Vector<>();
         for (SupportedFileExtension fileExtension : selectedFileExtensions) {
             entries.addAll(client.lsFile(fileExtension));
         }
@@ -93,7 +100,7 @@ public class SftpCommand {
     public JsonNode tryGetFirstNode(ByteArrayInputStream file, String fileName) {
         try {
             String extension = FilenameUtils.getExtension(fileName);
-            SftpFileParser parser = SftpFileParserFactory.createInstance(transformFileExtension(extension));
+            SftpFileParser parser = sftpFileParserFactory.create(transformFileExtension(extension));
             return parser.parseFileFirstEntity(file);
         } catch (Exception e) {
             LOGGER.error("Exception occurred while trying to parse file {} : ", fileName, e);
@@ -109,7 +116,7 @@ public class SftpCommand {
     private List<JsonNode> tryParseFile(ByteArrayInputStream file, String fileName) {
         try {
             String extension = FilenameUtils.getExtension(fileName);
-            SftpFileParser parser = SftpFileParserFactory.createInstance(transformFileExtension(extension));
+            SftpFileParser parser = sftpFileParserFactory.create(transformFileExtension(extension));
             return parser.parseFile(file);
         } catch (Exception e) {
             LOGGER.error("Exception occurred while trying to parse file {} : ", fileName, e);

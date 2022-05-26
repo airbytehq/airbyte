@@ -10,7 +10,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.SyncMode;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -45,8 +51,8 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
                 .put("auth_ssh_key", privateKey)
                 .build());
         return Jsons.jsonNode(ImmutableMap.builder()
-                .put("user_name", USER)
-                .put("host_address", host)
+                .put("user", USER)
+                .put("host", host)
                 .put("port", port)
                 .put("credentials", credentials)
                 .put("file_type", "csv,json")

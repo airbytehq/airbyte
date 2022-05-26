@@ -1,7 +1,9 @@
 package io.airbyte.integrations.source.sftp.parsers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.csv.CsvReadException;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CsvFileParserTest {
     public static final String LOG_FILE_CSV = "log-test.csv";

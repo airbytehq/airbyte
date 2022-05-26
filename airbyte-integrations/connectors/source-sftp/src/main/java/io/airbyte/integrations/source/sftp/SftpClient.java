@@ -1,12 +1,15 @@
 package io.airbyte.integrations.source.sftp;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import io.airbyte.integrations.source.sftp.enums.SftpAuthMethod;
 import io.airbyte.integrations.source.sftp.enums.SupportedFileExtension;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,61 +39,11 @@ public class SftpClient {
 
     public SftpClient(JsonNode config) {
         this.config = config;
-        JSch.setLogger(new LogAdapter());
         jsch = new JSch();
-        username = config.has("user_name") ? config.get("user_name").asText() : "";
-        hostAddress = config.has("host_address") ? config.get("host_address").asText() : "";
+        username = config.has("user") ? config.get("user").asText() : "";
+        hostAddress = config.has("host") ? config.get("host").asText() : "";
         port = config.has("port") ? config.get("port").asInt() : 22;
         authMethod = SftpAuthMethod.valueOf(config.get("credentials").get("auth_method").asText());
-    }
-
-    /**
-     * Adapter from JSch's logger interface to our log4j
-     */
-    private static class LogAdapter implements com.jcraft.jsch.Logger {
-        static final Log LOG = LogFactory.getLog(
-                SftpClient.class.getName() + ".jsch");
-
-        @Override
-        public boolean isEnabled(int level) {
-            switch (level) {
-                case com.jcraft.jsch.Logger.DEBUG:
-                    return LOG.isDebugEnabled();
-                case com.jcraft.jsch.Logger.INFO:
-                    return LOG.isInfoEnabled();
-                case com.jcraft.jsch.Logger.WARN:
-                    return LOG.isWarnEnabled();
-                case com.jcraft.jsch.Logger.ERROR:
-                    return LOG.isErrorEnabled();
-                case com.jcraft.jsch.Logger.FATAL:
-                    return LOG.isFatalEnabled();
-                default:
-                    return false;
-            }
-        }
-
-        @Override
-        public void log(int level, String message) {
-            switch (level) {
-                case com.jcraft.jsch.Logger.DEBUG:
-                    LOG.debug(message);
-                    break;
-                case com.jcraft.jsch.Logger.INFO:
-                    LOG.info(message);
-                    break;
-                case com.jcraft.jsch.Logger.WARN:
-                    LOG.warn(message);
-                    break;
-                case com.jcraft.jsch.Logger.ERROR:
-                    LOG.error(message);
-                    break;
-                case com.jcraft.jsch.Logger.FATAL:
-                    LOG.fatal(message);
-                    break;
-                default:
-                    break;
-            }
-        }
     }
 
     public void connect() {
