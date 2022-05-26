@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -13,7 +13,6 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +30,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
       "ssl", "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
-  public RedshiftInsertDestination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
+  public RedshiftInsertDestination() {
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override

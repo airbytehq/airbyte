@@ -10,7 +10,7 @@ from typing import Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-from .streams import DEFAULT_END_DATE, DEFAULT_START_DATE, ReportGranularity
+from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
 class OauthCredSpec(BaseModel):
@@ -63,8 +63,8 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     end_date: str = Field(
+        None,
         title="End Date",
-        default=DEFAULT_END_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description=(
             "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. "
