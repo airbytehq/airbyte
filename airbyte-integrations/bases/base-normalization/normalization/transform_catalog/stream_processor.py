@@ -27,6 +27,7 @@ from normalization.transform_catalog.utils import (
     is_number,
     is_object,
     is_simple_property,
+    is_simple_multi_property,
     is_string,
     jinja_call,
     remove_jinja,
@@ -503,7 +504,7 @@ where 1 = 1
             return column_name
         elif is_array(definition["type"]):
             return column_name
-        elif is_object(definition["type"]):
+        elif is_object(definition["type"]) or is_simple_multi_property(definition["type"]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
@@ -684,7 +685,7 @@ where 1 = 1
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
-        elif is_object(definition["type"]):
+        elif is_object(definition["type"]) or is_simple_multi_property(definition["type"]):
             col = f"object_to_string({column_name})"
         else:
             col = column_name
