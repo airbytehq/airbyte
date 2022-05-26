@@ -197,12 +197,15 @@ cmd_publish() {
   fi
 
   # setting local variables for docker image versioning
-  local docker_user="airbytebot"
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
+
+  # log into docker
+  DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
+  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
@@ -258,22 +261,15 @@ cmd_publish() {
     docker manifest push $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
-    if [ -z "$DOCKER_PASSWORD" ]; then
-      echo "DOCKER_PASSWORD is not set, cannot delete arch_versioned_image tags..."
-    else
-      sleep 5
-      auth_data="{\"username\":\"$docker_user\", \"password\":\"$DOCKER_PASSWORD\"}"
-      docker_auth_token=`curl -s -H "Content-Type: application/json" -X POST -d "$auth_data" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+    sleep 5
+    for arch in $(echo $build_arch | sed "s/,/ /g")
+    do
+      local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
+      echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
+      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}"
+      curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
+    done
 
-      for arch in $(echo $build_arch | sed "s/,/ /g")
-      do
-        local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
-        echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
-        curl "https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" \
-          -X DELETE \
-          -H "Authorization: JWT ${docker_auth_token}"
-      done
-    fi
   fi
 
   # Checking if the image was successfully registered on DockerHub
@@ -281,8 +277,6 @@ cmd_publish() {
   sleep 5
 
   # To work for private repos we need a token as well
-  DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
-  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
   DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" -H "Authorization: JWT ${DOCKER_TOKEN}" ${TAG_URL})
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
