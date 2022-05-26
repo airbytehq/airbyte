@@ -149,7 +149,7 @@ If you are using OAuth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.60  | 2022-05-26 | []() | Correct schema for `contact_lists` stream |
+| 0.1.60  | 2022-05-26 | [\#13218](https://github.com/airbytehq/airbyte/pull/13218) | Correct schema for `contact_lists` stream                                                                                                    |
 | 0.1.59  | 2022-05-10 | [\#12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure oauth2.0 token has all needed scopes in "check" command                                                                               |
 | 0.1.58  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                              |
 | 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes                                                                                                              |
