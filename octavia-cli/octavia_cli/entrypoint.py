@@ -15,9 +15,11 @@ from .check_context import check_api_health, check_is_initialized, check_workspa
 from .generate import commands as generate_commands
 from .init import commands as init_commands
 from .list import commands as list_commands
+from .get import commands as get_commands
 from .telemetry import TelemetryClient, build_user_agent
 
-AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, init_commands.init, generate_commands.generate, apply_commands.apply]
+AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, get_commands.get,
+                                           init_commands.init, generate_commands.generate, apply_commands.apply]
 
 
 def set_context_object(ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool) -> click.Context:
@@ -39,11 +41,13 @@ def set_context_object(ctx: click.Context, airbyte_url: str, workspace_id: str, 
     telemetry_client = TelemetryClient(enable_telemetry)
     try:
         ctx.ensure_object(dict)
-        ctx.obj["OCTAVIA_VERSION"] = pkg_resources.require("octavia-cli")[0].version
+        ctx.obj["OCTAVIA_VERSION"] = pkg_resources.require(
+            "octavia-cli")[0].version
         ctx.obj["TELEMETRY_CLIENT"] = telemetry_client
         api_client = get_api_client(airbyte_url)
         ctx.obj["WORKSPACE_ID"] = get_workspace_id(api_client, workspace_id)
-        ctx.obj["ANONYMOUS_DATA_COLLECTION"] = get_anonymous_data_collection(api_client, ctx.obj["WORKSPACE_ID"])
+        ctx.obj["ANONYMOUS_DATA_COLLECTION"] = get_anonymous_data_collection(
+            api_client, ctx.obj["WORKSPACE_ID"])
         api_client.user_agent = build_user_agent(ctx.obj["OCTAVIA_VERSION"])
         ctx.obj["API_CLIENT"] = api_client
         ctx.obj["PROJECT_IS_INITIALIZED"] = check_is_initialized()
@@ -76,11 +80,13 @@ def octavia(ctx: click.Context, airbyte_url: str, workspace_id: str, enable_tele
         )
     )
     if not ctx.obj["PROJECT_IS_INITIALIZED"]:
-        click.echo(click.style("🐙 - Project is not yet initialized.", fg="red", bold=True))
+        click.echo(click.style(
+            "🐙 - Project is not yet initialized.", fg="red", bold=True))
 
 
 def get_api_client(airbyte_url):
-    client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api")
+    client_configuration = airbyte_api_client.Configuration(
+        host=f"{airbyte_url}/api")
     api_client = airbyte_api_client.ApiClient(client_configuration)
     check_api_health(api_client)
     return api_client
@@ -98,7 +104,8 @@ def get_workspace_id(api_client, user_defined_workspace_id):
 
 def get_anonymous_data_collection(api_client, workspace_id):
     api_instance = workspace_api.WorkspaceApi(api_client)
-    api_response = api_instance.get_workspace(WorkspaceIdRequestBody(workspace_id), _check_return_type=False)
+    api_response = api_instance.get_workspace(
+        WorkspaceIdRequestBody(workspace_id), _check_return_type=False)
     return api_response.anonymous_data_collection
 
 
