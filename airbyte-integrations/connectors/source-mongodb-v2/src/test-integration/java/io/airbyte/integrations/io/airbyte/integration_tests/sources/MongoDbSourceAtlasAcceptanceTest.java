@@ -4,6 +4,13 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CLUSTER;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -16,21 +23,13 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CLUSTER;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
@@ -126,68 +125,68 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   @Test
   public void testCheckIncorrectPassword() throws Exception {
     JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", ATLAS.getType())
-            .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
-            .build());
+        .put("instance", ATLAS.getType())
+        .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
+        .build());
 
-    JsonNode conf =  Jsons.jsonNode(ImmutableMap.builder()
-            .put("user", config.get("user").asText())
-            .put("password", "")
-            .put("instance_type", instanceConfig)
-            .put("database", DATABASE_NAME)
-            .put("auth_source", "admin")
-            .build());
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("user", config.get("user").asText())
+        .put("password", "")
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE);
   }
 
   @Test
   public void testCheckIncorrectDataBase() throws Exception {
     JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", ATLAS.getType())
-            .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
-            .build());
+        .put("instance", ATLAS.getType())
+        .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
+        .build());
 
-    JsonNode conf =  Jsons.jsonNode(ImmutableMap.builder()
-            .put("user", config.get("user").asText())
-            .put("password", config.get("password").asText())
-            .put("instance_type", instanceConfig)
-            .put("database", "wrongdatabase")
-            .put("auth_source", "admin")
-            .build());
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("user", config.get("user").asText())
+        .put("password", config.get("password").asText())
+        .put("instance_type", instanceConfig)
+        .put("database", "wrongdatabase")
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_HOST_OR_PORT_OR_DATABASE);
   }
 
   @Test
   public void testCheckIncorrectCluster() throws Exception {
     JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", ATLAS.getType())
-            .put("cluster_url", "cluster0.iqgf8.mongodb.netfail")
-            .build());
+        .put("instance", ATLAS.getType())
+        .put("cluster_url", "cluster0.iqgf8.mongodb.netfail")
+        .build());
 
-    JsonNode conf =  Jsons.jsonNode(ImmutableMap.builder()
-            .put("user", config.get("user").asText())
-            .put("password", config.get("password").asText())
-            .put("instance_type", instanceConfig)
-            .put("database", DATABASE_NAME)
-            .put("auth_source", "admin")
-            .build());
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("user", config.get("user").asText())
+        .put("password", config.get("password").asText())
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_CLUSTER);
   }
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
     JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-            .put("instance", ATLAS.getType())
-            .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
-            .build());
+        .put("instance", ATLAS.getType())
+        .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
+        .build());
 
-    JsonNode conf =  Jsons.jsonNode(ImmutableMap.builder()
-            .put("user", "test_user_without_access")
-            .put("password", "test12321")
-            .put("instance_type", instanceConfig)
-            .put("database", DATABASE_NAME)
-            .put("auth_source", "admin")
-            .build());
+    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("user", "test_user_without_access")
+        .put("password", "test12321")
+        .put("instance_type", instanceConfig)
+        .put("database", DATABASE_NAME)
+        .put("auth_source", "admin")
+        .build());
     testIncorrectParams(conf, INCORRECT_ACCESS_PERMISSION);
   }
 

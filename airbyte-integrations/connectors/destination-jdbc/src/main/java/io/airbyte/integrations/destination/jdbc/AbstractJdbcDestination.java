@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
@@ -66,15 +65,15 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
-              () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
+          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-              .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getCustomErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()
-              .withStatus(Status.FAILED)
-              .withMessage(messages);
+          .withStatus(Status.FAILED)
+          .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

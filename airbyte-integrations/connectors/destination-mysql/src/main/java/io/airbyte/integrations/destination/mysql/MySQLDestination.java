@@ -4,13 +4,15 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
@@ -27,8 +29,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
@@ -73,25 +73,25 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
       final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-              mySQLSqlOperations);
+          mySQLSqlOperations);
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 
       final VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
         throw new RuntimeException(String
-                .format("Your MySQL version %s is not compatible with Airbyte",
-                        compatibility.getVersion()));
+            .format("Your MySQL version %s is not compatible with Airbyte",
+                compatibility.getVersion()));
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-              .getErrorMessage(e.getCustomErrorCode(), e);
+          .getErrorMessage(e.getCustomErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
-              .withStatus(Status.FAILED)
-              .withMessage(messages);
+          .withStatus(Status.FAILED)
+          .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

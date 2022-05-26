@@ -97,4 +97,5 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public ConnectorType getConnectorType() {
     return ConnectorType.POSTGRES;
   }
+
 }

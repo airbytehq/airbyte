@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.Random;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.Test;
 public class RedshiftSqlOperationsTest {
 
   private static final Random RANDOM = new Random();
+
+  private static final RedshiftDataTmpTableMode redshiftDataTmpTableMode = RedshiftDataTmpTableMode.SUPER;
 
   private String generateBigString(final int addExtraCharacters) {
     final int length = RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + addExtraCharacters;
@@ -38,7 +41,7 @@ public class RedshiftSqlOperationsTest {
         .put("NZD", 1.14)
         .build());
 
-    RedshiftSqlOperations uut = new RedshiftSqlOperations();
+    RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
     boolean isValid = uut.isValidData(testNode);
     assertEquals(true, isValid);
   }
@@ -54,7 +57,7 @@ public class RedshiftSqlOperationsTest {
         .put("NZD", 1.14)
         .build());
 
-    RedshiftSqlOperations uut = new RedshiftSqlOperations();
+    RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
     boolean isValid = uut.isValidData(testNode);
     assertEquals(false, isValid);
   }
@@ -85,7 +88,7 @@ public class RedshiftSqlOperationsTest {
         .put("key20", generateBigString(-1))
         .build());
 
-    RedshiftSqlOperations uut = new RedshiftSqlOperations();
+    RedshiftSqlOperations uut = new RedshiftSqlOperations(redshiftDataTmpTableMode);
     boolean isValid = uut.isValidData(testNode);
     assertEquals(false, isValid);
   }

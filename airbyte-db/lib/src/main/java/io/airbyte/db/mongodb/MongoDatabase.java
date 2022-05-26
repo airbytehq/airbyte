@@ -7,7 +7,6 @@ package io.airbyte.db.mongodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoCommandException;
 import com.mongodb.MongoConfigurationException;
 import com.mongodb.ReadConcern;
 import com.mongodb.client.MongoClient;
