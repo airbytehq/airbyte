@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Cell, CheckBox, DropDownRow, Toggle } from "components";
+import { Cell, CheckBox, DropDownRow, Switch } from "components";
 
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
@@ -89,7 +89,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
+        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
       </HeaderCell>
       <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
         {stream.stream?.namespace || (

@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,9 +40,9 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.instance.configs.jooq.enums.ActorType;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.configs.jooq.enums.StatusType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
@@ -651,8 +651,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Updates {@link io.airbyte.db.instance.configs.jooq.tables.ConnectionOperation} records for the
-   * given {@code connectionId}.
+   * Updates {@link io.airbyte.db.instance.configs.jooq.generated.tables.ConnectionOperation} records
+   * for the given {@code connectionId}.
    *
    * @param connectionId ID of the associated connection to update operations for
    * @param newOperationIds Set of all operationIds that should be associated to the connection
