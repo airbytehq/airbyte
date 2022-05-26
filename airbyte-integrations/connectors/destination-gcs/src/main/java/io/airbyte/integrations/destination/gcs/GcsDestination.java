@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
@@ -61,6 +62,7 @@ public class GcsDestination extends BaseConnector implements Destination {
 
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
           .getErrorMessage(e.getErrorCode(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(messages);
