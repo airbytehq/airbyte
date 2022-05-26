@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.BaseDatabaseInstance;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
 import java.util.function.Function;
@@ -19,8 +20,6 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseInstance.class);
 
-  private static final String DATABASE_LOGGING_NAME = "airbyte jobs";
-  private static final String SCHEMA_PATH = "jobs_database/schema.sql";
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if jobs database is ready...");
@@ -32,11 +31,12 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   @VisibleForTesting
   public JobsDatabaseInstance(final DSLContext dslContext, final String schema) {
-    super(dslContext, DATABASE_LOGGING_NAME, schema, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
+    super(dslContext, DatabaseConstants.JOBS_DATABASE_LOGGING_NAME, schema,
+        DatabaseConstants.JOBS_INITIAL_EXPECTED_TABLES, IS_JOBS_DATABASE_READY);
   }
 
   public JobsDatabaseInstance(final DSLContext dslContext) throws IOException {
-    this(dslContext, MoreResources.readResource(SCHEMA_PATH));
+    this(dslContext, MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH));
   }
 
 }

@@ -46,6 +46,28 @@ module.exports = {
     },
     {
       type: 'category',
+      label: 'Contributing to Airbyte Docs',
+      items: [
+        {
+          type: 'doc',
+          id: "docusaurus/contributing_to_docs",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/deploying_and_reverting_docs",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/locally_testing_docusaurus",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/readme",
+        },
+      ]
+    },
+    {
+      type: 'category',
       label: 'Deploying Airbyte Open Source',
       items: [
         {
@@ -789,6 +811,10 @@ module.exports = {
               {
                 type: 'doc',
                 id: "integrations/destinations/gcs",
+              },
+              {
+                type: 'doc',
+                id: "integrations/destinations/google-sheets",
               },
               {
                 type: 'doc',

@@ -555,6 +555,65 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
+    @Timeout(value = 10,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that cancelling a running workflow cancels the sync")
+    public void deleteRunning() throws InterruptedException {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+
+      // wait for the manual sync to start working
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.deleteConnection();
+
+      // TODO
+      // For some reason this transiently fails if it is below the runtime.
+      // However, this should be reported almost immediately. I think this is a bug.
+      testEnv.sleep(Duration.ofMinutes(SleepingSyncWorkflow.RUN_TIME.toMinutes() + 1));
+
+      final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
+      final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
+
+      for (final ChangedStateEvent event : events) {
+        if (event.isValue()) {
+          log.info("event = " + event);
+        }
+      }
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DELETED && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
+    }
+
+    @RepeatedTest(10)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset")

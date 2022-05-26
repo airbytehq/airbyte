@@ -37,9 +37,12 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit test for the {@link DatabaseConfigPersistence#updateConnectorDefinitions} method.
  */
-public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistenceTest {
+@SuppressWarnings("PMD.SignatureDeclareThrowsException")
+class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistenceTest {
 
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
+  private static final String DOCKER_IMAGE_TAG = "0.0.0";
+  private static final String DOCKER_IMAGE_TAG_2 = "0.1000.0";
 
   @BeforeAll
   public static void setup() throws Exception {
@@ -69,7 +72,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When a connector does not exist, add it")
-  public void testNewConnector() throws Exception {
+  void testNewConnector() throws Exception {
     assertUpdateConnectorDefinition(
         Collections.emptyList(),
         Collections.emptyList(),
@@ -79,9 +82,9 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When an old connector is in use, if it has all fields, do not update it")
-  public void testOldConnectorInUseWithAllFields() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
-    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
+  void testOldConnectorInUseWithAllFields() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG);
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -92,10 +95,10 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When a old connector is in use, add missing fields, do not update its version")
-  public void testOldConnectorInUseWithMissingFields() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0").withDocumentationUrl(null).withSourceType(null);
-    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.0.0");
+  void testOldConnectorInUseWithMissingFields() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG).withDocumentationUrl(null).withSourceType(null);
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
+    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag(DOCKER_IMAGE_TAG);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -106,7 +109,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When a old connector is in use and there is a new patch version, update its version")
-  public void testOldConnectorInUseWithMinorVersion() throws Exception {
+  void testOldConnectorInUseWithMinorVersion() throws Exception {
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1.9");
 
@@ -119,7 +122,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When a old connector is in use and there is a new minor version, do not update its version")
-  public void testOldConnectorInUseWithPathVersion() throws Exception {
+  void testOldConnectorInUseWithPathVersion() throws Exception {
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.2.0");
 
@@ -132,9 +135,9 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When an unused connector has a new version, update it")
-  public void testUnusedConnectorWithOldVersion() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
-    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
+  void testUnusedConnectorWithOldVersion() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG);
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -145,10 +148,10 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @Test
   @DisplayName("When an unused connector has missing fields, add the missing fields, do not update its version")
-  public void testUnusedConnectorWithMissingFields() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
+  void testUnusedConnectorWithMissingFields() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2).withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag(DOCKER_IMAGE_TAG_2);
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),

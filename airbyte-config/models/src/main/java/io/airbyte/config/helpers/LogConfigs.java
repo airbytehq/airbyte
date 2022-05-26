@@ -12,7 +12,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
  */
 public class LogConfigs {
 
-  public static LogConfigs EMPTY = new LogConfigs(null);
+  public final static LogConfigs EMPTY = new LogConfigs(null);
 
   private final CloudStorageConfigs storageConfigs;
 
