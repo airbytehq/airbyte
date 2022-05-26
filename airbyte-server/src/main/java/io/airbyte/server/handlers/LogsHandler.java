@@ -4,7 +4,7 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.LogsRequestBody;
+import io.airbyte.api.model.generated.LogsRequestBody;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
