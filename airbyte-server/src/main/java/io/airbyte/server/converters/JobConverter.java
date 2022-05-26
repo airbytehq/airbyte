@@ -166,6 +166,7 @@ public class JobConverter {
             .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
             .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
             .externalMessage(failure.getExternalMessage())
+            .internalMessage(failure.getInternalMessage())
             .stacktrace(failure.getStacktrace())
             .timestamp(failure.getTimestamp())
             .retryable(failure.getRetryable()))
