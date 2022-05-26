@@ -1,0 +1,70 @@
+url_base: https://api.sendgrid.com
+
+lists_path:
+  class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
+  string: "{{ next_page_token['next_page_url'] }}"
+  default: /v3/marketing/lists
+
+http_method: GET
+
+authenticator:
+  class_name: "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator"
+  token: "{{ config['apikey'] }}"
+
+request_parameters_provider:
+  class_name: "airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
+  request_parameters:
+    page_size: 10
+
+decoder:
+  class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
+
+extractor:
+  class_name: "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor"
+  decoder: "*ref(decoder)"
+  transform: ".result[]"
+
+primary_key: id
+
+paginator:
+  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
+  interpolated_paginator:
+    class_name: "airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator.InterpolatedPaginator"
+    next_page_token_template:
+      next_page_url: "{{ decoded_response['_metadata']['next'] }}"
+    decoder: "*ref(decoder)"
+
+lists_stream:
+  class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+  cursor_field: [ ]
+  kwargs:
+    name: "lists"
+    primary_key: "*ref(primary_key)"
+    url_base: "*ref(url_base)"
+  schema_loader:
+    class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"
+    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.json"
+  retriever:
+    class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
+    state:
+      class_name: "airbyte_cdk.sources.declarative.states.dict_state.DictState"
+    stream_slicer:
+      class_name: "airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice"
+    paginator: "*ref(paginator)"
+    requester:
+      class_name: "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester"
+      path: "*ref(lists_path)"
+      http_method: "*ref(http_method)"
+      authenticator: "*ref(authenticator)"
+      request_parameters_provider: "*ref(request_parameters_provider)"
+      retrier:
+        class_name: "airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier"
+    extractor: "*ref(extractor)"
+
+streams:
+  - "*ref(lists_stream)"
+
+check:
+  class_name: "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
+  stream_names:
+    - "lists_stream"
