@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -138,7 +138,7 @@ class DefaultAirbyteDestinationTest {
 
     verify(outputStream, never()).close();
 
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     verify(outputStream).close();
 
@@ -171,7 +171,7 @@ class DefaultAirbyteDestinationTest {
 
     when(process.isAlive()).thenReturn(false);
 
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     destination.close();
 

@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox, Toggle } from "components/base";
+import { CheckBox, Switch } from "components/base";
 
-type IProps = {
+interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: React.ReactNode;
   label?: React.ReactNode;
   checkbox?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  loading?: boolean;
+}
 
 const ToggleContainer = styled.div`
   display: flex;
@@ -33,12 +34,12 @@ const AdditionMessage = styled.span`
   }
 `;
 
-const LabeledToggle: React.FC<IProps> = (props) => (
+export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => (
   <ToggleContainer>
     {props.checkbox ? (
       <CheckBox {...props} id={`toggle-${props.name}`} />
     ) : (
-      <Toggle {...props} id={`toggle-${props.name}`} />
+      <Switch {...props} id={`toggle-${props.name}`} />
     )}
 
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
@@ -47,5 +48,3 @@ const LabeledToggle: React.FC<IProps> = (props) => (
     </Label>
   </ToggleContainer>
 );
-
-export default LabeledToggle;
