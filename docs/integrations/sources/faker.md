@@ -41,5 +41,5 @@ N/A
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
-| 0.1.1   | 2022-05-26 | xxx                                                      | Publish for AMD and ARM (M1 Macs) |
+| 0.1.1   | 2022-05-26 | [13235](https://github.com/airbytehq/airbyte/pull/13235) | Publish for AMD and ARM (M1 Macs) |
 | 0.1.0   | 2022-04-12 | [11738](https://github.com/airbytehq/airbyte/pull/11738) | The Faker Source is created       |
