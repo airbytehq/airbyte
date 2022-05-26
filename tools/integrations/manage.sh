@@ -41,7 +41,7 @@ cmd_build() {
   local run_tests=$1; shift || run_tests=true
 
   echo "Building $path"
-  # Note that we are only building (and testing) once on this build machine's achetecure
+  # Note that we are only building (and testing) once on this build machine's architecture
   # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
@@ -197,6 +197,7 @@ cmd_publish() {
   fi
 
   # setting local variables for docker image versioning
+  local docker_user="airbytebot"
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
   local versioned_image=$image_name:$image_version
@@ -255,6 +256,24 @@ cmd_publish() {
 
     docker manifest push $latest_image
     docker manifest push $versioned_image
+
+    # delete the temporary image tags made with arch_versioned_image
+    if [ -z "$DOCKER_PASSWORD" ]; then
+      echo "DOCKER_PASSWORD is not set, cannot delete arch_versioned_image tags..."
+    else
+      sleep 5
+      auth_data="{\"username\":\"$docker_user\", \"password\":\"$DOCKER_PASSWORD\"}"
+      docker_auth_token=`curl -s -H "Content-Type: application/json" -X POST -d "$auth_data" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+
+      for arch in $(echo $build_arch | sed "s/,/ /g")
+      do
+        local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
+        echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
+        curl "https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" \
+          -X DELETE \
+          -H "Authorization: JWT ${docker_auth_token}"
+      done
+    fi
   fi
 
   # Checking if the image was successfully registered on DockerHub
