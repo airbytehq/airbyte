@@ -155,20 +155,15 @@ jobs:
       ############################
       - name: Bump Connector Version
         if: github.event.inputs.bump-version != 'false' && success()
-        run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.auto-bump-version }}
+        run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Commit and Push Version Bump
         if: github.event.inputs.bump-version != 'false' && success()
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-
-          # Commit changes if there were any
-          if ! (git diff --quiet && git diff --staged --quiet); then
-            echo "Detected changed files and version bump"
-            git commit -a -m "auto-bump-version ${{github.event.inputs.connector}} ${{ steps.bump-version.outputs.master_version }} to ${{ steps.bump-version.outputs.bumped_version }}"
-            git pull origin ${{ github.event.inputs.gitref }}
-            git push origin ${{ github.event.inputs.gitref }}
-          fi
+          git add -u
+          git commit -m "bump-version ${{github.event.inputs.connector}}"
+          git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
         if: github.event.inputs.comment-id && github.event.inputs.bump-version != 'false' && success()
         uses: peter-evans/create-or-update-comment@v1
@@ -237,7 +232,7 @@ jobs:
   #          body: |
   #            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   #      - name: Set publish label
-  #        if: success() F
+  #        if: success()
   #        run: |
   #          echo "set some label on PR"
   # In case of self-hosted EC2 errors, remove this block.

@@ -137,6 +137,7 @@ jobs:
           pip install --quiet -e ./tools/ci_*
       # Needed for Sentry steps
       - name: Set Connector Name Env Variable
+        if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
           echo "CONNECTOR_IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
