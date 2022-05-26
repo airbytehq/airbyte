@@ -96,7 +96,7 @@ identifier names from streams and catalogs.
 
 ## Integration Tests
 
-Look at the `./setup/*.md` (e.g. `./setup/snowflake.md`) for how to setup integration environments.
+Look at the `./setup/*.md` (e.g. `./setup/snowflake.md`) for how to set up integration environments.
 
 With Gradle:
 
