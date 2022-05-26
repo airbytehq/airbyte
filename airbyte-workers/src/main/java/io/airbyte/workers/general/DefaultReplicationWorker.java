@@ -363,8 +363,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             final String[] validationErrorMetadata = new String[] {
-              "docker_repo:airbyte/test",
-              "docker_version:0.0.0",
+              "docker_repo:airbyte/test", // dockerImage.split(":")[0]
+              "docker_version:0.0.0", // dockerImage.split(":")[1]
               "stream:" + stream
             };
             DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
