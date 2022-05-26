@@ -15,9 +15,9 @@
       "period_in_days": {
         "title": "Period In Days",
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "default": 30,
         "examples": ["30", "365"],
-        "type": "integer",
-        "default": 30
+        "type": "integer"
       },
       "report_options": {
         "title": "Report Options",
@@ -31,9 +31,9 @@
       "max_wait_seconds": {
         "title": "Max wait time for reports (in seconds)",
         "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
+        "default": 500,
         "examples": ["500", "1980"],
-        "type": "integer",
-        "default": 500
+        "type": "integer"
       },
       "refresh_token": {
         "title": "Refresh Token",
@@ -67,7 +67,7 @@
       },
       "role_arn": {
         "title": "Role ARN",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         "airbyte_secret": true,
         "type": "string"
       },

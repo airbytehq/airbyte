@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -84,6 +84,15 @@ public class FailureHelper {
     return genericFailure(m, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage(m.getError().getMessage());
+  }
+
+  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
+    return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(origin)
+        .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
+        .withRetryable(false)
+        .withExternalMessage(String
+            .format("Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing", origin));
   }
 
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {

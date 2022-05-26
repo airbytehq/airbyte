@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -15,46 +15,50 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class YamlListToStandardDefinitionsTest {
+class YamlListToStandardDefinitionsTest {
 
-  private static final String goodDesDefYaml =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+  private static final String DESTINATION_DEFINITION_ID = "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n";
+  private static final String DESTINATION_NAME = "  name: Local JSON\n";
+  private static final String DOCKER_REPO = "  dockerRepository: airbyte/destination-local-json\n";
+  private static final String DOCKER_IMAGE_TAG = "  dockerImageTag: 0.1.4\n";
+  private static final String GOOD_DES_DEF_YAML =
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-  private static final String duplicateId =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+  private static final String DUPLICATE_ID =
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json"
-          + "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
+          + DESTINATION_DEFINITION_ID
           + "  name: JSON 2\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-  private static final String duplicateName =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
+  private static final String DUPLICATE_NAME =
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
+          + DOCKER_IMAGE_TAG
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json\n"
           + "- destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6\n"
-          + "  name: Local JSON\n"
+          + DESTINATION_NAME
           + "  dockerRepository: airbyte/destination-csv\n"
           + "  dockerImageTag: 0.1.8\n"
           + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv";
-  private static final String badData =
-      "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
+  private static final String BAD_DATA =
+      DESTINATION_DEFINITION_ID
+          + DESTINATION_NAME
+          + DOCKER_REPO
           + "  dockerImageTag: 0.1.8\n"
           + "  documentationUrl";
 
   @Nested
   @DisplayName("vertifyAndConvertToJsonNode")
-  public class VerifyAndConvertToJsonNode {
+  class VerifyAndConvertToJsonNode {
 
     private static final String ID_NAME = "destinationDefinitionId";
 
@@ -62,8 +66,8 @@ public class YamlListToStandardDefinitionsTest {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyReadTest() throws JsonProcessingException {
-      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
+    void correctlyReadTest() throws JsonProcessingException {
+      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, GOOD_DES_DEF_YAML);
       final var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
       assertEquals("Local JSON", defList[0].getName());
@@ -71,69 +75,69 @@ public class YamlListToStandardDefinitionsTest {
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateIdTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateId));
+    void duplicateIdTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, DUPLICATE_ID));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateNameTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateName));
+    void duplicateNameTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, DUPLICATE_NAME));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFileTest() {
+    void emptyFileTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badDataTest() {
-      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, badData));
+    void badDataTest() {
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, BAD_DATA));
     }
 
   }
 
   @Nested
   @DisplayName("verifyAndConvertToModelList")
-  public class VerifyAndConvertToModelList {
+  class VerifyAndConvertToModelList {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyReadTest() {
+    void correctlyReadTest() {
       final var defs = YamlListToStandardDefinitions
-          .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
+          .verifyAndConvertToModelList(StandardDestinationDefinition.class, GOOD_DES_DEF_YAML);
       assertEquals(1, defs.size());
       assertEquals("Local JSON", defs.get(0).getName());
     }
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateIdTest() {
+    void duplicateIdTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateId));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, DUPLICATE_ID));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateNameTest() {
+    void duplicateNameTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateName));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, DUPLICATE_NAME));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFileTest() {
+    void emptyFileTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badDataTest() {
+    void badDataTest() {
       assertThrows(RuntimeException.class,
-          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, badData));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, BAD_DATA));
     }
 
   }

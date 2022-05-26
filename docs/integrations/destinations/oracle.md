@@ -90,9 +90,10 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 ## Changelog
 
+
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.1.18  | 2022-05-19 | [12919](https://github.com/airbytehq/airbyte/pull/12919) | Destination Oracle: added custom JDBC parameters support.                                   |
+| 0.1.18  | 2022-05-19 | [12919](https://github.com/airbytehq/airbyte/pull/12919) | Destination Oracle: added custom JDBC parameters support.                                           |
 | 0.1.17  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.16  | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
 | 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                            |
@@ -111,6 +112,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 ### Changelog (Strict Encrypt)
 
+
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
 | 0.1.6   | 2022-05-19 | [12919](https://github.com/airbytehq/airbyte/pull/12919) | Destination Oracle: added custom JDBC parameters support.                                           |
@@ -119,3 +121,4 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
 | 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                           |
 | 0.1.1   | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
+

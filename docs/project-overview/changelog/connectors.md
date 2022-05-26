@@ -763,7 +763,7 @@ Other progress on connectors:
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](connectors.md), [Google Ads](../../integrations/sources/google-adwords.md), [Marketo](../../integrations/sources/marketo.md) **New destination:** [Snowflake](../../integrations/destinations/snowflake.md)
+**New sources:** [Facebook Ads](connectors.md), [Google Ads](../../integrations/sources/google-ads.md), [Marketo](../../integrations/sources/marketo.md) **New destination:** [Snowflake](../../integrations/destinations/snowflake.md)
 
 ## 10/30/2020
 
@@ -776,4 +776,3 @@ Other progress on connectors:
 ## 09/23/2020
 
 **New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md) **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/local-csv.md)
-

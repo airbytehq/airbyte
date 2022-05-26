@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.List;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -94,13 +95,18 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
+        .put("replication", replicationConfig)
         .build());
 
     dslContext = DSLContextFactory.create(
@@ -109,7 +115,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
     database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");

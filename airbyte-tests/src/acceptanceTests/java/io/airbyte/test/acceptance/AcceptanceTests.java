@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
@@ -1172,6 +1172,8 @@ public class AcceptanceTests {
 
   @RetryingTest(3)
   @Order(22)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -1232,6 +1234,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(23)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -1275,6 +1279,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(24)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -1331,6 +1337,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(25)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
