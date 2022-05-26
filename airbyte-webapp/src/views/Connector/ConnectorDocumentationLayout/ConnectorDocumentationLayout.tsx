@@ -32,7 +32,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
   const width = dimensions?.width ?? 0;
   return (
     <>
-      {width < 450 && (
+      {window.innerWidth > 500 && width < 450 && (
         <div className={styles.darkOverlay}>
           <h3>
             <FormattedMessage id="connectorForm.expandForm" />
@@ -76,7 +76,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </PanelGrabber>
         </ReflexSplitter>
       )}
-      {documentationPanelOpen && (
+      {window.innerWidth > 500 && documentationPanelOpen && (
         <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
             <DocumentationPanel />
