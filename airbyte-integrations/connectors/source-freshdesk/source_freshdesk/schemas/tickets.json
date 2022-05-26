@@ -3,16 +3,28 @@
   "type": "object",
   "properties": {
     "cc_emails": {
-      "type": "array"
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
     },
     "fwd_emails": {
-      "type": "array"
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
     },
     "reply_cc_emails": {
-      "type": "array"
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
     },
     "ticket_cc_emails": {
-      "type": "array"
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
     },
     "fr_escalated": {
       "type": "boolean"
@@ -33,7 +45,7 @@
       "type": "integer"
     },
     "responder_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "source": {
       "type": "integer"
