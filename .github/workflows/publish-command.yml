@@ -85,8 +85,8 @@ jobs:
         uses: "google-github-actions/auth@v0"
         with:
           credentials_json: "${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}"
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+      #      - name: Set up Cloud SDK
+      #        uses: google-github-actions/setup-gcloud@v0
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1

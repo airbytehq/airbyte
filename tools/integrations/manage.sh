@@ -221,7 +221,7 @@ _publish_spec_to_cache() {
       echo "Using environment gcloud"
     fi
 
-    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+#    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
   else
     echo "Publishing without writing to spec cache."
   fi
