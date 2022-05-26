@@ -97,6 +97,6 @@ def is_simple_multi_property(property_type):
     simple_types = {"string", "integer", "number", "boolean"}
     if isinstance(property_type, list):
         property_types = {t for t in property_type}
-        property_types.discard('null')
+        property_types.discard("null")
         return len(property_types & simple_types) > 1
     return False
