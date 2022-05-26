@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -20,6 +20,9 @@ import java.util.function.Consumer;
  * secrets-related helpers.
  */
 public interface SecretsTestCase {
+
+  String PREFIX = "airbyte_workspace_";
+  String SECRET = "_secret_";
 
   String getName();
 

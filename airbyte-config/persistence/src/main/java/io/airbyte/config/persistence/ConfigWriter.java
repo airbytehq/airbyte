@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -26,6 +26,7 @@ import org.jooq.impl.DSL;
  * Currently this class is used to move write queries out of {@link DatabaseConfigPersistence} so
  * that they can be reused/composed in {@link ConfigRepository}.
  */
+@SuppressWarnings("PMD.CognitiveComplexity")
 public class ConfigWriter {
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {

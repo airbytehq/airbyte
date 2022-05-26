@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.storage;
@@ -10,10 +10,11 @@ import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class MinioS3ClientFactoryTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class MinioS3ClientFactoryTest {
 
   @Test
-  public void testMinio() {
+  void testMinio() {
     final var minioConfig = Mockito.mock(MinioConfig.class);
     Mockito.when(minioConfig.getAwsAccessKey()).thenReturn("access-key");
     Mockito.when(minioConfig.getAwsSecretAccessKey()).thenReturn("access-key-secret");
@@ -24,7 +25,7 @@ public class MinioS3ClientFactoryTest {
   }
 
   @Test
-  public void testMinioEndpointMissing() {
+  void testMinioEndpointMissing() {
     final var minioConfig = Mockito.mock(MinioConfig.class);
     // Missing bucket and access key.
     Mockito.when(minioConfig.getAwsAccessKey()).thenReturn("access-key");

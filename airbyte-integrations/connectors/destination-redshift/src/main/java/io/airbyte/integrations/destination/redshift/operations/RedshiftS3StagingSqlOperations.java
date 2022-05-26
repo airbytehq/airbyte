@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -11,7 +11,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -34,9 +33,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   public RedshiftS3StagingSqlOperations(NamingConventionTransformer nameTransformer,
                                         AmazonS3 s3Client,
-                                        S3DestinationConfig s3Config,
-                                        RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(redshiftDataTmpTableMode);
+                                        S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;

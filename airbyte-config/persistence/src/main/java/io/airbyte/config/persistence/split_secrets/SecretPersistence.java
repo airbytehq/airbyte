@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -16,11 +16,12 @@ import org.jooq.DSLContext;
  * are always strings. See {@link SecretCoordinate} for more information on how secrets are
  * identified.
  */
+@SuppressWarnings("PMD.MissingOverride")
 public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   Optional<String> read(final SecretCoordinate coordinate);
 
-  void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
+  void write(final SecretCoordinate coordinate, final String payload);
 
   static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
