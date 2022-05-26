@@ -67,8 +67,20 @@ class SourceFacebookMarketing(AbstractSource):
         )
         streams = [
             AdAccount(api=api),
-            AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
+            AdSets(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Ads(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
             AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images, page_size=config.page_size),
             AdsInsights(page_size=config.page_size, **insights_args),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
@@ -77,10 +89,34 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(page_size=config.page_size, **insights_args),
             AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, **insights_args),
-            Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
-            Activities(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted, page_size=config.page_size),
+            Campaigns(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Images(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Videos(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
+            Activities(
+                api=api,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+            ),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, default_args=insights_args, streams=streams)

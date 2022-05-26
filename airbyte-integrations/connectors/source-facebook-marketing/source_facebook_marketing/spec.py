@@ -15,9 +15,13 @@ from pydantic import BaseModel, Field, PositiveInt
 logger = logging.getLogger("airbyte")
 
 
-ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
-ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
-ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+class StrEnum(str, Enum):
+    pass
+
+
+ValidFields = StrEnum("ValidEnums", AdsInsights.Field.__dict__)
+ValidBreakdowns = StrEnum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
+ValidActionBreakdowns = StrEnum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 
 
@@ -112,10 +116,7 @@ class ConnectorConfig(BaseConfig):
     access_token: str = Field(
         title="Access Token",
         order=3,
-        description=(
-            "The value of the access token generated. "
-            'See the docs for more information: https://go.estuary.dev/OzUqlE'
-        ),
+        description=("The value of the access token generated. " "See the docs for more information: https://go.estuary.dev/OzUqlE"),
         airbyte_secret=True,
     )
 
