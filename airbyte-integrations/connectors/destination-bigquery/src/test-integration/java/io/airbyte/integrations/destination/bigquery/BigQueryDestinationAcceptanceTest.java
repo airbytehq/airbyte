@@ -9,7 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.ConnectionProperty;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
@@ -26,7 +36,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -114,8 +128,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected void assertNamespaceNormalization(final String testCaseId,
-                                              final String expectedNormalizedNamespace,
-                                              final String actualNormalizedNamespace) {
+      final String expectedNormalizedNamespace,
+      final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
@@ -141,9 +155,9 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
