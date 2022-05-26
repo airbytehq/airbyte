@@ -9,9 +9,14 @@
     "password": "test"
   },
   "loading_method": {
-    "method": "GCS Staging",
-    "project_id": "test",
-    "bucket_name": "test",
-    "credentials_json": "{\n\"type\": \"test\"}\n"
+    "method": "S3 Staging",
+    "s3_bucket_name": "airbyte-snowflake-integration-tests",
+    "s3_bucket_region": "us-east-2",
+    "access_key_id": "test",
+    "secret_access_key": "test",
+    "part_size": 5,
+    "encryption": {
+      "encryption_type": "aes_cbc_envelope"
+    }
   }
 }

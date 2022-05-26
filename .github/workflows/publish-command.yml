@@ -81,12 +81,18 @@ jobs:
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
     steps:
-      - name: Set up GCloud Auth
-        uses: "google-github-actions/auth@v0"
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          credentials_json: "${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}"
-      #      - name: Set up Cloud SDK
-      #        uses: google-github-actions/setup-gcloud@v0
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
+          export_default_credentials: true
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
@@ -97,13 +103,6 @@ jobs:
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:

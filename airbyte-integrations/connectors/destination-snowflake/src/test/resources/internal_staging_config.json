@@ -9,9 +9,6 @@
     "password": "test"
   },
   "loading_method": {
-    "method": "GCS Staging",
-    "project_id": "test",
-    "bucket_name": "test",
-    "credentials_json": "{\n\"type\": \"test\"}\n"
+    "method": "Internal Staging"
   }
 }
