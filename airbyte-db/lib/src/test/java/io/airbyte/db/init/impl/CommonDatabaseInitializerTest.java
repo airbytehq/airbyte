@@ -16,7 +16,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * Common test setup for database initialization tests.
  */
-public class AbstractDatabaseInitializerTest {
+class CommonDatabaseInitializerTest {
 
   protected PostgreSQLContainer<?> container;
 
@@ -33,6 +33,7 @@ public class AbstractDatabaseInitializerTest {
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
   }
 
+  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   void cleanup() throws Exception {
     DataSourceFactory.close(dataSource);
