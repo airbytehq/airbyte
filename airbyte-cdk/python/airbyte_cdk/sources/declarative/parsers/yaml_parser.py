@@ -35,15 +35,15 @@ class YamlParser(ConfigParser):
             partial_ref_string = input_mapping[self.ref_tag]
             d = deepcopy(self.preprocess(partial_ref_string, evaluated_mapping, path))
 
-        for attribute, value in input_mapping.items():
-            if attribute == self.ref_tag:
+        for key, value in input_mapping.items():
+            if key == self.ref_tag:
                 continue
-            full_path = self.resolve_value(attribute, path)
+            full_path = self.resolve_value(key, path)
             if full_path in evaluated_mapping:
-                raise Exception(f"Databag already contains attribute={attribute} with path {full_path}")
+                raise Exception(f"Databag already contains key={key} with path {full_path}")
             processed_value = self.preprocess(value, evaluated_mapping, full_path)
             evaluated_mapping[full_path] = processed_value
-            d[attribute] = processed_value
+            d[key] = processed_value
 
         return d
 
