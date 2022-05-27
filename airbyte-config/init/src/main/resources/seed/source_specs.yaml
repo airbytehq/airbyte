@@ -2133,7 +2133,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.0"
+- dockerImage: "airbyte/source-faker:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
