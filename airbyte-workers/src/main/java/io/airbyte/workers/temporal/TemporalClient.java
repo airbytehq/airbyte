@@ -118,17 +118,17 @@ public class TemporalClient {
   // one. either temporal decides and can report it or it is injected into temporal runs.
   @VisibleForTesting
   protected TemporalClient(final WorkflowClient client,
-      final Path workspaceRoot,
-      final WorkflowServiceStubs workflowServiceStubs) {
+                           final Path workspaceRoot,
+                           final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
   }
 
   /**
-   * Direct termination of Temporal Workflows should generally be avoided.
-   * This method exists for some rare circumstances where this may be required. Originally added
-   * to facilitate Airbyte's migration to Temporal Cloud.
+   * Direct termination of Temporal Workflows should generally be avoided. This method exists for some
+   * rare circumstances where this may be required. Originally added to facilitate Airbyte's migration
+   * to Temporal Cloud.
    */
   public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
     this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
