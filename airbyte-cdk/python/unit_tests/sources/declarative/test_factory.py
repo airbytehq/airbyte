@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -33,8 +33,8 @@ def test_factory():
     config = parser.parse(content)
     offset_pagination_request_parameters = factory.create_component(config["offset_pagination_request_parameters"], input_config)()
     assert type(offset_pagination_request_parameters) == InterpolatedRequestParameterProvider
-    assert offset_pagination_request_parameters._config == input_config
-    assert offset_pagination_request_parameters._interpolation._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    assert offset_pagination_request_parameters._interpolator._config == input_config
+    assert offset_pagination_request_parameters._interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
 
 
 def test_interpolate_config():

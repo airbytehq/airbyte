@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
