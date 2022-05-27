@@ -66,7 +66,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           # 80 gb disk
-          # ec2-image-id: ami-0d648081937c75a73
+          ec2-image-id: ami-0f23be2f917510c26
   publish-image:
     timeout-minutes: 240
     needs: start-publish-image-runner
