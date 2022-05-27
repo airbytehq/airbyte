@@ -45,7 +45,7 @@ public class SftpSource extends BaseConnector implements Source {
      * @throws Exception - any exception.
      */
     @Override
-    public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+    public AirbyteConnectionStatus check(JsonNode config) {
         final SftpClient client = new SftpClient(config);
         try {
             final SftpCommand command = new SftpCommand(client, config);
@@ -103,7 +103,7 @@ public class SftpSource extends BaseConnector implements Source {
     }
 
     @Override
-    public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)  {
         final SftpClient client = new SftpClient(config);
         final SftpCommand command = new SftpCommand(client, config);
         client.connect();

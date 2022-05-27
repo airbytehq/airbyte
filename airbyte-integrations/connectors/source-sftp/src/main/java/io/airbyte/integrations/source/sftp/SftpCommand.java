@@ -34,7 +34,7 @@ public class SftpCommand {
     public SftpCommand(SftpClient client, JsonNode config) {
         this.client = client;
         sftpFileParserFactory = new SftpFileParserFactory();
-        String commaSeparatedFileExtension = config.has("file_type") ? config.get("file_type").asText() : "";
+        String commaSeparatedFileExtension = config.has("file_types") ? config.get("file_types").asText() : "";
         Set<String> selectedFileExtension = Set.of(commaSeparatedFileExtension.split(FILE_TYPE_SEPARATOR));
         selectedFileExtensions = selectedFileExtension.stream()
                 .map(this::transformFileExtension)
@@ -110,10 +110,6 @@ public class SftpCommand {
 
     public List<JsonNode> getFileData(String fileName) {
         ByteArrayInputStream file = client.getFile(fileName);
-        return tryParseFile(file, fileName);
-    }
-
-    private List<JsonNode> tryParseFile(ByteArrayInputStream file, String fileName) {
         try {
             String extension = FilenameUtils.getExtension(fileName);
             SftpFileParser parser = sftpFileParserFactory.create(transformFileExtension(extension));
@@ -126,7 +122,7 @@ public class SftpCommand {
 
     private void checkIfConnected() {
         if (!client.isConnected()) {
-            LOGGER.info("SFTP client is not connected.");
+            LOGGER.info("SFTP client is not connected. Attempting to reconnect.");
             client.connect();
         }
     }

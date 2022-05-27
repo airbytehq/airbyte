@@ -55,7 +55,7 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
                 .put("host", host)
                 .put("port", port)
                 .put("credentials", credentials)
-                .put("file_type", "csv,json")
+                .put("file_types", "csv,json")
                 .put("folder_path", FOLDER_PATH)
                 .put("file_pattern", "log-(\\d{4})(\\d{2})(\\d{2})")
                 .build());
