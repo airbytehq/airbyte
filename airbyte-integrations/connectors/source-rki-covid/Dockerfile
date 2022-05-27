@@ -1,12 +1,11 @@
-FROM python:3.9.11-slim as base
+FROM python:3.9.11-alpine3.15 as base
 
-# build and load all requirements
+# build and load all requirements 
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache upgrade && pip install --upgrade pip
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
