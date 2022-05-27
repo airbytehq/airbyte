@@ -60,7 +60,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     })}: ${failureOrigin}`;
   };
 
-  const getFailureMessage = (attempt: AttemptRead) => {
+  const getExternalFailureMessage = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
     const failureMessage = failure?.externalMessage ?? formatMessage({ id: "errorView.unknown" });
 
@@ -114,7 +114,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
             },
             {
               key: getFailureOrigin(attempt),
-              value: getFailureMessage(attempt),
+              value: getExternalFailureMessage(attempt),
             }
           )}
         </FailureReasonDetails>

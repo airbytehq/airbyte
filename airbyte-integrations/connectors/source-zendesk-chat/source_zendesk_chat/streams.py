@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -22,12 +22,13 @@ class Stream(HttpStream, ABC):
     limit = 100
 
     def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
 
-        return {
-            "timeout": 60
-        }
+        return {"timeout": 60}
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")

@@ -4,7 +4,7 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.KnownExceptionInfo;
+import io.airbyte.api.model.generated.KnownExceptionInfo;
 import org.apache.logging.log4j.core.util.Throwables;
 
 public abstract class KnownException extends RuntimeException {

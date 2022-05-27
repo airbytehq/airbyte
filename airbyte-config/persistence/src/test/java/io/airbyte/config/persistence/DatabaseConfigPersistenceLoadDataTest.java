@@ -4,7 +4,7 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
