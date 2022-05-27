@@ -6,10 +6,15 @@ import abc
 from typing import Dict
 
 import airbyte_api_client
-from airbyte_api_client.api import source_api, destination_api, connection_api
-from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
-from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
+import click
+from airbyte_api_client.api import connection_api, destination_api, source_api
 from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
+
+
+class DefinitionNotFoundError(click.ClickException):
+    pass
 
 
 class BaseResource(abc.ABC):
@@ -40,20 +45,16 @@ class BaseResource(abc.ABC):
         self.workspace_id = workspace_id
         self.resource_id = resource_id
 
-    def get_resource(self) -> Dict:
-        api_response = self._get_fn(
-            self.api_instance, **self.get_function_kwargs)
+    def get_config(self) -> Dict:
+        api_response = self._get_fn(self.api_instance, **self.get_function_kwargs)
         return api_response
-
-    def __repr__(self):
-        return str(self.get_resource())
 
 
 class Source(BaseResource):
     api = source_api.SourceApi
     get_function_name = "get_source"
 
-    @ property
+    @property
     def get_function_kwargs(self) -> dict:
         return {"source_id_request_body": SourceIdRequestBody(source_id=self.resource_id)}
 
@@ -62,7 +63,7 @@ class Destination(BaseResource):
     api = destination_api.DestinationApi
     get_function_name = "get_destination"
 
-    @ property
+    @property
     def get_function_kwargs(self) -> dict:
         return {"destination_id_request_body": DestinationIdRequestBody(destination_id=self.resource_id)}
 
@@ -71,6 +72,6 @@ class Connection(BaseResource):
     api = connection_api.ConnectionApi
     get_function_name = "get_connection"
 
-    @ property
+    @property
     def get_function_kwargs(self) -> dict:
         return {"connection_id_request_body": ConnectionIdRequestBody(connection_id=self.resource_id)}

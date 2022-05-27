@@ -105,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.1-alpha
+docker run --name octavia-cli -i --rm -v ./my_repo:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.1-alpha
 ```
 
 ### Using `docker-compose`
@@ -154,6 +154,9 @@ docker-compose run octavia-cli <command>`
 | **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                           |
 | **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                      |
 | **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                       |
+| **`octavia get workspace source`**      | Get an existing source in current the Airbyte workspace.                           |
+| **`octavia get workspace destination`** | Get an existing destination in the current Airbyte workspace.                      |
+| **`octavia get workspace connection`**  | Get an existing connection in the current Airbyte workspace.                       |
 | **`octavia generate source`**             | Generate a local YAML configuration for a new source.                             |
 | **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                        |
 | **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                         |
@@ -240,6 +243,127 @@ List all the connections existing on your targeted Airbyte instance.
 $ octavia list workspace connections
 NAME           CONNECTION ID                         STATUS  SOURCE ID                             DESTINATION ID
 weather_to_pg  a4491317-153e-436f-b646-0b39338f9aab  active  c4aa8550-2122-4a33-9a21-adbfaa638544  c0c977c2-48e7-46fe-9f57-576285c26d42
+```
+
+#### `octavia get source <SOURCE_ID>`
+
+Get an existing source in current the Airbyte workspace
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `SOURCE_ID` | The source connector id. Can be retrieved using `octavia list workspace sources`. |
+
+**Example**:
+
+```bash
+$ octavia get source c0c977c2-48e7-46fe-9f57-576285c26d42
+{'connection_configuration': {'key': '**********',
+                              'start_date': '2010-01-01T00:00:00.000Z',
+                              'token': '**********'},
+ 'name': 'Pokemon',
+ 'source_definition_id': 'b08e4776-d1de-4e80-ab5c-1e51dad934a2',
+ 'source_id': 'c0c977c2-48e7-46fe-9f57-576285c26d42',
+ 'source_name': 'My Poke',
+ 'workspace_id': 'c4aa8550-2122-4a33-9a21-adbfaa638544'}
+```
+
+#### `octavia get destination <DESTINATION_ID>`
+
+Get an existing destination in current the Airbyte workspace
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `DESTINATION_ID` | The destination connector id. Can be retrieved using `octavia list workspace destinations`. |
+
+**Example**:
+
+```bash
+$ octavia get destination c0c977c2-48e7-46fe-9f57-576285c26d42
+{
+  "sourceDefinitionId": "18102e7c-5160-4000-821f-4d7cfdf87201",
+  "sourceId": "18102e7c-5160-4000-841b-15e8ec48c301",
+  "workspaceId": "18102e7c-5160-4000-883a-30bc7cd65601",
+  "connectionConfiguration": {
+    "user": "charles"
+  },
+  "name": "string",
+  "sourceName": "string"
+}
+```
+
+#### `octavia get connection <CONNECTION_ID>`
+
+Get an existing connection in current the Airbyte workspace
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `CONNECTION_ID` | The connection connector id. Can be retrieved using `octavia list workspace connections`. |
+
+**Example**:
+
+```bash
+$ octavia get connection c0c977c2-48e7-46fe-9f57-576285c26d42
+{
+  "connectionId": "18102e7c-5340-4000-8656-c433ed782601",
+  "name": "string",
+  "namespaceDefinition": "source",
+  "namespaceFormat": "${SOURCE_NAMESPACE}",
+  "prefix": "string",
+  "sourceId": "18102e7c-5340-4000-8eaa-4a86f844b101",
+  "destinationId": "18102e7c-5340-4000-8e58-6bed49c24b01",
+  "operationIds": [
+    "18102e7c-5340-4000-8ef0-f35c05a49a01"
+  ],
+  "syncCatalog": {
+    "streams": [
+      {
+        "stream": {
+          "name": "string",
+          "jsonSchema": {},
+          "supportedSyncModes": [
+            "full_refresh"
+          ],
+          "sourceDefinedCursor": false,
+          "defaultCursorField": [
+            "string"
+          ],
+          "sourceDefinedPrimaryKey": [
+            [
+              "string"
+            ]
+          ],
+          "namespace": "string"
+        },
+        "config": {
+          "syncMode": "full_refresh",
+          "cursorField": [
+            "string"
+          ],
+          "destinationSyncMode": "append",
+          "primaryKey": [
+            [
+              "string"
+            ]
+          ],
+          "aliasName": "string",
+          "selected": false
+        }
+      }
+    ]
+  },
+  "schedule": {
+    "units": 0,
+    "timeUnit": "minutes"
+  },
+  "status": "active",
+  "resourceRequirements": {
+    "cpu_request": "string",
+    "cpu_limit": "string",
+    "memory_request": "string",
+    "memory_limit": "string"
+  },
+  "sourceCatalogId": "18102e7c-5340-4000-85f3-204ab7715801"
+}
 ```
 
 #### `octavia generate source <DEFINITION_ID> <SOURCE_NAME>`
