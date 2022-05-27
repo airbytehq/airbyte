@@ -24,7 +24,6 @@
     "name": { "type": "string" },
     "sex": { "type": "string" },
     "address": { "type": "string" },
-    "mail": { "type": "string" },
-    "birthdate": { "type": "string", "format": "date" }
+    "mail": { "type": "string" }
   }
 }
