@@ -37,13 +37,13 @@ paginator:
 lists_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   cursor_field: [ ]
-  kwargs:
+  options:
     name: "lists"
     primary_key: "*ref(primary_key)"
     url_base: "*ref(url_base)"
   schema_loader:
     class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"
-    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.yaml"
+    file_path: "./source_sendgrid/schemas/{{options['name']}}.yaml"
   retriever:
     class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
     state:
