@@ -11,7 +11,6 @@ from functools import lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -307,10 +306,10 @@ class FileStream(Stream, ABC):
         return record
 
     def _read_from_slice(
-        self,
-        file_reader: AbstractFileParser,
-        stream_slice: Mapping[str, Any],
-        stream_state: Mapping[str, Any] = None,
+            self,
+            file_reader: AbstractFileParser,
+            stream_slice: Mapping[str, Any],
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Uses provider-relevant StorageFile to open file and then iterates through stream_records() using format-relevant AbstractFileParser.
@@ -334,11 +333,11 @@ class FileStream(Stream, ABC):
         LOGGER.info("finished reading a stream slice")
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic
@@ -351,7 +350,9 @@ class FileStream(Stream, ABC):
 class IncrementalFileStream(FileStream, ABC):
     # TODO: ideally want to checkpoint after every file or stream slice rather than N records
     state_checkpoint_interval = None
-    days = 3  # keeping track of all files synced in the last N days
+    buffer_days = 3  # keeping track of all files synced in the last N days
+    sync_all_files_always = False
+    max_history_size = 1000000000
 
     @property
     def cursor_field(self) -> str:
@@ -374,6 +375,42 @@ class IncrementalFileStream(FileStream, ABC):
         else:
             return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
 
+    def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
+        """
+        History is dict which basically groups files by their modified_at date.
+        After reading each record we add its file to the history set if it wasn't already there.
+        Then we drop from the history set any entries whose key is less than now - buffer_days
+        """
+
+        history = current_stream_state.get("history", {})
+
+        file_modification_date = latest_record_datetime.strftime("%Y-%m-%d")
+
+        # add record to history if record modified date in range delta start from state
+        if latest_record_datetime.date() + timedelta(days=self.buffer_days) >= state_date:
+            history_item = set(history.setdefault(file_modification_date, set()))
+            history_item.add(latest_record[self.ab_file_name_col])
+            history[file_modification_date] = history_item
+
+        # reset history to new date state
+        if current_parsed_datetime.date() != state_date:
+            history = {date: history[date] for date in history if datetime.strptime(date, "%Y-%m-%d").date() + timedelta(
+                days=self.buffer_days) >= state_date}
+
+        return history
+
+    def size_history_balancer(self, state_dict):
+        """
+        Delete history if state size limit reached
+        """
+        history = state_dict["history"]
+
+        if history.__sizeof__() > self.max_history_size:
+            self.sync_all_files_always = True
+            state_dict.pop("history")
+
+        return state_dict
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
@@ -393,24 +430,32 @@ class IncrementalFileStream(FileStream, ABC):
 
         state_dict["schema"] = self._get_schema_map()
 
-        history = current_stream_state.get("history", {})
+        state_date = self._get_datetime_from_stream_state(state_dict).date()
 
-        # add record to history if record modified date in range delta start from state
-        if latest_record_datetime.date() + timedelta(days=self.days) >= self._get_datetime_from_stream_state(state_dict).date():
-            history_item = set(history.setdefault(latest_record_datetime.strftime("%Y-%m-%d"), set()))
-            history_item.add(latest_record["_ab_source_file_url"])
-            history[latest_record_datetime.strftime("%Y-%m-%d")] = history_item
+        if not self.sync_all_files_always:
+            state_dict["history"] = self.get_updated_history(current_stream_state, latest_record_datetime, latest_record,
+                                                         current_parsed_datetime, state_date)
 
-        # reset history to new date state
-        if current_parsed_datetime.date() != self._get_datetime_from_stream_state(state_dict).date():
-            history = {date: history[date] for date in history if datetime.strptime(date, "%Y-%m-%d").date() + timedelta(days=self.days) >= self._get_datetime_from_stream_state(state_dict).date()}
+        return self.size_history_balancer(state_dict)
 
-        state_dict["history"] = deepcopy(history)
+    def need_to_skip_file(self, stream_state, file_info):
+        """
+        Skip this file if last_mod is earlier than our cursor value from state and already in history
+        or skip this file if last_mod plus delta is earlier than our cursor value
+        """
+        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
+                stream_state is not None
+                and self.cursor_field in stream_state.keys()
+                and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
+                and self.file_in_history(file_info, stream_state.get("history", {})))
 
-        return state_dict
+        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
+            days=self.buffer_days) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
+
+        return file_in_history_and_last_modified_is_earlier_than_cursor_value or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         Builds either full_refresh or incremental stream_slices based on sync_mode.
@@ -434,15 +479,7 @@ class IncrementalFileStream(FileStream, ABC):
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
             for file_info in self.get_time_ordered_file_infos():
-                # skip this file if last_mod is earlier than our cursor value from state and already in history
-                # or skip this file if last_mod plus delta is earlier than our cursor value
-                if (
-                    stream_state is not None
-                    and self.cursor_field in stream_state.keys()
-                    and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-                    and self.file_in_history(file_info, stream_state.get("history", {}))
-                    or file_info.last_modified + timedelta(days=self.days) < self._get_datetime_from_stream_state(stream_state)
-                ):
+                if self.need_to_skip_file(stream_state, file_info):
                     continue
 
                 # check if this file belongs in the next slice, if so yield the current slice before this file
@@ -463,11 +500,11 @@ class IncrementalFileStream(FileStream, ABC):
                 yield None
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic.
