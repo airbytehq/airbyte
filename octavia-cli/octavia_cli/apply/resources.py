@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import abc
@@ -504,7 +504,8 @@ class Connection(BaseResource):
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
-        configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
+        if "schedule" in configuration:
+            configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
         configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
         configuration["status"] = ConnectionStatus(configuration["status"])
         return configuration
@@ -587,7 +588,7 @@ class Connection(BaseResource):
         self._check_for_invalid_configuration_keys(
             configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message
         )
-        self._check_for_invalid_configuration_keys(configuration_to_check["schedule"], {"timeUnit"}, error_message)
+        self._check_for_invalid_configuration_keys(configuration_to_check.get("schedule", {}), {"timeUnit"}, error_message)
         for stream in configuration_to_check["sync_catalog"]["streams"]:
             self._check_for_invalid_configuration_keys(
                 stream["stream"],

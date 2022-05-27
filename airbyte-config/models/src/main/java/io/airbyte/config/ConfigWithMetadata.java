@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -7,6 +7,7 @@ package io.airbyte.config;
 import java.time.Instant;
 import java.util.Objects;
 
+@SuppressWarnings("PMD.ShortVariable")
 public class ConfigWithMetadata<T> {
 
   private final String configId;

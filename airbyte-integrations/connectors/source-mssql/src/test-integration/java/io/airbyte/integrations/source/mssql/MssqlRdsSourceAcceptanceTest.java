@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -10,18 +10,17 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 
 public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private JsonNode baseConfig;
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     baseConfig = getStaticConfig();
@@ -61,7 +60,8 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
         String.format("jdbc:sqlserver://%s:%d;%s",
             baseConfig.get("host").asText(),
             baseConfig.get("port").asInt(),
-            additionalParameter), null);
+            additionalParameter),
+        null);
   }
 
   private Database getDatabase(final DSLContext dslContext) {

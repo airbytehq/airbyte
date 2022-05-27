@@ -21,11 +21,14 @@
   --ifm-navbar-link-color: #615eff;
   --ifm-font-family-base: 'Inter';
   --ifm-alert-shadow: none;
+  --ifm-menu-color: var(--ifm-color-emphasis-900);
+  --ifm-hover-overlay: rgb(0 0 0 / 2%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 html[data-theme='dark'] {
-  --ifm-color-primary: #615eff;
+  --ifm-color-primary: #7976FF;
+  --ifm-navbar-link-color: #7976FF;
   --ifm-color-primary-dark: #3f3bff;
   --ifm-color-primary-darker: #2e2aff;
   --ifm-color-primary-darkest: #0500f4;
@@ -78,4 +81,15 @@ img {
     max-width: 100%;
     border-radius: 8px;
 }
+
+.iconExternalLink_I5OW {
+    margin-left: 0.3rem;
+    display: none;
+}
+
+.menu__link--sublist-caret:after {
+    background: var(--ifm-menu-link-sublist-icon) 50%/1.5rem 1.5rem;
+    min-width: 1.25rem;
+}
+
 

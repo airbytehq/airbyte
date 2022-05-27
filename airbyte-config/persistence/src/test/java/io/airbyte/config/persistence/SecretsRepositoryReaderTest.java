@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -45,6 +45,9 @@ class SecretsRepositoryReaderTest {
   private static final JsonNode PARTIAL_CONFIG =
       Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": { \"_secret\": \"%s\" } }", COORDINATE.getFullCoordinate()));
   private static final JsonNode FULL_CONFIG = Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": \"%s\"}", SECRET));
+  private static final String KEY = "_secret";
+  private static final String SERVICE_ACCT_EMAIL = "a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com";
+  private static final String SERVICE_ACCT_ID = "a1e5ac98-7531-48e1-943b-b46636";
 
   private static final SourceConnection SOURCE_WITH_PARTIAL_CONFIG = new SourceConnection()
       .withSourceId(UUID1)
@@ -123,7 +126,7 @@ class SecretsRepositoryReaderTest {
   }
 
   @Test
-  public void testReadingServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testReadingServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
@@ -141,10 +144,10 @@ class SecretsRepositoryReaderTest {
         "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_6b894c2b-71dc-4481-bd9f-572402643cf9", 1);
 
     doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(Jsons.jsonNode(
-        Map.of("_secret", secretCoordinateHmac.getFullCoordinate()))).withJsonCredential(Jsons.jsonNode(
-            Map.of("_secret", secretCoordinateJson.getFullCoordinate())))
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+        Map.of(KEY, secretCoordinateHmac.getFullCoordinate()))).withJsonCredential(Jsons.jsonNode(
+            Map.of(KEY, secretCoordinateJson.getFullCoordinate())))
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL)
+        .withServiceAccountId(SERVICE_ACCT_ID))
             .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
     doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
@@ -154,13 +157,13 @@ class SecretsRepositoryReaderTest {
     final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
     final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
         .withJsonCredential(Jsons.deserialize(jsonSecretPayload)).withHmacKey(HMAC_SECRET_PAYLOAD_1)
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
+        .withServiceAccountId(SERVICE_ACCT_ID)
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL);
     assertEquals(expected, actual);
   }
 
   @Test
-  public void testReadingServiceAccountWithJsonNull() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testReadingServiceAccountWithJsonNull() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
@@ -173,9 +176,9 @@ class SecretsRepositoryReaderTest {
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
     doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(Jsons.jsonNode(
-        Map.of("_secret", secretCoordinateHmac.getFullCoordinate())))
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+        Map.of(KEY, secretCoordinateHmac.getFullCoordinate())))
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL)
+        .withServiceAccountId(SERVICE_ACCT_ID))
             .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
     doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
@@ -183,13 +186,13 @@ class SecretsRepositoryReaderTest {
     final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
     final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
         .withHmacKey(HMAC_SECRET_PAYLOAD_1)
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
+        .withServiceAccountId(SERVICE_ACCT_ID)
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL);
     assertEquals(expected, actual);
   }
 
   @Test
-  public void testReadingServiceAccountWithHmacNull() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testReadingServiceAccountWithHmacNull() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
@@ -204,9 +207,9 @@ class SecretsRepositoryReaderTest {
         "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_6b894c2b-71dc-4481-bd9f-572402643cf9", 1);
 
     doReturn(new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withJsonCredential(Jsons.jsonNode(
-        Map.of("_secret", secretCoordinateJson.getFullCoordinate())))
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
+        Map.of(KEY, secretCoordinateJson.getFullCoordinate())))
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL)
+        .withServiceAccountId(SERVICE_ACCT_ID))
             .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
     doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(secretCoordinateJson);
@@ -214,8 +217,8 @@ class SecretsRepositoryReaderTest {
     final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
     final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
         .withJsonCredential(Jsons.deserialize(jsonSecretPayload))
-        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
-        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
+        .withServiceAccountId(SERVICE_ACCT_ID)
+        .withServiceAccountEmail(SERVICE_ACCT_EMAIL);
     assertEquals(expected, actual);
   }
 

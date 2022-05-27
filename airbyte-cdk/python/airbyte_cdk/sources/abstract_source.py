@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -28,6 +28,7 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class AbstractSource(Source, ABC):
@@ -118,8 +119,13 @@ class AbstractSource(Source, ABC):
                         connector_state=connector_state,
                         internal_config=internal_config,
                     )
+                except AirbyteTracedException as e:
+                    raise e
                 except Exception as e:
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     timer.finish_event()

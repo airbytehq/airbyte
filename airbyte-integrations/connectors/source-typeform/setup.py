@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,12 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-    "pytest-mock~=3.6",
-    "requests_mock~=1.8"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "pytest-mock~=3.6", "requests_mock~=1.8"]
 
 setup(
     name="source_typeform",

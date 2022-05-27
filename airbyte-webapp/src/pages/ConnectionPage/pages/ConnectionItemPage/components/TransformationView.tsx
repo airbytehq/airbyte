@@ -5,14 +5,7 @@ import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import {
-  Connection,
-  ConnectionStatus,
-  NormalizationType,
-  Operation,
-  OperatorType,
-  Transformation,
-} from "core/domain/connection";
+import { NormalizationType } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -29,8 +22,16 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
+import {
+  ConnectionStatus,
+  OperationCreate,
+  OperationRead,
+  OperatorType,
+  WebBackendConnectionRead,
+} from "../../../../../core/request/AirbyteClient";
+
 interface TransformationViewProps {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
 }
 
 const Content = styled.div`
@@ -49,8 +50,8 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 `;
 
 const CustomTransformationsCard: React.FC<{
-  operations: Operation[];
-  onSubmit: FormikOnSubmit<{ transformations?: Transformation[] }>;
+  operations?: OperationRead[];
+  onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
@@ -63,7 +64,7 @@ const CustomTransformationsCard: React.FC<{
   );
 
   return (
-    <FormCard<{ transformations?: Transformation[] }>
+    <FormCard<{ transformations?: OperationRead[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
       bottomSeparator
@@ -84,7 +85,7 @@ const CustomTransformationsCard: React.FC<{
 };
 
 const NormalizationCard: React.FC<{
-  operations: Operation[];
+  operations?: OperationRead[];
   onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
@@ -119,19 +120,21 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const supportsNormalization = definition.supportsNormalization;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
-  const mode = connection.status === ConnectionStatus.DEPRECATED ? "readonly" : "edit";
+  const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
 
-  const onSubmit: FormikOnSubmit<{ transformations?: Transformation[]; normalization?: NormalizationType }> = async (
+  const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
     { resetForm }
   ) => {
     const newOp = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
     const operations = values.transformations
-      ? connection.operations
-          .filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
+      ? (connection.operations as OperationCreate[]) // There's an issue meshing the OperationRead here with OperationCreate that we want, in the types
+          ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.normalization)
           .concat(newOp)
-      : newOp.concat(connection.operations.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt));
+      : newOp.concat(
+          (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
+        );
 
     await updateConnection({
       namespaceDefinition: connection.namespaceDefinition,
@@ -148,9 +151,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
     if (values.transformations) {
       nextFormValues.transformations = getInitialTransformations(operations);
     }
-    if (values.normalization) {
-      nextFormValues.normalization = getInitialNormalization(operations, true);
-    }
+    nextFormValues.normalization = getInitialNormalization(operations, true);
 
     resetForm({ values: nextFormValues });
   };

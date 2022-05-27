@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -125,8 +125,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
-        jdbcUrl
-    );
+        jdbcUrl);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

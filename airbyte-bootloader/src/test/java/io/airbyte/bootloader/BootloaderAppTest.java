@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.bootloader;
@@ -126,7 +126,9 @@ public class BootloaderAppTest {
 
       val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      // this line should change with every new migration
+      // to show that you meant to make a new migration to the prod database
+      assertEquals("0.38.4.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(version, jobsPersistence.getVersion().get());

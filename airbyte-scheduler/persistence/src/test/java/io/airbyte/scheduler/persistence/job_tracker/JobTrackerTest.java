@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence.job_tracker;
@@ -320,10 +320,12 @@ class JobTrackerTest {
         .put(JobTracker.CONFIG + ".const_object.sub_key", "bar")
         .put(JobTracker.CONFIG + ".const_object.sub_array", "[1,2,3]")
         .put(JobTracker.CONFIG + ".const_object.sub_object.sub_sub_key", "baz")
+        .put(JobTracker.CONFIG + ".enum_string", "foo")
         .put(JobTracker.CONFIG + ".additionalPropertiesUnset.foo", JobTracker.SET)
         .put(JobTracker.CONFIG + ".additionalPropertiesBoolean.foo", JobTracker.SET)
         .put(JobTracker.CONFIG + ".additionalPropertiesSchema.foo", JobTracker.SET)
         .put(JobTracker.CONFIG + ".additionalPropertiesConst.foo", 42)
+        .put(JobTracker.CONFIG + ".additionalPropertiesEnumString", "foo")
         .build();
 
     final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config, schema);

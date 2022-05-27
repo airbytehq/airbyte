@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -12,7 +12,7 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def get_stream_state(self):
+    def get_state(self):
         pass
 
     def deep_copy(self):
