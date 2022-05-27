@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -e
+set -e
 set -x
 
 . tools/lib/lib.sh
@@ -175,6 +175,7 @@ _ensure_docker_image_registered() {
   sleep 5
 
   # To work for private repos we need a token as well
+  set +x
   DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
   DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' "https://hub.docker.com/v2/users/login/" | jq -r .token)
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
@@ -182,6 +183,7 @@ _ensure_docker_image_registered() {
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
   fi
+  set -x
 }
 
 # We generate a spec based on the built image rather than using spec.json because not all connectors actually
@@ -265,8 +267,10 @@ cmd_publish() {
   local build_arch="linux/amd64,linux/arm64"
 
   # log into docker
+  set +x
   DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
   DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' "https://hub.docker.com/v2/users/login/" | jq -r .token)
+  set -x
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
@@ -324,7 +328,9 @@ cmd_publish() {
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
       echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
       TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
+      set +x
       curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
+      set -x
     done
   fi
 
