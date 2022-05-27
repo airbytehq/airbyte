@@ -8,7 +8,7 @@
     "destination.spec.js",
     "source.spec.js"
   ],
-  "viewportHeight": 800, 
+  "viewportHeight": 800,
   "viewportWidth": 1280,
   "retries": {
     "runMode": 2,
