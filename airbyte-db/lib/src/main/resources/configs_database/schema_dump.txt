@@ -132,13 +132,6 @@ create table "public"."operation"(
   constraint "operation_pkey"
     primary key ("id")
 );
-create table "public"."resets"(
-  "id" uuid not null,
-  "connection_id" uuid not null,
-  "stream_name" text not null,
-  "created_at" timestamptz(35) not null default null,
-  "updated_at" timestamptz(35) not null default null
-);
 create table "public"."state"(
   "id" uuid not null,
   "connection_id" uuid not null,
@@ -150,6 +143,13 @@ create table "public"."state"(
       "id", 
       "connection_id"
     )
+);
+create table "public"."stream_resets"(
+  "id" uuid not null,
+  "connection_id" uuid not null,
+  "stream_name" text not null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null
 );
 create table "public"."workspace"(
   "id" uuid not null,
@@ -275,10 +275,13 @@ create unique index "connection_operation_pkey" on "public"."connection_operatio
   "operation_id" asc
 );
 create unique index "operation_pkey" on "public"."operation"("id" asc);
-create index "connection_id_idx" on "public"."resets"("connection_id" asc);
 create unique index "state_pkey" on "public"."state"(
   "id" asc, 
   "connection_id" asc
+);
+create index "connection_id_stream_name_idx" on "public"."stream_resets"(
+  "connection_id" asc, 
+  "stream_name" asc
 );
 create unique index "workspace_pkey" on "public"."workspace"("id" asc);
 create unique index "workspace_service_account_pkey" on "public"."workspace_service_account"(
