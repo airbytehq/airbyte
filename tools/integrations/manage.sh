@@ -221,7 +221,7 @@ _publish_spec_to_cache() {
       echo "Using environment gcloud"
     fi
 
-#    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
   else
     echo "Publishing without writing to spec cache."
   fi
@@ -308,27 +308,27 @@ cmd_publish() {
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
       docker buildx build -t $arch_versioned_image --platform $arch --push $path
-#      docker manifest create $latest_image --amend $arch_versioned_image
-#      docker manifest create $versioned_image --amend $arch_versioned_image
+      docker manifest create $latest_image --amend $arch_versioned_image
+      docker manifest create $versioned_image --amend $arch_versioned_image
     done
 
-#    docker manifest push $latest_image
-#    docker manifest push $versioned_image
-#    docker manifest rm $latest_image
-#    docker manifest rm $versioned_image
+    docker manifest push $latest_image
+    docker manifest push $versioned_image
+    docker manifest rm $latest_image
+    docker manifest rm $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
-#    sleep 5
-#    for arch in $(echo $build_arch | sed "s/,/ /g")
-#    do
-#      local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
-#      echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
-#      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
-#      curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
-#    done
+    sleep 5
+    for arch in $(echo $build_arch | sed "s/,/ /g")
+    do
+      local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
+      echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
+      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
+      curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
+    done
   fi
 
-#  _ensure_docker_image_registered "$image_name" "$image_version"
+  _ensure_docker_image_registered "$image_name" "$image_version"
 }
 
 cmd_publish_external() {
