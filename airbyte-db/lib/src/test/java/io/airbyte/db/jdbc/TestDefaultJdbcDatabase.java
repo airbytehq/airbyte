@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -12,11 +12,13 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,6 +36,7 @@ public class TestDefaultJdbcDatabase {
 
   private static PostgreSQLContainer<?> PSQL_DB;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private DataSource dataSource;
   private JdbcDatabase database;
 
   @BeforeAll
@@ -56,7 +59,8 @@ public class TestDefaultJdbcDatabase {
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
-    database = getDatabaseFromConfig(config);
+    dataSource = getDataSourceFromConfig(config);
+    database = new DefaultJdbcDatabase(dataSource);
     database.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -65,7 +69,7 @@ public class TestDefaultJdbcDatabase {
 
   @AfterEach
   void close() throws Exception {
-    database.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
@@ -94,15 +98,15 @@ public class TestDefaultJdbcDatabase {
     assertEquals(RECORDS_AS_JSON, actual);
   }
 
-  private JdbcDatabase getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createJdbcDatabase(
+  private DataSource getDataSourceFromConfig(final JsonNode config) {
+    return DataSourceFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+            config.get("port").asInt(),
+            config.get("database").asText()));
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {

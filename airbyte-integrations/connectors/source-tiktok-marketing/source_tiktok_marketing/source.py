@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -18,6 +18,7 @@ from .spec import (
     SourceTiktokMarketingSpec,
 )
 from .streams import (
+    DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
     AdGroups,
@@ -76,6 +77,7 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
+
         credentials = config.get("credentials")
         if credentials:
             # used for new config format
@@ -92,6 +94,7 @@ class SourceTiktokMarketing(AbstractSource):
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
+            "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "advertiser_id": advertiser_id,
             "app_id": app_id,
             "secret": secret,

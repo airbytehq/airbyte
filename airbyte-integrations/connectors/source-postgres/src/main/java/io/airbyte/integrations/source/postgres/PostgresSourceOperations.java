@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -59,9 +59,6 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       } else {
         queryContext.getObject(i);
       }
-      if (queryContext.wasNull()) {
-        continue;
-      }
 
       // convert to java types that will convert into reasonable json.
       setJsonField(queryContext, i, jsonNode);
@@ -77,7 +74,9 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
-    if (columnTypeName.equalsIgnoreCase("bool") || columnTypeName.equalsIgnoreCase("boolean")) {
+    if (resultSet.getString(colIndex) == null) {
+      json.putNull(columnName);
+    } else if (columnTypeName.equalsIgnoreCase("bool") || columnTypeName.equalsIgnoreCase("boolean")) {
       putBoolean(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("bytea")) {
       putString(json, columnName, resultSet, colIndex);

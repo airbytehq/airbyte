@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -23,16 +23,6 @@ class OauthCredSpec(BaseModel):
     access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
 
 
-class ProductionEnvSpec(BaseModel):
-    class Config:
-        title = "Production Access Token"
-
-    auth_type: str = Field(default="prod_access_token", const=True, order=0)
-    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
-    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
-    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
-
-
 class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox Access Token"
@@ -50,7 +40,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
+    credentials: Union[OauthCredSpec, SandboxEnvSpec] = Field(
         title="Authentication Method", description="Authentication method", order=0, default={}, type="object"
     )
 
@@ -70,6 +60,18 @@ class SourceTiktokMarketingSpec(BaseModel):
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
         order=2,
+    )
+
+    end_date: str = Field(
+        None,
+        title="End Date",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        description=(
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. "
+            "All data generated between start_date and this date will be replicated. "
+            "Not setting this option will result in always syncing the data till the current date."
+        ),
+        order=3,
     )
 
     @classmethod

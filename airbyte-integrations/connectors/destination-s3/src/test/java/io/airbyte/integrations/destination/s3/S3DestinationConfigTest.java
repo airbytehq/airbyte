@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -46,7 +46,6 @@ class S3DestinationConfigTest {
     assertEquals(newBucketName, modifiedConfig.getBucketName());
     assertEquals(newBucketPath, modifiedConfig.getBucketPath());
     assertEquals(newBucketRegion, modifiedConfig.getBucketRegion());
-    assertEquals(newPartSize, modifiedConfig.getPartSize());
 
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) modifiedConfig.getS3CredentialConfig();
     assertEquals(newKey, credentialConfig.getAccessKeyId());

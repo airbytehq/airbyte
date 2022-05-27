@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
+import requests
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
@@ -44,21 +45,59 @@ from source_hubspot.streams import (
     Workflows,
 )
 
+SCOPES = [
+    "automation",
+    "content",
+    "crm.lists.read",
+    "crm.objects.companies.read",
+    "crm.objects.contacts.read",
+    "crm.objects.deals.read",
+    "crm.objects.feedback_submissions.read",
+    "crm.objects.owners.read",
+    "crm.schemas.companies.read",
+    "crm.schemas.contacts.read",
+    "crm.schemas.deals.read",
+    "e-commerce",
+    "files",
+    "files.ui_hidden.read",
+    "forms",
+    "forms-uploaded-files",
+    "sales-email-read",
+    "tickets",
+]
+
 
 class SourceHubspot(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
+        common_params = self.get_common_params(config=config)
+        if common_params.get("authenticator"):
+            access_token = common_params["authenticator"].get_access_token()
+            url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
+            try:
+                response = requests.get(url=url)
+                response.raise_for_status()
+                return self.check_scopes(response.json())
+            except Exception as e:
+                return False, repr(e)
+
         alive = True
         error_msg = None
-        common_params = self.get_common_params(config=config)
         try:
             contacts = Contacts(**common_params)
             _ = contacts.properties
         except HTTPError as error:
             alive = False
             error_msg = repr(error)
-
         return alive, error_msg
+
+    @staticmethod
+    def check_scopes(response_json):
+        granted_scopes = response_json["scopes"]
+        missed_scopes = set(SCOPES) - set(granted_scopes)
+        if missed_scopes:
+            return False, "missed required scopes: " + ", ".join(sorted(missed_scopes))
+        return True, None
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:

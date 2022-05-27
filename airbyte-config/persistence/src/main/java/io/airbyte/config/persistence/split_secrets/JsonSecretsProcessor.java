@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -18,20 +18,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 @Builder
+@SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+@Slf4j
 public class JsonSecretsProcessor {
 
   @Builder.Default
-  private boolean maskSecrets = true;
+  final private boolean maskSecrets = true;
 
   @Builder.Default
-  private boolean copySecrets = true;
+  final private boolean copySecrets = true;
 
   protected static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
   @VisibleForTesting
-  static String SECRETS_MASK = "**********";
+  static final String SECRETS_MASK = "**********";
 
   static final String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   static final String PROPERTIES_FIELD = "properties";
@@ -54,6 +57,7 @@ public class JsonSecretsProcessor {
       // todo (cgardens) this is not safe. should throw.
       // if schema is an object and has a properties field
       if (!isValidJsonSchema(schema)) {
+        log.error("The schema is not valid, the secret can't be hidden");
         return obj;
       }
 
@@ -76,7 +80,7 @@ public class JsonSecretsProcessor {
         schema,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> field.getKey().equals(AIRBYTE_SECRET_FIELD)));
+            .anyMatch(field -> AIRBYTE_SECRET_FIELD.equals(field.getKey())));
 
     JsonNode copy = Jsons.clone(json);
     for (final String path : pathsWithSecrets) {
@@ -121,7 +125,7 @@ public class JsonSecretsProcessor {
         final JsonNode fieldSchema = properties.get(key);
         // We only copy the original secret if the destination object isn't attempting to overwrite it
         // I.e. if the destination object's value is set to the mask, then we can copy the original secret
-        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
+        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && SECRETS_MASK.equals(dst.get(key).asText())) {
           dstCopy.set(key, src.get(key));
         } else if (dstCopy.has(key)) {
           // If the destination has this key, then we should consider copying it

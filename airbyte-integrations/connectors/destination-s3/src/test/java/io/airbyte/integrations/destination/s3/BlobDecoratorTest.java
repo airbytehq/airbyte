@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,8 +20,7 @@ public class BlobDecoratorTest {
     BlobDecorator.insertMetadata(
         metadata,
         Map.of("foo", "amz-foo"),
-        "foo", "newValue"
-    );
+        "foo", "newValue");
 
     assertEquals(Map.of("amz-foo", "newValue"), metadata);
   }
@@ -30,16 +33,13 @@ public class BlobDecoratorTest {
     BlobDecorator.insertMetadata(
         metadata,
         Map.of("bar", "amz-bar"),
-        "bar", "newValue"
-    );
+        "bar", "newValue");
 
     assertEquals(
         Map.of(
             "amz-foo", "oldValue",
-            "amz-bar", "newValue"
-        ),
-        metadata
-    );
+            "amz-bar", "newValue"),
+        metadata);
   }
 
   @Test
@@ -50,9 +50,9 @@ public class BlobDecoratorTest {
     BlobDecorator.insertMetadata(
         metadata,
         Map.of("foo", "amz-foo"),
-        "bar", "newValue"
-    );
+        "bar", "newValue");
 
     assertEquals(Map.of("amz-foo", "oldValue"), metadata);
   }
+
 }

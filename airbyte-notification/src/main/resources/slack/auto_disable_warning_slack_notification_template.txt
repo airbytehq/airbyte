@@ -1,3 +1,6 @@
 Your connection from %s to %s is scheduled to be automatically disabled because it either failed 50 times consecutively or there were only failed jobs in the past 7 days. Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
 
-Please address the failing issues to ensure your syncs continue to run. The most recent attempted %s You can access its logs here: %s.
+Please address the failing issues to ensure your syncs continue to run. The most recent attempted %s
+
+Workspace ID: %s
+Connection ID: %s

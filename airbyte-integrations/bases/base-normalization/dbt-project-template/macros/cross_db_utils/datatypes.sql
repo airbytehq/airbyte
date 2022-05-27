@@ -33,7 +33,7 @@
 {%- endmacro -%}
 
 {%- macro sqlserver__type_json() -%}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
 
 {% macro clickhouse__type_json() %}
@@ -52,13 +52,17 @@
 {%- endmacro -%}
 
 {% macro sqlserver__type_string() %}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
 
 {%- macro clickhouse__type_string() -%}
     String
 {%- endmacro -%}
 
+{#-- TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/dbt-labs/dbt-core/issues/5238) and we've upgraded to the latest version of dbt --#}
+{%- macro postgres__type_string() -%}
+    text
+{%- endmacro -%}
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
@@ -154,7 +158,7 @@
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
     {#-- in TSQL timestamp is really datetime or datetime2 --#}
     {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
-    datetime
+    datetime2
 {%- endmacro -%}
 
 {% macro clickhouse__type_timestamp_with_timezone() %}

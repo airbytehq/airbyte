@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -16,6 +16,6 @@ public interface FeatureFlags {
 
   boolean exposeSecretsInExport();
 
-  boolean runSecretMigration();
+  boolean forceSecretMigration();
 
 }

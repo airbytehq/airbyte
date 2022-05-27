@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -454,7 +454,7 @@ public class KubePodProcess extends Process implements KubePod {
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
@@ -463,7 +463,7 @@ public class KubePodProcess extends Process implements KubePod {
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage(socatImage)
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)

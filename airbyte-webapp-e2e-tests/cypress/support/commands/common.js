@@ -14,7 +14,7 @@ Cypress.Commands.add("fillTestLocalJsonForm", (name) => {
   
   cy.wait("@getDestinationSpecifications");
   
-  cy.get("input[name=name]").type(name);
+  cy.get("input[name=name]").clear().type(name);
   cy.get("input[name='connectionConfiguration.destination_path']").type("/local");
 })
 

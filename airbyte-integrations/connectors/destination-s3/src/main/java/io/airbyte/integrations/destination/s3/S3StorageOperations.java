@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -290,7 +290,11 @@ public class S3StorageOperations extends BlobStorageOperations {
   protected Map<String, String> getMetadataMapping() {
     return ImmutableMap.of(
         AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "x-amz-key",
-        AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv"
-    );
+        AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv");
   }
+
+  public void uploadManifest(String bucketName, String manifestFilePath, String manifestContents) {
+    s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
+  }
+
 }

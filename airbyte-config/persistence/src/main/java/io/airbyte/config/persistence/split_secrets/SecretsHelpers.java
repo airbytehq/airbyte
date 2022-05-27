@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
  * A {@link SecretCoordinate} is a reference to a specific secret at a specific version in a
  * {@link SecretPersistence}.
  */
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SecretsHelpers {
 
   public static final String COORDINATE_FIELD = "_secret";

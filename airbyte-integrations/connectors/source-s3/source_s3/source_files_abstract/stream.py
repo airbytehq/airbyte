@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -18,6 +18,7 @@ from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
+from .formats.avro_parser import AvroParser
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
@@ -38,6 +39,7 @@ class FileStream(Stream, ABC):
         return {
             "csv": CsvParser,
             "parquet": ParquetParser,
+            "avro": AvroParser,
         }
 
     # TODO: make these user configurable in spec.json
@@ -107,7 +109,7 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(self._format.get("filetype"))
+        file_reader = self.fileformatparser_map.get(filetype)
         if not file_reader:
             raise RuntimeError(
                 f"Detected mismatched file format '{filetype}'. Available values: '{list(self.fileformatparser_map.keys())}''."
@@ -219,23 +221,24 @@ class FileStream(Stream, ABC):
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
                     if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
-                        # if this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
-                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
-                        # if not, then the read will error anyway
+                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
+                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
+                        # provided schema state. If not, then the read will error anyway
                         if col in self._schema.keys():
                             LOGGER.warn(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
-                        # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
+                        # else we're inferring the schema (or at least this column) from scratch and therefore
+                        # throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
-                # missing columns in this_schema doesn't affect our master_schema so we don't check for it here
+                # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
 
                 # add to master_schema any columns from this_schema that aren't already present
                 for col, datatype in this_schema.items():

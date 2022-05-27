@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -11,9 +11,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean usesNewScheduler() {
-    log.info("New Scheduler: " + Boolean.parseBoolean(System.getenv("NEW_SCHEDULER")));
+    // TODO: sweep this method along with the scheduler
+    log.info("New Scheduler: true (post-migration)");
 
-    return Boolean.parseBoolean(System.getenv("NEW_SCHEDULER"));
+    // After migrating all OSS users onto the new temporal scheduler, this should always return true.
+    return true;
   }
 
   @Override
@@ -29,8 +31,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean runSecretMigration() {
-    return Boolean.parseBoolean(System.getenv("MIGRATE_SECRET_STORE"));
+  public boolean forceSecretMigration() {
+    return Boolean.parseBoolean(System.getenv("FORCE_MIGRATE_SECRET_STORE"));
   }
 
 }

@@ -7,17 +7,16 @@ import styled from "styled-components";
 import { H6, Link } from "components";
 import StepsMenu from "components/StepsMenu";
 
-import { Connection, ConnectionStatus } from "core/domain/connection";
-import { Source, Destination } from "core/domain/connector/types";
+import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
 interface ConnectionPageTitleProps {
-  source: Source;
-  destination: Destination;
-  connection: Connection;
+  source: SourceRead;
+  destination: DestinationRead;
+  connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
 }
 
@@ -61,7 +60,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, desti
     },
   ];
 
-  connection.status !== ConnectionStatus.DEPRECATED &&
+  connection.status !== ConnectionStatus.deprecated &&
     steps.push({
       id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
