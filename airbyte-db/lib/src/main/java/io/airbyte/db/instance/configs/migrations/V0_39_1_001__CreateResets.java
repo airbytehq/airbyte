@@ -43,7 +43,7 @@ public class V0_39_1_001__CreateResets extends BaseJavaMigration {
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("resets")
-        .columns(id, connectionId, streamName, createdAt, updatedAt);
+        .columns(id, connectionId, streamName, createdAt, updatedAt).execute();
     ctx.createIndex("connection_id_idx").on("resets", "connection_id").execute();
   }
 
