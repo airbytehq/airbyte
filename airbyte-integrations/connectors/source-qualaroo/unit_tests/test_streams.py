@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -20,14 +20,14 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class, config):
-    stream = QualarooStream(config)
+    stream = QualarooStream(**config)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"before": "id"}}
     expected_params = {"limit": 500, "start_date": "start_date", "before": "id"}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class, config):
-    stream = QualarooStream(config)
+    stream = QualarooStream(**config)
     inputs = {"response": MagicMock()}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
@@ -40,16 +40,18 @@ def test_surveys_stream(requests_mock):
         json=[{"id": "b11111111111111111111111", "name": "survey_1"}, {"id": "b22222222222222222222222", "name": "survey_2"}],
     )
 
-    config = {"authenticator": None, "start_date": "2021-02-11T08:35:49.540Z"}
-    stream1 = Surveys(config=config)
+    args = {"authenticator": None, "start_date": "2021-02-11T08:35:49.540Z", "survey_ids": []}
+    stream1 = Surveys(**args)
     records = read_all_records(stream1)
     assert records == [{"id": "b11111111111111111111111", "name": "survey_1"}, {"id": "b22222222222222222222222", "name": "survey_2"}]
 
-    stream2 = Surveys(config={**config, "survey_ids": ["b22222222222222222222222"]})
+    args["survey_ids"] = ["b22222222222222222222222"]
+    stream2 = Surveys(**args)
     records = read_all_records(stream2)
     assert records == [{"id": "b22222222222222222222222", "name": "survey_2"}]
 
-    stream3 = Surveys(config={**config, "survey_ids": ["not-found"]})
+    args["survey_ids"] = ["not-found"]
+    stream3 = Surveys(**args)
     records = read_all_records(stream3)
     assert records == []
 
@@ -75,8 +77,8 @@ def test_responses_stream(requests_mock):
         json=[{"id": "c33333333333333333333333", "name": "response_3"}, {"id": "c44444444444444444444444", "name": "response_4"}],
     )
 
-    config = {"authenticator": None, "start_date": "2021-02-11T08:35:49.540Z"}
-    stream1 = Responses(config=config)
+    args = {"authenticator": None, "start_date": "2021-02-11T08:35:49.540Z", "survey_ids": []}
+    stream1 = Responses(**args)
     records = read_all_records(stream1)
     assert records == [
         {"id": "c11111111111111111111111", "name": "response_1"},
@@ -85,11 +87,13 @@ def test_responses_stream(requests_mock):
         {"id": "c44444444444444444444444", "name": "response_4"},
     ]
 
-    stream2 = Responses(config={**config, "survey_ids": ["b22222222222222222222222"]})
+    args["survey_ids"] = ["b22222222222222222222222"]
+    stream2 = Responses(**args)
     records = read_all_records(stream2)
     assert records == [{"id": "c33333333333333333333333", "name": "response_3"}, {"id": "c44444444444444444444444", "name": "response_4"}]
 
-    stream3 = Responses(config={**config, "survey_ids": ["not-found"]})
+    args["survey_ids"] = ["not-found"]
+    stream3 = Responses(**args)
     records = read_all_records(stream3)
     assert records == []
 
