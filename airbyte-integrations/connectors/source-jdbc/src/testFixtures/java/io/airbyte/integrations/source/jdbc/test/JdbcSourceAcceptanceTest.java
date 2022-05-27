@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -74,9 +74,8 @@ import org.junit.jupiter.api.Test;
 // between each test.
 // 4. Then implement the abstract methods documented below.
 @SuppressFBWarnings(
-    value = {"MS_SHOULD_BE_FINAL"},
-    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
-)
+                    value = {"MS_SHOULD_BE_FINAL"},
+                    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
 public abstract class JdbcSourceAcceptanceTest {
 
   // schema name must be randomized for each test run,
@@ -210,13 +209,11 @@ public abstract class JdbcSourceAcceptanceTest {
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         getDriverClass(),
         jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-    );
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
-        AdaptiveStreamingQueryConfig::new
-    );
+        AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
       createSchemas();

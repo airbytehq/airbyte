@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -11,7 +11,7 @@ import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
+import io.airbyte.workers.internal.AirbyteMessageUtils;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;

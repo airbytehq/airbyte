@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -247,5 +247,21 @@ public interface JobPersistence {
    * Set that the secret migration has been performed.
    */
   void setSecretMigrationDone() throws IOException;
+
+  /**
+   * Check if the scheduler has been migrated to temporal.
+   *
+   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
+   * "major" version bump as it will no longer be needed.
+   */
+  boolean isSchedulerMigrated() throws IOException;
+
+  /**
+   * Set that the scheduler migration has been performed.
+   *
+   * TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
+   * "major" version bump as it will no longer be needed.
+   */
+  void setSchedulerMigrationDone() throws IOException;
 
 }

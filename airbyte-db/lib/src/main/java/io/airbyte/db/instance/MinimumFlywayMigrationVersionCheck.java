@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance;
@@ -17,7 +17,11 @@ import org.slf4j.LoggerFactory;
  * start interacting with the database.
  * <p>
  * Methods have dynamic pool times, and have configurable timeouts.
+ *
+ * @deprecated This class has been marked as deprecated as we move to using an application framework
+ *             to manage resources. This class will be removed in a future release.
  */
+@Deprecated(forRemoval = true)
 public class MinimumFlywayMigrationVersionCheck {
 
   // Exposed so applications have a default timeout variable.

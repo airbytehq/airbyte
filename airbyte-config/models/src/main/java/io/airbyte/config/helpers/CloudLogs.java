@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
  * that path 2) log files names start with timestamps, making it possible extract the time the file
  * was written from it's name.
  */
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public interface CloudLogs {
 
   Logger LOGGER = LoggerFactory.getLogger(CloudLogs.class);

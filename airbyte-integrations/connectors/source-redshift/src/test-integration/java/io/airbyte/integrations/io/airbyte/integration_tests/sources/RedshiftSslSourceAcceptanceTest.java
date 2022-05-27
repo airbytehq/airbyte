@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -25,9 +25,7 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
                 config.get("port").asInt(),
                 config.get("database").asText()),
             JdbcUtils.parseJdbcParameters("ssl=true&" +
-                "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory")
-        )
-    );
+                "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory")));
   }
 
 }

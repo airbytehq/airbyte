@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -297,8 +297,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter())
-    );
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
@@ -310,8 +309,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
-        streamingQueryConfigProvider
-    );
+        streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
@@ -324,7 +322,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   public void close() {
-    dataSources.forEach( d -> {
+    dataSources.forEach(d -> {
       try {
         DataSourceFactory.close(d);
       } catch (final Exception e) {

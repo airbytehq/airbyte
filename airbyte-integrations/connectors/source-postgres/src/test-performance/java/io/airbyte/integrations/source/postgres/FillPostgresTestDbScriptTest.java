@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -59,7 +59,8 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     return database;

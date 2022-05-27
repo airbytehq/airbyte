@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 
-from .source import SourceAmazonSellerPartner
-from .source import ConnectorConfig
+from .source import ConnectorConfig, SourceAmazonSellerPartner
 
 __all__ = ["SourceAmazonSellerPartner", "ConnectorConfig"]

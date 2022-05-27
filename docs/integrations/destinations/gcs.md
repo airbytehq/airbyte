@@ -235,6 +235,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.6  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.2.5  | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 0.2.4  | 2022-04-22 | [\#12167](https://github.com/airbytehq/airbyte/pull/12167) | Add gzip compression option for CSV and JSONL formats. |
 | 0.2.3  | 2022-04-22 | [\#11795](https://github.com/airbytehq/airbyte/pull/11795) | Fix the connection check to verify the provided bucket path. |

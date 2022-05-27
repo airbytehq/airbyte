@@ -1,15 +1,17 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
-from typing import Any, List, Mapping
+from typing import TYPE_CHECKING, Any, List, Mapping
 
-from airbyte_cdk.sources import Source
 from airbyte_cdk.utils.mapping_utils import all_key_pairs_dot_notation, get_value_by_dot_notation
 
+if TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
 
-def get_secrets(source: Source, config: Mapping[str, Any], logger: logging.Logger) -> List[Any]:
+
+def get_secrets(source: "Source", config: Mapping[str, Any], logger: logging.Logger) -> List[Any]:
     """
     Get a list of secrets from the source config based on the source specification
     """

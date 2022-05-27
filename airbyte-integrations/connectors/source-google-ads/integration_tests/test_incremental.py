@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
@@ -58,7 +58,7 @@ def test_incremental_sync(config, configured_catalog):
             AirbyteLogger(),
             config,
             ConfiguredAirbyteCatalog.parse_obj(configured_catalog),
-            {"ad_group_ad_report": {"segments.date": latest_state}},
+            {"ad_group_ad_report": {config["customer_id"]: {"segments.date": latest_state}}},
         )
     )
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -43,19 +43,19 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.workers.DbtTransformationRunner;
-import io.airbyte.workers.DefaultCheckConnectionWorker;
-import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.general.DbtTransformationRunner;
+import io.airbyte.workers.general.DefaultCheckConnectionWorker;
+import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.helper.EntrypointEnvChecker;
+import io.airbyte.workers.internal.AirbyteDestination;
+import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -709,7 +709,7 @@ public abstract class DestinationAcceptanceTest {
             .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 3)
-                .put("currency", generateBigString(0))
+                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
                 .put("date", "2020-10-10T00:00:00Z")
                 .put("HKD", 10.5)
                 .put("NZD", 1.14)
@@ -730,6 +730,10 @@ public abstract class DestinationAcceptanceTest {
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
+  }
+
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 0;
   }
 
   /**
@@ -1081,7 +1085,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
@@ -1340,7 +1344,7 @@ public abstract class DestinationAcceptanceTest {
         .format("Added %s messages to each of %s streams", currentRecordNumberForStream,
             currentStreamNumber));
     // Close destination
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
   }
 
   private final static String LOREM_IPSUM =

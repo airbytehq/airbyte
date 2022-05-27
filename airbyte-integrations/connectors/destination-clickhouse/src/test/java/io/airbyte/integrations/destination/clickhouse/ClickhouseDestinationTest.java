@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -134,9 +134,7 @@ public class ClickhouseDestinationTest {
             String.format("jdbc:clickhouse://%s:%s/%s",
                 config.get("host").asText(),
                 config.get("port").asText(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(
