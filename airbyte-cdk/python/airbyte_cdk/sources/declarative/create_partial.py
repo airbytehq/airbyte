@@ -61,8 +61,9 @@ def create(func, /, *args, **keywords):
 
 
 def _get_kwargs_to_pass_to_func(func, kwargs):
-    kwargs_to_pass_down = set(inspect.getfullargspec(func).kwonlyargs)
-    args_to_pass_down = set(inspect.getfullargspec(func).args)
+    argspec = inspect.getfullargspec(func)
+    kwargs_to_pass_down = set(argspec.kwonlyargs)
+    args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
     kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
     return kwargs_to_pass_down
