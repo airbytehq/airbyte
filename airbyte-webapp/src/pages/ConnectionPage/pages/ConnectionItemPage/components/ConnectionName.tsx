@@ -7,6 +7,7 @@ import { Input } from "components";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
 
 type Props = {
   connection: WebBackendConnectionRead;
@@ -93,6 +94,8 @@ const StyledInput = styled(Input)`
   }
 `;
 
+const InputWithKeystroke = addEnterEscFuncForInput(StyledInput);
+
 const ConnectionName: React.FC<Props> = ({ connection }) => {
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
@@ -111,7 +114,20 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
     }
   };
 
+  const onEscape = () => {
+    setEditingState(false);
+    setConnectionName(name);
+  };
+
+  const onEnter = async () => {
+    await updateConnectionAsync();
+  };
+
   const onBlur = async () => {
+    await updateConnectionAsync();
+  };
+
+  const updateConnectionAsync = async () => {
     // Update only when the name is changed
     if (connection.name !== connectionName) {
       setLoading(true);
@@ -142,10 +158,12 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
       {editingState && (
         <EditingContainer>
           <InputContainer>
-            <StyledInput
+            <InputWithKeystroke
               value={connectionName}
               onChange={inputChange}
               onBlur={onBlur}
+              onEscape={onEscape}
+              onEnter={onEnter}
               disabled={loading}
               defaultFocus
             />

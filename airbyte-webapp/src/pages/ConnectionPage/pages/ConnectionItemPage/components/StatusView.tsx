@@ -18,6 +18,7 @@ import JobsList from "./JobsList";
 
 interface StatusViewProps {
   connection: WebBackendConnectionRead;
+  isStatusUpdating?: boolean;
 }
 
 const Content = styled.div`
@@ -47,7 +48,7 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();
@@ -72,11 +73,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
             <FormattedMessage id={"sources.syncHistory"} />
             {connection.status === ConnectionStatus.active && (
               <div>
-                <Button onClick={() => setIsModalOpen(true)}>
+                <Button onClick={() => setIsModalOpen(true)} disabled={isStatusUpdating}>
                   <FormattedMessage id={"connection.resetData"} />
                 </Button>
                 <SyncButton
-                  disabled={!allowSync}
+                  disabled={!allowSync || isStatusUpdating}
                   isLoading={isLoading}
                   wasActive={showFeedback}
                   onClick={() => startAction({ action: onSync })}

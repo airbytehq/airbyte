@@ -17,6 +17,7 @@ interface ConnectionPageTitleProps {
   destination: DestinationRead;
   connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
+  onStatusUpdating?: (updating: boolean) => void;
 }
 
 const Title = styled.div`
@@ -33,7 +34,13 @@ const Links = styled.div`
   justify-content: center;
 `;
 
-const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, destination, connection, currentStep }) => {
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
+  source,
+  destination,
+  connection,
+  currentStep,
+  onStatusUpdating,
+}) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
@@ -72,7 +79,12 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, desti
       </H6>
       <ConnectionName connection={connection} />
       <Links>
-        <StatusMainInfo connection={connection} source={source} destination={destination} />
+        <StatusMainInfo
+          connection={connection}
+          source={source}
+          destination={destination}
+          onStatusUpdating={onStatusUpdating}
+        />
       </Links>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </Title>

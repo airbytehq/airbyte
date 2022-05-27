@@ -40,9 +40,15 @@ interface StatusMainInfoProps {
   connection: WebBackendConnectionRead;
   source: SourceRead;
   destination: DestinationRead;
+  onStatusUpdating?: (updating: boolean) => void;
 }
 
-export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({ connection, source, destination }) => {
+export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
+  onStatusUpdating,
+  connection,
+  source,
+  destination,
+}) => {
   const { hasFeature } = useFeatureService();
 
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
@@ -74,7 +80,12 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({ connection, sour
         />
       </ConnectorsLink>
       {connection.status !== ConnectionStatus.deprecated && (
-        <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequency?.text} />
+        <EnabledControl
+          onStatusUpdating={onStatusUpdating}
+          disabled={!allowSync}
+          connection={connection}
+          frequencyText={frequency?.text}
+        />
       )}
     </MainContainer>
   );
