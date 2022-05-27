@@ -110,13 +110,20 @@ class SourceFaker(Source):
         Faker.seed(seed)
         fake = Faker()
 
+        to_generate_users = False
         to_generate_purchases = False
         purchases_stream = None
         purchases_count = state["Purchases"]["purchases_count"] if "Purchases" in state else 0
         for stream in catalog.streams:
+            if stream.stream.name == "Users":
+                to_generate_users = True
+        for stream in catalog.streams:
             if stream.stream.name == "Purchases":
                 purchases_stream = stream
                 to_generate_purchases = True
+
+        if to_generate_purchases and not to_generate_users:
+            raise ValueError("Purchases stream cannot be enabled without Users stream")
 
         for stream in catalog.streams:
             if stream.stream.name == "Users":
@@ -128,15 +135,15 @@ class SourceFaker(Source):
                 for i in range(cursor, count):
                     user = generate_user(fake, i)
                     yield generate_record(stream, user)
-                    total_records = total_records + 1
-                    records_in_sync = records_in_sync + 1
-                    records_in_page = records_in_page + 1
+                    total_records += 1
+                    records_in_sync += 1
+                    records_in_page += 1
 
                     if to_generate_purchases:
                         purchases = generate_purchases(fake, user, purchases_count)
                         for p in purchases:
                             yield generate_record(purchases_stream, p)
-                            purchases_count = purchases_count + 1
+                            purchases_count += 1
 
                     if records_in_page == records_per_slice:
                         yield generate_state(state, stream, {"cursor": total_records, "seed": seed})
@@ -211,8 +218,8 @@ def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dic
             random_date_in_range(added_to_cart_at) if added_to_cart_at is not None and random.randrange(1, 100) <= 70 else None
         )  # 70% likely to purchase the item in the cart
         returned_at = (
-            random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(1, 100) <= 30 else None
-        )  # 10% likely to return the item
+            random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(1, 100) <= 15 else None
+        )  # 15% likely to return the item
         purchase = {
             "id": id,
             "product_id": product_id,
@@ -224,7 +231,7 @@ def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dic
         purchases.append(purchase)
 
         purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
-        i = i + 1
+        i += 1
     return purchases
 
 
