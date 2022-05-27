@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
@@ -65,21 +65,22 @@ class MockGoogleAds(GoogleAds):
             return mock_response_2()
 
 
-def test_page_token_expired_retry_succeeds(mock_ads_client, config):
+def test_page_token_expired_retry_succeeds(mock_ads_client, config, customers):
     """
     Page token expired while reading records on date 2021-01-03
     The latest read record is {"segments.date": "2021-01-03", "click_view.gclid": "4"}
     It should retry reading starting from 2021-01-03, already read records will be reread again from that date.
     It shouldn't read records on 2021-01-01, 2021-01-02
     """
-    stream_slice = {"start_date": "2021-01-01", "end_date": "2021-01-15"}
+    customer_id = next(iter(customers)).id
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-01", "end_date": "2021-01-15"}
 
-    google_api = MockGoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+    google_api = MockGoogleAds(credentials=config["credentials"])
     incremental_stream_config = dict(
         api=google_api,
         conversion_window_days=config["conversion_window_days"],
         start_date=config["start_date"],
-        time_zone="local",
+        customers=customers,
         end_date="2021-04-04",
     )
     stream = ClickView(**incremental_stream_config)
@@ -89,7 +90,7 @@ def test_page_token_expired_retry_succeeds(mock_ads_client, config):
     result = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
     assert len(result) == 9
     assert stream.get_query.call_count == 2
-    stream.get_query.assert_called_with({"start_date": "2021-01-03", "end_date": "2021-01-15"})
+    stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15"})
 
 
 def mock_response_fails_1():
@@ -123,20 +124,21 @@ class MockGoogleAdsFails(MockGoogleAds):
             return mock_response_fails_2()
 
 
-def test_page_token_expired_retry_fails(mock_ads_client, config):
+def test_page_token_expired_retry_fails(mock_ads_client, config, customers):
     """
     Page token has expired while reading records within date "2021-01-03", it should raise error,
     because Google Ads API doesn't allow filter by datetime.
     """
-    stream_slice = {"start_date": "2021-01-01", "end_date": "2021-01-15"}
+    customer_id = next(iter(customers)).id
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-01", "end_date": "2021-01-15"}
 
-    google_api = MockGoogleAdsFails(credentials=config["credentials"], customer_id=config["customer_id"])
+    google_api = MockGoogleAdsFails(credentials=config["credentials"])
     incremental_stream_config = dict(
         api=google_api,
         conversion_window_days=config["conversion_window_days"],
         start_date=config["start_date"],
-        time_zone="local",
         end_date="2021-04-04",
+        customers=customers,
     )
     stream = ClickView(**incremental_stream_config)
     stream.get_query = Mock()
@@ -145,7 +147,7 @@ def test_page_token_expired_retry_fails(mock_ads_client, config):
     with pytest.raises(GoogleAdsException):
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
 
-    stream.get_query.assert_called_with({"start_date": "2021-01-03", "end_date": "2021-01-15"})
+    stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15"})
     assert stream.get_query.call_count == 2
 
 
@@ -165,21 +167,22 @@ class MockGoogleAdsFailsOneDate(MockGoogleAds):
         return mock_response_fails_one_date()
 
 
-def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, config):
+def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, config, customers):
     """
     Page token has expired while reading records within date "2021-01-03",
     it should raise error, because Google Ads API doesn't allow filter by datetime.
     Minimum date range is 1 day.
     """
-    stream_slice = {"start_date": "2021-01-03", "end_date": "2021-01-04"}
+    customer_id = next(iter(customers)).id
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"}
 
-    google_api = MockGoogleAdsFailsOneDate(credentials=config["credentials"], customer_id=config["customer_id"])
+    google_api = MockGoogleAdsFailsOneDate(credentials=config["credentials"])
     incremental_stream_config = dict(
         api=google_api,
         conversion_window_days=config["conversion_window_days"],
         start_date=config["start_date"],
-        time_zone="local",
         end_date="2021-04-04",
+        customers=customers,
     )
     stream = ClickView(**incremental_stream_config)
     stream.get_query = Mock()
@@ -188,5 +191,5 @@ def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, con
     with pytest.raises(GoogleAdsException):
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
 
-    stream.get_query.assert_called_with({"start_date": "2021-01-03", "end_date": "2021-01-04"})
+    stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"})
     assert stream.get_query.call_count == 1

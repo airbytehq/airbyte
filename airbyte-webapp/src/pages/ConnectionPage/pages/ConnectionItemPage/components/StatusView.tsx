@@ -66,6 +66,8 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
     configTypes: ["sync", "reset_connection"],
   });
 
+  const [isStatusUpdating, setStatusUpdating] = useState(false);
+
   const { mutateAsync: resetConnection } = useResetConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
 
@@ -80,6 +82,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
         sourceDefinition={sourceDefinition}
         destinationDefinition={destinationDefinition}
         allowSync={allowSync}
+        onStatusUpdating={setStatusUpdating}
       />
       <StyledContentCard
         title={
@@ -87,11 +90,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
             <FormattedMessage id={"sources.syncHistory"} />
             {connection.status === ConnectionStatus.active && (
               <div>
-                <Button onClick={() => setIsModalOpen(true)}>
+                <Button onClick={() => setIsModalOpen(true)} disabled={isStatusUpdating}>
                   <FormattedMessage id={"connection.resetData"} />
                 </Button>
                 <SyncButton
-                  disabled={!allowSync}
+                  disabled={!allowSync || isStatusUpdating}
                   isLoading={isLoading}
                   wasActive={showFeedback}
                   onClick={() => startAction({ action: onSync })}

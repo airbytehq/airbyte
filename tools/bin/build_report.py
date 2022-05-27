@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 """
@@ -29,6 +29,7 @@ CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
+RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
 
 # Global vars
 TESTED_SOURCE = []
@@ -62,7 +63,7 @@ def parse(page) -> list:
     return history
 
 
-def check_connector(connector):
+def check_module(connector):
     status_page = get_status_page(connector)
 
     # check if connector is tested
@@ -222,7 +223,8 @@ if __name__ == "__main__":
     print(f"Checking {len(relevant_connectors)} relevant connectors out of {len(connectors)} total connectors")
 
     # analyse build results for each connector
-    [check_connector(connector) for connector in relevant_connectors]
+    [check_module(connector) for connector in relevant_connectors]
+    [check_module(base) for base in RELEVANT_BASE_MODULES]
 
     report = create_report(relevant_connectors, relevant_stages)
     print(report)

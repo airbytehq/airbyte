@@ -13,16 +13,33 @@ const config = {
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
-    onBrokenLinks: 'warn',
-    onBrokenMarkdownLinks: 'warn',
+    onBrokenLinks: 'throw',
+    onBrokenMarkdownLinks: 'throw',
     favicon: 'img/favicon.png',
     organizationName: 'airbytehq', // Usually your GitHub org/user name.
     projectName: 'airbyte', // Usually your repo name.
 
     plugins:    [
-                    [
-                        require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false}
-                    ]
+                  [
+                    require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false},
+                  ],
+                  [
+                    '@docusaurus/plugin-client-redirects',
+                    {
+                      fromExtensions: ['html', 'htm'], // /myPage.html -> /myPage
+                      redirects: [
+                        // /docs/oldDoc -> /docs/newDoc
+                        {
+                          from: '/upgrading-airbyte',
+                          to: '/operator-guides/upgrading-airbyte',
+                        },
+//                        {
+//                         from: '/some-lame-path',
+//                         to: '/a-much-cooler-uri',
+//                        },
+                      ],
+                    },
+                  ],
                 ],
 
     presets: [
