@@ -93,7 +93,7 @@ def is_combining_node(properties: dict) -> Set[str]:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
 
-def is_simple_multi_property(property_type):
+def is_simple_multi_properties(property_type):
     simple_types = {"string", "integer", "number", "boolean"}
     if isinstance(property_type, list):
         property_types = {t for t in property_type}
