@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceOperations.class);
+  private static final String TIMESTAMPTZ = "timestamptz";
+  private static final String TIMETZ = "timetz";
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
@@ -94,8 +96,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       switch (columnTypeName) {
         case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
         case "bytea" -> putString(json, columnName, resultSet, colIndex);
-        case "timetz" -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
-        case "timestamptz" -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
+        case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -149,8 +151,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         case "bytea" -> JDBCType.VARCHAR;
-        case "timestamptz" -> JDBCType.TIMESTAMP_WITH_TIMEZONE;
-        case "timetz" -> JDBCType.TIME_WITH_TIMEZONE;
+        case TIMESTAMPTZ -> JDBCType.TIMESTAMP_WITH_TIMEZONE;
+        case TIMETZ -> JDBCType.TIME_WITH_TIMEZONE;
         default -> JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
       };
     } catch (final IllegalArgumentException ex) {
