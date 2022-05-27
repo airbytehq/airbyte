@@ -44,6 +44,7 @@ public class V0_39_1_001__CreateResets extends BaseJavaMigration {
 
     ctx.createTableIfNotExists("resets")
         .columns(id, connectionId, streamName, createdAt, updatedAt);
+    ctx.createIndex("connection_id_idx").on("resets", "connection_id").execute();
   }
 
 }
