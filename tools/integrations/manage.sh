@@ -214,7 +214,9 @@ cmd_publish() {
 
   # log into docker
   DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
+  set +x
   DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+  set -x
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
@@ -278,7 +280,9 @@ cmd_publish() {
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
       echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
       TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
+      set +x
       curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
+      set -x
     done
 
   fi
@@ -289,7 +293,9 @@ cmd_publish() {
 
   # To work for private repos we need a token as well
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
+  set +x
   DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" -H "Authorization: JWT ${DOCKER_TOKEN}" ${TAG_URL})
+  set -x
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
   fi
