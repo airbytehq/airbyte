@@ -9,14 +9,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.ConnectionProperty;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.db.bigquery.BigQueryResultSet;
-import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.bigquery.BigQueryResultSet;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -33,7 +46,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -118,8 +135,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected void assertNamespaceNormalization(final String testCaseId,
-                                              final String expectedNormalizedNamespace,
-                                              final String actualNormalizedNamespace) {
+      final String expectedNormalizedNamespace,
+      final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
@@ -145,10 +162,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-          throws Exception {
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
+      throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
@@ -158,20 +175,20 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
     final QueryJobConfiguration queryConfig =
-            QueryJobConfiguration
-                    .newBuilder(
-                            String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+        QueryJobConfiguration
+            .newBuilder(
+                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
 //                    .setUseLegacySql(false)
-                    .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
-                    .build();
+            .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+            .build();
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
     BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
-            .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
+        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
   private boolean isAirbyteColumn(final String name) {
@@ -294,9 +311,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   /**
-   * Verify that the integration successfully writes normalized records successfully (without actually
-   * running the normalization module) Tests a wide variety of messages an schemas (aspirationally,
-   * anyway).
+   * Verify that the integration successfully writes normalized records successfully (without actually running the normalization module) Tests a wide
+   * variety of messages an schemas (aspirationally, anyway).
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
