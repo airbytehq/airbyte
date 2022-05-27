@@ -5,6 +5,7 @@
 
 from abc import ABC, abstractmethod
 from asyncio.log import logger
+from bdb import Breakpoint
 from datetime import datetime, timedelta
 from distutils.command.config import config
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -118,30 +119,78 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         """
         return: date filter query parameter name
         """
-
+    
     @property
     def state(self) -> Mapping[str, Any]:
+        print (f"INFOOOOO _cursor_value:  {self._cursor_value}")
         if self._cursor_value:
-            return {self.cursor_field: self._cursor_value.strftime(self.time_filter_template)}
+            return  self._cursor_value
         else:
-            return {self.cursor_field: self._start_date.strftime(self.time_filter_template)}
+            return  self._start_date
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-       self._cursor_value = datetime.strptime(value[self.cursor_field], self.time_filter_template)
+        #breakpoint()
+        print (f"INFOOOOO value : {value}")
+        #self._cursor_value = datetime.strptime(value[self.cursor_field], self.time_filter_template)
+        self._cursor_value = value
+    # @property
+    # def state(self) -> Mapping[str, Any]:
+    #  # if self._cursor_value:
+    #     #     return {self.cursor_field: self._cursor_value.strftime(self.time_filter_template)}
+    #     # else:
+    #     #     return {self.cursor_field: self._start_date.strftime(self.time_filter_template)}
+
+    # @state   return self._cursor_value
+    #     .setter
+    # def state(self, value: Mapping[str, Any]):
+    #     breakpoint()
+    #     if value:
+    #         self._cursor_value = datetime.strftime(value, self.time_filter_template)
+    #     else:
+    #         self._cursor_value = self._start_date.strftime(self.time_filter_template)
+
+
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        #breakpoint()
         params = super().request_params(stream_state=stream_state, **kwargs)
-        start_date = stream_state.get(self.cursor_field) or self._start_date
+        print (f"INFOOOOO stream_state: {stream_state}")
+        #start_date = stream_state.get(self.cursor_field) or self.state
+        start_date = stream_state or self.state
         if start_date:
             params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template)})
+        print(params)
         return params
+        
+    # def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    #     breakpoint()
+    #     stream_state = stream_state or {}
+    #     for record in super().read_records(stream_state=stream_state, **kwargs):
+    #         self.state = max(datetime.strptime(record[self.cursor_field], "%a, %d %b %Y %H:%M:%S +0000"), datetime.strptime(self._cursor_value, self.time_filter_template))
+    #         yield record
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        #breakpoint()
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], self.time_filter_template)
-                self._cursor_value = max(self._cursor_value, latest_record_date)
+                print (f"INFOOOOO record[self.cursor_field] antes:  {record[self.cursor_field]}")
+                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+                print (f"INFOOOOO record[self.cursor_field] despu:  {record[self.cursor_field]}")
+                print (f"INFOOOOO record[self.cursor_field] type:  {type(record[self.cursor_field])}")
+                print (f"INFOOOOO self._cursor_value:  {self._cursor_value}")
+                print (f"INFOOOOO self._cursor_value type:  {type(self._cursor_value)}")
+                self._cursor_value = datetime.strftime(max(datetime.strptime(self._cursor_value, self.time_filter_template), datetime.strptime(record[self.cursor_field],self.time_filter_template)),self.time_filter_template)
+            else:
+                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+                self._cursor_value = record[self.cursor_field] or self.state
+            # if self._cursor_value:
+            #     print (f"INFOOOOO record[self.cursor_field]:  {record[self.cursor_field]}")
+            #     latest_record_date = datetime.strptime(datetime.strftime(datetime.strptime(record[self.cursor_field], "%a, %d %b %Y %H:%M:%S +0000"),self.time_filter_template),self.time_filter_template)
+            #     #latest_record_date = record[self.cursor_field]
+            #     self._cursor_value = datetime.strftime(max(datetime.strptime(self._cursor_value,self.time_filter_template) , latest_record_date),self.time_filter_template)
+            # else:
+            #     self._cursor_value = datetime.strftime(datetime.strptime(record[self.cursor_field], "%a, %d %b %Y %H:%M:%S +0000"),self.time_filter_template)
             yield record
 
 
