@@ -18,11 +18,18 @@ class CheckStream(ConnectionChecker):
         self._stream_names = set(stream_names)
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        for stream in source.streams(config):
-            if stream.name in self._stream_names:
+        streams = source.streams(config)
+        stream_name_to_stream = {s.name: s for s in streams}
+        if len(streams) == 0:
+            return False, f"No streams to connect to from source {source}"
+        for stream_name in self._stream_names:
+            if stream_name in stream_name_to_stream.keys():
+                stream = stream_name_to_stream[stream_name]
                 try:
                     records = stream.read_records(sync_mode=SyncMode.full_refresh)
                     next(records)
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream} - {error}"
+            else:
+                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
         return True, None

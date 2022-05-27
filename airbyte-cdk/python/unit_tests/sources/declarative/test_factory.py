@@ -66,7 +66,7 @@ request_parameters_provider:
   class_name: airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
-  name: "{{ kwargs['name'] }}"
+  name: "{{ options['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
@@ -77,23 +77,23 @@ requester:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-  name: "{{ kwargs['name'] }}"
+  name: "{{ options['name'] }}"
   state:
     class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
-  primary_key: "{{ kwargs['primary_key'] }}"
+  primary_key: "{{ options['primary_key'] }}"
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_sendgrid/schemas/{{kwargs['name']}}.json"
+    file_path: "./source_sendgrid/schemas/{{options['name']}}.json"
   cursor_field: [ ]
 list_stream:
   ref: "*ref(partial_stream)"
-  kwargs:
+  options:
     name: "lists"
     primary_key: "id"
     extractor:

@@ -33,9 +33,9 @@ class DeclarativeComponentFactory:
         module = ".".join(split[:-1])
         class_name = split[-1]
 
-        # create components in kwargs before propagating them
-        if "kwargs" in kwargs:
-            kwargs["kwargs"] = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs["kwargs"].items()}
+        # create components in options before propagating them
+        if "options" in kwargs:
+            kwargs["options"] = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs["options"].items()}
 
         updated_kwargs = {k: self._create_subcomponent(v, kwargs, config) for k, v in kwargs.items()}
 
@@ -48,21 +48,21 @@ class DeclarativeComponentFactory:
     def _create_subcomponent(self, v, kwargs, config):
         if type(v) == dict and "class_name" in v:
             # propagate kwargs to inner objects
-            v["kwargs"] = self._merge_dicts(kwargs.get("kwargs", dict()), v.get("kwargs", dict()))
-
-            print(f"kwargs: {kwargs}")
+            v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
 
             return self.create_component(v, config)()
         elif type(v) == list:
             return [
-                self._create_subcomponent(sub, self._merge_dicts(kwargs.get("kwargs", dict()), self._get_subcomponent_kwargs(sub)), config)
+                self._create_subcomponent(
+                    sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config
+                )
                 for sub in v
             ]
         else:
             return v
 
-    def _get_subcomponent_kwargs(self, sub: Any):
+    def _get_subcomponent_options(self, sub: Any):
         if type(sub) == dict:
-            return sub.get("kwargs", {})
+            return sub.get("options", {})
         else:
             return {}
