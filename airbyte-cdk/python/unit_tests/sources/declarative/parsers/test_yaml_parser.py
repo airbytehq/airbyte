@@ -115,8 +115,17 @@ def test_collision():
 example:
   nested:
     path: "first one"
+    more_nested:
+        value: "found it!"
   nested.path: "uh oh"
+reference_to_nested_path:
+  ref: "*ref(example.nested.path)"
+reference_to_nested_nested_value:
+  ref: "*ref(example.nested.more_nested.value)"
     """
     config = parser.parse(content)
     assert config["example"]["nested"]["path"] == "first one"
     assert config["example"]["nested.path"] == "uh oh"
+    assert config["reference_to_nested_path"] == "uh oh"
+    assert config["example"]["nested"]["more_nested"]["value"] == "found it!"
+    assert config["reference_to_nested_nested_value"] == "found it!"

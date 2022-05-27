@@ -60,19 +60,22 @@ class YamlParser(ConfigParser):
             return (value,)
 
     def preprocess(self, value, evaluated_config, path):
-        if type(value) == str:
+        if isinstance(value, str):
             ref_key = self.get_ref_key(value)
             if ref_key is None:
                 return value
             else:
-                try:
-                    ref_key_tuple = tuple(ref_key.split("."))
-                    return evaluated_config[ref_key_tuple]
-                except KeyError:
-                    raise UndefinedReferenceException(path, ref_key)
-        elif type(value) == dict:
+                key = (ref_key,)
+                while key[-1]:
+                    if key in evaluated_config:
+                        return evaluated_config[key]
+                    else:
+                        split = key[-1].split(".")
+                        key = *key[:-1], split[0], ".".join(split[1:])
+                raise UndefinedReferenceException(path, ref_key)
+        elif isinstance(value, dict):
             return self.preprocess_dict(value, evaluated_config, path)
-        elif type(value) == list:
+        elif isinstance(value, list):
             return [self.preprocess(v, evaluated_config, path) for v in value]
         else:
             return value
