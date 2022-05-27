@@ -6,7 +6,6 @@ set -x
 . tools/lib/lib.sh
 
 docker run -i --rm -v /etc:/etc ubuntu /bin/bash -c "echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root"
-sleep 600
 
 USAGE="
 Usage: $(basename "$0") <cmd>
