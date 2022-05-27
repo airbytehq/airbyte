@@ -42,7 +42,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerText(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
@@ -56,7 +56,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof PGInterval) {
@@ -78,7 +78,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerMoney(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof Double) {
