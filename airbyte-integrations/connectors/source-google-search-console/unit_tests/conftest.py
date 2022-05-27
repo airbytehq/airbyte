@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from pytest import fixture
@@ -17,8 +17,8 @@ def config_fixture(requests_mock):
             "auth_type": "Client",
             "client_id": "client_id",
             "client_secret": "client_secret",
-            "refresh_token": "refresh_token"
-        }
+            "refresh_token": "refresh_token",
+        },
     }
 
     return config

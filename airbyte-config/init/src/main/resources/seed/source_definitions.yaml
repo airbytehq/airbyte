@@ -895,6 +895,14 @@
   icon: surveymonkey.svg
   sourceType: api
   releaseStage: alpha
+- name: TalkDesk Explore
+  sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
+  dockerRepository: airbyte/source-talkdesk-explore
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/talkdesk-explore
+  icon: talkdesk-explore.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
