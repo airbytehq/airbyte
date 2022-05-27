@@ -254,8 +254,8 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
         requests.exceptions.ConnectTimeout,
         requests.exceptions.ConnectionError,
         requests.exceptions.ChunkedEncodingError,
-        requests.exceptions.ReadTimeout
-    )
+        requests.exceptions.ReadTimeout,
+    ),
 )
 def test_raise_on_http_errors(mocker, error):
     stream = AutoFailFalseHttpStream()
