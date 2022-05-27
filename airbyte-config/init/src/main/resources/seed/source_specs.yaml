@@ -2133,7 +2133,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.1"
+- dockerImage: "airbyte/source-faker:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -2146,10 +2146,11 @@
       properties:
         count:
           title: "Count"
-          description: "How many fake records should be generated"
+          description: "How many users should be generated in total.  This setting\
+            \ does not apply to the purchases or products stream."
           type: "integer"
           minimum: 1
-          default: 100
+          default: 1000
           order: 0
         seed:
           title: "Seed"
@@ -2158,6 +2159,23 @@
           type: "integer"
           default: -1
           order: 1
+        records_per_sync:
+          title: "Records Per Sync"
+          description: "How many fake records will be returned for each sync, for\
+            \ each stream?  By default, it will take 2 syncs to create the requested\
+            \ 1000 records."
+          type: "integer"
+          minimum: 1
+          default: 500
+          order: 2
+        records_per_slice:
+          title: "Records Per Stream Slice"
+          description: "How many fake records will be in each page (stream slice),\
+            \ before a state message is emitted?"
+          type: "integer"
+          minimum: 1
+          default: 100
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
