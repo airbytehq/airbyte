@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import jsonschema
@@ -31,7 +31,6 @@ def test_source_streams():
         "sex": {"type": "string"},
         "address": {"type": "string"},
         "mail": {"type": "string"},
-        "birthdate": {"type": "string", "format": "date"},
     }
 
     for schema in schemas:

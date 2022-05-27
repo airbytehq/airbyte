@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
@@ -16,16 +20,19 @@ import io.airbyte.config.persistence.split_secrets.test_cases.PostgresSshKeyTest
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings({"PMD.JUnit5TestShouldBePackagePrivate", "PMD.UnusedPrivateMethod"})
 public class SecretsHelpersTest {
 
   public static final UUID WORKSPACE_ID = UUID.fromString("e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2");
@@ -41,6 +48,8 @@ public class SecretsHelpersTest {
       UUID.fromString("71af9b74-4e61-4cff-830e-3bf1ec18fbc0"),
       UUID.fromString("067a62fc-d007-44dd-a8f6-0fd10823713d"),
       UUID.fromString("c4967ac9-0856-4733-a21e-1d51ca8f254d"));
+
+  private static final String PROVIDE_TEST_CASES = "provideTestCases";
 
   /**
    * This is a bit of a non-standard way of specifying test case paramaterization for Junit, but it's
@@ -59,7 +68,7 @@ public class SecretsHelpersTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideTestCases")
+  @MethodSource(PROVIDE_TEST_CASES)
   public void validateTestCases(final SecretsTestCase testCase) throws JsonValidationException {
     final var validator = new JsonSchemaValidator();
     final var spec = testCase.getSpec().getConnectionSpecification();
@@ -68,7 +77,7 @@ public class SecretsHelpersTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideTestCases")
+  @MethodSource(PROVIDE_TEST_CASES)
   void testSplit(final SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var inputConfig = testCase.getFullConfig();
@@ -102,7 +111,7 @@ public class SecretsHelpersTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideTestCases")
+  @MethodSource(PROVIDE_TEST_CASES)
   void testSplitUpdate(final SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var inputPartialConfig = testCase.getPartialConfig();
@@ -132,7 +141,7 @@ public class SecretsHelpersTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideTestCases")
+  @MethodSource(PROVIDE_TEST_CASES)
   void testCombine(final SecretsTestCase testCase) {
     final var secretPersistence = new MemorySecretPersistence();
     testCase.getPersistenceUpdater().accept(secretPersistence);
@@ -202,6 +211,16 @@ public class SecretsHelpersTest {
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
+  }
+
+  @ParameterizedTest
+  @MethodSource(PROVIDE_TEST_CASES)
+  void testSecretPath(final SecretsTestCase testCase) throws IOException {
+    final JsonNode spec = testCase.getSpec().getConnectionSpecification();
+
+    final List<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
+
+    Assertions.assertThat(secretsPaths).containsExactlyElementsOf(testCase.getExpectedSecretsPaths());
   }
 
 }

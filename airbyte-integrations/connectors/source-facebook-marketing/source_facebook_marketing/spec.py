@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -145,5 +145,14 @@ class ConnectorConfig(BaseConfig):
         order=6,
         description=(
             "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+        ),
+    )
+
+    page_size: Optional[PositiveInt] = Field(
+        title="Page Size of Requests",
+        order=7,
+        default=100,
+        description=(
+            "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
     )

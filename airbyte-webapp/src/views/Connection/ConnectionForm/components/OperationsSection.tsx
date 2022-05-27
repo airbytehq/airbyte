@@ -3,9 +3,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
+import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";
@@ -17,7 +17,7 @@ const SectionTitle = styled.div`
 `;
 
 export const OperationsSection: React.FC<{
-  destDefinition: DestinationDefinitionSpecification;
+  destDefinition: DestinationDefinitionSpecificationRead;
 }> = ({ destDefinition }) => {
   const formatMessage = useIntl().formatMessage;
   const { hasFeature } = useFeatureService();

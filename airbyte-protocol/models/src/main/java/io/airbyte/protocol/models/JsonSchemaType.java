@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.protocol.models;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class JsonSchemaType {
 
@@ -51,17 +52,17 @@ public class JsonSchemaType {
       typeMapBuilder.put(TYPE, type.name().toLowerCase());
     }
 
-    public Builder withFormat(String value) {
+    public Builder withFormat(final String value) {
       typeMapBuilder.put(FORMAT, value);
       return this;
     }
 
-    public Builder withContentEncoding(String value) {
+    public Builder withContentEncoding(final String value) {
       typeMapBuilder.put(CONTENT_ENCODING, value);
       return this;
     }
 
-    public Builder withAirbyteType(String value) {
+    public Builder withAirbyteType(final String value) {
       typeMapBuilder.put(AIRBYTE_TYPE, value);
       return this;
     }
@@ -70,6 +71,27 @@ public class JsonSchemaType {
       return new JsonSchemaType(typeMapBuilder.build());
     }
 
+  }
+
+  @Override
+  public String toString() {
+    return String.format("JsonSchemaType(%s)", jsonSchemaTypeMap.toString());
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    if (other == null) {
+      return false;
+    }
+    if (!(other instanceof final JsonSchemaType that)) {
+      return false;
+    }
+    return Objects.equals(this.jsonSchemaTypeMap, that.jsonSchemaTypeMap);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this.jsonSchemaTypeMap);
   }
 
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
@@ -31,6 +31,12 @@ from source_hubspot.streams import (
 )
 
 from .utils import read_full_refresh, read_incremental
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):

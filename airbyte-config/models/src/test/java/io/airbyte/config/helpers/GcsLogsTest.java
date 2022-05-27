@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 @Slf4j
 @Tag("logger-client")
-public class GcsLogsTest {
+class GcsLogsTest {
 
   private static Storage getClientFactory() {
     return new DefaultGcsClientFactory(new CloudStorageConfigs.GcsConfig(
@@ -35,7 +35,7 @@ public class GcsLogsTest {
    * Generate enough files to force pagination and confirm all data is read.
    */
   @Test
-  public void testRetrieveAllLogs() throws IOException {
+  void testRetrieveAllLogs() throws IOException {
     final File data;
     data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
     final var retrieved = new ArrayList<String>();
@@ -55,7 +55,7 @@ public class GcsLogsTest {
    * <li>third-file.txt - Line 7, Line 8, Line 9</li>
    */
   @Test
-  public void testTail() throws IOException {
+  void testTail() throws IOException {
     final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");

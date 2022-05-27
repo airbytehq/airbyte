@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import calendar
@@ -67,6 +67,12 @@ STREAM_RESPONSE: dict = {
     "end_time": 1647532987,
 }
 TEST_STREAM = TicketComments(**STREAM_ARGS)
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_str2datetime():

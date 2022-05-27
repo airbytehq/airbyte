@@ -1,25 +1,22 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import React, { useEffect, useState } from "react";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-import HighlightedText from "./HighlightedText";
-import TitlesBlock from "./TitlesBlock";
-
-type IProps = {
+interface SourcesStepProps {
   onSuccess: () => void;
   onNextStep: () => void;
-};
+}
 
-const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
+const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
@@ -29,14 +26,21 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
     message: string;
   } | null>(null);
 
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
 
-  const analyticsService = useAnalyticsService();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
   const { data: sourceDefinitionSpecification, isLoading } =
     useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -46,6 +50,11 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   }) => {
     setError(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
+
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
 
     try {
       await createSource({ values, sourceConnector });
@@ -62,12 +71,12 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   };
 
   const onServiceSelect = (sourceId: string) => {
+    setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
-
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
+    setDocumentationUrl(sourceDefinition?.documentationUrl || "");
+    trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
-      connector_source_id: sourceDefinition?.sourceDefinitionId,
+      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });
 
     setError(null);
@@ -82,32 +91,18 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
-    <>
-      <TitlesBlock
-        title={
-          <FormattedMessage
-            id="onboarding.createFirstSource"
-            values={{
-              name: (name: React.ReactNode) => <HighlightedText>{name}</HighlightedText>,
-            }}
-          />
-        }
-      >
-        <FormattedMessage id="onboarding.createFirstSource.text" />
-      </TitlesBlock>
-      <ConnectorCard
-        full
-        jobInfo={LogsRequestError.extractJobInfo(error)}
-        onServiceSelect={onServiceSelect}
-        onSubmit={onSubmitForm}
-        formType="source"
-        availableServices={sourceDefinitions}
-        hasSuccess={successRequest}
-        errorMessage={errorMessage}
-        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-        isLoading={isLoading}
-      />
-    </>
+    <ConnectorCard
+      full
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+      onServiceSelect={onServiceSelect}
+      onSubmit={onSubmitForm}
+      formType="source"
+      availableServices={sourceDefinitions}
+      hasSuccess={successRequest}
+      errorMessage={errorMessage}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      isLoading={isLoading}
+    />
   );
 };
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -126,6 +126,8 @@ def emit_state(stream: str, value: int, seed: int):
 
 def emit_user(fake: Faker, idx: int):
     profile = fake.profile()
+    del profile["birthdate"]  # the birthdate field seems to not obey the seed at the moment, so we'll ignore it
+
     time_a = fake.date_time()
     time_b = fake.date_time()
     metadata = {

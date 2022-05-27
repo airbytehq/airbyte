@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
 
-public interface StagingOperations extends SqlOperations  {
+public interface StagingOperations extends SqlOperations {
 
   String getStageName(String namespace, String streamName);
 

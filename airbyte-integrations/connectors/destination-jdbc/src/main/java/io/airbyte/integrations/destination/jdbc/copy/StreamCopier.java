@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -77,4 +77,5 @@ public interface StreamCopier {
    * @return current staging file name
    */
   String getCurrentFile();
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.protocol.models;
@@ -100,7 +100,13 @@ public class CatalogHelpers {
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
-                field -> field.getType().getJsonSchemaTypeMap())))
+                field -> {
+                  if (isObjectWithSubFields(field)) {
+                    return fieldsToJsonSchema(field.getSubFields());
+                  } else {
+                    return field.getType().getJsonSchemaTypeMap();
+                  }
+                })))
         .build());
   }
 
@@ -139,6 +145,10 @@ public class CatalogHelpers {
     }
 
     return allFieldNames;
+  }
+
+  private static boolean isObjectWithSubFields(Field field) {
+    return field.getType() == JsonSchemaType.OBJECT && field.getSubFields() != null && !field.getSubFields().isEmpty();
   }
 
 }

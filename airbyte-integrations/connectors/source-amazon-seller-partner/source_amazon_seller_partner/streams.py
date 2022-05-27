@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -14,6 +14,7 @@ from urllib.parse import urljoin
 
 import pendulum
 import requests
+import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -402,6 +403,16 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
+class GetXmlBrowseTreeData(ReportsAmazonSPStream):
+    def parse_document(self, document):
+        parsed = xmltodict.parse(
+            document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
+        )
+        return parsed.get("Result", {}).get("Node", [])
+
+    name = "GET_XML_BROWSE_TREE_DATA"
+
+
 class BrandAnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = json_lib.loads(document)
@@ -639,6 +650,7 @@ class Orders(IncrementalAmazonSPStream):
     replication_start_date_field = "LastUpdatedAfter"
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
+    default_backoff_time = 60
 
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
@@ -652,6 +664,13 @@ class Orders(IncrementalAmazonSPStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get(self.name, [])
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):

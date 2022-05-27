@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { LoadingButton, Toggle } from "components";
+import { LoadingButton, Switch } from "components";
 
 type IProps = {
   allowSync?: boolean;
@@ -29,13 +29,13 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
     await onSync(id);
   }, []);
 
-  const OnToggleClick = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    onChangeStatus(id);
-  };
-
   if (!isManual) {
-    return <Toggle checked={enabled} onChange={OnToggleClick} disabled={!allowSync} />;
+    const onSwitchChange = (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      onChangeStatus(id);
+    };
+
+    return <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} />;
   }
 
   if (isSyncing) {

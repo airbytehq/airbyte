@@ -16,6 +16,7 @@
     }
   },
   "const_null": null,
+  "enum_string": "foo",
   "additionalPropertiesUnset": {
     "foo": "bar"
   },
@@ -27,5 +28,6 @@
   },
   "additionalPropertiesConst": {
     "foo": 42
-  }
+  },
+  "additionalPropertiesEnumString": "foo"
 }

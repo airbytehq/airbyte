@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -66,7 +66,7 @@ class TwilioStream(HttpStream, ABC):
                     record.pop(field, None)
                     yield record
         yield from records
-        
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
         Twilio puts the retry time in the `Retry-After` response header so we
@@ -76,10 +76,12 @@ class TwilioStream(HttpStream, ABC):
 
         backoff_time = response.headers.get("Retry-After")
         if backoff_time is not None:
+        refactor/source-twilio-muttdata
           return float(backoff_time)
           
     
     def request_params(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        master
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params["PageSize"] = self._page_size  
         if next_page_token:

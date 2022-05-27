@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,6 +27,12 @@ from source_hubspot.streams import (
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_check_connection_ok(requests_mock, config):

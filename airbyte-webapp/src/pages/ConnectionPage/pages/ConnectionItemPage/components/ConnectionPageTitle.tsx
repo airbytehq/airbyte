@@ -7,17 +7,18 @@ import styled from "styled-components";
 import { H6, Link } from "components";
 import StepsMenu from "components/StepsMenu";
 
-import { Source, Destination } from "core/domain/connector/types";
+import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
-type IProps = {
-  source: Source;
-  destination: Destination;
+interface ConnectionPageTitleProps {
+  source: SourceRead;
+  destination: DestinationRead;
+  connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
-};
+}
 
 const Title = styled.div`
   text-align: center;
@@ -41,7 +42,7 @@ const ConnectorsLink = styled(Link)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentStep }) => {
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, destination, connection, currentStep }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
@@ -57,11 +58,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentSte
       id: ConnectionSettingsRoutes.TRANSFORMATION,
       name: <FormattedMessage id={"connectionForm.transformation.title"} />,
     },
-    {
+  ];
+
+  connection.status !== ConnectionStatus.deprecated &&
+    steps.push({
       id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
-    },
-  ];
+    });
 
   const onSelectStep = (id: string) => {
     if (id === ConnectionSettingsRoutes.STATUS) {

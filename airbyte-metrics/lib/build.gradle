@@ -11,5 +11,6 @@ dependencies {
     implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
 
     testImplementation project(':airbyte-config:persistence')
-    testImplementation 'org.testcontainers:postgresql:1.15.3'
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.testcontainers.postgresql
 }

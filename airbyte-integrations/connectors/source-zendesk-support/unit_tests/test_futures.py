@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -19,6 +19,12 @@ STREAM_ARGS: dict = {
     "start_date": "2021-01-27T00:00:00Z",
     "authenticator": BasicApiTokenAuthenticator("test@airbyte.io", "api_token"),
 }
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 @pytest.mark.parametrize(

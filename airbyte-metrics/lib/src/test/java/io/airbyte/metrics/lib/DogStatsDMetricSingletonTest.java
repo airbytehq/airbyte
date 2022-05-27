@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
@@ -21,7 +21,7 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishTrueNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false));
-      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
@@ -30,7 +30,7 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishFalseNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", true));
-      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
@@ -38,7 +38,7 @@ public class DogStatsDMetricSingletonTest {
   @DisplayName("there should be no exception if we attempt to emit metrics without initializing")
   public void testNoInitializeNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
-      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 

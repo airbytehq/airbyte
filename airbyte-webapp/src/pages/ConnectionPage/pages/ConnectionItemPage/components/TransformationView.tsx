@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
+import { NormalizationType } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -13,6 +13,7 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   getInitialNormalization,
   getInitialTransformations,
@@ -21,9 +22,17 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-type TransformationViewProps = {
-  connection: Connection;
-};
+import {
+  ConnectionStatus,
+  OperationCreate,
+  OperationRead,
+  OperatorType,
+  WebBackendConnectionRead,
+} from "../../../../../core/request/AirbyteClient";
+
+interface TransformationViewProps {
+  connection: WebBackendConnectionRead;
+}
 
 const Content = styled.div`
   max-width: 1073px;
@@ -41,9 +50,10 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 `;
 
 const CustomTransformationsCard: React.FC<{
-  operations: Operation[];
-  onSubmit: FormikOnSubmit<{ transformations?: Transformation[] }>;
-}> = ({ operations, onSubmit }) => {
+  operations?: OperationRead[];
+  onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
+  mode: ConnectionFormMode;
+}> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
 
   const initialValues = useMemo(
@@ -54,7 +64,7 @@ const CustomTransformationsCard: React.FC<{
   );
 
   return (
-    <FormCard
+    <FormCard<{ transformations?: OperationRead[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
       bottomSeparator
@@ -63,18 +73,22 @@ const CustomTransformationsCard: React.FC<{
         enableReinitialize: true,
         onSubmit,
       }}
+      mode={mode}
     >
       <FieldArray name="transformations">
-        {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
+        {(formProps) => (
+          <TransformationField defaultTransformation={defaultTransformation} {...formProps} mode={mode} />
+        )}
       </FieldArray>
     </FormCard>
   );
 };
 
 const NormalizationCard: React.FC<{
-  operations: Operation[];
+  operations?: OperationRead[];
   onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
-}> = ({ operations, onSubmit }) => {
+  mode: ConnectionFormMode;
+}> = ({ operations, onSubmit, mode }) => {
   const initialValues = useMemo(
     () => ({
       normalization: getInitialNormalization(operations, true),
@@ -83,15 +97,16 @@ const NormalizationCard: React.FC<{
   );
 
   return (
-    <FormCard
+    <FormCard<{ normalization?: NormalizationType }>
       form={{
         initialValues,
         onSubmit,
       }}
       title={<FormattedMessage id="connection.normalization" />}
       collapsible
+      mode={mode}
     >
-      <Field name="normalization" component={NormalizationField} />
+      <Field name="normalization" component={NormalizationField} mode={mode} />
     </FormCard>
   );
 };
@@ -105,17 +120,21 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const supportsNormalization = definition.supportsNormalization;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
-  const onSubmit: FormikOnSubmit<{ transformations?: Transformation[]; normalization?: NormalizationType }> = async (
+  const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
+
+  const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
     { resetForm }
   ) => {
     const newOp = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
     const operations = values.transformations
-      ? connection.operations
-          .filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
+      ? (connection.operations as OperationCreate[]) // There's an issue meshing the OperationRead here with OperationCreate that we want, in the types
+          ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.normalization)
           .concat(newOp)
-      : newOp.concat(connection.operations.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt));
+      : newOp.concat(
+          (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
+        );
 
     await updateConnection({
       namespaceDefinition: connection.namespaceDefinition,
@@ -132,24 +151,31 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
     if (values.transformations) {
       nextFormValues.transformations = getInitialTransformations(operations);
     }
-    if (values.normalization) {
-      nextFormValues.normalization = getInitialNormalization(operations, true);
-    }
+    nextFormValues.normalization = getInitialNormalization(operations, true);
 
     resetForm({ values: nextFormValues });
   };
 
   return (
     <Content>
-      {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
-      {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
-      {!supportsNormalization && !supportsDbt && (
-        <NoSupportedTransformationCard>
-          <H4 center>
-            <FormattedMessage id="connectionForm.operations.notSupported" />
-          </H4>
-        </NoSupportedTransformationCard>
-      )}
+      <fieldset
+        disabled={mode === "readonly"}
+        style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
+      >
+        {supportsNormalization && (
+          <NormalizationCard operations={connection.operations} onSubmit={onSubmit} mode={mode} />
+        )}
+        {supportsDbt && (
+          <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} mode={mode} />
+        )}
+        {!supportsNormalization && !supportsDbt && (
+          <NoSupportedTransformationCard>
+            <H4 center>
+              <FormattedMessage id="connectionForm.operations.notSupported" />
+            </H4>
+          </NoSupportedTransformationCard>
+        )}
+      </fieldset>
     </Content>
   );
 };
