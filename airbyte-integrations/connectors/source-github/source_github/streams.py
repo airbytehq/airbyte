@@ -10,6 +10,7 @@ from urllib import parse
 
 import pendulum
 import requests
+import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
@@ -37,6 +38,7 @@ class GithubStream(HttpStream, ABC):
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+        self._session = requests_cache.CachedSession("github_cache")
         self._session.mount("https://", adapter)
         self._session.mount("http://", adapter)
 
@@ -662,8 +664,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
-    use_cache = False
-
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
@@ -703,6 +703,8 @@ class PullRequestStats(PullRequestSubstream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
+
+    use_cache = True
 
     @property
     def record_keys(self) -> List[str]:
