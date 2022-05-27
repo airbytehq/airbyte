@@ -55,9 +55,9 @@ class YamlParser(ConfigParser):
 
     def resolve_value(self, value, path):
         if path:
-            return *path, value
+            return f"{path}.{value}"
         else:
-            return (value,)
+            return value
 
     def preprocess(self, value, evaluated_config, path):
         if type(value) == str:
@@ -66,8 +66,7 @@ class YamlParser(ConfigParser):
                 return value
             else:
                 try:
-                    ref_key_tuple = tuple(ref_key.split("."))
-                    return evaluated_config[ref_key_tuple]
+                    return evaluated_config[ref_key]
                 except KeyError:
                     raise UndefinedReferenceException(path, ref_key)
         elif type(value) == dict:

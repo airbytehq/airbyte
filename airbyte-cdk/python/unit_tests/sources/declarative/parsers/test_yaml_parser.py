@@ -108,15 +108,3 @@ def test_refer_and_overwrite():
 
     assert config["offset_request_parameters"]["offset"] == "{{ next_page_token['offset'] }}"
     assert config["custom_request_parameters"]["offset"] == "{{ next_page_token['offset'] }}"
-
-
-def test_collision():
-    content = """
-example:
-  nested:
-    path: "first one"
-  nested.path: "uh oh"
-    """
-    config = parser.parse(content)
-    assert config["example"]["nested"]["path"] == "first one"
-    assert config["example"]["nested.path"] == "uh oh"
