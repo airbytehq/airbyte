@@ -46,12 +46,12 @@ class DeclarativeComponentFactory:
         return {**d1, **d2}
 
     def _create_subcomponent(self, v, kwargs, config):
-        if type(v) == dict and "class_name" in v:
+        if isinstance(v, dict) and "class_name" in v:
             # propagate kwargs to inner objects
             v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
 
             return self.create_component(v, config)()
-        elif type(v) == list:
+        elif isinstance(v, list):
             return [
                 self._create_subcomponent(
                     sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config
@@ -62,7 +62,7 @@ class DeclarativeComponentFactory:
             return v
 
     def _get_subcomponent_options(self, sub: Any):
-        if type(sub) == dict:
+        if isinstance(sub, dict):
             return sub.get("options", {})
         else:
             return {}
