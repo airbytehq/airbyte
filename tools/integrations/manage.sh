@@ -202,11 +202,15 @@ cmd_publish() {
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
-  
+
   # learn about this version of Docker
   echo "--- docker info ---"
   docker --version
   docker buildx version
+
+  # Install docker emulators
+  # TODO: Don't run this command on M1 macs locally (it won't work and isn't needed)
+  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   # log into docker
   DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
