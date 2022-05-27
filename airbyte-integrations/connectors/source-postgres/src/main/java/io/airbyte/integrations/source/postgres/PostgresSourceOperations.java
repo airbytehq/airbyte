@@ -148,7 +148,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
-        case "bytea" -> JDBCType.BOOLEAN;
+        case "bytea" -> JDBCType.VARCHAR;
         case "timestamptz" -> JDBCType.TIMESTAMP_WITH_TIMEZONE;
         case "timetz" -> JDBCType.TIME_WITH_TIMEZONE;
         default -> JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
