@@ -38,16 +38,14 @@ public enum JsonSchemaFormat {
     List<JsonSchemaFormat> matchFormats = null;
     // Match by Format + Type
     if (jsonSchemaAirbyteType != null) {
-      matchFormats = Arrays.stream(values()).filter(format ->
-          jsonSchemaFormat.equals(format.jsonSchemaFormat) && jsonSchemaAirbyteType.equals(format.jsonSchemaAirbyteType)
-      ).toList();
+      matchFormats = Arrays.stream(values())
+          .filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat) && jsonSchemaAirbyteType.equals(format.jsonSchemaAirbyteType)).toList();
     }
 
     // Match by Format are no results already
     if (matchFormats == null || matchFormats.isEmpty()) {
-      matchFormats = Arrays.stream(values()).filter(format ->
-          jsonSchemaFormat.equals(format.jsonSchemaFormat) && format.jsonSchemaAirbyteType == null
-      ).toList();
+      matchFormats =
+          Arrays.stream(values()).filter(format -> jsonSchemaFormat.equals(format.jsonSchemaFormat) && format.jsonSchemaAirbyteType == null).toList();
     }
 
     if (matchFormats.isEmpty()) {

@@ -238,11 +238,12 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   /**
    * @param properties - JSON schema with properties
-   *                   <p>
-   *                   The method is responsible for population of fieldsContainRefDefinitionValue set with keys contain $ref definition
-   *                   <p>
-   *                   Currently, AirByte doesn't support parsing value by $ref key definition. The issue to track this <a
-   *                   href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
+   *        <p>
+   *        The method is responsible for population of fieldsContainRefDefinitionValue set with keys
+   *        contain $ref definition
+   *        <p>
+   *        Currently, AirByte doesn't support parsing value by $ref key definition. The issue to
+   *        track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
    */
   private Consumer<String> addToRefList(final ObjectNode properties) {
     return key -> {
@@ -267,8 +268,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   }
 
   private static JsonNode allOfAndAnyOfFieldProcessing(final String fieldName, final JsonNode fieldDefinition) {
-    ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {
-    });
+    ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
     List<JsonNode> list;
     try {
       list = reader.readValue(fieldDefinition.get(fieldName));

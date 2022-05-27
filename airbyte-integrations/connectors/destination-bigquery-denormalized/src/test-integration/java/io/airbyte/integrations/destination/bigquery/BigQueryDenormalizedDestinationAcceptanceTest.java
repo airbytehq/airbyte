@@ -135,8 +135,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected void assertNamespaceNormalization(final String testCaseId,
-      final String expectedNormalizedNamespace,
-      final String actualNormalizedNamespace) {
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
@@ -162,9 +162,9 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -179,7 +179,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
             .newBuilder(
                 String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-//                    .setUseLegacySql(false)
+            // .setUseLegacySql(false)
             .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
             .build();
 
@@ -311,8 +311,9 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   /**
-   * Verify that the integration successfully writes normalized records successfully (without actually running the normalization module) Tests a wide
-   * variety of messages an schemas (aspirationally, anyway).
+   * Verify that the integration successfully writes normalized records successfully (without actually
+   * running the normalization module) Tests a wide variety of messages an schemas (aspirationally,
+   * anyway).
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
