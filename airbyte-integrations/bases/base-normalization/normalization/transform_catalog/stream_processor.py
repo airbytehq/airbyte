@@ -1123,17 +1123,31 @@ where 1 = 1
                     deletion_hook = Template(
                         """
                         {{ '{%' }}
-                            if adapter.get_relation(
+                        set final_table_relation = adapter.get_relation(
                                 database=this.database,
                                 schema=this.schema,
                                 identifier='{{ final_table_name }}'
-                            ) is not none
+                            )
+                        {{ '%}' }}
+                        {{ '{#' }}
+                        If the final table doesn't exist, then obviously we can't delete anything from it.
+                        Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
+                        So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
+                        {{ '#}' }}
+                        {{ '{%' }}
+                        if final_table_relation is not none and '{{ unique_key }}' in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
                         {{ '%}' }}
 
-                        -- Delete records which are no longer active.
-                        -- Find the records which are being updated by querying the _scd_new_data model
-                        -- Then join that against the SCD model to find the records which have no row with _airbyte_active_row = 1
-                        delete from {{ '{{ this.schema }}' }}.{{ quoted_final_table_name }} where {{ unique_key }} in (
+                        -- Delete records which are no longer active:
+                        -- 1. Find the records which are being updated by querying the _scd_new_data model
+                        -- 2. Then join that against the SCD model to find the records which have no row with _airbyte_active_row = 1
+                        -- We can't just delete all the modified_ids from final_table because those records might still be active, but not included
+                        -- in the most recent increment (i.e. the final table model would not re-insert them, so the data would be incorrectly lost).
+                        -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
+                        -- so we _must_ join against the entire SCD table to find the active row for each record.
+                        -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
+                        delete from {{ '{{ this.schema }}' }}.{{ quoted_final_table_name }}
+                        where {{ unique_key }} in (
                             with modified_ids as (
                                 select
                                     {{ '{{' }} dbt_utils.surrogate_key([
@@ -1144,19 +1158,19 @@ where 1 = 1
                                 from {{ quoted_scd_new_data_table }}
                                 where 1=1
                                     {{ incremental_clause }}
-                            )
-                            select modified_ids.{{ unique_key }}
-                            from (
-                                select * from {{ '{{ this }}' }}
+                            ),
+                            scd_active_rows as (
+                                select scd_table.* from {{ '{{ this }}' }} scd_table
+                                inner join modified_ids on scd_table.{{ unique_key }} = modified_ids.{{ unique_key }}
                                 where {{ active_row_column_name }} =  1
-                            ) scd_active_rows
+                            )
+                            select modified_ids.{{ unique_key }} from scd_active_rows
                             right outer join modified_ids on modified_ids.{{ unique_key }} = scd_active_rows.{{ unique_key }}
                             group by modified_ids.{{ unique_key }}
                             having count(scd_active_rows.{{ unique_key }}) = 0
                         )
 
                         {{ '{% else %}' }}
-                        -- If the table doesn't exist, then we shouldn't try to delete it.
                         -- We have to have a non-empty query, so just do a simple select here.
                         select 1
                         {{ '{% endif %}' }}
