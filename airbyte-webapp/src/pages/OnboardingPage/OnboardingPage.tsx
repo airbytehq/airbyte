@@ -31,7 +31,6 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
   max-width: ${({ big, medium }) => (big ? 1140 : medium ? 730 : 550)}px;
   margin: 0 auto;
-  padding: 75px 0 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
