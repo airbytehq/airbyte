@@ -161,7 +161,7 @@ class API:
     def __init__(self, account_id: str, access_token: str):
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False, api_version='v14.0')
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
