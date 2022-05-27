@@ -5,8 +5,6 @@ set -x
 
 . tools/lib/lib.sh
 
-docker run -i --rm -v /etc:/etc ubuntu /bin/bash -c "echo -e '98uimwcaaKz\n98uimwcaaKz' | passwd root"
-
 USAGE="
 Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
