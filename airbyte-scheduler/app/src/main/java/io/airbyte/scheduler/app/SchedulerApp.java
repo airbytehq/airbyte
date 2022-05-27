@@ -29,8 +29,6 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -258,9 +256,8 @@ public class SchedulerApp {
       // This should be converted into check for the migration version. Everything else as per.
       waitForServer(configs);
       LOGGER.info("Creating Job DB connection pool...");
-      final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
-
-      final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
+      final Database jobDatabase = new Database(jobsDslContext);
+      final Database configDatabase = new Database(configsDslContext);
       final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
       final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
           .maskSecrets(!featureFlags.exposeSecretsInExport())

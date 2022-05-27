@@ -5,6 +5,7 @@
 package io.airbyte.db.init.impl;
 
 import io.airbyte.db.check.DatabaseAvailabilityCheck;
+import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.db.init.DatabaseInitializer;
 import io.airbyte.db.instance.DatabaseConstants;
 import java.util.Collection;
@@ -22,7 +23,7 @@ public class JobsDatabaseInitializer implements DatabaseInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseInitializer.class);
 
   // TODO inject via dependency injection framework
-  private final DatabaseAvailabilityCheck databaseAvailablityCheck;
+  private final JobsDatabaseAvailabilityCheck databaseAvailablityCheck;
 
   // TODO inject via dependency injection framework
   private final DSLContext dslContext;
@@ -30,7 +31,7 @@ public class JobsDatabaseInitializer implements DatabaseInitializer {
   // TODO inject via dependency injection framework
   private final String initialSchema;
 
-  public JobsDatabaseInitializer(final DatabaseAvailabilityCheck databaseAvailablityCheck,
+  public JobsDatabaseInitializer(final JobsDatabaseAvailabilityCheck databaseAvailablityCheck,
                                  final DSLContext dslContext,
                                  final String initialSchema) {
     this.databaseAvailablityCheck = databaseAvailablityCheck;

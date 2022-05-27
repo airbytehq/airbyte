@@ -29,7 +29,7 @@ public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   @Override
   protected Database getDatabase(final DSLContext dslContext) throws IOException {
-    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   @Override

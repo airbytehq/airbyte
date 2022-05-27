@@ -16,7 +16,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * Common test setup for database availability check tests.
  */
-public abstract class AbstractDatabaseAvailabilityCheckTest {
+class CommonDatabaseCheckTest {
 
   protected static final long TIMEOUT_MS = 500L;
 
@@ -35,6 +35,7 @@ public abstract class AbstractDatabaseAvailabilityCheckTest {
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
   }
 
+  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   void cleanup() throws Exception {
     DataSourceFactory.close(dataSource);
