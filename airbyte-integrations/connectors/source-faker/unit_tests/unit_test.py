@@ -31,7 +31,6 @@ def test_source_streams():
         "sex": {"type": "string"},
         "address": {"type": "string"},
         "mail": {"type": "string"},
-        "birthdate": {"type": "string", "format": "date"},
     }
 
     for schema in schemas:
