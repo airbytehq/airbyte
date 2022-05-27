@@ -45,8 +45,8 @@ def test_string_interpolation():
 
 
 def test_string_interpolation_through_kwargs():
-    s = "{{ kwargs['name'] }}"
-    kwargs = {"name": "airbyte"}
-    partial = create(InterpolatedString, string=s, kwargs=kwargs)
+    s = "{{ options['name'] }}"
+    options = {"name": "airbyte"}
+    partial = create(InterpolatedString, string=s, options=options)
     interpolated_string = partial()
     assert interpolated_string._string == "airbyte"

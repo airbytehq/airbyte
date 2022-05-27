@@ -29,17 +29,17 @@ def create(func, /, *args, **keywords):
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
 
-        # kwargs is a special keyword used for interpolation and propagation
-        if "kwargs" in all_keywords:
-            kwargs = all_keywords.pop("kwargs")
+        # options is a special keyword used for interpolation and propagation
+        if "options" in all_keywords:
+            options = all_keywords.pop("options")
         else:
-            kwargs = dict()
+            options = dict()
 
         # create object's partial parameters
-        fully_created = _create_inner_objects(all_keywords, kwargs)
+        fully_created = _create_inner_objects(all_keywords, options)
 
         # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"kwargs": kwargs})
+        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
         interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v is not None}
 
         all_keywords.update(interpolated_keywords)
@@ -48,7 +48,7 @@ def create(func, /, *args, **keywords):
         if config is not None:
             all_keywords["config"] = config
 
-        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, kwargs)
+        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
         ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
         return ret
