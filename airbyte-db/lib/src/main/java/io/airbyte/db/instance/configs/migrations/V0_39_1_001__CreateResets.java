@@ -36,7 +36,7 @@ public class V0_39_1_001__CreateResets extends BaseJavaMigration {
   private static void createResetsTable(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
-    final Field<String> streamName = DSL.field("stream_name", SQLDataType.VARCHAR(256).nullable(false));
+    final Field<String> streamName = DSL.field("stream_name", SQLDataType.CLOB.nullable(false));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =
