@@ -14,6 +14,7 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 const Content = styled.div`
   max-width: 813px;
+  width: 80%;
   margin: 19px auto;
 `;
 
