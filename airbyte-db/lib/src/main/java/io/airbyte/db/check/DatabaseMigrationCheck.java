@@ -36,6 +36,17 @@ public interface DatabaseMigrationCheck {
       availabilityCheck.get().check();
       if (flywayOptional.isPresent()) {
         final var flyway = flywayOptional.get();
+
+        /**
+         * The database may be available, but not yet migrated. If this is the case, the Flyway object will
+         * not be able to retrieve the current version of the schema. Therefore, wait for the migration to
+         * complete before moving on with the test.
+         */
+        while (flyway.info().current() == null) {
+          getLogger().info("Waiting for migration to complete...");
+          sleep(sleepTime);
+        }
+
         var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
         getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
         getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
@@ -44,12 +55,7 @@ public interface DatabaseMigrationCheck {
           if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
             throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
           }
-
-          try {
-            Thread.sleep(sleepTime);
-          } catch (final InterruptedException e) {
-            throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
-          }
+          sleep(sleepTime);
           currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
         }
         getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
@@ -58,6 +64,20 @@ public interface DatabaseMigrationCheck {
       }
     } else {
       throw new DatabaseCheckException("Availability check not configured.");
+    }
+  }
+
+  /**
+   * Sleep for the provided amount of time (in milliseconds).
+   *
+   * @param sleepTime The amount of time to sleep
+   * @throws DatabaseCheckException if unable to sleep for the required amount of time.
+   */
+  default void sleep(final long sleepTime) throws DatabaseCheckException {
+    try {
+      Thread.sleep(sleepTime);
+    } catch (final InterruptedException e) {
+      throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
     }
   }
 
