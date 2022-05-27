@@ -31,9 +31,9 @@ requester:
   request_parameters_provider: "*ref(request_parameters_provider)"
   retrier:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
+  decoder: "*ref(decoder)"
 extractor:
   class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
-  decoder: "*ref(decoder)"
 applications_stream:
   ref: "*ref(partial_stream)"
   options:
