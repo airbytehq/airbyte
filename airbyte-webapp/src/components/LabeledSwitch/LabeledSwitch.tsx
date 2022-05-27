@@ -1,13 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox, Switch } from "components/base";
+import { CheckBox } from "components/base";
+import { HeadlessSwitch } from "components/base/Switch/HeadlessSwitch";
 
-interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface LabeledSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   message?: React.ReactNode;
   label?: React.ReactNode;
   checkbox?: boolean;
   loading?: boolean;
+  onChange: (checked: boolean) => void;
 }
 
 const ToggleContainer = styled.div`
@@ -37,9 +39,9 @@ const AdditionMessage = styled.span`
 export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => (
   <ToggleContainer>
     {props.checkbox ? (
-      <CheckBox {...props} id={`toggle-${props.name}`} />
+      <CheckBox {...props} id={`toggle-${props.name}`} onChange={(event) => props.onChange(event?.target.checked)} />
     ) : (
-      <Switch {...props} id={`toggle-${props.name}`} />
+      <HeadlessSwitch {...props} id={`toggle-${props.name}`} onChange={(checked) => props.onChange(checked)} />
     )}
 
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>

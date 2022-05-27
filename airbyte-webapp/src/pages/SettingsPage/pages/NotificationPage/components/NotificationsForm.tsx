@@ -56,10 +56,10 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           disabled={isLoading}
           loading={securityUpdatesUpdating}
           label={<FormattedMessage id="settings.securityUpdates" />}
-          onChange={(event) => {
+          onChange={(checked) => {
             setSecurityUpdatesUpdating(true);
             onChange({
-              securityUpdates: event.target.checked,
+              securityUpdates: checked,
               news: preferencesValues.news,
             });
           }}
@@ -73,10 +73,10 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           disabled={isLoading}
           loading={newsletterUpdating}
           label={<FormattedMessage id="settings.newsletter" />}
-          onChange={(event) => {
+          onChange={(checked) => {
             setNewsletterUpdating(true);
             onChange({
-              news: event.target.checked,
+              news: checked,
               securityUpdates: preferencesValues.securityUpdates,
             });
           }}

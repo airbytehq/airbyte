@@ -1,1 +1,1 @@
-export { Switch } from "./Switch";
+export { HeadlessSwitch as Switch } from "./HeadlessSwitch";

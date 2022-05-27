@@ -7,8 +7,9 @@ interface SwitchProps {
   small?: boolean;
   loading?: boolean;
   disabled?: boolean;
-  checked: boolean;
+  checked?: boolean;
   onChange?: (checked: boolean) => void;
+  id?: string;
 }
 
 export const HeadlessSwitch: React.FC<SwitchProps> = ({
@@ -31,7 +32,7 @@ export const HeadlessSwitch: React.FC<SwitchProps> = ({
   });
 
   return (
-    <Switch checked={checked} onChange={onChange} className={switchStyle} disabled={disabled}>
+    <Switch checked={!!checked} onChange={onChange} className={switchStyle} disabled={disabled}>
       <span className={spanStyle} />
     </Switch>
   );

@@ -30,8 +30,7 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
   }, []);
 
   if (!isManual) {
-    const onSwitchChange = (event: React.SyntheticEvent) => {
-      event.stopPropagation();
+    const onSwitchChange = () => {
       onChangeStatus(id);
     };
 

@@ -140,6 +140,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
           <InputRow>
             <Cell flex={1}>
               <Field name="sendOnFailure">
+                {/* In this case, Headless UI onChange is not compatible with Formik field onChange */}
                 {({ field }: FieldProps<boolean>) => (
                   <LabeledSwitch
                     name={field.name}
@@ -152,6 +153,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
             </Cell>
             <Cell flex={1}>
               <Field name="sendOnSuccess">
+                {/* In this case, Headless UI onChange is not compatible with Formik field onChange */}
                 {({ field }: FieldProps<boolean>) => (
                   <LabeledSwitch
                     name={field.name}

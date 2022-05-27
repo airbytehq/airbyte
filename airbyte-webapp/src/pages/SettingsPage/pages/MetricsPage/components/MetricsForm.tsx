@@ -73,8 +73,8 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
           checked={anonymousDataCollection}
           disabled={isLoading}
           label={<FormattedMessage id="preferences.anonymizeData" />}
-          onChange={(event) => {
-            onChange({ anonymousDataCollection: event.target.checked });
+          onChange={(checked) => {
+            onChange({ anonymousDataCollection: checked });
           }}
           loading={isLoading}
         />
