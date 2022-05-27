@@ -1,3 +1,5 @@
+@use "../../../scss/colors";
+
 .leftPanelStyle {
   min-width: 200px;
   position: relative;
@@ -54,4 +56,10 @@
   height: 100vh;
   padding: 6px;
   display: flex;
+}
+
+.grabberHandleIcon {
+  margin: auto;
+  height: 25px;
+  color: colors.$greyColor20;
 }

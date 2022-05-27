@@ -5,18 +5,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
-import styled from "styled-components";
 
 import { DocumentationPanel } from "components/DocumentationPanel";
 
-import styles from "./ConnectorDocumentationLayout.module.css";
+import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
-
-const GrabberHandle = styled(FontAwesomeIcon)`
-  margin: auto;
-  height: 25px;
-  color: ${({ theme }) => theme.greyColor20};
-`;
 
 interface PanelContainerProps {
   dimensions?: {
@@ -79,7 +72,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
           <div className={styles.panelGrabber}>
-            <GrabberHandle icon={faGripLinesVertical} size={"1x"} />
+            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size={"1x"} />
           </div>
         </ReflexSplitter>
       )}
