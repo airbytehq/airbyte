@@ -32,8 +32,7 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -355,7 +354,7 @@ public class WorkerApp {
   }
 
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
-    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
+    MetricClientFactory.createMetricClient(MetricEmittingApps.WORKER);
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);

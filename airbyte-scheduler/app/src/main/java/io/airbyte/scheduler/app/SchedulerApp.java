@@ -29,8 +29,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -288,7 +287,7 @@ public class SchedulerApp {
           TrackingClientSingleton.get());
       final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
-      DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
+      MetricClientFactory.createMetricClient(MetricEmittingApps.SCHEDULER);
 
       LOGGER.info("Launching scheduler...");
       new SchedulerApp(

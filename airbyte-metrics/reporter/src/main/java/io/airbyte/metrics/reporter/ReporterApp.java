@@ -15,8 +15,7 @@ import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import java.util.concurrent.Executors;
 import javax.sql.DataSource;
@@ -33,7 +32,7 @@ public class ReporterApp {
   public static void main(final String[] args) throws DatabaseCheckException {
     final Configs configs = new EnvConfigs();
 
-    DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));
+    MetricClientFactory.createMetricClient(MetricEmittingApps.METRICS_REPORTER);
 
     final DataSource dataSource = DataSourceFactory.create(
         configs.getConfigDatabaseUser(),

@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 
 /**
  * Enum containing all applications metrics are emitted for. Used to initialize
- * {@link DogStatsDMetricSingleton#initialize(MetricEmittingApp, DatadogClientConfiguration)}.
+ * {@link DogStatsDMetricClient#initialize(MetricEmittingApp, DatadogClientConfiguration)}.
  *
  * Application Name Conventions:
  * <p>
