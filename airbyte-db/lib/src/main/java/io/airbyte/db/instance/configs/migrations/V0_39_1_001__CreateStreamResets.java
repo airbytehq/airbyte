@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_39_1_001__CreateResets extends BaseJavaMigration {
+public class V0_39_1_001__CreateStreamResets extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_39_1_001__CreateResets.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_39_1_001__CreateStreamResets.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
@@ -42,9 +42,9 @@ public class V0_39_1_001__CreateResets extends BaseJavaMigration {
     final Field<OffsetDateTime> updatedAt =
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
-    ctx.createTableIfNotExists("resets")
+    ctx.createTableIfNotExists("stream_resets")
         .columns(id, connectionId, streamName, createdAt, updatedAt).execute();
-    ctx.createIndex("connection_id_idx").on("resets", "connection_id").execute();
+    ctx.createIndex("connection_id_stream_name_idx").on("stream_resets", "connection_id", "stream_name").execute();
   }
 
 }
