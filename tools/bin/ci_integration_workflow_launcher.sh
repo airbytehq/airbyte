@@ -89,6 +89,10 @@ fi
 # --------- Fire tests
 connectors=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4 | sort | uniq)
 for connector in $connectors; do
+  # Testing the source acceptance test module itself requires it be prefixed by /bases
+  if [[ "$connector" == "source-acceptance-test" ]]; then
+    connector="bases/$connector"
+  fi
   echo -e "$blue_text""Issuing GH action request for connector $connector...""$default_text"
   curl \
     --silent \
