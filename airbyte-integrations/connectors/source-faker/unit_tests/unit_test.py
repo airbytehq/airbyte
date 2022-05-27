@@ -7,6 +7,7 @@ import pytest
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
 
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1}
@@ -164,8 +165,9 @@ def test_read_with_seed():
     assert records[0].record.data["company"] == "Gibson-Townsend"
     assert records[0].record.data["mail"] == "zamoradenise@yahoo.com"
 
+
 def test_ensure_no_purchases_without_users():
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError):
         source = SourceFaker()
         logger = None
         config = {"count": 100}
