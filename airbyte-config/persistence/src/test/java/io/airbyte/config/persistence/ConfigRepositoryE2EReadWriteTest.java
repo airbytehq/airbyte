@@ -30,8 +30,9 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -84,12 +85,12 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
