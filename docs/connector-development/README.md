@@ -139,7 +139,7 @@ Publishing a connector can be done using the `/publish` command as outlined in t
 * **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`
 * **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
 * **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
-* **run-tests** - Defaults to true. Should always run the tests as part of the publish flow so that if tests fail, the connector is not published.
+* **run-tests** - Defaults to `true`. Should always run the tests as part of the publish flow so that if tests fail, the connector is not published.
 * **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
 * **bump-version** - Defaults to `patch`, bumps version of a connector for you in the Dockerfile, Seed Specs, and Definitions files. Valid values are `patch`, `minor`, and `major`
 

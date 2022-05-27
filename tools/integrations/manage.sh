@@ -11,9 +11,11 @@ For publish, if you want to push the spec to the spec cache, provide a path to a
 Available commands:
   scaffold
   test <integration_root_path>
-  build  <integration_root_path> [<run_tests>]
-  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
-  publish_external  <image_name> <image_version>
+  build <integration_root_path>
+  process_build <integration_root_path>
+  bump_version <integration_root_path> <bump_version>
+  publish <integration_root_path> [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish_external <image_name> <image_version>
 "
 
 _check_tag_exists() {
@@ -37,8 +39,6 @@ cmd_scaffold() {
 cmd_build() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
-
-  local run_tests=$1; shift || run_tests=true
 
   echo "Building $path"
   # Note that we are only building (and testing) once on this build machine's architecture
