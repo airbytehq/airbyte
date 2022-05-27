@@ -2,9 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
+
 import pytest
-from typing import Any, Dict, Mapping
+from typing import Dict
 
 import requests
 from source_zendesk_support.source import SourceZendeskSupport
