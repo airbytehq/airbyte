@@ -5,7 +5,9 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-RUN apk --no-cache upgrade && pip install --upgrade pip
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
