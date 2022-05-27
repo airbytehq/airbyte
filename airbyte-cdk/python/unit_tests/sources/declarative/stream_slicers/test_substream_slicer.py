@@ -17,24 +17,30 @@ data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 
-slice_definition = {"parent_id": "{{ parent_record['id'] }}"}
+slice_definition = {"parent_id": "{{ parent_record['id'] }}", "parent_slice": "{{ parent_stream_slice['slice'] }}"}
 
 
 @pytest.mark.parametrize(
     "test_name, parent_slices, parent_records, slice_definition, expected_slices",
     [
-        ("test_single_parent_slices_no_records", [{}], [], slice_definition, [{"parent_id": None}]),
-        ("test_single_parent_slices_with_records", [{}], parent_records, slice_definition, [{"parent_id": "1"}, {"parent_id": "2"}]),
+        ("test_single_parent_slices_no_records", [{}], [], slice_definition, [{"parent_id": None, "parent_slice": None}]),
+        (
+            "test_single_parent_slices_with_records",
+            [{}],
+            parent_records,
+            slice_definition,
+            [{"parent_id": "1", "parent_slice": None}, {"parent_id": "2", "parent_slice": None}],
+        ),
         (
             "test_with_parent_slices_and_records",
             parent_slices,
             all_parent_data,
             slice_definition,
             [
-                {"slice": "first", "parent_id": "0"},
-                {"slice": "first", "parent_id": "1"},
-                {"slice": "second", "parent_id": "2"},
-                {"slice": "third", "parent_id": None},
+                {"parent_slice": "first", "parent_id": "0"},
+                {"parent_slice": "first", "parent_id": "1"},
+                {"parent_slice": "second", "parent_id": "2"},
+                {"parent_slice": "third", "parent_id": None},
             ],
         ),
     ],
