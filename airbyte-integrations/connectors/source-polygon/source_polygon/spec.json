@@ -1,0 +1,33 @@
+{
+  "documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["stock_ticker", "api_key", "from_date", "to_date"],
+    "additionalProperties": false,
+    "properties": {
+      "stock_ticker": {
+        "type": "string",
+        "title": "Stock Ticker",
+        "description": "The stock ticker to track",
+        "examples": ["AAPL", "TSLA", "AMZN"]
+      },
+      "api_key": {
+        "title": "API Key",
+        "type": "string",
+        "description": "The Polygon.io Stocks API key to use to hit the API.",
+        "airbyte_secret": true
+      },
+      "from_date": {
+        "title": "Starting date",
+        "type": "string",
+        "description": "Starting date: example (2021-01-22)"
+      },
+      "to_date": {
+        "title": "Ending date",
+        "type": "string",
+        "description": "Ending date: example (2021-01-27)"
+      }
+    }
+  }
+}
