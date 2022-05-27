@@ -1,15 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 import inspect
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
-
-def create(func, /, *args, **keywords):
-    """
+"""
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
@@ -22,6 +19,8 @@ def create(func, /, *args, **keywords):
     :return: partially created object
     """
 
+
+def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
         interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
@@ -51,7 +50,10 @@ def create(func, /, *args, **keywords):
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
-        ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+        try:
+            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+        except TypeError as e:
+            raise Exception(f"failed to create object of type {func} because {e}")
         return ret
 
     newfunc.func = func
@@ -62,8 +64,9 @@ def create(func, /, *args, **keywords):
 
 
 def _get_kwargs_to_pass_to_func(func, kwargs):
-    kwargs_to_pass_down = set(inspect.getfullargspec(func).kwonlyargs)
-    args_to_pass_down = set(inspect.getfullargspec(func).args)
+    argspec = inspect.getfullargspec(func)
+    kwargs_to_pass_down = set(argspec.kwonlyargs)
+    args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
     kwargs_to_pass_down = {k: v for k, v in kwargs.items() if k in all_args}
     return kwargs_to_pass_down
