@@ -3188,7 +3188,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.13"
+- dockerImage: "airbyte/source-google-sheets:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:

@@ -32,6 +32,7 @@ ROW_BATCH_SIZE = 200
 DEFAULT_SOCKET_TIMEOUT: int = 600
 socket.setdefaulttimeout(DEFAULT_SOCKET_TIMEOUT)
 
+
 class GoogleSheetsSource(Source):
     """
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
