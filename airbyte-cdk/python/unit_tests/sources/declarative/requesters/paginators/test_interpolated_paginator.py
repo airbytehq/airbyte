@@ -5,7 +5,7 @@
 import json
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import RequestJsonDecoder
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 
 config = {"option": "OPTION"}
@@ -15,7 +15,7 @@ response.headers = {"A_HEADER": "HEADER_VALUE"}
 response_body = {"next_page_cursor": "12345"}
 response._content = json.dumps(response_body).encode("utf-8")
 last_responses = [{"id": 0}]
-decoder = JsonDecoder()
+decoder = RequestJsonDecoder()
 
 
 def test_value_is_static():

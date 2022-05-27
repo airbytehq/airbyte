@@ -3,12 +3,12 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Mapping
+from typing import Any
 
-import requests
+from airbyte_cdk.sources.declarative.response import Response
 
 
 class Decoder(ABC):
     @abstractmethod
-    def decode(self, response: requests.Response) -> Mapping[str, Any]:
+    def decode(self, response: Any) -> Response:
         pass

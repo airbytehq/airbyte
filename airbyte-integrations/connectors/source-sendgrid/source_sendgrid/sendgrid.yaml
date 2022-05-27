@@ -74,6 +74,7 @@ retriever:
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
   primary_key: "{{ kwargs['primary_key'] }}"
+  decoder: "*ref(decoder)"
 
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
@@ -93,7 +94,8 @@ requester:
   request_parameters_provider: "*ref(request_parameters_provider)"
   retrier:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
-
+  decoder: "*ref(decoder)"
+  
 extractor:
   class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
   decoder: "*ref(decoder)"

@@ -3,7 +3,7 @@
 #
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import RequestJsonDecoder
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
@@ -125,7 +125,7 @@ check:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert type(stream._retriever._extractor._decoder) == JsonDecoder
+    assert type(stream._retriever._extractor._decoder) == RequestJsonDecoder
     assert stream._retriever._extractor._transform == ".result[]"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
 

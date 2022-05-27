@@ -4,10 +4,12 @@
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
+from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
@@ -22,6 +24,7 @@ class HttpRequester(Requester):
         http_method: Union[str, HttpMethod],
         request_parameters_provider: RequestParameterProvider,
         authenticator: HttpAuthenticator,
+        decoder: Decoder,
         retrier: Retrier,
         config: Config,
     ):
@@ -37,8 +40,12 @@ class HttpRequester(Requester):
             http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_parameters_provider = request_parameters_provider
+        self._decoder = decoder
         self._retrier = retrier
         self._config = config
+
+    def parse_response(self, response: Any) -> Response:
+        return self._decoder.decode(response)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

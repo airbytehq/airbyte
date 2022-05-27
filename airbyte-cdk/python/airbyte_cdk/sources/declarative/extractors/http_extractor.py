@@ -3,13 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Union
+from typing import List
 
-import requests
+from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.types import Record
 
 
 class HttpExtractor(ABC):
     @abstractmethod
-    def extract_records(self, response: Union[requests.Response, Mapping[str, Any]]) -> List[Record]:
+    def extract_records(self, response: Response) -> List[Record]:
         pass

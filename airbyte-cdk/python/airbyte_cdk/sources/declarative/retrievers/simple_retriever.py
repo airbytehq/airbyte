@@ -189,8 +189,8 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        self._last_response = response
-        records = self._extractor.extract_records(response)
+        self._last_response = self._requester.parse_response(response)
+        records = self._extractor.extract_records(self._last_response)
         self._last_records = records
         return records
 
@@ -206,7 +206,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self._paginator.next_page_token(response, self._last_records)
+        return self._paginator.next_page_token(self._requester.parse_response(response), self._last_records)
 
     def read_records(
         self,

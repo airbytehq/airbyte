@@ -4,11 +4,11 @@
 import json
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import RequestJsonDecoder
 from airbyte_cdk.sources.declarative.extractors.jq import JqExtractor
 
 config = {"field": "record_array"}
-decoder = JsonDecoder()
+decoder = RequestJsonDecoder()
 
 
 def test():

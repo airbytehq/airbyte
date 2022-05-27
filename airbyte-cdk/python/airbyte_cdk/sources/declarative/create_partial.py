@@ -50,7 +50,10 @@ def create(func, /, *args, **keywords):
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
-        ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+        try:
+            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+        except TypeError as e:
+            raise Exception(f"failed to create object of type {func} because {e}")
         return ret
 
     newfunc.func = func

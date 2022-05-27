@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.response import Response
 from requests.auth import AuthBase
 
 
@@ -15,6 +16,12 @@ class HttpMethod(Enum):
 
 
 class Requester(ABC):
+    def parse_response(
+        self,
+        response: Any,
+    ) -> Response:
+        """"""
+
     @abstractmethod
     def get_authenticator(self) -> AuthBase:
         """

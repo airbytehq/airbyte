@@ -8,6 +8,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -42,8 +43,7 @@ class SubstreamRetriever(SimpleRetriever):
             # print(f"parent_record: {parent_record}")
             has_more = parent_record["lines"]
             print(has_more)
-            exit()
-            records = self._parent_extractor.extract_records(parent_record)
+            records = self._parent_extractor.extract_records(Response(body=parent_record))
             # print(f"found {len(records)} records. first is: {records[0]['id']}")
             # print(f"stream_slice: {stream_slice}")
             next_page_token = self._paginator.next_page_token(parent_record, records)

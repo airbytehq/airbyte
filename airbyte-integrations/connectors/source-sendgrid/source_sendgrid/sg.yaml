@@ -57,6 +57,7 @@ lists_stream:
       http_method: "*ref(http_method)"
       authenticator: "*ref(authenticator)"
       request_parameters_provider: "*ref(request_parameters_provider)"
+      decoder: "*ref(decoder)"
       retrier:
         class_name: "airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier"
     extractor: "*ref(extractor)"
