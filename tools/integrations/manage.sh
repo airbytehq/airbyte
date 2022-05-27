@@ -209,6 +209,7 @@ cmd_publish() {
   docker buildx version
 
   # Install docker emulators
+  # TODO: Don't run this command on M1 macs locally (it won't work and isn't needed)
   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   # log into docker
