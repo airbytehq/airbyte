@@ -86,39 +86,35 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
-    final String columnTypeName = metadata.getColumnTypeName(colIndex);
+    final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
-
     if (resultSet.getString(colIndex) == null) {
       json.putNull(columnName);
-    } else if (columnTypeName.equalsIgnoreCase("bool") || columnTypeName.equalsIgnoreCase("boolean")) {
-      putBoolean(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("bytea")) {
-      putString(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("time")) {
-      putTime(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("timetz")) {
-      putTimeWithTimezone(json, columnName, resultSet, colIndex);
-    } else if (columnTypeName.equalsIgnoreCase("timestamptz")) {
-      putTimestampWithTimezone(json, columnName, resultSet, colIndex);
     } else {
-      // https://www.postgresql.org/docs/14/datatype.html
-      switch (columnType) {
-        case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-        case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-        case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-        case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-        case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-        case REAL -> putFloat(json, columnName, resultSet, colIndex);
-        case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-        // BIT is a bit string in Postgres, e.g. '0100'
-        case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-        case DATE -> putDate(json, columnName, resultSet, colIndex);
-        case TIME -> putTime(json, columnName, resultSet, colIndex);
-        case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-        case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
-        case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-        default -> putDefault(json, columnName, resultSet, colIndex);
+      switch (columnTypeName) {
+        case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
+        case "bytea" -> putString(json, columnName, resultSet, colIndex);
+        case "timetz" -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
+        case "timestamptz" -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        default -> {
+          switch (columnType) {
+            case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+            case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+            case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+            case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+            case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+            case REAL -> putFloat(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            // BIT is a bit string in Postgres, e.g. '0100'
+            case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
+            case DATE -> putDate(json, columnName, resultSet, colIndex);
+            case TIME -> putTime(json, columnName, resultSet, colIndex);
+            case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+            case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+            case ARRAY -> putArray(json, columnName, resultSet, colIndex);
+            default -> putDefault(json, columnName, resultSet, colIndex);
+          }
+        }
       }
     }
   }
@@ -145,22 +141,18 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @Override
   public JDBCType getFieldType(final JsonNode field) {
     try {
-      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
+      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
-      if (typeName.equalsIgnoreCase("bool") || typeName.equalsIgnoreCase("boolean")) {
-        return JDBCType.BOOLEAN;
-      } else if (typeName.equalsIgnoreCase("bytea")) {
+      return switch (typeName) {
+        case "bool", "boolean" -> JDBCType.BOOLEAN;
         // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
-        return JDBCType.VARCHAR;
-      } else if (typeName.equalsIgnoreCase("timestamptz")) {
-        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
-      } else if (typeName.equalsIgnoreCase("timetz")) {
-        return JDBCType.TIME_WITH_TIMEZONE;
-      }
-
-      return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+        case "bytea" -> JDBCType.BOOLEAN;
+        case "timestamptz" -> JDBCType.TIMESTAMP_WITH_TIMEZONE;
+        case "timetz" -> JDBCType.TIME_WITH_TIMEZONE;
+        default -> JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+      };
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
           field.get(INTERNAL_COLUMN_NAME),

@@ -269,7 +269,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return isBCE(date) ? value.substring(1) + " BC" : value;
   }
 
-  private static boolean isBCE(LocalDate date) {
+  public static boolean isBCE(LocalDate date) {
     return date.getEra().equals(IsoEra.BCE);
   }
 
