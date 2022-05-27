@@ -201,17 +201,17 @@ def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dic
     purchases: list[Dict] = []
     purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
     total_products = len(generate_products())
-    purchase_percent_remaining = purchase_percent_remaining - random.randrange(0, 100)
+    purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
     i = 0
     while purchase_percent_remaining > 0:
         id = purchases_count + i + 1
-        product_id = random.randrange(0, total_products)
+        product_id = random.randrange(1, total_products)
         added_to_cart_at = random_date_in_range(user["created_at"])
         purchased_at = (
-            random_date_in_range(added_to_cart_at) if added_to_cart_at is not None and random.randrange(0, 100) <= 70 else None
+            random_date_in_range(added_to_cart_at) if added_to_cart_at is not None and random.randrange(1, 100) <= 70 else None
         )  # 70% likely to purchase the item in the cart
         returned_at = (
-            random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(0, 100) <= 30 else None
+            random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(1, 100) <= 30 else None
         )  # 10% likely to return the item
         purchase = {
             "id": id,
@@ -223,7 +223,7 @@ def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dic
         }
         purchases.append(purchase)
 
-        purchase_percent_remaining = purchase_percent_remaining - random.randrange(0, 100)
+        purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
         i = i + 1
     return purchases
 
