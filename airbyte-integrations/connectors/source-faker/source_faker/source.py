@@ -196,7 +196,7 @@ def generate_user(fake: Faker, user_id: int):
     time_a = fake.date_time()
     time_b = fake.date_time()
     metadata = {
-        "id": user_id,
+        "id": user_id + 1,
         "created_at": time_a if time_a <= time_b else time_b,
         "updated_at": time_a if time_a > time_b else time_b,
     }
