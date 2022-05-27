@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link DSLContextFactory} class.
  */
-public class DSLContextFactoryTest extends AbstractFactoryTest {
+class DSLContextFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADslContext() {
