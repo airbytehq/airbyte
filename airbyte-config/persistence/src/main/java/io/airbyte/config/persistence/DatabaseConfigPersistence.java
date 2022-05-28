@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE_SERVICE_ACCOUNT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.STATE;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -50,7 +50,7 @@ import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -1040,7 +1040,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(OPERATION.WORKSPACE_ID, standardSyncOperation.getWorkspaceId())
             .set(OPERATION.NAME, standardSyncOperation.getName())
             .set(OPERATION.OPERATOR_TYPE, Enums.toEnum(standardSyncOperation.getOperatorType().value(),
-                io.airbyte.db.instance.configs.jooq.enums.OperatorType.class).orElseThrow())
+                io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
@@ -1054,7 +1054,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(OPERATION.WORKSPACE_ID, standardSyncOperation.getWorkspaceId())
             .set(OPERATION.NAME, standardSyncOperation.getName())
             .set(OPERATION.OPERATOR_TYPE, Enums.toEnum(standardSyncOperation.getOperatorType().value(),
-                io.airbyte.db.instance.configs.jooq.enums.OperatorType.class).orElseThrow())
+                io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
@@ -1083,7 +1083,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         ctx.update(CONNECTION)
             .set(CONNECTION.ID, standardSync.getConnectionId())
             .set(CONNECTION.NAMESPACE_DEFINITION, Enums.toEnum(standardSync.getNamespaceDefinition().value(),
-                io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType.class).orElseThrow())
+                io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType.class).orElseThrow())
             .set(CONNECTION.NAMESPACE_FORMAT, standardSync.getNamespaceFormat())
             .set(CONNECTION.PREFIX, standardSync.getPrefix())
             .set(CONNECTION.SOURCE_ID, standardSync.getSourceId())
@@ -1092,7 +1092,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
             .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
                 : Enums.toEnum(standardSync.getStatus().value(),
-                    io.airbyte.db.instance.configs.jooq.enums.StatusType.class).orElseThrow())
+                    io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
@@ -1117,7 +1117,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         ctx.insertInto(CONNECTION)
             .set(CONNECTION.ID, standardSync.getConnectionId())
             .set(CONNECTION.NAMESPACE_DEFINITION, Enums.toEnum(standardSync.getNamespaceDefinition().value(),
-                io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType.class).orElseThrow())
+                io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType.class).orElseThrow())
             .set(CONNECTION.NAMESPACE_FORMAT, standardSync.getNamespaceFormat())
             .set(CONNECTION.PREFIX, standardSync.getPrefix())
             .set(CONNECTION.SOURCE_ID, standardSync.getSourceId())
@@ -1126,7 +1126,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
             .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
                 : Enums.toEnum(standardSync.getStatus().value(),
-                    io.airbyte.db.instance.configs.jooq.enums.StatusType.class).orElseThrow())
+                    io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
@@ -1516,8 +1516,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                       ConfigSchema.STANDARD_SOURCE_DEFINITION,
                       sourceDefinitionId.toString(),
                       StandardSourceDefinition.class);
+
                   final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  return jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  final JsonNode sanitizedConfig =
+                      jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
+
+                  configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
+                  return Jsons.jsonNode(configWithMetadata.getConfig());
                 } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
                   throw new RuntimeException(e);
                 }
@@ -1534,8 +1539,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   ConfigSchema.STANDARD_DESTINATION_DEFINITION,
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
-              final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              return jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
+              final JsonNode sanitizedConfig =
+                  jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
+
+              configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
+              return Jsons.jsonNode(configWithMetadata.getConfig());
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);
             }

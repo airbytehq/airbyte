@@ -2133,7 +2133,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.0"
+- dockerImage: "airbyte/source-faker:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -2146,10 +2146,11 @@
       properties:
         count:
           title: "Count"
-          description: "How many fake records should be generated"
+          description: "How many users should be generated in total.  This setting\
+            \ does not apply to the purchases or products stream."
           type: "integer"
           minimum: 1
-          default: 100
+          default: 1000
           order: 0
         seed:
           title: "Seed"
@@ -2158,6 +2159,23 @@
           type: "integer"
           default: -1
           order: 1
+        records_per_sync:
+          title: "Records Per Sync"
+          description: "How many fake records will be returned for each sync, for\
+            \ each stream?  By default, it will take 2 syncs to create the requested\
+            \ 1000 records."
+          type: "integer"
+          minimum: 1
+          default: 500
+          order: 2
+        records_per_slice:
+          title: "Records Per Stream Slice"
+          description: "How many fake records will be in each page (stream slice),\
+            \ before a state message is emitted?"
+          type: "integer"
+          minimum: 1
+          default: 100
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2493,7 +2511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.30"
+- dockerImage: "airbyte/source-github:0.2.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3188,7 +3206,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.13"
+- dockerImage: "airbyte/source-google-sheets:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -3759,7 +3777,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.18"
+- dockerImage: "airbyte/source-intercom:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -6537,7 +6555,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.16"
+- dockerImage: "airbyte/source-postgres:0.4.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8587,6 +8605,55 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-talkdesk-explore:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Talkdesk Explore API Spec"
+      type: "object"
+      required:
+      - "start_date"
+      - "auth_url"
+      - "api_key"
+      additionalProperties: false
+      properties:
+        start_date:
+          type: "string"
+          title: "START DATE"
+          description: "The date from which you'd like to replicate data for Talkdesk\
+            \ Explore API, in the format YYYY-MM-DDT00:00:00. All data generated after\
+            \ this date will be replicated."
+          examples:
+          - "2020-10-15T00:00:00"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          order: 0
+        timezone:
+          type: "string"
+          title: "TIMEZONE"
+          description: "Timezone to use when generating reports. Only IANA timezones\
+            \ are supported (https://nodatime.org/TimeZones)"
+          examples:
+          - "Europe/London"
+          - "America/Los_Angeles"
+          default: "UTC"
+          order: 1
+        auth_url:
+          title: "AUTH URL"
+          type: "string"
+          description: "Talkdesk Auth URL. Only 'client_credentials' auth type supported\
+            \ at the moment."
+          examples:
+          - "https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"
+          order: 2
+        api_key:
+          title: "API KEY"
+          type: "string"
+          description: "Talkdesk API key."
+          order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-tempo:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"

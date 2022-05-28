@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.check;
@@ -30,29 +30,64 @@ public interface DatabaseMigrationCheck {
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
     final Optional<Flyway> flywayOptional = getFlyway();
 
-    if (flywayOptional.isPresent()) {
-      final var flyway = flywayOptional.get();
-      var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
-      getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
-      getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
+    // Verify that the database is up and reachable first
+    final Optional<DatabaseAvailabilityCheck> availabilityCheck = getDatabaseAvailabilityCheck();
+    if (availabilityCheck.isPresent()) {
+      availabilityCheck.get().check();
+      if (flywayOptional.isPresent()) {
+        final var flyway = flywayOptional.get();
 
-      while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
-        if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
-          throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
+        /**
+         * The database may be available, but not yet migrated. If this is the case, the Flyway object will
+         * not be able to retrieve the current version of the schema. Therefore, wait for the migration to
+         * complete before moving on with the test.
+         */
+        while (flyway.info().current() == null) {
+          getLogger().info("Waiting for migration to complete...");
+          sleep(sleepTime);
         }
 
-        try {
-          Thread.sleep(sleepTime);
-        } catch (final InterruptedException e) {
-          throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+        var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+        getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
+        getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
+
+        while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
+          if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
+            throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
+          }
+          sleep(sleepTime);
+          currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
         }
-        currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+        getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
+      } else {
+        throw new DatabaseCheckException("Flyway configuration not present.");
       }
-      getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
     } else {
-      throw new DatabaseCheckException("Flyway configuration not present.");
+      throw new DatabaseCheckException("Availability check not configured.");
     }
   }
+
+  /**
+   * Sleep for the provided amount of time (in milliseconds).
+   *
+   * @param sleepTime The amount of time to sleep
+   * @throws DatabaseCheckException if unable to sleep for the required amount of time.
+   */
+  default void sleep(final long sleepTime) throws DatabaseCheckException {
+    try {
+      Thread.sleep(sleepTime);
+    } catch (final InterruptedException e) {
+      throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+    }
+  }
+
+  /**
+   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and
+   * available.
+   *
+   * @return The {@link DatabaseAvailabilityCheck}.
+   */
+  Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck();
 
   /**
    * Retrieves the configured {@link Flyway} object to be used to check the migration status of the

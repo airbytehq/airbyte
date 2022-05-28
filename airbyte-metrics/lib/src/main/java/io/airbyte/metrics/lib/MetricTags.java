@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
 
 import io.airbyte.config.FailureReason.FailureOrigin;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 
 /**
  * Keep track of all metric tags.
