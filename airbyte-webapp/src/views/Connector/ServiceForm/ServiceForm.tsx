@@ -15,6 +15,7 @@ import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";
@@ -154,7 +155,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
-  const documentationUrl = useMemo(() => {
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  useMemo(() => {
     if (!selectedConnectorDefinitionSpecification) {
       return undefined;
     }
@@ -174,8 +176,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         );
       }
     });
-    return selectedServiceDefinition?.documentationUrl;
-  }, [availableServices, selectedConnectorDefinitionSpecification]);
+    setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
+    setDocumentationPanelOpen(true);
+    return;
+  }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
   const uiOverrides = useMemo(
     () => ({
@@ -187,7 +191,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
@@ -199,14 +202,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         ),
       },
     }),
-    [
-      formType,
-      documentationUrl,
-      props.onServiceSelect,
-      props.availableServices,
-      props.isEditMode,
-      toggleOpenRequestModal,
-    ]
+    [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
