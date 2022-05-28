@@ -455,6 +455,8 @@ where 1 = 1
         if "type" in definition:
             if is_array(definition["type"]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
+                if is_simple_property(definition["items"]["type"]):
+                    json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
