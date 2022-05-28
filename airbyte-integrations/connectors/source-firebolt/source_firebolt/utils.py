@@ -58,6 +58,7 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         "FLOAT": {"type": "number"},
         "DOUBLE": {"type": "number"},
         "DOUBLE PRECISION": {"type": "number"},
+        "BOOLEAN": {"type": "integer"},
         # Firebolt bigint is max 8 byte so it fits in Airbyte's "integer"
         "BIGINT": {"type": "integer"},
         "LONG": {"type": "integer"},

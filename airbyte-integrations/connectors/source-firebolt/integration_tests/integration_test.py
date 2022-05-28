@@ -33,10 +33,10 @@ def create_test_data(config: Dict[str, str], test_table_name: str) -> Generator[
     with establish_connection(config, MagicMock()) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                f"CREATE DIMENSION TABLE {test_table_name} (column1 STRING NULL, column2 INT NULL, column3 DATE NULL, column4 DATETIME NULL, column5 DECIMAL(38, 31) NULL, column6 ARRAY(INT))"
+                f"CREATE DIMENSION TABLE {test_table_name} (column1 STRING NULL, column2 INT NULL, column3 DATE NULL, column4 DATETIME NULL, column5 DECIMAL(38, 31) NULL, column6 ARRAY(INT), column7 BOOLEAN NULL)"
             )
             cursor.execute(
-                f"INSERT INTO {test_table_name} VALUES ('my_value',221,'2021-01-01','2021-01-01 12:00:01', Null, [1,2,3]), ('my_value2',null,'2021-01-02','2021-01-02 12:00:02','1231232.123459999990457054844258706536', [1,2,3])"
+                f"INSERT INTO {test_table_name} VALUES ('my_value',221,'2021-01-01','2021-01-01 12:00:01', Null, [1,2,3], true), ('my_value2',null,'2021-01-02','2021-01-02 12:00:02','1231232.123459999990457054844258706536', [1,2,3], null)"
             )
             yield connection
             cursor.execute(f"DROP TABLE {test_table_name}")
@@ -57,6 +57,7 @@ def table_schema() -> str:
             },
             "column5": {"type": ["null", "number"]},  # TODO: change once Decimal hits production
             "column6": {"type": "array", "items": {"type": ["null", "integer"]}},
+            "column7": {"type": ["null", "integer"]},
         },
     }
     return schema
@@ -125,7 +126,7 @@ def test_read(
     test_configured_catalogue: ConfiguredAirbyteCatalog,
 ):
     expected_data = [
-        {"column2": 221, "column3": "2021-01-01", "column4": "2021-01-01T12:00:01", "column6": [1, 2, 3]},
+        {"column2": 221, "column3": "2021-01-01", "column4": "2021-01-01T12:00:01", "column6": [1, 2, 3], "column7": 1},
         {
             "column3": "2021-01-02",
             "column4": "2021-01-02T12:00:02",
