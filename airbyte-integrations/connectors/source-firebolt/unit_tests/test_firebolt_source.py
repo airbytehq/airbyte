@@ -119,6 +119,7 @@ def test_connection(mock_connection, config, config_no_engine, logger):
         ("ARRAY(ARRAY(INT))", False, {"type": "array", "items": {"type": "array", "items": {"type": ["null", "integer"]}}}),
         ("int", True, {"type": ["null", "integer"]}),
         ("DUMMY", False, {"type": "string"}),
+        ("boolean", False, {"type": "integer"}),
     ],
 )
 def test_convert_type(type, nullable, result):
