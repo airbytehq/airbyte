@@ -85,12 +85,13 @@ jobs:
           repository: ${{ gituhb.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
           ./tools/integrations/manage.sh publish_external ${{ github.event.inputs.connector }} ${{ github.event.inputs.version }}
         name: publish ${{ github.event.inputs.connector }}
         id: publish
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
       - name: Add Success Comment

@@ -213,9 +213,18 @@ cmd_publish() {
   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
   # log into docker
-  DOCKER_USERNAME=${DOCKER_USERNAME:-airbytebot}
+  if test -z "${DOCKER_HUB_USERNAME}"; then
+    echo 'DOCKER_HUB_USERNAME not set.';
+    exit 1;
+  fi
+
+  if test -z "${DOCKER_HUB_PASSWORD}"; then
+    echo 'DOCKER_HUB_PASSWORD for docker user not set.';
+    exit 1;
+  fi
+
   set +x
-  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+  DOCKER_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${DOCKER_HUB_USERNAME}'", "password": "'${DOCKER_HUB_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
   set -x
 
   echo "image_name $image_name"
