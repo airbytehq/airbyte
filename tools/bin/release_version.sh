@@ -15,7 +15,7 @@ if [[ -z "${CLOUDREPO_PASSWORD}" ]]; then
 fi
 
 if [[ -z "${DOCKER_HUB_USERNAME}" ]]; then
-  echo 'DOCKER_HUB_USENAME not set.';
+  echo 'DOCKER_HUB_USERNAME not set.';
   exit 1;
 fi
 

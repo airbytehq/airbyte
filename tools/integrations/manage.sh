@@ -214,7 +214,7 @@ cmd_publish() {
 
   # log into docker
   if test -z "${DOCKER_HUB_USERNAME}"; then
-    echo 'DOCKER_HUB_USERNNAME not set.';
+    echo 'DOCKER_HUB_USERNAME not set.';
     exit 1;
   fi
 
