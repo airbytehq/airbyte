@@ -1163,7 +1163,7 @@ where 1 = 1
                         So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
                         {{ '#}' }}
                         {{ '{%' }}
-                        if final_table_relation is not none and '{{ unique_key }}' in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
+                        if final_table_relation is not none and {{ quoted_unique_key }} in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
                         {{ '%}' }}
 
                         -- Delete records which are no longer active:
@@ -1174,7 +1174,7 @@ where 1 = 1
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        delete from {{ '{{ this.schema }}' }}.{{ quoted_final_table_name }} final_table
+                        delete from {{ '{{ final_table_relation }}' }} final_table
                         where final_table.{{ unique_key }} in (
                             with modified_ids as (
                                 select
@@ -1207,6 +1207,7 @@ where 1 = 1
                         final_table_name=final_table_name,
                         quoted_final_table_name=jinja_call(self.name_transformer.apply_quote(final_table_name)),
                         unique_key=self.get_unique_key(in_jinja=False),
+                        quoted_unique_key=self.get_unique_key(in_jinja=True),
                         primary_keys=self.list_primary_keys(column_names),
                         stg_schema=stg_schema,
                         stg_table=stg_table,
