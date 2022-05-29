@@ -39,7 +39,7 @@ public class SnowflakeDestinationResolver {
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
     final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination();
-    final SnowflakeGCSStagingDestination gcsStagingDestination = new SnowflakeGCSStagingDestination();
+    final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination();
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
     final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination();
 

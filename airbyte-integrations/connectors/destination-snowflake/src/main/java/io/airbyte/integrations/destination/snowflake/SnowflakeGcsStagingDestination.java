@@ -13,6 +13,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -33,20 +34,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
+public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination implements Destination {
 
-public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination implements Destination {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStagingDestination.class);
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGCSStagingDestination.class);
-
-  public SnowflakeGCSStagingDestination() {
+  public SnowflakeGcsStagingDestination() {
     this(new SnowflakeSQLNameTransformer());
   }
 
-  public SnowflakeGCSStagingDestination(final SnowflakeSQLNameTransformer nameTransformer) {
+  public SnowflakeGcsStagingDestination(final SnowflakeSQLNameTransformer nameTransformer) {
     super("", nameTransformer, new SnowflakeSqlOperations());
   }
 
@@ -58,7 +58,7 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
     final DataSource dataSource = getDataSource(config);
 
-    try  {
+    try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
@@ -72,6 +72,12 @@ public class SnowflakeGCSStagingDestination extends AbstractJdbcDestination impl
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 
