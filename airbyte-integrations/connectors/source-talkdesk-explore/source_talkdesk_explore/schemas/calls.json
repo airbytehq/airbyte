@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Calls report",
+  "description": "Includes all calls that have been made / received during a period of time, as well as detailed information about each one: time, duration, type, agent, call disposition, description, recording, waiting times, etc.",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "The call's unique identification number."
+    },
+    "callsid": {
+      "type": "string",
+      "description": "The call's unique identification number."
+    },
+    "type": {
+      "type": "string",
+      "description": "The call type (i.e., outbound, outbound_missed, inbound, missed, abandoned, short_abandoned or voicemail)."
+    },
+    "start_at": {
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2016-01-29T10:22:02Z"]
+    },
+    "end_at": {
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2016-01-29T10:22:02Z"]
+    },
+    "talkdesk_phone_number": {
+      "type": "string",
+      "examples": ["+184432634343"]
+    },
+    "talkdesk_phone_display_name": {
+      "type": ["string", "null"],
+      "examples": ["support"]
+    },
+    "contact_phone_number": {
+      "type": "string",
+      "examples": ["+3434345345"]
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "examples": ["asdf1492daf3xa32423"]
+    },
+    "user_name": {
+      "type": ["string", "null"],
+      "examples": ["Alice Eve"]
+    },
+    "user_email": {
+      "type": ["string", "null"],
+      "examples": ["alice@talkdesk.com"]
+    },
+    "total_time": {
+      "type": "integer",
+      "examples": [12]
+    },
+    "talk_time": {
+      "type": "integer",
+      "examples": [10]
+    },
+    "wait_time": {
+      "type": "integer",
+      "examples": [2]
+    },
+    "hold_time": {
+      "type": "integer",
+      "examples": [0]
+    },
+    "abandon_time": {
+      "type": "integer",
+      "examples": [0]
+    },
+    "total_ringing_time": {
+      "type": "integer",
+      "examples": [2]
+    },
+    "disposition_code": {
+      "type": ["string", "null"],
+      "examples": ["Not Interested"]
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "examples": ["They were not interested"]
+    },
+    "user_voice_rating": {
+      "type": ["integer", "null"],
+      "examples": [2]
+    },
+    "ring_groups": {
+      "type": "string",
+      "examples": ["Product Support"]
+    },
+    "ivr_options": {
+      "type": "string",
+      "examples": ["1,2,1"]
+    },
+    "is_in_business_hours": {
+      "type": "boolean",
+      "examples": [true]
+    },
+    "is_callback_from_queue": {
+      "type": "boolean",
+      "examples": [null]
+    },
+    "is_call_forwarding": {
+      "type": "boolean",
+      "examples": [false]
+    },
+    "is_if_no_answer": {
+      "type": "boolean",
+      "examples": [false]
+    },
+    "is_transfer": {
+      "type": "boolean",
+      "examples": [false]
+    },
+    "is_external_transfer": {
+      "type": "boolean",
+      "examples": [false]
+    },
+    "handling_user_name": {
+      "type": ["string", "null"],
+      "examples": ["Mark Jones"]
+    },
+    "handling_user_id": {
+      "type": ["string", "null"],
+      "examples": ["asdf1492daf3xa32424"]
+    },
+    "handling_user_email": {
+      "type": ["string", "null"],
+      "examples": ["mark@talkdesk.com"]
+    },
+    "recording_url": {
+      "type": ["string", "null"],
+      "examples": ["/recordings/cads13d23123asdfa413"]
+    },
+    "csat_score": {
+      "type": ["integer", "null"],
+      "examples": [1]
+    },
+    "csat_survey_time": {
+      "type": ["string", "null"],
+      "examples": ["2016-01-29T10:22:16Z"]
+    },
+    "mood": {
+      "type": "string",
+      "examples": ["happy"]
+    },
+    "is_mood_prompted": {
+      "type": ["boolean", "null"],
+      "examples": [true]
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "examples": ["69bd4bed944f4de99cb79736f2ca15b1"]
+    },
+    "team_name": {
+      "type": ["string", "null"],
+      "examples": ["The A-Team"]
+    }
+  }
+}

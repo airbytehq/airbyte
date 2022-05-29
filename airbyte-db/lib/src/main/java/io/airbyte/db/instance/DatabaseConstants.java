@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance;
@@ -42,6 +42,16 @@ public final class DatabaseConstants {
    * Path to the script that contains the initial schema definition for the Jobs database.
    */
   public static final String JOBS_SCHEMA_PATH = "jobs_database/schema.sql";
+
+  /**
+   * Default database connection timeout in milliseconds.
+   */
+  public static final long DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
+
+  /**
+   * Default amount of time to wait to assert that a database has been migrated, in milliseconds.
+   */
+  public static final long DEFAULT_ASSERT_DATABASE_TIMEOUT_MS = 2 * DEFAULT_CONNECTION_TIMEOUT_MS;
 
   /**
    * Private constructor to prevent instantiation.

@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
-import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -103,7 +103,7 @@ public class MetricQueries {
     return duration.get(0).longValue();
   }
 
-  public static List<Long> numberOfActiveConnPerWorkspace(DSLContext ctx) {
+  public static List<Long> numberOfActiveConnPerWorkspace(final DSLContext ctx) {
     final var countField = "num_conn";
     final var query = String.format("""
                                     SELECT workspace_id, count(c.id) as %s
@@ -117,7 +117,7 @@ public class MetricQueries {
     return ctx.fetch(query).getValues(countField, long.class);
   }
 
-  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
+  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(final DSLContext ctx) {
     final var statusField = "status";
     final var timeField = "sec";
     final var query =

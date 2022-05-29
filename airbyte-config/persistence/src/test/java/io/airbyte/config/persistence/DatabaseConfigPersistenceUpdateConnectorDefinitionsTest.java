@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,8 +15,8 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
@@ -48,10 +48,9 @@ class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDataba
   public static void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
