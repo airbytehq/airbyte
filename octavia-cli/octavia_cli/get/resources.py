@@ -51,6 +51,7 @@ class BaseResource(abc.ABC):
 
 
 class Source(BaseResource):
+    name = "source"
     api = source_api.SourceApi
     get_function_name = "get_source"
 
@@ -60,6 +61,7 @@ class Source(BaseResource):
 
 
 class Destination(BaseResource):
+    name = "destination"
     api = destination_api.DestinationApi
     get_function_name = "get_destination"
 
@@ -69,6 +71,7 @@ class Destination(BaseResource):
 
 
 class Connection(BaseResource):
+    name = "connection"
     api = connection_api.ConnectionApi
     get_function_name = "get_connection"
 

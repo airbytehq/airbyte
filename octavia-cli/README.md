@@ -157,6 +157,9 @@ docker-compose run octavia-cli <command>`
 | **`octavia get workspace source`**      | Get an existing source in current the Airbyte workspace.                           |
 | **`octavia get workspace destination`** | Get an existing destination in the current Airbyte workspace.                      |
 | **`octavia get workspace connection`**  | Get an existing connection in the current Airbyte workspace.                       |
+| **`octavia update workspace source`**      | Update a local YAML configuration of an existing source in current the Airbyte workspace.                           |
+| **`octavia update workspace destination`** | Update a local YAML configuration of an existing destination in the current Airbyte workspace.                      |
+| **`octavia update workspace connection`**  | Update a local YAML configuration of an existing connection in the current Airbyte workspace.                       |
 | **`octavia generate source`**             | Generate a local YAML configuration for a new source.                             |
 | **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                        |
 | **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                         |
@@ -364,6 +367,51 @@ $ octavia get connection c0c977c2-48e7-46fe-9f57-576285c26d42
   },
   "sourceCatalogId": "18102e7c-5340-4000-85f3-204ab7715801"
 }
+```
+
+#### `octavia update source <SOURCE_ID>`
+
+Update a local YAML configuration of an existing source in current the Airbyte workspace.
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `SOURCE_ID` | The source connector id. Can be retrieved using `octavia list workspace sources`. |
+
+**Example**:
+
+```bash
+$ octavia update source c0c977c2-48e7-46fe-9f57-576285c26d42
+✅ - Updated the source template for weather_to_pg in ./source/weather_to_pg/configuration.yaml.
+```
+
+#### `octavia update destination <DESTINATION_ID>`
+
+Update a local YAML configuration of an existing destination in current the Airbyte workspace.
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `DESTINATION_ID` | The destination connector id. Can be retrieved using `octavia list workspace destinations`. |
+
+**Example**:
+
+```bash
+$ octavia update destination c0c977c2-48e7-46fe-9f57-576285c26d42
+✅ - Updated the destination template for weather_to_pg in ./destination/weather_to_pg/configuration.yaml.
+```
+
+#### `octavia update conection <CONNECTION_ID>`
+
+Update a local YAML configuration of an existing connection in current the Airbyte workspace.
+
+| **Argument**    | **Description**                                                                              |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| `CONNECTION_ID` | The connection connector id. Can be retrieved using `octavia list workspace connections`. |
+
+**Example**:
+
+```bash
+$ octavia update connection c0c977c2-48e7-46fe-9f57-576285c26d42
+✅ - Updated the connection template for weather_to_pg in ./connection/weather_to_pg/configuration.yaml.
 ```
 
 #### `octavia generate source <DEFINITION_ID> <SOURCE_NAME>`

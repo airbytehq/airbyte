@@ -17,10 +17,12 @@ from .get import commands as get_commands
 from .init import commands as init_commands
 from .list import commands as list_commands
 from .telemetry import TelemetryClient, build_user_agent
+from .update import commands as update_commands
 
 AVAILABLE_COMMANDS: List[click.Command] = [
     list_commands._list,
     get_commands.get,
+    update_commands.update,
     init_commands.init,
     generate_commands.generate,
     apply_commands.apply,
