@@ -1,7 +1,7 @@
 import { useField } from "formik";
 import React from "react";
 
-import { LabeledToggle, TextWithHTML } from "components";
+import { LabeledSwitch, TextWithHTML } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
@@ -22,7 +22,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ 
 
   if (property.type === "boolean") {
     return (
-      <LabeledToggle
+      <LabeledSwitch
         {...field}
         label={property.title || property.fieldKey}
         message={<TextWithHTML text={property.description} />}

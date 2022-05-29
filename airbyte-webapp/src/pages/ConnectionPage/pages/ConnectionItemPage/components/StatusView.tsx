@@ -8,7 +8,6 @@ import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 
-import { Connection, ConnectionStatus } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
@@ -16,11 +15,12 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
+import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import JobsList from "./JobsList";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface StatusViewProps {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
   frequencyText?: string;
 }
 
@@ -66,6 +66,8 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
     configTypes: ["sync", "reset_connection"],
   });
 
+  const [isStatusUpdating, setStatusUpdating] = useState(false);
+
   const { mutateAsync: resetConnection } = useResetConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
 
@@ -80,18 +82,19 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
         sourceDefinition={sourceDefinition}
         destinationDefinition={destinationDefinition}
         allowSync={allowSync}
+        onStatusUpdating={setStatusUpdating}
       />
       <StyledContentCard
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            {connection.status === ConnectionStatus.ACTIVE && (
+            {connection.status === ConnectionStatus.active && (
               <div>
-                <Button onClick={() => setIsModalOpen(true)}>
+                <Button onClick={() => setIsModalOpen(true)} disabled={isStatusUpdating}>
                   <FormattedMessage id={"connection.resetData"} />
                 </Button>
                 <SyncButton
-                  disabled={!allowSync}
+                  disabled={!allowSync || isStatusUpdating}
                   isLoading={isLoading}
                   wasActive={showFeedback}
                   onClick={() => startAction({ action: onSync })}

@@ -2,9 +2,9 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import { User } from "./types";
 
-class UserService extends AirbyteRequestService {
+export class UserService extends AirbyteRequestService {
   get url(): string {
-    return `users`;
+    return "v1/users";
   }
 
   public async getByEmail(email: string): Promise<User> {
@@ -36,11 +36,11 @@ class UserService extends AirbyteRequestService {
     invitedWorkspaceId?: string;
     status?: "invited";
   }): Promise<User> {
-    return this.fetch<User>(`web_backend/users/create`, user);
+    return this.fetch<User>(`v1/web_backend/users/create`, user);
   }
 
   public async remove(workspaceId: string, email: string): Promise<void> {
-    return this.fetch(`web_backend/cloud_workspaces/revoke_user`, {
+    return this.fetch(`v1/web_backend/cloud_workspaces/revoke_user`, {
       email,
       workspaceId,
     });
@@ -54,7 +54,7 @@ class UserService extends AirbyteRequestService {
   ): Promise<User[]> {
     return Promise.all(
       users.map(async (user) =>
-        this.fetch<User>(`web_backend/cloud_workspaces/invite`, {
+        this.fetch<User>(`v1/web_backend/cloud_workspaces/invite`, {
           email: user.email,
           workspaceId,
         })
@@ -63,12 +63,10 @@ class UserService extends AirbyteRequestService {
   }
 
   public async listByWorkspaceId(workspaceId: string): Promise<User[]> {
-    const { users } = await this.fetch<{ users: User[] }>(`web_backend/permissions/list_users_by_workspace`, {
+    const { users } = await this.fetch<{ users: User[] }>(`v1/web_backend/permissions/list_users_by_workspace`, {
       workspaceId,
     });
 
     return users;
   }
 }
-
-export { UserService };

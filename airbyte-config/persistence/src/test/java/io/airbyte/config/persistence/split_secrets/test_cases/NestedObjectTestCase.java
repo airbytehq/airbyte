@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets.test_cases;
@@ -23,25 +23,25 @@ public class NestedObjectTestCase implements SecretsTestCase {
   @Override
   public Map<SecretCoordinate, String> getFirstSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1), "hunter1",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "hunter2");
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(1), 1), "hunter1",
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(0), 1), "hunter2");
   }
 
   @Override
   public Map<SecretCoordinate, String> getSecondSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter4");
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(0), 2), "hunter4");
   }
 
   @Override
   public Consumer<SecretPersistence> getPersistenceUpdater() {
     return secretPersistence -> {
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1),
+          new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(1), 1),
           "hunter1");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1),
+          new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(0), 1),
           "hunter2");
     };
   }
@@ -67,14 +67,14 @@ public class NestedObjectTestCase implements SecretsTestCase {
 
   public Map<SecretCoordinate, String> getSecretMapAfterUpdate1() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "hunter2");
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(0), 1), "hunter2");
   }
 
   public Map<SecretCoordinate, String> getSecretMapAfterUpdate2() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter4");
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(1), 2), "hunter3",
+        new SecretCoordinate(PREFIX + SecretsHelpersTest.WORKSPACE_ID + SECRET + SecretsHelpersTest.UUIDS.get(0), 2), "hunter4");
   }
 
 }
