@@ -717,9 +717,6 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     page_size_field = "limit"
     time_format = "%Y-%m-%dT%H:%M:%SZ"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
