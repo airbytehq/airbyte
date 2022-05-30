@@ -63,19 +63,14 @@
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": [
-          "2017-01-25T00:00:00Z"
-        ],
+        "examples": ["2017-01-25T00:00:00Z"],
         "type": "string"
       },
       "period_in_days": {
         "title": "Period In Days",
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         "default": 30,
-        "examples": [
-          "30",
-          "365"
-        ],
+        "examples": ["30", "365"],
         "type": "integer"
       },
       "report_options": {
@@ -91,19 +86,13 @@
         "title": "Max wait time for reports (in seconds)",
         "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
         "default": 500,
-        "examples": [
-          "500",
-          "1980"
-        ],
+        "examples": ["500", "1980"],
         "type": "integer"
       },
       "aws_environment": {
         "title": "AWSEnvironment",
         "description": "An enumeration.",
-        "enum": [
-          "PRODUCTION",
-          "SANDBOX"
-        ],
+        "enum": ["PRODUCTION", "SANDBOX"],
         "type": "string"
       },
       "region": {
@@ -151,10 +140,7 @@
       "AWSEnvironment": {
         "title": "AWSEnvironment",
         "description": "An enumeration.",
-        "enum": [
-          "PRODUCTION",
-          "SANDBOX"
-        ],
+        "enum": ["PRODUCTION", "SANDBOX"],
         "type": "string"
       },
       "AWSRegion": {
@@ -189,9 +175,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "auth_type"
-    ],
+    "predicate_key": ["auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
@@ -200,9 +184,7 @@
         "properties": {
           "app_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "app_id"
-            ]
+            "path_in_connector_config": ["app_id"]
           }
         }
       },
@@ -212,9 +194,7 @@
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "refresh_token"
-            ]
+            "path_in_connector_config": ["refresh_token"]
           }
         }
       },
@@ -236,15 +216,11 @@
         "properties": {
           "lwa_app_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "lwa_app_id"
-            ]
+            "path_in_connector_config": ["lwa_app_id"]
           },
           "lwa_client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "lwa_client_secret"
-            ]
+            "path_in_connector_config": ["lwa_client_secret"]
           }
         }
       }
