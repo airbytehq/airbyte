@@ -139,21 +139,4 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     testIncorrectParams(conf, INCORRECT_HOST_OR_PORT);
   }
 
-  @Test
-  public void testCheckIncorrectDataBase() throws Exception {
-    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", STANDALONE.getType())
-        .put("host", mongoDBContainer.getHost())
-        .put("port", mongoDBContainer.getFirstMappedPort())
-        .put("tls", false)
-        .build());
-
-    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance_type", instanceConfig)
-        .put("database", "wrongdatabase")
-        .put("auth_source", "admin")
-        .build());
-    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT_OR_DATABASE);
-  }
-
 }

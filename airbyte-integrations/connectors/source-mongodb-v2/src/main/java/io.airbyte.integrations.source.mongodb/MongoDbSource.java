@@ -10,6 +10,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCO
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoSocketException;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -144,40 +145,19 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * database.
      */
     try {
-      final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-          .append("authorizedCollections", true)
-          .append("nameOnly", true))
-          .append("filter", "{ 'type': 'collection' }");
-      var names = StreamSupport.stream(database.getDatabaseNames().spliterator(), false).toList();
-      if (!names.contains(database.getName())) {
-        throw new ConnectionErrorException("incorrect_host_or_port_or_database", INCORRECT_HOST_OR_PORT_OR_DATABASE.getValue());
-      }
+      Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+                      .append("authorizedCollections", true)
+                      .append("nameOnly", true))
+              .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
-          .get("cursor").asDocument()
-          .getArray("firstBatch")
-          .stream()
-          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-          .collect(Collectors.toSet());
-    } catch (MongoTimeoutException e) {
+              .get("cursor").asDocument()
+              .getArray("firstBatch")
+              .stream()
+              .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+              .collect(Collectors.toSet());
+
+    } catch (MongoTimeoutException e){
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
-    } catch (Exception e) {
-      try {
-        var mongoException = (MongoCommandException) e.getCause();
-        var code = String.valueOf(mongoException.getCode());
-        throw new ConnectionErrorException(code, e);
-      } catch (ConnectionErrorException ex) {
-        throw ex;
-      } catch (Exception ex) {
-        try {
-          var mongoException = (MongoCommandException) e;
-          var code = String.valueOf(mongoException.getCode());
-          throw new ConnectionErrorException(code, e);
-        } catch (ConnectionErrorException ex1) {
-          throw ex1;
-        } catch (Exception exception) {
-          throw e;
-        }
-      }
     }
   }
 

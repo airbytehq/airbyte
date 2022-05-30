@@ -140,23 +140,6 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   }
 
   @Test
-  public void testCheckIncorrectDataBase() throws Exception {
-    JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", ATLAS.getType())
-        .put("cluster_url", config.get("instance_type").get("cluster_url").asText())
-        .build());
-
-    JsonNode conf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("user", config.get("user").asText())
-        .put("password", config.get("password").asText())
-        .put("instance_type", instanceConfig)
-        .put("database", "wrongdatabase")
-        .put("auth_source", "admin")
-        .build());
-    testIncorrectParams(conf, INCORRECT_HOST_OR_PORT_OR_DATABASE);
-  }
-
-  @Test
   public void testCheckIncorrectCluster() throws Exception {
     JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", ATLAS.getType())
