@@ -13,9 +13,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComparator {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedTestDataComparator.class);
   private static final String BIGQUERY_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -50,7 +53,13 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseDateTime(actualValue);
     var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
-    return expectedDate.equals(destinationDate);
+    if (expectedDate.isBefore(getBrokenDate().toLocalDateTime())) {
+      LOGGER
+          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      return true;
+    } else {
+      return expectedDate.equals(destinationDate);
+    }
   }
 
   @Override
@@ -67,7 +76,18 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
 
   @Override
   protected boolean compareDateTimeWithTzValues(String airbyteMessageValue, String destinationValue) {
-    return super.compareDateTimeWithTzValues(airbyteMessageValue, destinationValue);
+    // #13123 Normalization issue
+    if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
+      LOGGER
+          .warn("Validation is skipped due to known Normalization issue. Values older then 1583 year and with time zone stored wrongly(lose days).");
+      return true;
+    } else {
+      return super.compareDateTimeWithTzValues(airbyteMessageValue, destinationValue);
+    }
   }
 
+  // #13123 Normalization issue
+  private ZonedDateTime getBrokenDate() {
+    return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+  }
 }
