@@ -76,7 +76,6 @@ class TwilioStream(HttpStream, ABC):
 
         backoff_time = response.headers.get("Retry-After")
         if backoff_time is not None:
-        refactor/source-twilio-muttdata
           return float(backoff_time)
           
     
