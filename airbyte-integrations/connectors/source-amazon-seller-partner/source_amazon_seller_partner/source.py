@@ -51,7 +51,7 @@ class ConnectorConfig(BaseModel):
         None,
         description="UTC date and time in the format 2017-02-25T00:00:00Z. Any data after this date will not be replicated.",
         title="End Date",
-        pattern="(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$)",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
         examples=["2017-02-25T00:00:00Z"],
     )
     period_in_days: int = Field(
