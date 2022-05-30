@@ -21,6 +21,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
@@ -220,16 +221,15 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
                     "future": self._send_request(request, request_kwargs),
                     "request": request,
                     "request_kwargs": request_kwargs,
-                    "retries": 0,
-                    "backoff_time": None,
+                    "retries": 0
                 }
             )
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        response: requests.Response = self._session.send_future(request, **request_kwargs)
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
+        response: Future = self._session.send_future(request, **request_kwargs)
         return response
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
         return self._send(request, request_kwargs)
 
     def request_params(
@@ -252,6 +252,30 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
         return params
 
+    def _retry(
+        self,
+        request: requests.PreparedRequest,
+        retries: int,
+        original_exception: Exception = None,
+        response: requests.Response = None,
+        **request_kwargs
+    ):
+        if retries == self.max_retries:
+            if original_exception:
+                raise original_exception
+            raise DefaultBackoffException(request=request, response=response)
+        if response:
+            backoff_time = self.backoff_time(response)
+            time.sleep(max(0, int(backoff_time - response.elapsed.total_seconds())))
+        self.future_requests.append(
+            {
+                "future": self._send_request(request, request_kwargs),
+                "request": request,
+                "request_kwargs": request_kwargs,
+                "retries": retries + 1,
+            }
+        )
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -263,28 +287,17 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
         while len(self.future_requests) > 0:
             item = self.future_requests.popleft()
+            request, retries, future, kwargs = item["request"], item["retries"], item["future"], item["request_kwargs"]
 
-            response = item["future"].result()
-
+            try:
+                response = future.result()
+            except TRANSIENT_EXCEPTIONS as exc:
+                self._retry(request=request, retries=retries, original_exception=exc, **kwargs)
+                continue
             if self.should_retry(response):
-                backoff_time = self.backoff_time(response)
-                if item["retries"] == self.max_retries:
-                    raise DefaultBackoffException(request=item["request"], response=response)
-                else:
-                    if response.elapsed.total_seconds() < backoff_time:
-                        time.sleep(backoff_time - response.elapsed.total_seconds())
-
-                    self.future_requests.append(
-                        {
-                            "future": self._send_request(item["request"], item["request_kwargs"]),
-                            "request": item["request"],
-                            "request_kwargs": item["request_kwargs"],
-                            "retries": item["retries"] + 1,
-                            "backoff_time": backoff_time,
-                        }
-                    )
-            else:
-                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+                self._retry(request=request, retries=retries, response=response, **kwargs)
+                continue
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
 
 class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
