@@ -3844,6 +3844,8 @@ components:
           $ref: "#/components/schemas/AttemptFailureType"
         externalMessage:
           type: string
+        internalMessage:
+          type: string
         stacktrace:
           type: string
         retryable:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -8,10 +8,10 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.db.instance.configs.jooq.Tables;
-import io.airbyte.db.instance.configs.jooq.enums.ActorType;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.configs.jooq.enums.SourceType;
+import io.airbyte.db.instance.configs.jooq.generated.Tables;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.SourceType;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -26,6 +26,7 @@ import org.jooq.impl.DSL;
  * Currently this class is used to move write queries out of {@link DatabaseConfigPersistence} so
  * that they can be reused/composed in {@link ConfigRepository}.
  */
+@SuppressWarnings("PMD.CognitiveComplexity")
 public class ConfigWriter {
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {

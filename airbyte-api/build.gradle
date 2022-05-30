@@ -17,9 +17,9 @@ task generateApiServer(type: GenerateTask) {
     inputSpec = specFile
     outputDir = serverOutputDir
 
-    apiPackage = "io.airbyte.api"
-    invokerPackage = "io.airbyte.api.invoker"
-    modelPackage = "io.airbyte.api.model"
+    apiPackage = "io.airbyte.api.generated"
+    invokerPackage = "io.airbyte.api.invoker.generated"
+    modelPackage = "io.airbyte.api.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
@@ -51,9 +51,9 @@ task generateApiClient(type: GenerateTask) {
     inputSpec = specFile
     outputDir = clientOutputDir
 
-    apiPackage = "io.airbyte.api.client"
-    invokerPackage = "io.airbyte.api.client.invoker"
-    modelPackage = "io.airbyte.api.client.model"
+    apiPackage = "io.airbyte.api.client.generated"
+    invokerPackage = "io.airbyte.api.client.invoker.generated"
+    modelPackage = "io.airbyte.api.client.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
@@ -84,9 +84,9 @@ task generateApiDocs(type: GenerateTask) {
     inputSpec = specFile
     outputDir = docsOutputDir
 
-    apiPackage = "io.airbyte.api.client"
-    invokerPackage = "io.airbyte.api.client.invoker"
-    modelPackage = "io.airbyte.api.client.model"
+    apiPackage = "io.airbyte.api.client.generated"
+    invokerPackage = "io.airbyte.api.client.invoker.generated"
+    modelPackage = "io.airbyte.api.client.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',

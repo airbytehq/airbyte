@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.init;
@@ -25,15 +25,6 @@ import org.slf4j.Logger;
  * converted to a migration script.
  */
 public interface DatabaseInitializer {
-
-  /**
-   * Initializes the configured database.
-   *
-   * @throws DatabaseInitializationException if unable to perform the initialization.
-   */
-  default void init() throws DatabaseInitializationException {
-    initialize();
-  }
 
   /**
    * Initializes the configured database by using the following steps:
