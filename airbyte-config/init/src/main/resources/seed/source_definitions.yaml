@@ -1051,3 +1051,10 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   sourceType: api
   releaseStage: alpha
+- name: SFTP
+  sourceDefinitionId: a827c52e-791c-4135-a245-e233c5255199
+  dockerRepository: airbyte/source-sftp
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  sourceType: api
+  releaseStage: alpha
