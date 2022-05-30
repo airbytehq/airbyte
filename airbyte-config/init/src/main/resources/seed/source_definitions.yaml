@@ -289,7 +289,7 @@
   dockerRepository: airbyte/source-freshservice
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshservice
-  icon: freshdesk.svg
+  icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
 - name: GitHub
