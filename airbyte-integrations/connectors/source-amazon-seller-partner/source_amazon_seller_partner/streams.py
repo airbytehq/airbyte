@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -729,12 +729,11 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
             if self._replication_end_date:
                 end_date = self._replication_end_date
 
-            start_date = max(
-                pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)
-            ).strftime(self.time_format)
+            start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
+                self.time_format
+            )
 
-            params.update({self.replication_start_date_field: start_date,
-                           self.replication_end_date_field: end_date})
+            params.update({self.replication_start_date_field: start_date, self.replication_end_date_field: end_date})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

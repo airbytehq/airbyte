@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -19,21 +19,21 @@ public class RedshiftDestinationTest {
 
   @Test
   @DisplayName("When given S3 credentials should use COPY with SUPER Datatype")
-  public void useCopyStrategyTestWithSuperTmpTable() {
+  public void useS3Staging() {
     final var stubConfig = mapper.createObjectNode();
     stubConfig.put("s3_bucket_name", "fake-bucket");
     stubConfig.put("s3_bucket_region", "fake-region");
     stubConfig.put("access_key_id", "test");
     stubConfig.put("secret_access_key", "test key");
 
-    assertEquals(DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, RedshiftDestination.determineUploadMode(stubConfig));
+    assertEquals(DestinationType.COPY_S3, RedshiftDestination.determineUploadMode(stubConfig));
   }
 
   @Test
   @DisplayName("When not given S3 credentials should use INSERT with SUPER Datatype")
-  public void useInsertStrategyTestWithSuperDatatype() {
+  public void useStandardInsert() {
     final var stubConfig = mapper.createObjectNode();
-    assertEquals(DestinationType.INSERT_WITH_SUPER_TMP_TYPE, RedshiftDestination.determineUploadMode(stubConfig));
+    assertEquals(DestinationType.STANDARD, RedshiftDestination.determineUploadMode(stubConfig));
   }
 
 }

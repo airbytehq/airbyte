@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.configs;
@@ -7,9 +7,13 @@ package io.airbyte.db.instance.configs;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.factory.DatabaseCheckFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.test.TestDatabaseProvider;
 import java.io.IOException;
@@ -30,9 +34,11 @@ public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
   }
 
   @Override
-  public Database create(final boolean runMigration) throws IOException {
-    final Database database = new ConfigsDatabaseInstance(dslContext)
-        .getAndInitialize();
+  public Database create(final boolean runMigration) throws IOException, DatabaseInitializationException {
+    final String initalSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initalSchema).initialize();
+
+    final Database database = new Database(dslContext);
 
     if (runMigration) {
       final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(
