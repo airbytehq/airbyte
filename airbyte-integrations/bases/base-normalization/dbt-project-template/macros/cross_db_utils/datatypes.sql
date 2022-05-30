@@ -166,6 +166,39 @@
 {% endmacro %}
 
 
+{# timestamp without time zone  -------------------------------------------------     #}
+
+{%- macro type_timestamp_without_timezone() -%}
+  {{ adapter.dispatch('type_timestamp_without_timezone')() }}
+{%- endmacro -%}
+
+{% macro default__type_timestamp_without_timezone() %}
+    timestamp without time zone
+{% endmacro %}
+
+
+{# time without time zone  -------------------------------------------------     #}
+
+{%- macro type_time_without_timezone() -%}
+  {{ adapter.dispatch('type_time_without_timezone')() }}
+{%- endmacro -%}
+
+{% macro default__type_time_without_timezone() %}
+    time without time zone
+{% endmacro %}
+
+
+{# time with time zone  -------------------------------------------------     #}
+
+{%- macro type_time_with_timezone() -%}
+  {{ adapter.dispatch('type_time_with_timezone')() }}
+{%- endmacro -%}
+
+{% macro default__type_time_with_timezone() %}
+    time with time zone
+{% endmacro %}
+
+
 {# date  -------------------------------------------------     #}
 
 {%- macro type_date() -%}

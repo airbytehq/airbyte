@@ -21,13 +21,14 @@ from normalization.transform_catalog.utils import (
     is_combining_node,
     is_date,
     is_datetime,
-    is_datetime_with_timezone,
     is_datetime_without_timezone,
     is_integer,
     is_number,
     is_object,
     is_simple_property,
     is_string,
+    is_time,
+    is_time_without_timezone,
     jinja_call,
     remove_jinja,
 )
@@ -519,19 +520,23 @@ where 1 = 1
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 if is_datetime_without_timezone(definition):
                     return self.generate_snowflake_timestamp_statement(column_name)
-                elif is_datetime_with_timezone(definition):
-                    return self.generate_snowflake_timestamp_tz_statement(column_name)
                 return self.generate_snowflake_timestamp_tz_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
-                sql_type = jinja_call("type_timestamp_with_timezone()")
+                if is_datetime_without_timezone(definition):
+                    sql_type = jinja_call("type_timestamp_without_timezone()")
+                else:
+                    sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
                 sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
-            sql_type = jinja_call("type_timestamp_with_timezone()")
+            if is_datetime_without_timezone(definition):
+                sql_type = jinja_call("type_timestamp_without_timezone()")
+            else:
+                sql_type = jinja_call("type_timestamp_with_timezone()")
             if self.destination_type == DestinationType.MYSQL:
                 sql_type = f"{sql_type}(1024)"
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -549,6 +554,13 @@ where 1 = 1
                 return f"parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
+        elif is_time(definition):
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
+            if is_time_without_timezone(definition):
+                sql_type = jinja_call("type_time_without_timezone()")
+            else:
+                sql_type = jinja_call("type_time_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
