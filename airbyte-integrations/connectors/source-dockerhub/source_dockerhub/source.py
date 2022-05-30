@@ -51,13 +51,12 @@ class DockerHub(HttpStream):
     primary_key = None
 
     def __init__(self, jwt: str, config: Mapping[str, Any], **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
         # Here's where we set the variable from our input to pass it down to the source.
         self.jwt = jwt
         self.docker_username = config["docker_username"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
         decoded_response = response.json()
         if (decoded_response["next"] is None):
             return None

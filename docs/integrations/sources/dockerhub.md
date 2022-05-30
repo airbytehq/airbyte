@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the DockerHub API. It currently supports only [listing repos](https://github.com/airbytehq/airbyte/issues/12773) and Full Refresh syncing for now. You supply a `docker_username`, and it will sync down all info about repos published under that name.
+This source can sync data for the DockerHub API. It currently supports only [listing public repos](https://github.com/airbytehq/airbyte/issues/12773) and Full Refresh syncing for now. You supply a `docker_username`, and it will sync down all info about repos published under that name.
 
 ### Output schema
 
