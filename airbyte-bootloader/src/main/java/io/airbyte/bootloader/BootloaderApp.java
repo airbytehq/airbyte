@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.bootloader;
@@ -21,12 +21,12 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -69,6 +69,8 @@ public class BootloaderApp {
   private JobPersistence jobPersistence;
   private final Flyway configsFlyway;
   private final Flyway jobsFlyway;
+  private final DSLContext configsDslContext;
+  private final DSLContext jobsDslContext;
 
   /**
    * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
@@ -93,7 +95,9 @@ public class BootloaderApp {
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
     this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
 
     initPersistences(configsDslContext, jobsDslContext);
@@ -109,7 +113,9 @@ public class BootloaderApp {
     this.configs = configs;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
     this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
 
     initPersistences(configsDslContext, jobsDslContext);
@@ -132,6 +138,14 @@ public class BootloaderApp {
   }
 
   public void load() throws Exception {
+    LOGGER.info("Initializing databases...");
+    DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
+        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+
+    DatabaseCheckFactory.createJobsDatabaseInitializer(jobsDslContext,
+        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+    LOGGER.info("Databases initialized.");
+
     LOGGER.info("Setting up config database and default workspace...");
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
@@ -164,7 +178,7 @@ public class BootloaderApp {
   }
 
   private static Database getConfigDatabase(final DSLContext dslContext) throws IOException {
-    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
@@ -177,7 +191,7 @@ public class BootloaderApp {
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
-    return new JobsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   private static JobPersistence getJobPersistence(final Database jobDatabase) throws IOException {

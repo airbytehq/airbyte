@@ -215,6 +215,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_ENABLED
+            - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

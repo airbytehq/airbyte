@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import socket
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -24,7 +25,12 @@ from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
 
+# set default batch read size
 ROW_BATCH_SIZE = 200
+# override default socket timeout to be 10 mins instead of 60 sec.
+# on behalf of https://github.com/airbytehq/oncall/issues/242
+DEFAULT_SOCKET_TIMEOUT: int = 600
+socket.setdefaulttimeout(DEFAULT_SOCKET_TIMEOUT)
 
 
 class GoogleSheetsSource(Source):

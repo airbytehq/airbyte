@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -20,22 +20,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.DestinationCoreConfig;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.SourceCoreConfig;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
@@ -634,7 +634,7 @@ class SchedulerHandlerTest {
 
     final JobInfoRead jobStatusRead = schedulerHandler.syncConnection(request);
 
-    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
+    assertEquals(io.airbyte.api.model.generated.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
@@ -682,7 +682,7 @@ class SchedulerHandlerTest {
 
     final JobInfoRead jobStatusRead = schedulerHandler.resetConnection(request);
 
-    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
+    assertEquals(io.airbyte.api.model.generated.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
     verify(schedulerJobClient).createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE, operations);
@@ -710,7 +710,7 @@ class SchedulerHandlerTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
-    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
   }
 
   @Test
