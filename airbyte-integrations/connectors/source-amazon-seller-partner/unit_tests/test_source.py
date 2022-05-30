@@ -7,8 +7,9 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.streams import Stream
-from source_amazon_seller_partner import ConnectorConfig, SourceAmazonSellerPartner
+from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner.source import boto3
+from source_amazon_seller_partner.spec import AmazonSellerPartnerConfig
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def connector_source():
 
 @pytest.fixture
 def connector_config():
-    return ConnectorConfig(
+    return AmazonSellerPartnerConfig(
         replication_start_date="2017-01-25T00:00:00Z",
         refresh_token="Atzr|IwEBIP-abc123",
         lwa_app_id="amzn1.application-oa2-client.abc123",
