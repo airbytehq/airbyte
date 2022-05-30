@@ -10,6 +10,7 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/comp
 import { AttemptRead, JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
+import ErrorDetails from "./components/ErrorDetails";
 import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 
@@ -53,8 +54,10 @@ export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
 export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
   const [isOpen, setIsOpen] = useState(linkedJobId === getJobId(job));
-  const onExpand = () => setIsOpen(!isOpen);
   const scrollAnchor = useRef<HTMLDivElement>(null);
+  const onExpand = () => {
+    setIsOpen(!isOpen);
+  };
 
   const didSucceed = didJobSucceed(job);
 
@@ -86,7 +89,12 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs job={job} jobIsFailed={!didSucceed} />}
+            {isOpen && (
+              <>
+                <ErrorDetails attempts={getJobAttemps(job)} />
+                <JobLogs job={job} jobIsFailed={!didSucceed} />
+              </>
+            )}
           </Suspense>
         </div>
       </ContentWrapper>
