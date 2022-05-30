@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -10,6 +10,10 @@ import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.enums.v1.WorkflowExecutionStatus;
+import io.temporal.api.workflowservice.v1.DescribeWorkflowExecutionRequest;
+import io.temporal.api.workflowservice.v1.DescribeWorkflowExecutionResponse;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.workflow.Functions.Proc;
@@ -99,6 +103,10 @@ public class ConnectionManagerUtils {
               connectionId),
           e);
 
+      // in case there is an existing workflow in a bad state, attempt to terminate it first before
+      // starting a new workflow
+      safeTerminateWorkflow(client, connectionId, "Terminating workflow in unreachable state before starting a new workflow for this connection");
+
       final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
       final ConnectionUpdaterInput startWorkflowInput = buildStartWorkflowInput(connectionId);
 
@@ -121,6 +129,18 @@ public class ConnectionManagerUtils {
     }
   }
 
+  static void safeTerminateWorkflow(final WorkflowClient client, final UUID connectionId, final String reason) {
+    log.info("Attempting to terminate existing workflow for connection {}.", connectionId);
+    try {
+      client.newUntypedWorkflowStub(getConnectionManagerName(connectionId)).terminate(reason);
+    } catch (final Exception e) {
+      log.warn(
+          "Could not terminate temporal workflow due to the following error; "
+              + "this may be because there is currently no running workflow for this connection.",
+          e);
+    }
+  }
+
   static ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
     final ConnectionUpdaterInput input = buildStartWorkflowInput(connectionId);
@@ -136,28 +156,64 @@ public class ConnectionManagerUtils {
    * @param connectionId the ID of the connection whose workflow should be retrieved
    * @return the healthy ConnectionManagerWorkflow
    * @throws DeletedWorkflowException if the workflow was deleted, according to the workflow state
-   * @throws UnreachableWorkflowException if the workflow is unreachable
+   * @throws UnreachableWorkflowException if the workflow is in an unreachable state
    */
   static ConnectionManagerWorkflow getConnectionManagerWorkflow(final WorkflowClient client, final UUID connectionId)
       throws DeletedWorkflowException, UnreachableWorkflowException {
+
     final ConnectionManagerWorkflow connectionManagerWorkflow;
     final WorkflowState workflowState;
+    final WorkflowExecutionStatus workflowExecutionStatus;
     try {
       connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
       workflowState = connectionManagerWorkflow.getState();
+      workflowExecutionStatus = getConnectionManagerWorkflowStatus(client, connectionId);
     } catch (final Exception e) {
       throw new UnreachableWorkflowException(
           String.format("Failed to retrieve ConnectionManagerWorkflow for connection %s due to the following error:", connectionId),
           e);
     }
 
-    if (workflowState.isDeleted()) {
-      throw new DeletedWorkflowException(String.format(
-          "The connection manager workflow for connection %s is deleted, so no further operations cannot be performed on it.",
-          connectionId));
+    if (WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED.equals(workflowExecutionStatus)) {
+      if (workflowState.isDeleted()) {
+        throw new DeletedWorkflowException(String.format(
+            "The connection manager workflow for connection %s is deleted, so no further operations cannot be performed on it.",
+            connectionId));
+      }
+
+      // A non-deleted workflow being in a COMPLETED state is unexpected, and should be corrected
+      throw new UnreachableWorkflowException(
+          String.format("ConnectionManagerWorkflow for connection %s is unreachable due to having COMPLETED status.", connectionId));
+    }
+
+    if (workflowState.isQuarantined()) {
+      throw new UnreachableWorkflowException(
+          String.format("ConnectionManagerWorkflow for connection %s is unreachable due to being in a quarantined state.", connectionId));
     }
 
     return connectionManagerWorkflow;
+  }
+
+  static boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
+          getConnectionManagerName(connectionId));
+      return connectionManagerWorkflow.getState().isRunning();
+    } catch (final Exception e) {
+      return false;
+    }
+  }
+
+  static WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
+    final DescribeWorkflowExecutionRequest describeWorkflowExecutionRequest = DescribeWorkflowExecutionRequest.newBuilder()
+        .setExecution(WorkflowExecution.newBuilder().setWorkflowId(getConnectionManagerName(connectionId)).build())
+        .setNamespace(workflowClient.getOptions().getNamespace())
+        .build();
+
+    final DescribeWorkflowExecutionResponse describeWorkflowExecutionResponse = workflowClient.getWorkflowServiceStubs().blockingStub()
+        .describeWorkflowExecution(describeWorkflowExecutionRequest);
+
+    return describeWorkflowExecutionResponse.getWorkflowExecutionInfo().getStatus();
   }
 
   static long getCurrentJobId(final WorkflowClient client, final UUID connectionId) {

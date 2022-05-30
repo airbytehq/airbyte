@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@SuppressWarnings({"PMD.LongVariable", "PMD.AvoidInstantiatingObjectsInLoops"})
 class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
@@ -88,8 +89,6 @@ class ConfigRepositoryTest {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testWorkspaceByConnectionId(final boolean isTombstone) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(isTombstone);
-
     final UUID connectionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final StandardSync mSync = new StandardSync()
@@ -216,7 +215,7 @@ class ConfigRepositoryTest {
 
   @ParameterizedTest
   @ValueSource(ints = {0, 1, 2, 10})
-  void testListStandardSourceDefinitions_handlesTombstoneSourceDefinitions(final int numSourceDefinitions)
+  void testListStandardSourceDefinitionsHandlesTombstoneSourceDefinitions(final int numSourceDefinitions)
       throws JsonValidationException, IOException {
     final List<StandardSourceDefinition> allSourceDefinitions = new ArrayList<>();
     final List<StandardSourceDefinition> notTombstoneSourceDefinitions = new ArrayList<>();
@@ -348,7 +347,7 @@ class ConfigRepositoryTest {
 
   @ParameterizedTest
   @ValueSource(ints = {0, 1, 2, 10})
-  void testListStandardDestinationDefinitions_handlesTombstoneDestinationDefinitions(final int numDestinationDefinitions)
+  void testListStandardDestinationDefinitionsHandlesTombstoneDestinationDefinitions(final int numDestinationDefinitions)
       throws JsonValidationException, IOException {
     final List<StandardDestinationDefinition> allDestinationDefinitions = new ArrayList<>();
     final List<StandardDestinationDefinition> notTombstoneDestinationDefinitions = new ArrayList<>();
@@ -420,7 +419,7 @@ class ConfigRepositoryTest {
   }
 
   @Test
-  public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
     doReturn(workspace)
         .when(configRepository)
@@ -433,7 +432,7 @@ class ConfigRepositoryTest {
   }
 
   @Test
-  public void testHealthCheckSuccess() throws SQLException {
+  void testHealthCheckSuccess() throws SQLException {
     final var mResult = mock(Result.class);
     when(database.query(any())).thenReturn(mResult);
 
@@ -442,7 +441,7 @@ class ConfigRepositoryTest {
   }
 
   @Test
-  public void testHealthCheckFailure() throws SQLException {
+  void testHealthCheckFailure() throws SQLException {
     when(database.query(any())).thenThrow(RuntimeException.class);
 
     final var check = configRepository.healthCheck();

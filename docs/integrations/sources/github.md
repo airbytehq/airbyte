@@ -11,52 +11,52 @@ This connector outputs the following full refresh streams:
 * [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
 * [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
 * [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
-* [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
-* [Issue comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment)
 * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
-* [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
 * [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
-* [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 * [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
-* [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
 * [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
 * [TeamMembers](https://docs.github.com/en/rest/teams/members#list-team-members)
 * [TeamMemberships](https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user)
 * [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 * [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
-* [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
-* [WorkflowRuns](https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository)
 
 This connector outputs the following incremental streams:
 
 * [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
+* [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
 * [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
 * [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
 * [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
 * [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
+* [Issue comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment)
 * [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
 * [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
+* [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
 * [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
 * [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
 * [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 * [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+* [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 * [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 * [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
+* [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
+* [WorkflowRuns](https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository)
+* [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
 
 ### Notes
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the above 17 incremental streams are pure incremental meaning that they:
+1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the above 24 incremental streams are pure incremental meaning that they:
    * read only new records;
    * output only new records.
 
-2. Other 13 incremental streams are also incremental but with one difference, they:
+2. Other 20 incremental streams are also incremental but with one difference, they:
    * read all records;
    * output only new records.
-   Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
+   Please, consider this behaviour when using those 20 incremental streams because it may affect you API call limits.
 
 3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 **The "Start Date" configuration option does not apply to the streams below, because the Github API does not include dates which can be used for filtering:**
@@ -113,6 +113,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.31  | 2022-05-24 | [13115](https://github.com/airbytehq/airbyte/pull/13115) | Add incremental support for streams `WorkflowRuns`                                                         |
 | 0.2.30  | 2022-05-09 | [12294](https://github.com/airbytehq/airbyte/pull/12294) | Add incremental support for streams `CommitCommentReactions`, `IssueCommentReactions`, `IssueReactions`, `PullRequestCommentReactions`, `Repositories`, `Workflows` |
 | 0.2.29  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.2.28  | 2022-04-21 | [11893](https://github.com/airbytehq/airbyte/pull/11893) | Add new streams `TeamMembers`, `TeamMemberships`                                                           |

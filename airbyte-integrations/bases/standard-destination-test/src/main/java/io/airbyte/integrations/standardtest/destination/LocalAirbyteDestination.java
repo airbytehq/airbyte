@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -40,7 +40,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void notifyEndOfStream() {
+  public void notifyEndOfInput() {
     // nothing to do here
   }
 

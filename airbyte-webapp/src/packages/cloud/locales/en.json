@@ -118,5 +118,7 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "verifyEmail.notification": "You successfully verified your email. Thank you."
+  "verifyEmail.notification": "You successfully verified your email. Thank you.",
+
+  "webapp.cannotReachServer": "Cannot reach server."
 }

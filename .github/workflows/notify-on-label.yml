@@ -14,4 +14,4 @@ jobs:
             message: 'cc {recipients}'
             # Specify a map of label -> team/user to notify
             recipients: |
-              area/frontend=@airbytehq/frontend
+              team/frontend=@airbytehq/frontend

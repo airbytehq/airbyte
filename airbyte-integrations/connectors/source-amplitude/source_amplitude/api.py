@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -113,15 +113,19 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 class Events(IncrementalAmplitudeStream):
     cursor_field = "event_time"
     date_template = "%Y%m%dT%H"
+    compare_date_template = "%Y-%m-%d %H:%M:%S"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
     time_interval = {"days": 3}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
         zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
-                yield from self._parse_zip_file(file)
+                for record in self._parse_zip_file(file):
+                    if record[self.cursor_field] >= state_value:
+                        yield record
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
         with gzip.open(zip_file) as file:
@@ -130,9 +134,7 @@ class Events(IncrementalAmplitudeStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        start = self._start_date
-        if stream_state:
-            start = pendulum.parse(stream_state.get(self.cursor_field))
+        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
         end = pendulum.now()
         while start <= end:
             slices.append(
@@ -152,8 +154,7 @@ class Events(IncrementalAmplitudeStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
-        start = pendulum.parse(stream_slice["start"]).add(hours=6)
+        start = pendulum.parse(stream_slice["start"])
         end = pendulum.parse(stream_slice["end"])
         if start > end:
             yield from []
@@ -163,7 +164,7 @@ class Events(IncrementalAmplitudeStream):
         # https://developers.amplitude.com/docs/export-api#status-codes
 
         try:
-            self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%d')} - {end.strftime('%Y-%m-%d')}")
+            self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code

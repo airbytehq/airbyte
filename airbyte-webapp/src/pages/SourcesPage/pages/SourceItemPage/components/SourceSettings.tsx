@@ -14,6 +14,7 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 
 const Content = styled.div`
   max-width: 813px;
+  width: 80%;
   margin: 18px auto;
 `;
 
