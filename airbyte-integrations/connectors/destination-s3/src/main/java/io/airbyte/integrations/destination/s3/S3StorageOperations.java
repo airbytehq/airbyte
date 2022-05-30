@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -141,8 +141,10 @@ public class S3StorageOperations extends BlobStorageOperations {
     for (final BlobDecorator blobDecorator : blobDecorators) {
       blobDecorator.updateMetadata(metadata, getMetadataMapping());
     }
-    final StreamTransferManager uploadManager = StreamTransferManagerHelper
-        .getDefault(bucket, fullObjectKey, s3Client, partSize, metadata)
+    final StreamTransferManager uploadManager = StreamTransferManagerFactory.create(bucket, fullObjectKey, s3Client)
+        .setPartSize(partSize)
+        .setUserMetadata(metadata)
+        .get()
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
@@ -293,7 +295,7 @@ public class S3StorageOperations extends BlobStorageOperations {
         AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv");
   }
 
-  public void uploadManifest(String bucketName, String manifestFilePath, String manifestContents) {
+  public void uploadManifest(final String bucketName, final String manifestFilePath, final String manifestContents) {
     s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
   }
 

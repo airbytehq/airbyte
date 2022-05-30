@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.model.AdvancedAuth;
-import io.airbyte.api.model.AdvancedAuth.AuthFlowTypeEnum;
-import io.airbyte.api.model.AuthSpecification;
-import io.airbyte.api.model.OAuth2Specification;
-import io.airbyte.api.model.OAuthConfigSpecification;
+import io.airbyte.api.model.generated.AdvancedAuth;
+import io.airbyte.api.model.generated.AdvancedAuth.AuthFlowTypeEnum;
+import io.airbyte.api.model.generated.AuthSpecification;
+import io.airbyte.api.model.generated.OAuth2Specification;
+import io.airbyte.api.model.generated.OAuthConfigSpecification;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.List;
 import java.util.Optional;

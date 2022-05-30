@@ -113,10 +113,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [
-          ["ad_group_ad.ad.id"],
-          ["segments.date"]
-      ]
+      "primary_key": [["ad_group_ad.ad.id"], ["segments.date"]]
     },
     {
       "stream": {

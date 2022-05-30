@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -57,9 +57,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       ALTER TABLE %1$s RENAME %3$s_reserve to %3$s;
       """;
 
-
-  public RedshiftSqlOperations() {
-  }
+  public RedshiftSqlOperations() {}
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
