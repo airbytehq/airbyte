@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_mixpanel.source import Export, ExportSchema
+from source_mixpanel.source import Export
 
 from .utils import get_url_to_mock, setup_response
 
