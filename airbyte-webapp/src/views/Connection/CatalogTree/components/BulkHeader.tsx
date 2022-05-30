@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Cell, Header, Toggle } from "components";
+import { Button, Cell, Header, Switch } from "components";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
@@ -97,7 +97,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <CheckboxCell />
       <ArrowCell />
       <HeaderCell flex={0.4}>
-        <Toggle small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
+        <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
       </HeaderCell>
       <HeaderCell />
       <HeaderCell />

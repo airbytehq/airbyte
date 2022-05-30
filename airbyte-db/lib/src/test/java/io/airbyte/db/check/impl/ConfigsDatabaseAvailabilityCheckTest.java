@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.check.impl;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link ConfigsDatabaseAvailabilityCheck} class.
  */
-public class ConfigsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvailabilityCheckTest {
+class ConfigsDatabaseAvailabilityCheckTest extends CommonDatabaseCheckTest {
 
   @Test
   void checkDatabaseAvailability() {
@@ -28,10 +28,11 @@ public class ConfigsDatabaseAvailabilityCheckTest extends AbstractDatabaseAvaila
 
   @Test
   void checkDatabaseAvailabilityTimeout() {
-    final DSLContext dslContext = mock(DSLContext.class);
-    when(dslContext.fetchExists(any(Select.class))).thenThrow(new DataAccessException("test"));
-    final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
-    Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
+    try (final DSLContext dslContext = mock(DSLContext.class)) {
+      when(dslContext.fetchExists(any(Select.class))).thenThrow(new DataAccessException("test"));
+      final var check = new ConfigsDatabaseAvailabilityCheck(dslContext, TIMEOUT_MS);
+      Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
+    }
   }
 
   @Test

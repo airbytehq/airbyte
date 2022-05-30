@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.check;
@@ -52,6 +52,8 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
             throw new DatabaseCheckException("Unable to wait for database to be ready.", e);
           }
           totalTime += sleepTime;
+        } else {
+          getLogger().info("Database available.");
         }
       } else {
         throw new DatabaseCheckException("Database configuration not present.");

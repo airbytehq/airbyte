@@ -25,7 +25,6 @@ import { naturalComparator } from "utils/objects";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import { WarningMessage } from "../WarningMessage";
-import { DocumentationLink } from "./DocumentationLink";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -289,7 +288,6 @@ const ConnectorServiceTypeControl: React.FC<{
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
-      {selectedService && <DocumentationLink />}
       {selectedService &&
         (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
           <WarningMessage stage={selectedService.releaseStage} />
