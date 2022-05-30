@@ -69,7 +69,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
     _, stream_state = read_incremental(stream, {})
 
-    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
+    expected = int(pendulum.parse("2022-03-25T16:43:11Z").timestamp() * 1000)
 
     assert stream_state[stream.updated_at_field] == expected
 

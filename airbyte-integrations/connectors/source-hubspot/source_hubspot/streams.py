@@ -639,62 +639,30 @@ class IncrementalStream(Stream, ABC):
     def updated_at_field(self):
         """Name of the field associated with the state"""
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
-        latest_cursor = None
-        for record in records:
-            cursor = self._field_to_datetime(record[self.updated_at_field])
-            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-            yield record
-        self._update_state(latest_cursor=latest_cursor)
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        if self.state:
-            return self.state
-        return (
-            {self.updated_at_field: int(self._start_date.timestamp() * 1000)}
-            if self.state_pk == "timestamp"
-            else {self.updated_at_field: str(self._start_date)}
-        )
+        if self._state:
+            self._state = max(self._state, self._field_to_datetime(latest_record[self.cursor_field]))
+        else:
+            self._state = self._field_to_datetime(latest_record[self.cursor_field])
+        return self.state
 
     @property
-    def state(self) -> Optional[Mapping[str, Any]]:
-        """Current state, if wasn't set return None"""
+    def state(self) -> MutableMapping[str, Any]:
         if self._state:
-            return (
-                {self.updated_at_field: int(self._state.timestamp() * 1000)}
-                if self.state_pk == "timestamp"
-                else {self.updated_at_field: str(self._state)}
-            )
-        return None
+            return {self.cursor_field: int(self._state.timestamp() * 1000)}
+        return {}
 
     @state.setter
-    def state(self, value):
-        state_value = value.get(self.updated_at_field, self._state)
-        self._state = (
-            pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
-            if isinstance(state_value, int)
-            else pendulum.parse(state_value)
-        )
-        self._start_date = max(self._state, self._start_date)
+    def state(self, value: MutableMapping[str, Any]):
+        if value.get(self.cursor_field):
+            self._state = self._field_to_datetime(value[self.cursor_field])
+            self._start_date = max(self._state, self._start_date)
+        else:
+            self._state = self._start_date
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
-
-    def _update_state(self, latest_cursor):
-        if latest_cursor:
-            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
-            if new_state != self._state:
-                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-                self._state = new_state
-                self._start_date = self._state
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -837,10 +805,8 @@ class CRMSearchStream(IncrementalStream, ABC):
                     # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                     # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
                     # start a new search query with the latest state that has been collected.
-                    self._update_state(latest_cursor=latest_cursor)
                     next_page_token = None
 
-            self._update_state(latest_cursor=latest_cursor)
             # Always return an empty generator just in case no records were ever yielded
             yield from []
 
@@ -1144,8 +1110,6 @@ class Engagements(IncrementalStream):
 
             # Always return an empty generator just in case no records were ever yielded
             yield from []
-
-        self._update_state(latest_cursor=latest_cursor)
 
 
 class Forms(Stream):
