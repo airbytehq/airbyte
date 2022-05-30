@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -126,6 +126,8 @@ public class MockData {
 
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
+  private static final String CONNECTION_SPECIFICATION = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
+
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
         .withNotificationType(NotificationType.SLACK)
@@ -235,7 +237,7 @@ public class MockData {
   private static ConnectorSpecification connectorSpecification() {
     return new ConnectorSpecification()
         .withAuthSpecification(new AuthSpecification().withAuthType(AuthType.OAUTH_2_0))
-        .withConnectionSpecification(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConnectionSpecification(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDocumentationUrl(URI.create("whatever"))
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
@@ -316,14 +318,14 @@ public class MockData {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_2);
     final SourceConnection sourceConnection3 = new SourceConnection()
         .withName("source-3")
@@ -341,14 +343,14 @@ public class MockData {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_2);
     final DestinationConnection destinationConnection3 = new DestinationConnection()
         .withName("destination-3")
@@ -362,12 +364,12 @@ public class MockData {
 
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_2);
@@ -376,12 +378,12 @@ public class MockData {
 
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_2);
@@ -537,16 +539,16 @@ public class MockData {
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState2 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_2)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState3 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_3)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState4 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_4)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
   }
 
@@ -579,7 +581,7 @@ public class MockData {
         .withActorId(SOURCE_ID_2)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
-    return Arrays.asList(actorCatalogFetchEvent1);
+    return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
@@ -593,7 +595,7 @@ public class MockData {
     return Arrays.asList(workspaceServiceAccount);
   }
 
-  private static Map<String, String> sortMap(Map<String, String> originalMap) {
+  private static Map<String, String> sortMap(final Map<String, String> originalMap) {
     return originalMap.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }

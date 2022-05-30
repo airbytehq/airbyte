@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.jobs;
@@ -7,7 +7,6 @@ package io.airbyte.db.instance.jobs;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import java.io.IOException;
 import javax.sql.DataSource;
@@ -30,7 +29,7 @@ public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   @Override
   protected Database getDatabase(final DSLContext dslContext) throws IOException {
-    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   @Override

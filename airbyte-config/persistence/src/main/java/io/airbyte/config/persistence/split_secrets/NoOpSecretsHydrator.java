@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -17,7 +17,7 @@ public class NoOpSecretsHydrator implements SecretsHydrator {
   }
 
   @Override
-  public JsonNode hydrateSecretCoordinate(JsonNode secretCoordinate) {
+  public JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinate) {
     return secretCoordinate;
   }
 

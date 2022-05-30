@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public class AirbyteConfigValidator extends AbstractSchemaValidator<ConfigSchema> {
 
-  public static AirbyteConfigValidator AIRBYTE_CONFIG_VALIDATOR = new AirbyteConfigValidator();
+  final public static AirbyteConfigValidator AIRBYTE_CONFIG_VALIDATOR = new AirbyteConfigValidator();
 
   @Override
   public Path getSchemaPath(final ConfigSchema configType) {

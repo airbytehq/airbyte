@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.UploadRead;
+import io.airbyte.api.model.generated.UploadRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.json.Jsons;

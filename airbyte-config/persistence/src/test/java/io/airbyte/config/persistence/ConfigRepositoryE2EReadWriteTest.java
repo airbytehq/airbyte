@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,8 +30,9 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -60,7 +61,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class ConfigRepositoryE2EReadWriteTest {
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+class ConfigRepositoryE2EReadWriteTest {
 
   private static PostgreSQLContainer<?> container;
   private DataSource dataSource;
@@ -70,6 +72,8 @@ public class ConfigRepositoryE2EReadWriteTest {
   private DatabaseConfigPersistence configPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
   private Flyway flyway;
+  private final static String DOCKER_IMAGE_TAG = "1.2.0";
+  private final static String CONFIG_HASH = "ConfigHash";
 
   @BeforeAll
   public static void dbSetup() {
@@ -81,12 +85,12 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
@@ -155,7 +159,7 @@ public class ConfigRepositoryE2EReadWriteTest {
         .withSourceDefinitionId(UUID.randomUUID())
         .withSourceType(SourceType.DATABASE)
         .withDockerRepository("docker-repo")
-        .withDockerImageTag("1.2.0")
+        .withDockerImageTag(DOCKER_IMAGE_TAG)
         .withName("sourceDefinition");
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -169,24 +173,24 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
     configRepository.writeActorCatalogFetchEvent(
-        actorCatalog, source.getSourceId(), "1.2.0", "ConfigHash");
+        actorCatalog, source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
 
     final Optional<ActorCatalog> catalog =
-        configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "ConfigHash");
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
     assertTrue(catalog.isPresent());
     assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
-    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
-    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH).isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash").isPresent());
 
-    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", "ConfigHash");
+    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", CONFIG_HASH);
     final Optional<ActorCatalog> catalogNewConnectorVersion =
-        configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash");
+        configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH);
     assertTrue(catalogNewConnectorVersion.isPresent());
     assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
     final Optional<ActorCatalog> catalogNewConfig =
-        configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash");
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash");
     assertTrue(catalogNewConfig.isPresent());
     assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
@@ -195,14 +199,14 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testListWorkspaceStandardSync() throws IOException {
+  void testListWorkspaceStandardSync() throws IOException {
 
     final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
   }
 
   @Test
-  public void testGetWorkspaceBySlug()
+  void testGetWorkspaceBySlug()
       throws IOException {
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
@@ -222,7 +226,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testUpdateConnectionOperationIds() throws Exception {
+  void testUpdateConnectionOperationIds() throws Exception {
     final StandardSync sync = MockData.standardSyncs().get(0);
     final List<UUID> existingOperationIds = sync.getOperationIds();
     final UUID connectionId = sync.getConnectionId();
@@ -257,7 +261,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testActorDefinitionWorkspaceGrantExists() throws IOException {
+  void testActorDefinitionWorkspaceGrantExists() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final UUID definitionId = MockData.standardSourceDefinitions().get(0).getSourceDefinitionId();
 
@@ -271,13 +275,13 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testListPublicSourceDefinitions() throws IOException {
+  void testListPublicSourceDefinitions() throws IOException {
     final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
     assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
   }
 
   @Test
-  public void testSourceDefinitionGrants() throws IOException {
+  void testSourceDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSourceDefinition grantableDefinition1 = MockData.grantableSourceDefinition1();
     final StandardSourceDefinition grantableDefinition2 = MockData.grantableSourceDefinition2();
@@ -297,13 +301,13 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testListPublicDestinationDefinitions() throws IOException {
+  void testListPublicDestinationDefinitions() throws IOException {
     final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
     assertEquals(List.of(MockData.publicDestinationDefinition()), actualDefinitions);
   }
 
   @Test
-  public void testDestinationDefinitionGrants() throws IOException {
+  void testDestinationDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardDestinationDefinition grantableDefinition1 = MockData.grantableDestinationDefinition1();
     final StandardDestinationDefinition grantableDefinition2 = MockData.grantableDestinationDefinition2();
@@ -323,7 +327,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testWorkspaceCanUseDefinition() throws IOException {
+  void testWorkspaceCanUseDefinition() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final UUID otherWorkspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     final UUID publicDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
@@ -356,7 +360,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testGetDestinationOAuthByDefinitionId() throws IOException {
+  void testGetDestinationOAuthByDefinitionId() throws IOException {
 
     final DestinationOAuthParameter destinationOAuthParameter = MockData.destinationOauthParameters().get(0);
     final Optional<DestinationOAuthParameter> result = configRepository.getDestinationOAuthParamByDefinitionIdOptional(
@@ -366,7 +370,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testMissingDestinationOAuthByDefinitionId() throws IOException {
+  void testMissingDestinationOAuthByDefinitionId() throws IOException {
     final UUID missingId = UUID.fromString("fc59cfa0-06de-4c8b-850b-46d4cfb65629");
     final DestinationOAuthParameter destinationOAuthParameter = MockData.destinationOauthParameters().get(0);
     Optional<DestinationOAuthParameter> result =
@@ -378,7 +382,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testGetSourceOAuthByDefinitionId() throws IOException {
+  void testGetSourceOAuthByDefinitionId() throws IOException {
     final SourceOAuthParameter sourceOAuthParameter = MockData.sourceOauthParameters().get(0);
     final Optional<SourceOAuthParameter> result = configRepository.getSourceOAuthParamByDefinitionIdOptional(sourceOAuthParameter.getWorkspaceId(),
         sourceOAuthParameter.getSourceDefinitionId());
@@ -387,7 +391,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testMissingSourceOAuthByDefinitionId() throws IOException {
+  void testMissingSourceOAuthByDefinitionId() throws IOException {
     final UUID missingId = UUID.fromString("fc59cfa0-06de-4c8b-850b-46d4cfb65629");
     final SourceOAuthParameter sourceOAuthParameter = MockData.sourceOauthParameters().get(0);
     Optional<SourceOAuthParameter> result =
@@ -399,7 +403,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testGetStandardSyncUsingOperation() throws IOException {
+  void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
     final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
 
@@ -410,7 +414,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testDeleteStandardSyncOperation()
+  void testDeleteStandardSyncOperation()
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
     final List<StandardSync> syncs = MockData.standardSyncs();

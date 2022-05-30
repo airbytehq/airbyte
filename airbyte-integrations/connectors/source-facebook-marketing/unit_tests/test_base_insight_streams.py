@@ -1,12 +1,14 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
 
 import pendulum
 import pytest
+import source_facebook_marketing.streams.base_insight_streams
 from airbyte_cdk.models import SyncMode
+from helpers import FakeInsightAsyncJob, FakeInsightAsyncJobManager, read_full_refresh, read_incremental
 from pendulum import duration
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
@@ -186,7 +188,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == (end_date - start_date).days
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
@@ -223,7 +225,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == (end_date - start_date).days
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
@@ -290,3 +292,72 @@ class TestBaseInsightsStream:
         )
 
         assert stream.fields == ["account_id", "account_currency"]
+
+    def test_completed_slices_in_lookback_period(self, api, monkeypatch, set_today):
+        start_date = pendulum.parse("2020-03-01")
+        end_date = pendulum.parse("2020-05-01")
+        set_today("2020-04-01")
+        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=10))
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
+
+        state = {
+            AdsInsights.cursor_field: "2020-03-19",
+            "slices": [
+                "2020-03-21",
+                "2020-03-22",
+                "2020-03-23",
+            ],
+            "time_increment": 1,
+        }
+
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream.state = state
+        assert stream._completed_slices == {pendulum.Date(2020, 3, 21), pendulum.Date(2020, 3, 22), pendulum.Date(2020, 3, 23)}
+
+        slices = stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
+        slices = [x["insight_job"].interval.start for x in slices]
+
+        assert pendulum.parse("2020-03-21").date() not in slices
+        assert pendulum.parse("2020-03-22").date() in slices
+        assert pendulum.parse("2020-03-23").date() in slices
+        assert stream._completed_slices == {pendulum.Date(2020, 3, 21)}
+
+    def test_incremental_lookback_period_updated(self, api, monkeypatch, set_today):
+        start_date = pendulum.parse("2020-03-01")
+        end_date = pendulum.parse("2020-05-01")
+        yesterday, _ = set_today("2020-04-01")
+        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
+        monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
+
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+
+        records = read_full_refresh(stream)
+        assert len(records) == (yesterday - start_date).days + 1
+        assert records[0]["date_start"] == str(start_date.date())
+        assert records[-1]["date_start"] == str(yesterday.date())
+
+        state = {AdsInsights.cursor_field: "2020-03-20", "time_increment": 1}
+        records = read_incremental(stream, state)
+        assert len(records) == (yesterday - pendulum.parse("2020-03-20")).days
+        assert records[0]["date_start"] == "2020-03-21"
+        assert records[-1]["date_start"] == str(yesterday.date())
+        assert state == {"date_start": str(yesterday.date()), "slices": [], "time_increment": 1}
+
+        yesterday, _ = set_today("2020-04-02")
+        records = read_incremental(stream, state)
+        assert records == [{"date_start": str(yesterday.date()), "updated_time": str(yesterday.date())}]
+        assert state == {"date_start": str(yesterday.date()), "slices": [], "time_increment": 1}
+
+        yesterday, _ = set_today("2020-04-03")
+        FakeInsightAsyncJob.update_insight("2020-03-26", "2020-04-01")
+        FakeInsightAsyncJob.update_insight("2020-03-27", "2020-04-02")
+        FakeInsightAsyncJob.update_insight("2020-03-28", "2020-04-03")
+
+        records = read_incremental(stream, state)
+        assert records == [
+            {"date_start": "2020-03-27", "updated_time": "2020-04-02"},
+            {"date_start": "2020-04-02", "updated_time": "2020-04-02"},
+        ]
+        assert state == {"date_start": str(yesterday.date()), "slices": [], "time_increment": 1}
