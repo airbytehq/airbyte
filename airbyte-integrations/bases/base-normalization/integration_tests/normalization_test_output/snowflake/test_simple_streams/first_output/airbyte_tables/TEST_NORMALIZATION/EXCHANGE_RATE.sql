@@ -1,12 +1,12 @@
 
 
-      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
+      create or replace  table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."EXCHANGE_RATE"  as
       (select * from(
             
 with __dbt__cte__EXCHANGE_RATE_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
+-- depends_on: "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"currency"')) as CURRENCY,
@@ -20,7 +20,7 @@ select
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE as table_alias
+from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE as table_alias
 -- EXCHANGE_RATE
 where 1 = 1
 ),  __dbt__cte__EXCHANGE_RATE_AB2 as (
@@ -114,8 +114,8 @@ select
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT,
     _AIRBYTE_EXCHANGE_RATE_HASHID
 from __dbt__cte__EXCHANGE_RATE_AB3
--- EXCHANGE_RATE from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
+-- EXCHANGE_RATE from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
 where 1 = 1
             ) order by (_AIRBYTE_EMITTED_AT)
       );
-    alter table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE" cluster by (_AIRBYTE_EMITTED_AT);
+    alter table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."EXCHANGE_RATE" cluster by (_AIRBYTE_EMITTED_AT);
