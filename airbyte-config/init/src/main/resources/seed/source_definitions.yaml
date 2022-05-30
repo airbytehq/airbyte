@@ -271,7 +271,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -446,7 +446,7 @@
 - name: Kafka
   sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
   dockerRepository: airbyte/source-kafka
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/kafka
   icon: kafka.svg
   sourceType: database
@@ -1049,5 +1049,12 @@
   dockerRepository: airbyte/source-zoho-crm
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
+  sourceType: api
+  releaseStage: alpha
+- name: SFTP
+  sourceDefinitionId: a827c52e-791c-4135-a245-e233c5255199
+  dockerRepository: airbyte/source-sftp
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
   sourceType: api
   releaseStage: alpha
