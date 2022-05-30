@@ -11,7 +11,7 @@ application {
 }
 
 dependencies {
-    implementation "org.postgresql:postgresql:42.2.18"
+    implementation libs.postgresql
 
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
@@ -27,7 +27,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation "org.testcontainers:mssqlserver:1.15.3"
+    testImplementation libs.testcontainers.mssqlserver
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

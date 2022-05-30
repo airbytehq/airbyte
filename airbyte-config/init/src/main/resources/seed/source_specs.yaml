@@ -213,7 +213,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.16"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -286,9 +286,9 @@
           type: "string"
         role_arn:
           title: "Role ARN"
-          description: "Specifies the Amazon Resource Name (ARN) of an IAM user or\
-            \ role that you want to use to perform operations requested using this\
-            \ profile. (Needs permission to 'Assume Role' STS)."
+          description: "Specifies the Amazon Resource Name (ARN) of an IAM role that\
+            \ you want to use to perform operations requested using this profile.\
+            \ (Needs permission to 'Assume Role' STS)."
           airbyte_secret: true
           type: "string"
         aws_environment:
@@ -480,7 +480,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.6"
+- dockerImage: "airbyte/source-amplitude:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -801,7 +801,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.6"
+- dockerImage: "airbyte/source-bing-ads:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -809,77 +809,19 @@
       title: "Bing Ads Spec"
       type: "object"
       required:
-      - "accounts"
-      - "client_id"
-      - "client_secret"
-      - "customer_id"
       - "developer_token"
+      - "client_id"
       - "refresh_token"
-      - "user_id"
       - "reports_start_date"
       - "hourly_reports"
       - "daily_reports"
       - "weekly_reports"
       - "monthly_reports"
-      additionalProperties: false
+      additionalProperties: true
       properties:
-        accounts:
-          title: "Accounts to replicate data from"
-          type: "object"
-          description: ""
-          oneOf:
-          - title: "All Accounts"
-            additionalProperties: false
-            description: "Replicate data from all accounts to which you have access."
-            required:
-            - "selection_strategy"
-            properties:
-              selection_strategy:
-                type: "string"
-                const: "all"
-          - title: "Specific Accounts"
-            additionalProperties: false
-            description: "Fetch data for subset of account IDs."
-            required:
-            - "ids"
-            - "selection_strategy"
-            properties:
-              selection_strategy:
-                type: "string"
-                const: "subset"
-              ids:
-                type: "array"
-                title: "Account IDs"
-                description: "List of the account IDs from which data will be replicated."
-                items:
-                  type: "string"
-                minItems: 1
-                uniqueItems: true
-        client_id:
+        auth_method:
           type: "string"
-          title: "Client ID"
-          description: "The Client ID of your Microsoft Advertising developer application."
-          airbyte_secret: true
-          order: 0
-        client_secret:
-          type: "string"
-          title: "Client Secret"
-          description: "The Client Secret of your Microsoft Advertising developer\
-            \ application."
-          airbyte_secret: true
-          order: 1
-        refresh_token:
-          type: "string"
-          title: "Refresh Token"
-          description: "Refresh Token to renew the expired Access Token."
-          airbyte_secret: true
-          order: 2
-        developer_token:
-          type: "string"
-          title: "Developer Token"
-          description: "Developer token associated with user."
-          airbyte_secret: true
-          order: 3
+          const: "oauth2.0"
         tenant_id:
           type: "string"
           title: "Tenant ID"
@@ -887,29 +829,35 @@
             \ Set this to \"common\" unless you know you need a different value."
           airbyte_secret: true
           default: "common"
-          order: 4
-        redirect_uri:
+          order: 0
+        client_id:
           type: "string"
-          title: "Redirect URI (Optional)"
-          description: "The Redirect URI of your Microsoft Advertising developer application.\
-            \ Leave this empty unless you know that you need it."
+          title: "Client ID"
+          description: "The Client ID of your Microsoft Advertising developer application."
           airbyte_secret: true
+          order: 1
+        client_secret:
+          type: "string"
+          title: "Client Secret"
+          description: "The Client Secret of your Microsoft Advertising developer\
+            \ application."
           default: ""
-          order: 5
-        customer_id:
+          airbyte_secret: true
+          order: 2
+        refresh_token:
           type: "string"
-          title: "Customer ID"
-          description: "Your Bing Customer ID. See the \"Getting Started\" section\
-            \ in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads\"\
-            >the docs</a> for information on how to obtain this ID"
-          order: 6
-        user_id:
+          title: "Refresh Token"
+          description: "Refresh Token to renew the expired Access Token."
+          airbyte_secret: true
+          order: 3
+        developer_token:
           type: "string"
-          title: "Account ID"
-          description: "Bing Ads Account ID. See the \"Getting Started\" section in\
-            \ <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads\">the\
-            \ docs</a> for information on how to obtain this ID"
-          order: 7
+          title: "Developer Token"
+          description: "Developer token associated with user. See more info <a href=\"\
+            https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"\
+            > in the docs</a>."
+          airbyte_secret: true
+          order: 4
         reports_start_date:
           type: "string"
           title: "Reports replication start date"
@@ -918,7 +866,7 @@
           description: "The start date from which to begin replicating report data.\
             \ Any data generated before this date will not be replicated in reports.\
             \ This is a UTC date in YYYY-MM-DD format."
-          order: 8
+          order: 5
         hourly_reports:
           title: "Enable hourly-aggregate reports"
           type: "boolean"
@@ -954,6 +902,48 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "auth_method"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            tenant_id:
+              type: "string"
+              path_in_connector_config:
+              - "tenant_id"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "client_secret"
 - dockerImage: "airbyte/source-braintree:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/braintree"
@@ -1781,7 +1771,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.47"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.49"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2143,7 +2133,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.0"
+- dockerImage: "airbyte/source-faker:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -2156,10 +2146,11 @@
       properties:
         count:
           title: "Count"
-          description: "How many fake records should be generated"
+          description: "How many users should be generated in total.  This setting\
+            \ does not apply to the purchases or products stream."
           type: "integer"
           minimum: 1
-          default: 100
+          default: 1000
           order: 0
         seed:
           title: "Seed"
@@ -2168,6 +2159,23 @@
           type: "integer"
           default: -1
           order: 1
+        records_per_sync:
+          title: "Records Per Sync"
+          description: "How many fake records will be returned for each sync, for\
+            \ each stream?  By default, it will take 2 syncs to create the requested\
+            \ 1000 records."
+          type: "integer"
+          minimum: 1
+          default: 500
+          order: 2
+        records_per_slice:
+          title: "Records Per Stream Slice"
+          description: "How many fake records will be in each page (stream slice),\
+            \ before a state message is emitted?"
+          type: "integer"
+          minimum: 1
+          default: 100
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2503,7 +2511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.29"
+- dockerImage: "airbyte/source-github:0.2.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2688,7 +2696,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.36"
+- dockerImage: "airbyte/source-google-ads:0.1.39"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2715,6 +2723,7 @@
             developer_token:
               type: "string"
               title: "Developer Token"
+              order: 0
               description: "Developer token granted by Google to use their APIs. More\
                 \ instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
@@ -2722,27 +2731,31 @@
             client_id:
               type: "string"
               title: "Client ID"
+              order: 1
               description: "The Client ID of your Google Ads developer application.\
                 \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
             client_secret:
               type: "string"
               title: "Client Secret"
+              order: 2
               description: "The Client Secret of your Google Ads developer application.\
                 \ More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
-                >docs</a>"
-              airbyte_secret: true
-            access_token:
-              type: "string"
-              title: "Access Token"
-              description: "Access Token for making authenticated requests. More instruction\
-                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
             refresh_token:
               type: "string"
               title: "Refresh Token"
+              order: 3
               description: "The token for obtaining a new access token. More instruction\
+                \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
+                >docs</a>"
+              airbyte_secret: true
+            access_token:
+              type: "string"
+              title: "Access Token (Optional)"
+              order: 4
+              description: "Access Token for making authenticated requests. More instruction\
                 \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
                 >docs</a>"
               airbyte_secret: true
@@ -2789,7 +2802,7 @@
                 title: "Custom Query"
                 description: "A custom defined GAQL query for building the report.\
                   \ Should not contain segments.date expression because it is used\
-                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v8/overview_query_builder\"\
+                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v9/overview_query_builder\"\
                   >query builder</a> for more information."
                 examples:
                 - "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type\
@@ -3193,7 +3206,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.13"
+- dockerImage: "airbyte/source-google-sheets:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -3536,7 +3549,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.58"
+- dockerImage: "airbyte/source-hubspot:0.1.59"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3764,7 +3777,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.18"
+- dockerImage: "airbyte/source-intercom:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -3956,7 +3969,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.1.5"
+- dockerImage: "airbyte/source-kafka:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
     connectionSpecification:
@@ -4723,7 +4736,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.22"
+- dockerImage: "airbyte/source-mssql:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4735,7 +4748,7 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         host:
           description: "The hostname of the database."
@@ -4828,8 +4841,8 @@
                 description: "Specifies the host name of the server. The value of\
                   \ this property must match the subject property of the certificate."
                 order: 7
-        replication_method:
-          type: "string"
+        replication:
+          type: "object"
           title: "Replication Method"
           description: "The replication method used for extracting data from the database.\
             \ STANDARD replication requires no setup on the DB side but will not be\
@@ -4837,10 +4850,62 @@
             \ inserts, updates, and deletes. This needs to be configured on the source\
             \ database itself."
           default: "STANDARD"
-          enum:
-          - "STANDARD"
-          - "CDC"
+          additionalProperties: true
           order: 8
+          oneOf:
+          - title: "Standard"
+            additionalProperties: false
+            description: "Standard replication requires no setup on the DB side but\
+              \ will not be able to represent deletions incrementally."
+            required:
+            - "replication_type"
+            properties:
+              replication_type:
+                type: "string"
+                const: "Standard"
+                enum:
+                - "Standard"
+                default: "Standard"
+                order: 0
+          - title: "Logical Replication (CDC)"
+            additionalProperties: false
+            description: "CDC uses {TBC} to detect inserts, updates, and deletes.\
+              \ This needs to be configured on the source database itself."
+            required:
+            - "replication_type"
+            properties:
+              replication_type:
+                type: "string"
+                const: "CDC"
+                enum:
+                - "CDC"
+                default: "CDC"
+                order: 0
+              data_to_sync:
+                title: "Data to Sync"
+                type: "string"
+                default: "Existing and New"
+                enum:
+                - "Existing and New"
+                - "New Changes Only"
+                description: "What data should be synced under the CDC. \"Existing\
+                  \ and New\" will read existing data as a snapshot, and sync new\
+                  \ changes through CDC. \"New Changes Only\" will skip the initial\
+                  \ snapshot, and only sync new changes through CDC."
+                order: 1
+              snapshot_isolation:
+                title: "Initial Snapshot Isolation Level"
+                type: "string"
+                default: "Snapshot"
+                enum:
+                - "Snapshot"
+                - "Read Committed"
+                description: "Existing data in the database are synced through an\
+                  \ initial snapshot. This parameter controls the isolation level\
+                  \ that will be used during the initial snapshotting. If you choose\
+                  \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
+                  >snapshot isolation mode</a> on the database."
+                order: 2
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -6336,7 +6401,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pipedrive:0.1.10"
+- dockerImage: "airbyte/source-pipedrive:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -6483,7 +6548,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pokeapi:0.1.4"
+- dockerImage: "airbyte/source-pokeapi:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pokeapi"
     connectionSpecification:
@@ -6500,7 +6565,9 @@
           description: "Pokemon requested from the API."
           pattern: "^[a-z0-9_\\-]+$"
           examples:
-          - "ditto, luxray, snorlax"
+          - "ditto"
+          - "luxray"
+          - "snorlax"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6540,7 +6607,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.14"
+- dockerImage: "airbyte/source-postgres:0.4.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6596,17 +6663,24 @@
           type: "string"
           airbyte_secret: true
           order: 5
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 6
         ssl:
           title: "Connect using SSL"
           description: "Encrypt client/server communications for increased security."
           type: "boolean"
           default: false
-          order: 6
+          order: 7
         replication_method:
           type: "object"
           title: "Replication Method"
           description: "Replication method to use for extracting data from the database."
-          order: 7
+          order: 8
           oneOf:
           - title: "Standard"
             additionalProperties: false
@@ -6792,7 +6866,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-qualaroo:0.1.0"
+- dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"
     connectionSpecification:
@@ -6829,7 +6903,7 @@
           type: "array"
           items:
             type: "string"
-            pattern: "^[0-9a-fA-F]{24}$"
+            pattern: "^[0-9]{1,8}$"
           title: "Qualaroo survey IDs"
           description: "IDs of the surveys from which you'd like to replicate data.\
             \ If left empty, data from all surveys to which you have access will be\
@@ -7144,7 +7218,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.11"
+- dockerImage: "airbyte/source-s3:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -7314,6 +7388,15 @@
                   \ your data is particularly wide."
                 default: 2
                 type: "integer"
+          - title: "Avro"
+            description: "This connector utilises <a href=\"https://fastavro.readthedocs.io/en/latest/\"\
+              \ target=\"_blank\">fastavro</a> for Avro parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "avro"
+                type: "string"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
@@ -8529,7 +8612,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.7"
+- dockerImage: "airbyte/source-surveymonkey:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -8574,6 +8657,55 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-talkdesk-explore:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Talkdesk Explore API Spec"
+      type: "object"
+      required:
+      - "start_date"
+      - "auth_url"
+      - "api_key"
+      additionalProperties: false
+      properties:
+        start_date:
+          type: "string"
+          title: "START DATE"
+          description: "The date from which you'd like to replicate data for Talkdesk\
+            \ Explore API, in the format YYYY-MM-DDT00:00:00. All data generated after\
+            \ this date will be replicated."
+          examples:
+          - "2020-10-15T00:00:00"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          order: 0
+        timezone:
+          type: "string"
+          title: "TIMEZONE"
+          description: "Timezone to use when generating reports. Only IANA timezones\
+            \ are supported (https://nodatime.org/TimeZones)"
+          examples:
+          - "Europe/London"
+          - "America/Los_Angeles"
+          default: "UTC"
+          order: 1
+        auth_url:
+          title: "AUTH URL"
+          type: "string"
+          description: "Talkdesk Auth URL. Only 'client_credentials' auth type supported\
+            \ at the moment."
+          examples:
+          - "https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"
+          order: 2
+        api_key:
+          title: "API KEY"
+          type: "string"
+          description: "Talkdesk API key."
+          order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-tempo:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
@@ -8754,7 +8886,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.10"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -8837,6 +8969,15 @@
           - "DAY"
           - "HOUR"
           order: 2
+          type: "string"
+        end_date:
+          title: "End Date"
+          description: "The date until which you'd like to replicate data for all\
+            \ incremental streams, in the format YYYY-MM-DD. All data generated between\
+            \ start_date and this date will be replicated. Not setting this option\
+            \ will result in always syncing the data till the current date."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 3
           type: "string"
     supportsIncremental: true
     supportsNormalization: false
@@ -8985,7 +9126,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-typeform:0.1.4"
+- dockerImage: "airbyte/source-typeform:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
     connectionSpecification:
@@ -9146,7 +9287,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.6"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -9183,9 +9324,6 @@
               credentials:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 type: "string"
@@ -9217,9 +9355,6 @@
               credentials:
                 type: "string"
                 const: "access_token"
-                enum:
-                - "access_token"
-                default: "access_token"
                 order: 0
               access_token:
                 type: "string"
@@ -9411,7 +9546,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.7"
+- dockerImage: "airbyte/source-zendesk-support:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -9848,6 +9983,110 @@
           - "Enterprise"
           - "Ultimate"
           default: "Free"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-sftp:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/source/sftp"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "SFTP Source Spec"
+      type: "object"
+      required:
+      - "user"
+      - "host"
+      - "port"
+      additionalProperties: true
+      properties:
+        user:
+          title: "User Name"
+          description: "The server user"
+          type: "string"
+          order: 0
+        host:
+          title: "Host Address"
+          description: "The server host address"
+          type: "string"
+          examples:
+          - "www.host.com"
+          - "192.0.2.1"
+          order: 1
+        port:
+          title: "Port"
+          description: "The server port"
+          type: "integer"
+          default: 22
+          examples:
+          - "22"
+          order: 2
+        credentials:
+          type: "object"
+          title: "Authentication *"
+          description: "The server authentication method"
+          order: 3
+          oneOf:
+          - title: "Password Authentication"
+            required:
+            - "auth_method"
+            - "auth_user_password"
+            properties:
+              auth_method:
+                description: "Connect through password authentication"
+                type: "string"
+                const: "SSH_PASSWORD_AUTH"
+                order: 0
+              auth_user_password:
+                title: "Password"
+                description: "OS-level password for logging into the jump server host"
+                type: "string"
+                airbyte_secret: true
+                order: 1
+          - title: "SSH Key Authentication"
+            required:
+            - "auth_method"
+            - "auth_ssh_key"
+            properties:
+              auth_method:
+                description: "Connect through ssh key"
+                type: "string"
+                const: "SSH_KEY_AUTH"
+                order: 0
+              auth_ssh_key:
+                title: "SSH Private Key"
+                description: "OS-level user account ssh key credentials in RSA PEM\
+                  \ format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
+                type: "string"
+                airbyte_secret: true
+                multiline: true
+                order: 1
+        file_types:
+          title: "File types"
+          description: "Coma separated file types. Currently only 'csv' and 'json'\
+            \ types are supported."
+          type: "string"
+          default: "csv,json"
+          order: 4
+          examples:
+          - "csv,json"
+          - "csv"
+        folder_path:
+          title: "Folder Path (Optional)"
+          description: "The directory to search files for sync"
+          type: "string"
+          default: ""
+          examples:
+          - "/logs/2022"
+          order: 5
+        file_pattern:
+          title: "File Pattern (Optional)"
+          description: "The regular expression to specify files for sync in a chosen\
+            \ Folder Path"
+          type: "string"
+          default: ""
+          examples:
+          - "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
+          order: 6
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

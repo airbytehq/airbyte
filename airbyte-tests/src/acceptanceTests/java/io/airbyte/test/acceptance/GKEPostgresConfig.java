@@ -1,14 +1,16 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.test.acceptance.AcceptanceTests.Type;
 import java.util.HashMap;
 import java.util.Map;
+import org.jooq.SQLDialect;
 
 /**
  * This class is used to provide information related to the test databases for running the
@@ -43,11 +45,13 @@ public class GKEPostgresConfig {
   }
 
   public static Database getSourceDatabase() {
-    return Databases.createPostgresDatabase(USERNAME, PASSWORD, "jdbc:postgresql://localhost:2000/postgresdb");
+    return new Database(DSLContextFactory.create(USERNAME, PASSWORD, DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        "jdbc:postgresql://localhost:2000/postgresdb", SQLDialect.POSTGRES));
   }
 
   public static Database getDestinationDatabase() {
-    return Databases.createPostgresDatabase(USERNAME, PASSWORD, "jdbc:postgresql://localhost:3000/postgresdb");
+    return new Database(DSLContextFactory.create(USERNAME, PASSWORD, DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        "jdbc:postgresql://localhost:3000/postgresdb", SQLDialect.POSTGRES));
   }
 
 }

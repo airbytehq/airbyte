@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -50,6 +50,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
   }
 
   private final Flattening flattening;
+  @Deprecated
   private final Long partSize;
   private final CompressionType compressionType;
 
@@ -112,13 +113,12 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     }
     final S3CsvFormatConfig that = (S3CsvFormatConfig) o;
     return flattening == that.flattening
-        && Objects.equals(partSize, that.partSize)
         && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(flattening, partSize, compressionType);
+    return Objects.hash(flattening, compressionType);
   }
 
 }

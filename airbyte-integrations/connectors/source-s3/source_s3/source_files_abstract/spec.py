@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,6 +10,7 @@ from typing import Any, Dict, Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
+from .formats.avro_spec import AvroFormat
 from .formats.csv_spec import CsvFormat
 from .formats.parquet_spec import ParquetFormat
 
@@ -59,7 +60,7 @@ class SourceFilesAbstractSpec(BaseModel):
         order=10,
     )
 
-    format: Union[CsvFormat, ParquetFormat] = Field(
+    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(
         default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 

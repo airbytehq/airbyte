@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.configs.migrations;
@@ -13,8 +13,8 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import java.io.IOException;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -26,6 +26,7 @@ import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -115,15 +116,15 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
       }
       // If the environment variables exist, it means the migration is run in production.
       // Connect to the official job database.
-      final Database jobsDatabase = new JobsDatabaseInstance(databaseUser, databasePassword, databaseUrl).getInitialized();
+      final DSLContext dslContext =
+          DSLContextFactory.create(databaseUser, databasePassword, DatabaseDriver.POSTGRESQL.getDriverClassName(), databaseUrl, SQLDialect.POSTGRES);
+      final Database jobsDatabase = new Database(dslContext);
       LOGGER.info("[{}] Connected to jobs database: {}", MIGRATION_NAME, databaseUrl);
       return Optional.of(jobsDatabase);
     } catch (final IllegalArgumentException e) {
       // If the environment variables do not exist, it means the migration is run in development.
       LOGGER.info("[{}] This is the dev environment; there is no jobs database", MIGRATION_NAME);
       return Optional.empty();
-    } catch (final IOException e) {
-      throw new RuntimeException("Cannot connect to jobs database", e);
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.general.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;

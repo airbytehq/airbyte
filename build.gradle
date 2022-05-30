@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -16,7 +17,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.5'
+    id 'com.github.spotbugs' version '5.0.6'
     id 'version-catalog'
     id 'maven-publish'
 }
@@ -102,6 +103,7 @@ def createSpotlessTarget = { pattern ->
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
         'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+        'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -144,11 +146,13 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
-        def arch = System.getProperty("os.arch").toLowerCase()
+        def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
         def isArm64 = arch == "aarch64" || arch == "arm64"
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
+        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -157,6 +161,8 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('JDK_VERSION', jdkVersion)
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('NGINX_IMAGE', nginxImage)
+        buildArgs.put('JDK_IMAGE', openjdkImage)
         buildArgs.put('VERSION', buildVersion)
     })
 }
@@ -192,6 +198,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
+    apply plugin: 'pmd'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -209,10 +216,42 @@ subprojects {
 
     pmd {
         consoleOutput = true
-
+        ignoreFailures = false
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
+        toolVersion = '6.43.0'
+    }
+
+    jacoco {
+        toolVersion = "0.8.7"
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            html.required = true
+            xml.required = true
+            csv.required = false
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        violationRules {
+            failOnViolation = false
+            rule {
+                element = 'CLASS'
+                excludes = ['**/*Test*', '**/generated*']
+                limit {
+                    counter = 'BRANCH'
+                    minimum = 0.8
+                }
+                limit {
+                    counter = 'INSTRUCTION'
+                    minimum = 0.8
+                }
+            }
+        }
     }
 
     def integrationTagName = 'platform-integration'
@@ -222,7 +261,20 @@ subprojects {
         cloudStorageTestTagName = 'cloud-storage'
     }
 
+    spotbugs {
+        ignoreFailures = false
+        effort = 'max'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
+    }
+
     test {
+        jacoco {
+            enabled = true
+            excludes = ['**/*Test*', '**/generated*']
+        }
         useJUnitPlatform {
             excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
@@ -263,11 +315,6 @@ subprojects {
             exceptionFormat 'full'
         }
         finalizedBy jacocoTestReport
-    }
-
-    spotbugs {
-        reportLevel = 'high'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
     }
 
     dependencies {
@@ -330,7 +377,21 @@ subprojects {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/spotbugs/
+        reports {
+            xml.required = false
+            html.required = true
+        }
+    }
+
+    tasks.withType(Pmd) {
+        exclude '**/generated/**'
+        exclude '**/jooq/**'
+    }
+
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    check.dependsOn 'jacocoTestCoverageVerification'
 }
 
 task('generate') {

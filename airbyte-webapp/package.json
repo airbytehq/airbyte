@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.37.0-alpha",
+  "version": "0.39.5-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -12,7 +12,8 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
-    "license-check": "node ./scripts/license-check.js"
+    "license-check": "node ./scripts/license-check.js",
+    "generate-client": "orval"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
@@ -23,10 +24,12 @@
     "@fullstory/browser": "^1.5.1",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
+    "classnames": "^2.3.1",
     "dayjs": "^1.11.0",
     "firebase": "^9.6.10",
     "flat": "^5.0.2",
     "formik": "^2.2.9",
+    "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
     "query-string": "^6.13.1",
     "react": "^17.0.2",
@@ -38,6 +41,7 @@
     "react-markdown": "^7.0.1",
     "react-pose": "^4.0.10",
     "react-query": "^3.34.19",
+    "react-reflex": "^4.0.6",
     "react-router-dom": "^6.3.0",
     "react-select": "^4.3.1",
     "react-table": "^7.7.0",
@@ -49,7 +53,9 @@
     "rehype-urls": "^1.1.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
+    "rxjs": "^7.5.5",
     "sanitize-html": "^2.7.0",
+    "sass": "^1.51.0",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
     "yup": "^0.32.11"
@@ -91,6 +97,7 @@
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
+    "orval": "^6.7.1",
     "prettier": "^2.6.2",
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",

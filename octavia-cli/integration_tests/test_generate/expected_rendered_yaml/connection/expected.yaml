@@ -21,44 +21,14 @@ configuration:
   sync_catalog: # OPTIONAL | object | 🚨 ONLY edit streams.config, streams.stream should not be edited as schema cannot be changed.
     streams:
       - config:
-          aliasName: aliasMock
-          cursorField: []
-          destinationSyncMode: append
-          primaryKey: []
+          alias_name: pokemon
+          destination_sync_mode: append
           selected: true
-          syncMode: full_refresh
+          sync_mode: full_refresh
         stream:
-          defaultCursorField:
+          default_cursor_field:
             - foo
-          jsonSchema:
-            $schema: http://json-schema.org/draft-07/schema#
-            properties:
-              foo:
-                type: number
-          name: stream_1
-          namespace: null
-          sourceDefinedCursor: null
-          sourceDefinedPrimaryKey: []
-          supportedSyncModes:
+          json_schema: {}
+          name: my_stream
+          supported_sync_modes:
             - full_refresh
-      - config:
-          aliasName: aliasMock
-          cursorField: []
-          destinationSyncMode: append
-          primaryKey: []
-          selected: true
-          syncMode: full_refresh
-        stream:
-          defaultCursorField: []
-          jsonSchema:
-            $schema: http://json-schema.org/draft-07/schema#
-            properties:
-              bar:
-                type: number
-          name: stream_2
-          namespace: null
-          sourceDefinedCursor: null
-          sourceDefinedPrimaryKey: []
-          supportedSyncModes:
-            - full_refresh
-            - incremental

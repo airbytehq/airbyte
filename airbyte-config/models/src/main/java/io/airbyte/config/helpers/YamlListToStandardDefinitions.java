@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -31,42 +31,43 @@ import java.util.Map;
  *
  * Methods in these class throw Runtime exceptions upon validation failure.
  */
+@SuppressWarnings("PMD.ShortVariable")
 public class YamlListToStandardDefinitions {
 
-  private static final Map<String, String> classNameToIdName = Map.ofEntries(
+  private static final Map<String, String> CLASS_NAME_TO_ID_NAME = Map.ofEntries(
       new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
       new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
 
-  public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr) throws RuntimeException {
+  public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr) {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
-  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(final String yamlStr) throws RuntimeException {
+  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(final String yamlStr) {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
-  public static JsonNode verifyAndConvertToJsonNode(final String idName, final String yamlStr) throws RuntimeException {
+  public static JsonNode verifyAndConvertToJsonNode(final String idName, final String yamlStr) {
     final var jsonNode = Yamls.deserialize(yamlStr);
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return jsonNode;
   }
 
   @VisibleForTesting
-  static <T> List<T> verifyAndConvertToModelList(final Class<T> klass, final String yamlStr) throws RuntimeException {
+  static <T> List<T> verifyAndConvertToModelList(final Class<T> klass, final String yamlStr) {
     final var jsonNode = Yamls.deserialize(yamlStr);
-    final var idName = classNameToIdName.get(klass.getCanonicalName());
+    final var idName = CLASS_NAME_TO_ID_NAME.get(klass.getCanonicalName());
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
-  private static void checkYamlIsPresentWithNoDuplicates(final JsonNode deserialize, final String idName) throws RuntimeException {
+  private static void checkYamlIsPresentWithNoDuplicates(final JsonNode deserialize, final String idName) {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
     Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
     checkNoDuplicateIds(deserialize.elements(), idName);
   }
 
-  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter) throws IllegalArgumentException {
+  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter) {
     final var names = new HashSet<String>();
     while (iter.hasNext()) {
       final var element = Jsons.clone(iter.next());
@@ -78,7 +79,7 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) throws IllegalArgumentException {
+  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
@@ -90,7 +91,7 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c) throws RuntimeException {
+  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c) {
     final Iterable<JsonNode> iterable = () -> iter;
     final var defList = new ArrayList<T>();
     for (final JsonNode n : iterable) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -118,13 +118,13 @@ public class JobNotifier {
               break;
             case CONNECTION_DISABLED_NOTIFICATION:
               if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  logUrl)) {
+                  workspaceId, connectionId)) {
                 LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
               }
               break;
             case CONNECTION_DISABLED_WARNING_NOTIFICATION:
               if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                  logUrl)) {
+                  workspaceId, connectionId)) {
                 LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
               }
           }

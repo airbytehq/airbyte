@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -22,10 +22,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -57,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -72,9 +74,8 @@ import org.junit.jupiter.api.Test;
 // between each test.
 // 4. Then implement the abstract methods documented below.
 @SuppressFBWarnings(
-    value = {"MS_SHOULD_BE_FINAL"},
-    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
-)
+                    value = {"MS_SHOULD_BE_FINAL"},
+                    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
 public abstract class JdbcSourceAcceptanceTest {
 
   // schema name must be randomized for each test run,
@@ -106,6 +107,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
 
   public JsonNode config;
+  public DataSource dataSource;
   public JdbcDatabase database;
   public JdbcSourceOperations sourceOperations = getSourceOperations();
   public Source source;
@@ -202,14 +204,16 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = Databases.createStreamingJdbcDatabase(
+    dataSource = DataSourceFactory.create(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
         getDriverClass(),
-        AdaptiveStreamingQueryConfig::new,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
-        JdbcUtils.getDefaultSourceOperations());
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+
+    database = new StreamingJdbcDatabase(dataSource,
+        JdbcUtils.getDefaultSourceOperations(),
+        AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
       createSchemas();
