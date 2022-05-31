@@ -372,7 +372,7 @@ class Stream(HttpStream, ABC):
         if declared_format == "date":
             return dt.to_date_string()
         elif declared_format == "date-time":
-            return dt.to_datetime_string()
+            return dt.to_rfc3339_string()
 
     @classmethod
     def _cast_datetime(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -1248,7 +1248,7 @@ class PropertyHistory(IncrementalStream):
                     continue
                 if versions:
                     for version in versions:
-                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_rfc3339_string()
                         version["property"] = key
                         version["vid"] = vid
                         yield version
