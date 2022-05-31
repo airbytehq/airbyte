@@ -1,6 +1,6 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -23,6 +23,7 @@ const getBackgroundColor = (props: IStyleProps) => {
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
+  defaultFocus?: boolean;
 }
 
 const InputContainer = styled.div<InputProps>`
@@ -78,7 +79,10 @@ const VisibilityButton = styled(Button)`
 `;
 
 const Input: React.FC<InputProps> = (props) => {
+  const { defaultFocus = false } = props;
+
   const { formatMessage } = useIntl();
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isContentVisible, setIsContentVisible] = useToggle(false);
   const [focused, toggleFocused] = useToggle(false);
 
@@ -87,10 +91,17 @@ const Input: React.FC<InputProps> = (props) => {
   const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
   const onInputFocusChange = () => toggleFocused();
 
+  useEffect(() => {
+    if (defaultFocus && inputRef.current !== null) {
+      inputRef.current.focus();
+    }
+  }, [inputRef, defaultFocus]);
+
   return (
     <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
       <InputComponent
         {...props}
+        ref={inputRef}
         type={type}
         isPassword={isPassword}
         onFocus={onInputFocusChange}
