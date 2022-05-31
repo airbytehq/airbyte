@@ -48,6 +48,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
         .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
