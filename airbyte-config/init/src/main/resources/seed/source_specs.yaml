@@ -213,7 +213,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.18"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -221,11 +221,69 @@
       title: "Amazon Seller Partner Spec"
       type: "object"
       properties:
+        app_id:
+          title: "App Id *"
+          description: "Your Amazon App ID"
+          airbyte_secret: true
+          order: 0
+          type: "string"
+        auth_type:
+          title: "Auth Type"
+          const: "oauth2.0"
+          order: 1
+          type: "string"
+        lwa_app_id:
+          title: "LWA Client Id"
+          description: "Your Login with Amazon Client ID."
+          order: 2
+          type: "string"
+        lwa_client_secret:
+          title: "LWA Client Secret"
+          description: "Your Login with Amazon Client Secret."
+          airbyte_secret: true
+          order: 3
+          type: "string"
+        refresh_token:
+          title: "Refresh Token"
+          description: "The Refresh Token obtained via OAuth flow authorization."
+          airbyte_secret: true
+          order: 4
+          type: "string"
+        aws_access_key:
+          title: "AWS Access Key"
+          description: "Specifies the AWS access key used as part of the credentials\
+            \ to authenticate the user."
+          airbyte_secret: true
+          order: 5
+          type: "string"
+        aws_secret_key:
+          title: "AWS Secret Access Key"
+          description: "Specifies the AWS secret key used as part of the credentials\
+            \ to authenticate the user."
+          airbyte_secret: true
+          order: 6
+          type: "string"
+        role_arn:
+          title: "Role ARN"
+          description: "Specifies the Amazon Resource Name (ARN) of an IAM role that\
+            \ you want to use to perform operations requested using this profile.\
+            \ (Needs permission to 'Assume Role' STS)."
+          airbyte_secret: true
+          order: 7
+          type: "string"
         replication_start_date:
           title: "Start Date"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
             \ data before this date will not be replicated."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          examples:
+          - "2017-01-25T00:00:00Z"
+          type: "string"
+        replication_end_date:
+          title: "End Date"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data after this date will not be replicated."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$"
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
@@ -257,40 +315,6 @@
           - "500"
           - "1980"
           type: "integer"
-        refresh_token:
-          title: "Refresh Token"
-          description: "The Refresh Token obtained via OAuth flow authorization."
-          airbyte_secret: true
-          type: "string"
-        lwa_app_id:
-          title: "LwA App Id"
-          description: "Your Login with Amazon App ID"
-          airbyte_secret: true
-          type: "string"
-        lwa_client_secret:
-          title: "LwA Client Secret"
-          description: "Your Login with Amazon Client Secret."
-          airbyte_secret: true
-          type: "string"
-        aws_access_key:
-          title: "AWS Access Key"
-          description: "Specifies the AWS access key used as part of the credentials\
-            \ to authenticate the user."
-          airbyte_secret: true
-          type: "string"
-        aws_secret_key:
-          title: "AWS Secret Access Key"
-          description: "Specifies the AWS secret key used as part of the credentials\
-            \ to authenticate the user."
-          airbyte_secret: true
-          type: "string"
-        role_arn:
-          title: "Role ARN"
-          description: "Specifies the Amazon Resource Name (ARN) of an IAM role that\
-            \ you want to use to perform operations requested using this profile.\
-            \ (Needs permission to 'Assume Role' STS)."
-          airbyte_secret: true
-          type: "string"
         aws_environment:
           title: "AWSEnvironment"
           description: "An enumeration."
@@ -303,37 +327,38 @@
           description: "An enumeration."
           enum:
           - "AE"
+          - "AU"
+          - "BR"
+          - "CA"
           - "DE"
-          - "PL"
           - "EG"
           - "ES"
           - "FR"
+          - "GB"
           - "IN"
           - "IT"
+          - "JP"
+          - "MX"
           - "NL"
+          - "PL"
           - "SA"
           - "SE"
+          - "SG"
           - "TR"
           - "UK"
-          - "AU"
-          - "JP"
-          - "SG"
           - "US"
-          - "BR"
-          - "CA"
-          - "MX"
-          - "GB"
           type: "string"
       required:
-      - "replication_start_date"
-      - "refresh_token"
       - "lwa_app_id"
       - "lwa_client_secret"
+      - "refresh_token"
       - "aws_access_key"
       - "aws_secret_key"
       - "role_arn"
+      - "replication_start_date"
       - "aws_environment"
       - "region"
+      additionalProperties: true
       definitions:
         AWSEnvironment:
           title: "AWSEnvironment"
@@ -347,30 +372,72 @@
           description: "An enumeration."
           enum:
           - "AE"
+          - "AU"
+          - "BR"
+          - "CA"
           - "DE"
-          - "PL"
           - "EG"
           - "ES"
           - "FR"
+          - "GB"
           - "IN"
           - "IT"
+          - "JP"
+          - "MX"
           - "NL"
+          - "PL"
           - "SA"
           - "SE"
+          - "SG"
           - "TR"
           - "UK"
-          - "AU"
-          - "JP"
-          - "SG"
           - "US"
-          - "BR"
-          - "CA"
-          - "MX"
-          - "GB"
           type: "string"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "auth_type"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            app_id:
+              type: "string"
+              path_in_connector_config:
+              - "app_id"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            lwa_app_id:
+              type: "string"
+            lwa_client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            lwa_app_id:
+              type: "string"
+              path_in_connector_config:
+              - "lwa_app_id"
+            lwa_client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "lwa_client_secret"
 - dockerImage: "airbyte/source-amazon-sqs:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-sqs"
@@ -1771,7 +1838,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.49"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.50"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2074,6 +2141,14 @@
                 - "2017-01-26T00:00:00Z"
                 type: "string"
                 format: "date-time"
+              insights_lookback_window:
+                title: "Custom Insights Lookback Window"
+                description: "The attribution window"
+                default: 28
+                maximum: 28
+                mininum: 1
+                exclusiveMinimum: 0
+                type: "integer"
             required:
             - "name"
         page_size:
@@ -2084,6 +2159,15 @@
             \ the connector to address specific issues or use cases."
           default: 100
           order: 7
+          exclusiveMinimum: 0
+          type: "integer"
+        insights_lookback_window:
+          title: "Insights Lookback Window"
+          description: "The attribution window"
+          default: 28
+          order: 8
+          maximum: 28
+          mininum: 1
           exclusiveMinimum: 0
           type: "integer"
       required:
@@ -3549,7 +3633,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.59"
+- dockerImage: "airbyte/source-hubspot:0.1.60"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3890,7 +3974,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.19"
+- dockerImage: "airbyte/source-jira:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
     connectionSpecification:
@@ -4215,7 +4299,7 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-klaviyo:0.1.3"
+- dockerImage: "airbyte/source-klaviyo:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
@@ -5157,7 +5241,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.15"
+- dockerImage: "airbyte/source-mixpanel:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -5204,6 +5288,15 @@
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
             \ data before this date will not be replicated. If this option is not\
             \ set, the connector will replicate data from up to one year ago by default."
+          examples:
+          - "2021-11-16"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+        end_date:
+          title: "End Date"
+          type: "string"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data after this date will not be replicated. Left empty to always sync\
+            \ to most recent date"
           examples:
           - "2021-11-16"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
@@ -7218,6 +7311,26 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-rki-covid:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/rki-covid"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "RKI Covid Spec"
+      type: "object"
+      required:
+      - "start_date"
+      additionalProperties: false
+      properties:
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "UTC date in the format 2017-01-25. Any data before this date\
+            \ will not be replicated."
+          order: 1
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-s3:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
