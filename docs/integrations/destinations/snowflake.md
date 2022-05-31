@@ -234,43 +234,45 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :-----       | :------ |
-| 0.4.25  | 2022-05-03 | [\#12452](https://github.com/airbytehq/airbyte/pull/12452) | Add support for encrypted staging on S3; fix the purge_staging_files option |
-| 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support (Compatible with Airbyte Version 0.35.60+)|
-| 0.4.22  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
-| 0.4.21  | 2022-03-18 | [\#11071](https://github.com/airbytehq/airbyte/pull/11071) | Switch to compressed on-disk buffering before staging to s3/internal stage |
-| 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
-| 0.4.19  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699) | Added unit tests                                                                   |
-| 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
-| 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |
-| 0.4.14  | 2022-02-17 | [\#10394](https://github.com/airbytehq/airbyte/pull/10394) | Reduce memory footprint. |
-| 0.4.13  | 2022-02-16 | [\#10212](https://github.com/airbytehq/airbyte/pull/10212) | Execute COPY command in parallel for S3 and GCS staging |
-| 0.4.12  | 2022-02-15 | [\#10342](https://github.com/airbytehq/airbyte/pull/10342) | Use connection pool, and fix connection leak. |
-| 0.4.11  | 2022-02-14 | [\#9920](https://github.com/airbytehq/airbyte/pull/9920) | Updated the size of staging files for S3 staging. Also, added closure of S3 writers to staging files when data has been written to an staging file. |
-| 0.4.10  | 2022-02-14 | [\#10297](https://github.com/airbytehq/airbyte/pull/10297) | Halve the record buffer size to reduce memory consumption. |
-| 0.4.9   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `ExitOnOutOfMemoryError` JVM flag. |
-| 0.4.8   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
-| 0.4.7   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
-| 0.4.6   | 2022-01-28 | [#9623](https://github.com/airbytehq/airbyte/pull/9623) | Add jdbc_url_params support for optional JDBC parameters |
-| 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184) | Update connector fields title/description |
-| 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743) | Fixed bug with dashes in schema name |
-| 0.4.3   | 2022-01-20 | [#9531](https://github.com/airbytehq/airbyte/pull/9531) | Start using new S3StreamCopier and expose the purgeStagingData option |
-| 0.4.2   | 2022-01-10 | [#9141](https://github.com/airbytehq/airbyte/pull/9141) | Fixed duplicate rows on retries |
-| 0.4.1   | 2021-01-06 | [#9311](https://github.com/airbytehq/airbyte/pull/9311) | Update сreating schema during check |
-| 0.4.0   | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063) | Updated normalization to produce permanent tables |
-| 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869) | Changed staging approach to Byte-Buffered |
-| 0.3.23  | 2021-12-22 | [#9039](https://github.com/airbytehq/airbyte/pull/9039) | Added part_size configuration in UI for S3 loading method |
-| 0.3.22  | 2021-12-21 | [#9006](https://github.com/airbytehq/airbyte/pull/9006) | Updated jdbc schema naming to follow Snowflake Naming Conventions |
-| 0.3.21  | 2021-12-15 | [#8781](https://github.com/airbytehq/airbyte/pull/8781) | Updated check method to verify permissions to create/drop stage for internal staging; compatibility fix for Java 17 |
-| 0.3.20  | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562) | Moving classes around for better dependency management; compatibility fix for Java 17                               |
-| 0.3.19  | 2021-12-06 | [#8528](https://github.com/airbytehq/airbyte/pull/8528) | Set Internal Staging as default choice                                                                              |
-| 0.3.18  | 2021-11-26 | [#8253](https://github.com/airbytehq/airbyte/pull/8253) | Snowflake Internal Staging Support                                                                                  |
-| 0.3.17  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count                 |
-| 0.3.15  | 2021-10-11 | [#6949](https://github.com/airbytehq/airbyte/pull/6949) | Each stream was split into files of 10,000 records each for copying using S3 or GCS                                 |
-| 0.3.14  | 2021-09-08 | [#5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table                             |
-| 0.3.13  | 2021-09-01 | [#5784](https://github.com/airbytehq/airbyte/pull/5784) | Updated query timeout from 30 minutes to 3 hours                                                                    |
-| 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                                        |
-| 0.3.11  | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer                                                                           |
-| 0.3.10  | 2021-07-12 | [#4713](https://github.com/airbytehq/airbyte/pull/4713)| Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.27  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| 0.4.26  | 2022-05-12 | [\#12805](https://github.com/airbytehq/airbyte/pull/12805) | Updated to latest base-java to emit AirbyteTraceMessages on error.                                                                                  |
+| 0.4.25  | 2022-05-03 | [\#12452](https://github.com/airbytehq/airbyte/pull/12452) | Add support for encrypted staging on S3; fix the purge_staging_files option                                                                         |
+| 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support (Compatible with Airbyte Version 0.35.60+)                                                                                      |
+| 0.4.22  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                                                                               |
+| 0.4.21  | 2022-03-18 | [\#11071](https://github.com/airbytehq/airbyte/pull/11071) | Switch to compressed on-disk buffering before staging to s3/internal stage                                                                          |
+| 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support                                                                                                                      |
+| 0.4.19  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699)   | Added unit tests                                                                                                                                    |
+| 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421)   | Refactor JDBC parameters handling                                                                                                                   |
+| 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed                                                                                                  |
+| 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer                                                                                                           |
+| 0.4.14  | 2022-02-17 | [\#10394](https://github.com/airbytehq/airbyte/pull/10394) | Reduce memory footprint.                                                                                                                            |
+| 0.4.13  | 2022-02-16 | [\#10212](https://github.com/airbytehq/airbyte/pull/10212) | Execute COPY command in parallel for S3 and GCS staging                                                                                             |
+| 0.4.12  | 2022-02-15 | [\#10342](https://github.com/airbytehq/airbyte/pull/10342) | Use connection pool, and fix connection leak.                                                                                                       |
+| 0.4.11  | 2022-02-14 | [\#9920](https://github.com/airbytehq/airbyte/pull/9920)   | Updated the size of staging files for S3 staging. Also, added closure of S3 writers to staging files when data has been written to an staging file. |
+| 0.4.10  | 2022-02-14 | [\#10297](https://github.com/airbytehq/airbyte/pull/10297) | Halve the record buffer size to reduce memory consumption.                                                                                          |
+| 0.4.9   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `ExitOnOutOfMemoryError` JVM flag.                                                                                                              |
+| 0.4.8   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                                                                           |
+| 0.4.7   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                                                                              |
+| 0.4.6   | 2022-01-28 | [#9623](https://github.com/airbytehq/airbyte/pull/9623)    | Add jdbc_url_params support for optional JDBC parameters                                                                                            |
+| 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184)    | Update connector fields title/description                                                                                                           |
+| 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743)    | Fixed bug with dashes in schema name                                                                                                                |
+| 0.4.3   | 2022-01-20 | [#9531](https://github.com/airbytehq/airbyte/pull/9531)    | Start using new S3StreamCopier and expose the purgeStagingData option                                                                               |
+| 0.4.2   | 2022-01-10 | [#9141](https://github.com/airbytehq/airbyte/pull/9141)    | Fixed duplicate rows on retries                                                                                                                     |
+| 0.4.1   | 2021-01-06 | [#9311](https://github.com/airbytehq/airbyte/pull/9311)    | Update сreating schema during check                                                                                                                 |
+| 0.4.0   | 2021-12-27 | [#9063](https://github.com/airbytehq/airbyte/pull/9063)    | Updated normalization to produce permanent tables                                                                                                   |
+| 0.3.24  | 2021-12-23 | [#8869](https://github.com/airbytehq/airbyte/pull/8869)    | Changed staging approach to Byte-Buffered                                                                                                           |
+| 0.3.23  | 2021-12-22 | [#9039](https://github.com/airbytehq/airbyte/pull/9039)    | Added part_size configuration in UI for S3 loading method                                                                                           |
+| 0.3.22  | 2021-12-21 | [#9006](https://github.com/airbytehq/airbyte/pull/9006)    | Updated jdbc schema naming to follow Snowflake Naming Conventions                                                                                   |
+| 0.3.21  | 2021-12-15 | [#8781](https://github.com/airbytehq/airbyte/pull/8781)    | Updated check method to verify permissions to create/drop stage for internal staging; compatibility fix for Java 17                                 |
+| 0.3.20  | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562)    | Moving classes around for better dependency management; compatibility fix for Java 17                                                               |
+| 0.3.19  | 2021-12-06 | [#8528](https://github.com/airbytehq/airbyte/pull/8528)    | Set Internal Staging as default choice                                                                                                              |
+| 0.3.18  | 2021-11-26 | [#8253](https://github.com/airbytehq/airbyte/pull/8253)    | Snowflake Internal Staging Support                                                                                                                  |
+| 0.3.17  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)    | Improve handling of wide rows by buffering records based on their byte size rather than their count                                                 |
+| 0.3.15  | 2021-10-11 | [#6949](https://github.com/airbytehq/airbyte/pull/6949)    | Each stream was split into files of 10,000 records each for copying using S3 or GCS                                                                 |
+| 0.3.14  | 2021-09-08 | [#5924](https://github.com/airbytehq/airbyte/pull/5924)    | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table                                                             |
+| 0.3.13  | 2021-09-01 | [#5784](https://github.com/airbytehq/airbyte/pull/5784)    | Updated query timeout from 30 minutes to 3 hours                                                                                                    |
+| 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125)    | Enable `additionalPropertities` in spec.json                                                                                                        |
+| 0.3.11  | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555)    | Partial Success in BufferedStreamConsumer                                                                                                           |
+| 0.3.10  | 2021-07-12 | [#4713](https://github.com/airbytehq/airbyte/pull/4713)    | Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                                                |

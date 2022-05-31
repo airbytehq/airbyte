@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
@@ -70,7 +70,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
+            String.join("&", SSL_PARAMETERS)),
+        SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {

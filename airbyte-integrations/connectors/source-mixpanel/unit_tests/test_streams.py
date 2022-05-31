@@ -1,9 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import timedelta
 from unittest.mock import MagicMock
 
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -157,10 +159,12 @@ def test_engage_stream_incremental(requests_mock, engage_response):
 
     stream = Engage(authenticator=MagicMock())
 
-    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"})
+    stream_state = {"created": "2008-12-12T11:20:47"}
+    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state)
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
+    records = [item for item in records]
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
 def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response):
@@ -168,13 +172,14 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, cohor
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
     stream = CohortMembers(authenticator=MagicMock())
-
+    stream_state = {"created": "2008-12-12T11:20:47"}
     records = stream.read_records(
-        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"}, stream_slice={"id": 1000}
+        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
     )
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
+    records = [item for item in records]
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
 @pytest.fixture
@@ -199,13 +204,15 @@ def funnels_list_url(config):
 
 
 @pytest.fixture
-def funnels_response():
+def funnels_response(start_date):
+    first_date = start_date + timedelta(days=1)
+    second_date = start_date + timedelta(days=10)
     return setup_response(
         200,
         {
-            "meta": {"dates": ["2016-09-12" "2016-09-19" "2016-09-26"]},
+            "meta": {"dates": [str(first_date), str(second_date)]},
             "data": {
-                "2016-09-12": {
+                str(first_date): {
                     "steps": [],
                     "analysis": {
                         "completion": 20524,
@@ -214,7 +221,7 @@ def funnels_response():
                         "worst": 1,
                     },
                 },
-                "2016-09-19": {
+                str(second_date): {
                     "steps": [],
                     "analysis": {
                         "completion": 20500,
@@ -242,6 +249,25 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_re
             records_arr.append(record)
 
     assert len(records_arr) == 4
+    last_record = records_arr[-1]
+    # Test without current state date
+    new_state = stream.get_updated_state(current_stream_state={}, latest_record=records_arr[-1])
+    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+
+    # Test with current state, that lesser than last record date
+    last_record_date = pendulum.parse(last_record["date"]).date()
+    new_state = stream.get_updated_state(
+        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date - timedelta(days=1))}},
+        latest_record=records_arr[-1],
+    )
+    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+
+    # Test with current state, that is greater, than last record date
+    new_state = stream.get_updated_state(
+        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}},
+        latest_record=records_arr[-1],
+    )
+    assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
 
 
 @pytest.fixture
@@ -267,6 +293,25 @@ def test_engage_schema(requests_mock, engage_schema_response):
 
     records_length = sum(1 for _ in records)
     assert records_length == 3
+
+
+def test_update_engage_schema(requests_mock):
+    stream = EngageSchema(authenticator=MagicMock())
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "results": {
+                    "$someNewSchemaField": {"count": 124, "type": "string"},
+                }
+            },
+        ),
+    )
+    engage_stream = Engage(authenticator=MagicMock())
+    engage_schema = engage_stream.get_json_schema()
+    assert "someNewSchemaField" in engage_schema["properties"]
 
 
 @pytest.fixture

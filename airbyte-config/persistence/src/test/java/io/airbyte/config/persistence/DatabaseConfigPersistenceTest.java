@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
 import static io.airbyte.config.ConfigSchema.STANDARD_DESTINATION_DEFINITION;
 import static io.airbyte.config.ConfigSchema.STANDARD_SOURCE_DEFINITION;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,22 +24,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
-import java.io.Closeable;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,7 +49,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.assertj.core.api.Assertions;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,16 +58,16 @@ import org.junit.jupiter.api.Test;
  * See {@link DatabaseConfigPersistenceLoadDataTest} and
  * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
-public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
+@SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.ShortVariable", "PMD.JUnitTestsShouldIncludeAssert"})
+class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
   public void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
@@ -80,15 +77,13 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @AfterEach
-  void tearDown() throws IOException {
+  void tearDown() throws Exception {
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      closeable.close();
-    }
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
-  public void testMultiWriteAndGetConfig() throws Exception {
+  void testMultiWriteAndGetConfig() throws Exception {
     writeDestinations(configPersistence, Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
     assertRecordCount(2, ACTOR_DEFINITION);
     assertHasDestination(DESTINATION_S3);
@@ -99,7 +94,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testWriteAndGetConfig() throws Exception {
+  void testWriteAndGetConfig() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
     assertRecordCount(2, ACTOR_DEFINITION);
@@ -111,7 +106,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testGetConfigWithMetadata() throws Exception {
+  void testGetConfigWithMetadata() throws Exception {
     final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);
     final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata = configPersistence.getConfigWithMetadata(
@@ -126,7 +121,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testListConfigWithMetadata() throws Exception {
+  void testListConfigWithMetadata() throws Exception {
     final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
@@ -145,7 +140,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testDeleteConfig() throws Exception {
+  void testDeleteConfig() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
     assertRecordCount(2, ACTOR_DEFINITION);
@@ -162,11 +157,11 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testReplaceAllConfigs() throws Exception {
+  void testReplaceAllConfigs() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
+    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 
     configPersistence.replaceAllConfigs(newConfigs, true);
 
@@ -182,7 +177,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testDumpConfigs() throws Exception {
+  void testDumpConfigs() throws Exception {
     writeSource(configPersistence, SOURCE_GITHUB);
     writeSource(configPersistence, SOURCE_POSTGRES);
     writeDestination(configPersistence, DESTINATION_S3);
@@ -194,14 +189,14 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testDumpConfigsWithoutSecret() throws Exception {
+  void testDumpConfigsWithoutSecret() throws Exception {
     final ConnectorSpecification mockedConnectorSpec = new ConnectorSpecification()
         .withConnectionSpecification(
             Jsons.emptyObject());
     doReturn(new StandardDestinationDefinition()
-        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_DESTINATION_DEFINITION), any(), any());
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(STANDARD_DESTINATION_DEFINITION), any(), any());
     doReturn(new StandardSourceDefinition()
-        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_SOURCE_DEFINITION), any(), any());
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(STANDARD_SOURCE_DEFINITION), any(), any());
 
     writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
     writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
@@ -214,7 +209,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testGetConnectorRepositoryToInfoMap() throws Exception {
+  void testGetConnectorRepositoryToInfoMap() throws Exception {
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
     final String newVersion = "0.2.0";
@@ -237,7 +232,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testInsertConfigRecord() throws Exception {
+  void testInsertConfigRecord() throws Exception {
     final UUID definitionId = UUID.randomUUID();
     final String connectorRepository = "airbyte/test-connector";
 
@@ -272,13 +267,13 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testHasNewVersion() {
+  void testHasNewVersion() {
     assertTrue(DatabaseConfigPersistence.hasNewVersion("0.1.99", "0.2.0"));
     assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.2.0"));
   }
 
   @Test
-  public void testGetNewFields() {
+  void testGetNewFields() {
     final JsonNode o1 = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2 }");
     final JsonNode o2 = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3 }");
     assertEquals(Collections.emptySet(), DatabaseConfigPersistence.getNewFields(o1, o1));
@@ -287,7 +282,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testGetDefinitionWithNewFields() {
+  void testGetDefinitionWithNewFields() {
     final JsonNode current = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2 }");
     final JsonNode latest = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3, \"field4\": 4 }");
     final Set<String> newFields = Set.of("field3");
@@ -299,7 +294,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testActorDefinitionReleaseDate() throws Exception {
+  void testActorDefinitionReleaseDate() throws Exception {
     final UUID definitionId = UUID.randomUUID();
     final String connectorRepository = "airbyte/test-connector";
 
@@ -314,20 +309,20 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void filterCustomSource() {
+  void filterCustomSource() {
     final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
     final String nonCustomKey = "non-custom";
     final String customKey = "custom";
     sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_POSTGRES)));
     sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_CUSTOM)));
 
-    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap, ConfigSchema.STANDARD_SOURCE_DEFINITION);
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap, STANDARD_SOURCE_DEFINITION);
 
-    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
+    assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
   }
 
   @Test
-  public void filterCustomDestination() {
+  void filterCustomDestination() {
     final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
     final String nonCustomKey = "non-custom";
     final String customKey = "custom";
@@ -335,9 +330,9 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_CUSTOM)));
 
     final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap,
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION);
+        STANDARD_DESTINATION_DEFINITION);
 
-    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
+    assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
   }
 
 }

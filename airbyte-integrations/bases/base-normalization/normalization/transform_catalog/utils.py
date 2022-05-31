@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -20,11 +20,27 @@ def is_string(property_type) -> bool:
     return property_type == "string" or "string" in property_type
 
 
-def is_timestamp_with_time_zone(definition: dict) -> bool:
+def is_datetime(definition: dict) -> bool:
     return (
         is_string(definition["type"])
         and ("format" in definition.keys())
         and (definition["format"] == "date-time" or "date-time" in definition["format"])
+    )
+
+
+def is_datetime_with_timezone(definition: dict) -> bool:
+    return (
+        is_string(definition["type"])
+        and definition.get("format") == "date-time"
+        and definition.get("airbyte_type") == "timestamp_with_timezone"
+    )
+
+
+def is_datetime_without_timezone(definition: dict) -> bool:
+    return (
+        is_string(definition["type"])
+        and definition.get("format") == "date-time"
+        and definition.get("airbyte_type") == "timestamp_without_timezone"
     )
 
 

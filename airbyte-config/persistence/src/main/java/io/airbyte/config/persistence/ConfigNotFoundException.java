@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class ConfigNotFoundException extends Exception {
 
+  private static final long serialVersionUID = 836273627;
   private final String type;
   private final String configId;
 

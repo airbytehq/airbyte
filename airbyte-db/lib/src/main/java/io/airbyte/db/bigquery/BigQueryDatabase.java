@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.bigquery;
@@ -112,13 +112,6 @@ public class BigQueryDatabase extends SqlDatabase {
     } else
       throw new Exception(
           "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
-  }
-
-  @Override
-  public void close() throws Exception {
-    /**
-     * The BigQuery doesn't require connection close. It will be done automatically.
-     */
   }
 
   public QueryJobConfiguration getQueryConfig(final String sql, final List<QueryParameterValue> params) {

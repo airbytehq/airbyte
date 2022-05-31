@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql_strict_encrypt;
@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,6 +37,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode config;
+  private DSLContext dslContext;
 
   @BeforeAll
   protected static void init() {
@@ -65,6 +65,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("username", db.getUsername())
+        .put("database", "test")
         .put("password", db.getPassword())
         .put("schema", "test_schema")
         .build());
@@ -81,6 +82,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", "wrong password")
+        .put("database", "test")
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("ssl", false)
@@ -127,25 +129,29 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
     return new Database(dslContext).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get("database")));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+        });
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format(DatabaseDriver.MSSQLSERVER.getUrlFormatString(),
+        String.format("jdbc:sqlserver://%s:%d",
             config.get("host").asText(),
-            config.get("port").asInt()), SQLDialect.DEFAULT);
+            config.get("port").asInt()),
+        null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
@@ -153,8 +159,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
@@ -169,7 +175,9 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @AfterAll
   static void cleanUp() {

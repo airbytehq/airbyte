@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -41,22 +41,7 @@ class TypeformStream(HttpStream, ABC):
         yield from response.json()["items"]
 
 
-class TrimForms(TypeformStream):
-    """
-    This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
-    API doc: https://developer.typeform.com/create/reference/retrieve-forms/
-    """
-
-    primary_key = "id"
-
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Optional[Any] = None,
-    ) -> str:
-        return "forms"
-
+class PaginatedStream(TypeformStream):
     def next_page_token(self, response: requests.Response) -> Optional[Any]:
         page = self.get_current_page_token(response.url)
         # stop pagination if current page equals to total pages
@@ -70,15 +55,22 @@ class TrimForms(TypeformStream):
         page = parse_qs(parsed.query).get("page")
         return int(page[0]) if page else None
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Optional[Any] = None,
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
         params["page"] = next_page_token or 1
         return params
+
+
+class TrimForms(PaginatedStream):
+    """
+    This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
+    API doc: https://developer.typeform.com/create/reference/retrieve-forms/
+    """
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "forms"
 
 
 class TrimFormsMixin:
@@ -102,12 +94,7 @@ class Forms(TrimFormsMixin, TypeformStream):
 
     primary_key = "id"
 
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Optional[Any] = None,
-    ) -> str:
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"forms/{stream_slice['form_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -198,6 +185,57 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
         return params
 
 
+class Webhooks(TrimFormsMixin, TypeformStream):
+    """
+    This stream is responsible for fetching webhooks for particular form_id.
+    API doc: https://developer.typeform.com/webhooks/reference/retrieve-webhooks/
+    """
+
+    primary_key = "id"
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"forms/{stream_slice['form_id']}/webhooks"
+
+
+class Workspaces(PaginatedStream):
+    """
+    This stream is responsible for fetching workspaces.
+    API doc: https://developer.typeform.com/create/reference/retrieve-workspaces/
+    """
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "workspaces"
+
+
+class Images(TypeformStream):
+    """
+    This stream is responsible for fetching images.
+    API doc: https://developer.typeform.com/create/reference/retrieve-images-collection/
+    """
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "images"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json()
+
+
+class Themes(PaginatedStream):
+    """
+    This stream is responsible for fetching themes.
+    API doc: https://developer.typeform.com/create/reference/retrieve-themes/
+    """
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "themes"
+
+
 class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
@@ -231,4 +269,11 @@ class SourceTypeform(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["token"])
-        return [Forms(authenticator=auth, **config), Responses(authenticator=auth, **config)]
+        return [
+            Forms(authenticator=auth, **config),
+            Responses(authenticator=auth, **config),
+            Webhooks(authenticator=auth, **config),
+            Workspaces(authenticator=auth, **config),
+            Images(authenticator=auth, **config),
+            Themes(authenticator=auth, **config),
+        ]
