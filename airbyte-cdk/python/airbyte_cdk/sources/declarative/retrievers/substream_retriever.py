@@ -8,7 +8,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -39,20 +38,22 @@ class SubstreamRetriever(SimpleRetriever):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh):
-            # print(f"parent_record: {parent_record}")
-            has_more = parent_record["lines"]
-            print(has_more)
-            records = self._parent_extractor.extract_records(Response(body=parent_record))
-            # print(f"found {len(records)} records. first is: {records[0]['id']}")
-            # print(f"stream_slice: {stream_slice}")
-            next_page_token = self._paginator.next_page_token(parent_record, records)
-            # print(f"next_page_token: {next_page_token}")
-            if next_page_token:
-                next_pages = [p for p in super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)]
-                print(f"next_pages: {len(next_pages)}")
-            else:
-                next_pages = []
+        parent_records = [r for r in self._parent_stream.read_records(SyncMode.full_refresh)]
+        for parent_record in parent_records:
 
-            for rec in chain(records, next_pages):
-                yield rec
+            items_obj = parent_record.get("lines", {})
+            if not items_obj:
+                continue
+
+            items = items_obj.get("data", [])
+            # get next pages
+            items_next_pages = []
+            if items_obj.get("has_more") and items:
+                print("hasmore!")
+                exit()
+                # stream_slice = {self.parent_id: record["id"], "starting_after": items[-1]["id"]}
+                # items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
+
+            for item in chain(items, items_next_pages):
+                yield item
+        # yield from super(SubstreamRetriever, self).read_records(sync_mode, cursor_field, stream_slice, stream_state)

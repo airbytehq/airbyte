@@ -3,14 +3,12 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional
 
-import requests
+from airbyte_cdk.sources.declarative.response import Response
 
 
 class Paginator(ABC):
     @abstractmethod
-    def next_page_token(
-        self, response: Union[requests.Response, Mapping[str, Any]], last_records: List[Mapping[str, Any]]
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         pass

@@ -4,14 +4,12 @@
 
 from typing import Any, List, Mapping, Optional
 
-import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.response import Response
 
 
 class NoPagination(Paginator):
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        print(f"paginator: {len(last_records)}")
-        if len(last_records) == 100:
+    def next_page_token(self, response: Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+        if len(last_records) >= 100:
             return {"starting_after": last_records[-1]["id"]}
-        else:
-            return None
+        return None

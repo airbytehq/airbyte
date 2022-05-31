@@ -12,28 +12,47 @@ state:
   class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-  name: "{{ kwargs['name'] }}"
+  name: "{{ options['name'] }}"
   state: "*ref(state)"
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
-  primary_key: "{{ kwargs['primary_key'] }}"
+  primary_key: "{{ options['primary_key'] }}"
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_stripe/schemas/{{kwargs['name']}}.json"
+    file_path: "./source_stripe/schemas/{{options['name']}}.json"
+  cursor_field: [ ]
+another_partial_stream:
+  class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+  schema_loader:
+    class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
+    file_path: "./source_stripe/schemas/{{options['name']}}.json"
   cursor_field: [ ]
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
-  name: "{{ kwargs['name'] }}"
+  name: "{{ options['name'] }}"
   url_base: "https://api.stripe.com/v1/"
   http_method: "GET"
   authenticator:
     class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
     token: "{{ config['client_secret'] }}"
   request_parameters_provider: "*ref(request_parameters_provider)"
+  decoder: "*ref(decoder)"
+  retrier:
+    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
+another_requester:
+  class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.stripe.com/v1/"
+  http_method: "GET"
+  authenticator:
+    class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
+    token: "{{ config['client_secret'] }}"
+  request_parameters_provider: "*ref(request_parameters_provider)"
+  decoder: "*ref(decoder)"
   retrier:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 extractor:
@@ -42,7 +61,7 @@ extractor:
 
 invoices_stream:
   ref: "*ref(partial_stream)"
-  kwargs:
+  options:
     name: "invoices"
     primary_key: "id"
   retriever:
@@ -60,24 +79,24 @@ substream_retriever:
   ref: "*ref(retriever)"
   parent_extractor:
     class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
-    decoder: "*ref(decoder)"
     transform: ".lines.data[]"
 
 substream_slicer:
   class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"
-  parent_id: "{{ parent_record['id'] }}"
+  slice_definition:
+    parent_id: "{{ parent_record['id'] }}"
   state: "*ref(state)"
 
 invoice_line_items_stream:
-  ref: "*ref(partial_stream)"
-  kwargs:
+  ref: "*ref(another_partial_stream)"
+  options:
     name: "invoice_line_items"
     primary_key: "id"
     parent_stream: "*ref(invoices_stream)"
   retriever:
     ref: "*ref(substream_retriever)"
     requester:
-      ref: "*ref(requester)"
+      ref: "*ref(another_requester)"
       path: "invoices/{{ stream_slice['parent_id'] }}/lines"
     extractor:
       ref: "*ref(extractor)"
