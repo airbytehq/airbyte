@@ -106,24 +106,6 @@ public class MongodbDestination extends BaseConnector implements Destination {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
     } catch (MongoTimeoutException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
-    } catch (Exception e) {
-      try {
-        var mongoException = (MongoCommandException) e.getCause();
-        var code = String.valueOf(mongoException.getCode());
-        throw new ConnectionErrorException(code, e);
-      } catch (ConnectionErrorException ex) {
-        throw ex;
-      } catch (Exception ex) {
-        try {
-          var mongoException = (MongoCommandException) e;
-          var code = String.valueOf(mongoException.getCode());
-          throw new ConnectionErrorException(code, e);
-        } catch (ConnectionErrorException ex1) {
-          throw ex1;
-        } catch (Exception exception) {
-          throw e;
-        }
-      }
     }
   }
 

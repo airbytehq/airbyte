@@ -5,13 +5,13 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoCommandException;
-import com.mongodb.MongoSocketException;
-import com.mongodb.MongoTimeoutException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
+
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonType;
 import org.bson.Document;
@@ -156,7 +155,12 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
               .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
               .collect(Collectors.toSet());
 
-    } catch (MongoTimeoutException e){
+    }
+    catch (MongoSecurityException e){
+      MongoCommandException exception = (MongoCommandException) e.getCause();
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
+    }
+    catch (MongoException e){
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }
