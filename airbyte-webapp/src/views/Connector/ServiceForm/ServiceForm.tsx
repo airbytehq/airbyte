@@ -8,7 +8,7 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
 import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
-import { FormBaseItem } from "core/form/types";
+import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
@@ -184,10 +184,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const uiOverrides = useMemo(
     () => ({
       name: {
-        component: (property: FormBaseItem) => <ConnectorNameControl property={property} formType={formType} />,
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
+          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
+        ),
       },
       serviceType: {
-        component: (property: FormBaseItem) => (
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
@@ -198,6 +200,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               setInitialRequestName(name);
               toggleOpenRequestModal();
             }}
+            {...componentProps}
           />
         ),
       },
