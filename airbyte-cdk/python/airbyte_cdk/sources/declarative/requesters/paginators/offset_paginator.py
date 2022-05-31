@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 
 
-class OffsetPagination(Paginator):
+class OffsetPaginator(Paginator):
     def __init__(self, page_size: int, state: DictState, tag: str = "offset"):
         self._limit = page_size
         self._state: DictState = state
