@@ -365,7 +365,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!validationErrors.isEmpty()) {
           DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
           validationErrors.forEach((stream, errorPair) -> {
-            final String[] validationErrorMetadata = new String[] {
+            final String[] validationErrorMetadata = {
               "docker_repo:airbyte/test", // dockerImage.split(":")[0]
               "docker_version:0.0.0", // dockerImage.split(":")[1]
               "stream:" + stream
