@@ -51,6 +51,7 @@ def test_proper_number_of_future_requests_generated(records_count, page_size, ex
         stream.generate_future_requests(sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field)
         assert len(stream.future_requests) == expected_futures_deque_len
 
+
 @pytest.mark.parametrize(
     "records_count,page_size,expected_futures_deque_len",
     [

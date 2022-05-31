@@ -126,7 +126,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         """try to select relevant data only"""
 
         records = response.json().get(self.response_list_name or self.name) or []
-        
+
         if not self.cursor_field:
             yield from records
         else:
@@ -516,6 +516,8 @@ class TicketFields(SourceZendeskSupportStream):
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
+
+    cursor_field = "updated_at"
 
 
 class TicketMetrics(SourceZendeskSupportStream):
