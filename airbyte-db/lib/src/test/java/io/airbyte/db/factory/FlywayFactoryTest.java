@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link FlywayFactory} class.
  */
-public class FlywayFactoryTest extends AbstractFactoryTest {
+class FlywayFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingAFlywayInstance() {

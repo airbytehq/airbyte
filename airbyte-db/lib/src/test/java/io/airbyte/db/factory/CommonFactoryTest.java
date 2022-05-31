@@ -11,7 +11,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * Common test suite for the classes found in the {@code io.airbyte.db.factory} package.
  */
-public abstract class AbstractFactoryTest {
+class CommonFactoryTest {
 
   private static final String DATABASE_NAME = "airbyte_test_database";
 
