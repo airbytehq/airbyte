@@ -12,10 +12,9 @@ import requests
 import requests_mock
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from requests.exceptions import ConnectionError
 from source_zendesk_support.source import BasicApiTokenAuthenticator
 from source_zendesk_support.streams import Macros
-from requests.exceptions import ConnectionError
-
 
 STREAM_ARGS: dict = {
     "subdomain": "fake-subdomain",
@@ -107,10 +106,7 @@ def test_read_records(mocker, records_count, page_size, expected_futures_deque_l
 
     def record_gen(start=0, end=page_size):
         for i in range(start, end):
-            yield {
-                f"key{i}": f"val{i}",
-                stream.cursor_field: (pendulum.parse("2020-01-01") + timedelta(days=i)).isoformat()
-            }
+            yield {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2020-01-01") + timedelta(days=i)).isoformat()}
 
     with requests_mock.Mocker() as m:
         count_url = urljoin(stream.url_base, f"{stream.path()}/count.json")
@@ -121,9 +117,9 @@ def test_read_records(mocker, records_count, page_size, expected_futures_deque_l
             {
                 "status_code": 429 if should_retry else 200,
                 "headers": {"X-Rate-Limit": "700"},
-                "text": "{}" if should_retry else json.dumps(
-                    {"macros": list(record_gen(page * page_size, min(records_count, (page + 1) * page_size)))}
-                )
+                "text": "{}"
+                if should_retry
+                else json.dumps({"macros": list(record_gen(page * page_size, min(records_count, (page + 1) * page_size)))}),
             }
             for page in range(expected_futures_deque_len)
         ]

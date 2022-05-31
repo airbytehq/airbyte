@@ -217,12 +217,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
             self.future_requests.append(
-                {
-                    "future": self._send_request(request, request_kwargs),
-                    "request": request,
-                    "request_kwargs": request_kwargs,
-                    "retries": 0
-                }
+                {"future": self._send_request(request, request_kwargs), "request": request, "request_kwargs": request_kwargs, "retries": 0}
             )
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
@@ -258,7 +253,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         retries: int,
         original_exception: Exception = None,
         response: requests.Response = None,
-        **request_kwargs
+        **request_kwargs,
     ):
         if retries == self.max_retries:
             if original_exception:

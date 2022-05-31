@@ -3,9 +3,9 @@
 #
 
 
-import pytest
 from typing import Dict
 
+import pytest
 import requests
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
@@ -16,11 +16,7 @@ def test_config():
     config = {
         "subdomain": "sandbox",
         "start_date": "2021-06-01T00:00:00Z",
-        "credentials": {
-            "credentials": "api_token",
-            "email": "integration-test@airbyte.io",
-            "api_token": "api_token"
-        }
+        "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
     }
     return config
 
