@@ -50,9 +50,6 @@ class DictState(State):
 
         self._context[self.stream_state_field] = self._compute_state(prev_stream_state)
 
-    def get_context(self):
-        return self._context
-
     def get_state(self, state_field):
         return self._context.get(state_field, {})
 

@@ -28,4 +28,4 @@ class OffsetPaginator(Paginator):
         self._state.update_state(**{self._offsetKey: offset})
 
     def _get_offset(self):
-        return self._state.get_context()[self._offsetKey]
+        return self._state.get_state(self._offsetKey)
