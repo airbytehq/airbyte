@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +110,7 @@ public class WorkerUtils {
 
   }
 
-  public static String streamNameWithNamespace(final String namespace, final String streamName) {
+  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
     return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
