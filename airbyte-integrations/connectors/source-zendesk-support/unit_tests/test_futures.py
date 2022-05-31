@@ -51,7 +51,6 @@ def test_proper_number_of_future_requests_generated(records_count, page_size, ex
         stream.generate_future_requests(sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field)
         assert len(stream.future_requests) == expected_futures_deque_len
 
-
 @pytest.mark.parametrize(
     "records_count,page_size,expected_futures_deque_len",
     [
@@ -90,12 +89,11 @@ def test_parse_future_records(records_count, page_size, expected_futures_deque_l
 @pytest.mark.parametrize(
     "records_count, page_size, expected_futures_deque_len, expected_exception",
     [
-        (1000, 100, 10, DefaultBackoffException),
         (1000, 10, 100, DefaultBackoffException),
         (0, 100, 0, DefaultBackoffException),
         (150, 100, 2, ConnectionError),
         (1, 100, 1, None),
-        (101, 100, 2, None),
+        (101, 101, 2, None),
     ],
 )
 def test_read_records(mocker, records_count, page_size, expected_futures_deque_len, expected_exception):

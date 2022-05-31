@@ -126,6 +126,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         """try to select relevant data only"""
 
         records = response.json().get(self.response_list_name or self.name) or []
+        
         if not self.cursor_field:
             yield from records
         else:
