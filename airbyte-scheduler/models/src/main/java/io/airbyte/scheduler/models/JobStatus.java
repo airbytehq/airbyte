@@ -25,7 +25,7 @@ public enum JobStatus {
       RUNNING, Set.of(INCOMPLETE, SUCCEEDED, FAILED, CANCELLED),
       INCOMPLETE, Set.of(PENDING, RUNNING, FAILED, CANCELLED),
       SUCCEEDED, Set.of(),
-      FAILED, Set.of(SUCCEEDED),
-      CANCELLED, Set.of(SUCCEEDED));
+      FAILED, Set.of(),
+      CANCELLED, Set.of());
 
 }

@@ -103,7 +103,7 @@ class JobTest {
   @Test
   void testValidateStatusTransitionFromFailed() {
     final Job failedJob = jobWithStatus(JobStatus.FAILED);
-    assertDoesNotThrow(() -> failedJob.validateStatusTransition(JobStatus.SUCCEEDED));
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.SUCCEEDED));
     assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.PENDING));
     assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.RUNNING));
     assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.INCOMPLETE));
@@ -113,7 +113,7 @@ class JobTest {
   @Test
   void testValidateStatusTransitionFromCancelled() {
     final Job cancelledJob = jobWithStatus(JobStatus.CANCELLED);
-    assertDoesNotThrow(() -> cancelledJob.validateStatusTransition(JobStatus.SUCCEEDED));
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.SUCCEEDED));
     assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.PENDING));
     assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.RUNNING));
     assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.INCOMPLETE));
