@@ -56,7 +56,6 @@ class SecretsLoader:
         self.gsm_credentials = gsm_credentials
         self.connector_name = connector_name
         self._api = None
-        self.logger.info(f"base_folder: {self.base_folder}")
 
     @property
     def api(self) -> GoogleApi:
@@ -144,7 +143,7 @@ class SecretsLoader:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
                         # self.logger.info(f"::add-mask::{value}")
-                        self.logger.info("::add-mask::test value")
+                        print("::add-mask::test value")
                         break
             # see if it's really embedded json and get those values too
             try:
