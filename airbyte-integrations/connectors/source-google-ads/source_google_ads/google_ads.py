@@ -19,6 +19,7 @@ REPORT_MAPPING = {
     "ad_group_labels": "ad_group_label",
     "campaigns": "campaign",
     "campaign_labels": "campaign_label",
+    "campaign_performance_report": "campaign",
     "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
     "display_keyword_performance_report": "display_keyword_view",

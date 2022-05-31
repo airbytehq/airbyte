@@ -243,6 +243,13 @@ class CampaignLabels(GoogleAdsStream):
     # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["campaign_label.resource_name"]
 
+class CampaignPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Campaign Performance Max stream: https://developers.google.com/google-ads/api/fields/v8/campaign
+    """
+
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
+    primary_key = ["campaign.id", "segments.date"]
 
 class AdGroups(IncrementalGoogleAdsStream):
     """
