@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.factory;
@@ -7,6 +7,7 @@ package io.airbyte.db.factory;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import java.io.Closeable;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -14,8 +15,6 @@ import javax.sql.DataSource;
  * Temporary factory class that provides convenience methods for creating a {@link DataSource}
  * instance. This class will be removed once the project has been converted to leverage an
  * application framework to manage the creation and injection of {@link DataSource} objects.
- *
- * This class replaces direct calls to {@link io.airbyte.db.Databases}.
  */
 public class DataSourceFactory {
 
@@ -145,6 +144,21 @@ public class DataSourceFactory {
         .withPassword(password)
         .withUsername(username)
         .build();
+  }
+
+  /**
+   * Utility method that attempts to close the provided {@link DataSource} if it implements
+   * {@link Closeable}.
+   *
+   * @param dataSource The {@link DataSource} to close.
+   * @throws Exception if unable to close the data source.
+   */
+  public static void close(final DataSource dataSource) throws Exception {
+    if (dataSource != null) {
+      if (dataSource instanceof AutoCloseable closeable) {
+        closeable.close();
+      }
+    }
   }
 
   /**

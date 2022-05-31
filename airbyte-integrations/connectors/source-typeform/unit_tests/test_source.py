@@ -1,7 +1,10 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import re
 
 from airbyte_cdk import AirbyteLogger
-
 from source_typeform import SourceTypeform
 from source_typeform.source import TypeformStream
 
@@ -56,4 +59,4 @@ def test_check_connection_incomplete(config):
 def test_streams(config):
     streams = SourceTypeform().streams(config)
 
-    assert len(streams) == 2
+    assert len(streams) == 6

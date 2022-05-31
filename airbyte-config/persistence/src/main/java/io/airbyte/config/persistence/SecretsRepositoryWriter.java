@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -29,8 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class takes secrets as arguments but never returns a secrets as return values (even the ones
@@ -38,10 +36,8 @@ import org.slf4j.LoggerFactory;
  * secrets store and then making sure the remainder of the configuration is written to the Config
  * Database.
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "PMD.AvoidThrowingRawExceptionTypes"})
 public class SecretsRepositoryWriter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryWriter.class);
 
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
@@ -318,7 +314,7 @@ public class SecretsRepositoryWriter {
       throws JsonValidationException, IOException {
     try {
       return Optional.of(configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId));
-    } catch (ConfigNotFoundException e) {
+    } catch (final ConfigNotFoundException e) {
       return Optional.empty();
     }
   }

@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.AirbyteCatalog;
-import io.airbyte.api.model.AirbyteStream;
-import io.airbyte.api.model.AirbyteStreamAndConfiguration;
-import io.airbyte.api.model.AirbyteStreamConfiguration;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionSchedule;
-import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.model.ConnectionStatus;
-import io.airbyte.api.model.ResourceRequirements;
-import io.airbyte.api.model.SyncMode;
+import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionSchedule;
+import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -107,7 +107,7 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .operationIds(operationIds)
         .name("presto to hudi")
-        .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.SOURCE)
+        .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.SOURCE)
         .namespaceFormat(null)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
@@ -151,13 +151,13 @@ public class ConnectionHelpers {
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
-          .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
+          .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
     }
     if (standardSync.getStatus() != null) {
-      connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
+      connectionRead.status(io.airbyte.api.model.generated.ConnectionStatus.fromValue(standardSync.getStatus().value()));
     }
     if (standardSync.getSchedule() != null) {
-      connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
+      connectionRead.schedule(new io.airbyte.api.model.generated.ConnectionSchedule()
           .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
           .units(standardSync.getSchedule().getUnits()));
     }
@@ -165,7 +165,7 @@ public class ConnectionHelpers {
       connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
     }
     if (standardSync.getResourceRequirements() != null) {
-      connectionRead.resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+      connectionRead.resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
           .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
           .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
           .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
@@ -214,7 +214,7 @@ public class ConnectionHelpers {
     return new AirbyteStreamConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
-        .destinationSyncMode(io.airbyte.api.model.DestinationSyncMode.APPEND)
+        .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
         .selected(true);

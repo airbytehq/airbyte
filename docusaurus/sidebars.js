@@ -46,6 +46,32 @@ module.exports = {
     },
     {
       type: 'category',
+      label: 'Documentation Help',
+      items: [
+        {
+          type: 'doc',
+          id: "docusaurus/contributing_to_docs",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/making_a_redirect",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/deploying_and_reverting_docs",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/locally_testing_docusaurus",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/readme",
+        },
+      ]
+    },
+    {
+      type: 'category',
       label: 'Deploying Airbyte Open Source',
       items: [
         {
@@ -792,6 +818,10 @@ module.exports = {
               },
               {
                 type: 'doc',
+                id: "integrations/destinations/google-sheets",
+              },
+              {
+                type: 'doc',
                 id: "integrations/destinations/pubsub",
               },
               {
@@ -1072,6 +1102,10 @@ module.exports = {
         {
           type: 'doc',
           id: "contributing-to-airbyte/gradle-cheatsheet",
+        },
+        {
+          type: 'doc',
+          id: "contributing-to-airbyte/gradle-dependency-update",
         },
         {
           type: 'doc',

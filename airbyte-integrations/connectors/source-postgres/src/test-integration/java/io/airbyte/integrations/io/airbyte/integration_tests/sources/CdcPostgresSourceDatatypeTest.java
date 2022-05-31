@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -27,6 +27,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
   private static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected Database setupDatabase() throws Exception {
@@ -58,14 +59,15 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("ssl", false)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> {
@@ -104,6 +106,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -529,6 +532,14 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsquery")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'fat & (rat | cat)'::tsquery", "'fat:ab & cat'::tsquery")
+            .addExpectedValues(null, "'fat' & ( 'rat' | 'cat' )", "'fat':AB & 'cat'")
             .build());
   }
 

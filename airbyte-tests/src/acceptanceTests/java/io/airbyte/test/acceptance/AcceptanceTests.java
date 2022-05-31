@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
 
-import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,58 +20,58 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.JobsApi;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.model.AirbyteCatalog;
-import io.airbyte.api.client.model.AirbyteStream;
-import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
-import io.airbyte.api.client.model.AirbyteStreamConfiguration;
-import io.airbyte.api.client.model.AttemptInfoRead;
-import io.airbyte.api.client.model.AttemptStatus;
-import io.airbyte.api.client.model.CheckConnectionRead;
-import io.airbyte.api.client.model.ConnectionCreate;
-import io.airbyte.api.client.model.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.ConnectionRead;
-import io.airbyte.api.client.model.ConnectionSchedule;
-import io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.client.model.ConnectionState;
-import io.airbyte.api.client.model.ConnectionStatus;
-import io.airbyte.api.client.model.ConnectionUpdate;
-import io.airbyte.api.client.model.DataType;
-import io.airbyte.api.client.model.DestinationCreate;
-import io.airbyte.api.client.model.DestinationDefinitionCreate;
-import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.client.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.client.model.DestinationIdRequestBody;
-import io.airbyte.api.client.model.DestinationRead;
-import io.airbyte.api.client.model.DestinationSyncMode;
-import io.airbyte.api.client.model.JobIdRequestBody;
-import io.airbyte.api.client.model.JobInfoRead;
-import io.airbyte.api.client.model.JobRead;
-import io.airbyte.api.client.model.JobStatus;
-import io.airbyte.api.client.model.LogType;
-import io.airbyte.api.client.model.LogsRequestBody;
-import io.airbyte.api.client.model.NamespaceDefinitionType;
-import io.airbyte.api.client.model.OperationCreate;
-import io.airbyte.api.client.model.OperationIdRequestBody;
-import io.airbyte.api.client.model.OperationRead;
-import io.airbyte.api.client.model.OperatorConfiguration;
-import io.airbyte.api.client.model.OperatorNormalization;
-import io.airbyte.api.client.model.OperatorNormalization.OptionEnum;
-import io.airbyte.api.client.model.OperatorType;
-import io.airbyte.api.client.model.SourceCreate;
-import io.airbyte.api.client.model.SourceDefinitionCreate;
-import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.client.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.client.model.SourceDefinitionRead;
-import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.client.model.SourceIdRequestBody;
-import io.airbyte.api.client.model.SourceRead;
-import io.airbyte.api.client.model.SyncMode;
+import io.airbyte.api.client.generated.JobsApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.AirbyteCatalog;
+import io.airbyte.api.client.model.generated.AirbyteStream;
+import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.client.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.client.model.generated.AttemptInfoRead;
+import io.airbyte.api.client.model.generated.AttemptStatus;
+import io.airbyte.api.client.model.generated.CheckConnectionRead;
+import io.airbyte.api.client.model.generated.ConnectionCreate;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionRead;
+import io.airbyte.api.client.model.generated.ConnectionSchedule;
+import io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
+import io.airbyte.api.client.model.generated.ConnectionUpdate;
+import io.airbyte.api.client.model.generated.DataType;
+import io.airbyte.api.client.model.generated.DestinationCreate;
+import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
+import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.client.model.generated.DestinationRead;
+import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.api.client.model.generated.JobInfoRead;
+import io.airbyte.api.client.model.generated.JobRead;
+import io.airbyte.api.client.model.generated.JobStatus;
+import io.airbyte.api.client.model.generated.LogType;
+import io.airbyte.api.client.model.generated.LogsRequestBody;
+import io.airbyte.api.client.model.generated.NamespaceDefinitionType;
+import io.airbyte.api.client.model.generated.OperationCreate;
+import io.airbyte.api.client.model.generated.OperationIdRequestBody;
+import io.airbyte.api.client.model.generated.OperationRead;
+import io.airbyte.api.client.model.generated.OperatorConfiguration;
+import io.airbyte.api.client.model.generated.OperatorNormalization;
+import io.airbyte.api.client.model.generated.OperatorNormalization.OptionEnum;
+import io.airbyte.api.client.model.generated.OperatorType;
+import io.airbyte.api.client.model.generated.SourceCreate;
+import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.client.model.generated.SourceDefinitionRead;
+import io.airbyte.api.client.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.client.model.generated.SourceIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -174,6 +174,7 @@ public class AcceptanceTests {
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
+  private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
       System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
 
@@ -1171,6 +1172,8 @@ public class AcceptanceTests {
 
   @RetryingTest(3)
   @Order(22)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -1192,6 +1195,7 @@ public class AcceptanceTests {
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     // test normal deletion of connection
+    LOGGER.info("Calling delete connection...");
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // remove connection to avoid exception during tear down
@@ -1203,6 +1207,10 @@ public class AcceptanceTests {
     ConnectionStatus connectionStatus =
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
+
+    // test that repeated deletion call for same connection is successful
+    LOGGER.info("Calling delete connection a second time to test repeat call behavior...");
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // test deletion of connection when temporal workflow is in a bad state, only when using new
     // scheduler
@@ -1226,6 +1234,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(23)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -1264,6 +1274,104 @@ public class AcceptanceTests {
 
       final WorkflowState workflowState = getWorkflowState(connectionId);
       assertTrue(workflowState.isRunning());
+    }
+  }
+
+  @Test
+  @Order(24)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
+  public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
+    // conditional.
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+      final SourceRead source = createSource(
+          "E2E Test Source -" + UUID.randomUUID(),
+          workspaceId,
+          sourceDefinition.getSourceDefinitionId(),
+          Jsons.jsonNode(ImmutableMap.builder()
+              .put("type", "INFINITE_FEED")
+              .put("max_records", 5000)
+              .put("message_interval", 100)
+              .build()));
+      final UUID sourceId = source.getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+      LOGGER.info("Testing manual sync when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      LOGGER.info("Starting first manual sync");
+      final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+      LOGGER.info("Terminating workflow during first sync");
+      terminateTemporalWorkflow(connectionId);
+
+      LOGGER.info("Submitted another manual sync");
+      apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
+
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+      assertTrue(workflowState.isSkipScheduling());
+
+      // verify that the first manual sync was marked as failed
+      final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
+      assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
+    }
+  }
+
+  @Test
+  @Order(25)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
+  public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
+    // conditional.
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final UUID sourceId = createPostgresSource().getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+      LOGGER.info("Testing reset connection when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      terminateTemporalWorkflow(connectionId);
+
+      apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
+
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+      assertTrue(workflowState.isResetConnection());
     }
   }
 
@@ -1548,6 +1656,8 @@ public class AcceptanceTests {
         // used on a single node with docker driver
         dbConfig.put("host", "host.docker.internal");
       }
+    } else if (IS_MAC) {
+      dbConfig.put("host", "host.docker.internal");
     } else {
       dbConfig.put("host", "localhost");
     }

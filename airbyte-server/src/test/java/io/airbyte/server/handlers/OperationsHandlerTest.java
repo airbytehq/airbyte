@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -11,17 +11,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationIdRequestBody;
-import io.airbyte.api.model.OperationRead;
-import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationUpdate;
-import io.airbyte.api.model.OperatorConfiguration;
-import io.airbyte.api.model.OperatorDbt;
-import io.airbyte.api.model.OperatorNormalization;
-import io.airbyte.api.model.OperatorNormalization.OptionEnum;
-import io.airbyte.api.model.OperatorType;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.OperationCreate;
+import io.airbyte.api.model.generated.OperationIdRequestBody;
+import io.airbyte.api.model.generated.OperationRead;
+import io.airbyte.api.model.generated.OperationReadList;
+import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.OperatorConfiguration;
+import io.airbyte.api.model.generated.OperatorDbt;
+import io.airbyte.api.model.generated.OperatorNormalization;
+import io.airbyte.api.model.generated.OperatorNormalization.OptionEnum;
+import io.airbyte.api.model.generated.OperatorType;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.StandardSync;
@@ -227,8 +227,9 @@ class OperationsHandlerTest {
 
   @Test
   void testEnumConversion() {
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorNormalization.OptionEnum.class, io.airbyte.config.OperatorNormalization.Option.class));
+    assertTrue(Enums.isCompatible(io.airbyte.api.model.generated.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
+    assertTrue(Enums.isCompatible(io.airbyte.api.model.generated.OperatorNormalization.OptionEnum.class,
+        io.airbyte.config.OperatorNormalization.Option.class));
   }
 
 }

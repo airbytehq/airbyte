@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -20,16 +20,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for fetching both connectors and their secrets (from separate secrets
  * stores). All methods in this class return secrets! Use it carefully.
  */
 public class SecretsRepositoryReader {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryReader.class);
 
   private final ConfigRepository configRepository;
   private final SecretsHydrator secretsHydrator;

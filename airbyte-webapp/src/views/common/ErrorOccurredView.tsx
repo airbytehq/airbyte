@@ -10,9 +10,15 @@ const Content = styled(ContentCard)`
   padding: 50px 15px;
 `;
 
-const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({ message, children }) => {
+interface ErrorOccurredViewProps {
+  message: React.ReactNode;
+  onBackClick?: React.MouseEventHandler;
+  hideHeader?: boolean;
+}
+
+export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onBackClick, children, hideHeader }) => {
   return (
-    <BaseClearView>
+    <BaseClearView onBackClick={onBackClick} hideHeader={hideHeader}>
       <Content>
         <H4 center>{message}</H4>
         {children}
@@ -20,5 +26,3 @@ const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({ message, ch
     </BaseClearView>
   );
 };
-
-export { ErrorOccurredView };

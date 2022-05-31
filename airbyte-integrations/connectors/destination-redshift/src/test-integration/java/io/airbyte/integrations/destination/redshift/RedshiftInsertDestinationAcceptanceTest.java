@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
-class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
+class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";

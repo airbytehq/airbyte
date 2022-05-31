@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -40,8 +40,8 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

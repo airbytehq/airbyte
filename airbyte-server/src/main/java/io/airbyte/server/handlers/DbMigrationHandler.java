@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DbMigrationExecutionRead;
-import io.airbyte.api.model.DbMigrationRead;
-import io.airbyte.api.model.DbMigrationReadList;
-import io.airbyte.api.model.DbMigrationRequestBody;
-import io.airbyte.api.model.DbMigrationState;
+import io.airbyte.api.model.generated.DbMigrationExecutionRead;
+import io.airbyte.api.model.generated.DbMigrationRead;
+import io.airbyte.api.model.generated.DbMigrationReadList;
+import io.airbyte.api.model.generated.DbMigrationRequestBody;
+import io.airbyte.api.model.generated.DbMigrationState;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;

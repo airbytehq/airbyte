@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -44,9 +44,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
-                + algorithm + " )")
-        )
-    );
+                + algorithm + " )")));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -66,9 +64,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("sid").asText())
-        )
-    );
+                config.get("sid").asText())));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -99,8 +95,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
-                + algorithm + " )")
-        ));
+                + algorithm + " )")));
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);

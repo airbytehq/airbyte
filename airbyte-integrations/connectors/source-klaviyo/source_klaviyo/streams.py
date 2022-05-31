@@ -1,14 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, Metric, PersonList
+from source_klaviyo.schemas import Campaign, Event, Flow, GlobalExclusion, Metric, PersonList
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -99,7 +100,13 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         state_ts = int(current_stream_state.get(self.cursor_field, 0))
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), state_ts)}
+        latest_record = latest_record.get(self.cursor_field)
+
+        if isinstance(latest_record, str):
+            latest_record = datetime.datetime.strptime(latest_record, "%Y-%m-%d %H:%M:%S")
+            latest_record = datetime.datetime.timestamp(latest_record)
+
+        return {self.cursor_field: max(latest_record, state_ts)}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -240,3 +247,26 @@ class Events(IncrementalKlaviyoStream):
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        response_json = response.json()
+        for record in response_json.get("data", []):
+            flow = record["event_properties"].get("$flow")
+            flow_message_id = record["event_properties"].get("$message")
+
+            record["flow_id"] = flow
+            record["flow_message_id"] = flow_message_id
+            record["campaign_id"] = flow_message_id if not flow else None
+
+            yield record
+
+
+class Flows(ReverseIncrementalKlaviyoStream):
+    schema = Flow
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "flows"
