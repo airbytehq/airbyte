@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -24,7 +24,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,6 @@ class ValidatingConfigPersistenceTest {
 
   public static final UUID UUID_2 = new UUID(0, 2);
   public static final StandardSourceDefinition SOURCE_2 = new StandardSourceDefinition();
-  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   static {
     SOURCE_2.withSourceDefinitionId(UUID_2).withName("apache storm");
@@ -58,6 +56,7 @@ class ValidatingConfigPersistenceTest {
 
   private ValidatingConfigPersistence configPersistence;
   private ConfigPersistence decoratedConfigPersistence;
+  private static final String ERROR_MESSAGE = "error";
 
   @BeforeEach
   void setUp() {
@@ -70,26 +69,16 @@ class ValidatingConfigPersistenceTest {
   @Test
   void testWriteConfigSuccess() throws IOException, JsonValidationException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    final Map<String, StandardSourceDefinition> aggregatedSource = new HashMap<>() {
-
-      {
-        put(UUID_1.toString(), SOURCE_1);
-      }
-
-    };
+    final Map<String, StandardSourceDefinition> aggregatedSource = new HashMap<>();
+    aggregatedSource.put(UUID_1.toString(), SOURCE_1);
     verify(decoratedConfigPersistence).writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, aggregatedSource);
   }
 
   @Test
   void testWriteConfigsSuccess() throws IOException, JsonValidationException {
-    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
-
-      {
-        put(UUID_1.toString(), SOURCE_1);
-        put(UUID_2.toString(), SOURCE_2);
-      }
-
-    };
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>();
+    sourceDefinitionById.put(UUID_1.toString(), SOURCE_1);
+    sourceDefinitionById.put(UUID_2.toString(), SOURCE_2);
 
     configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
     verify(decoratedConfigPersistence).writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
@@ -97,7 +86,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testWriteConfigFailure() throws JsonValidationException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     assertThrows(JsonValidationException.class,
         () -> configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1));
 
@@ -106,16 +95,11 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testWriteConfigsFailure() throws JsonValidationException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
 
-    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
-
-      {
-        put(UUID_1.toString(), SOURCE_1);
-        put(UUID_2.toString(), SOURCE_2);
-      }
-
-    };
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>();
+    sourceDefinitionById.put(UUID_1.toString(), SOURCE_1);
+    sourceDefinitionById.put(UUID_2.toString(), SOURCE_2);
 
     assertThrows(JsonValidationException.class,
         () -> configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById));
@@ -135,7 +119,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testGetConfigFailure() throws IOException, JsonValidationException, ConfigNotFoundException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     when(decoratedConfigPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
         .thenReturn(SOURCE_1);
 
@@ -159,7 +143,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testListConfigsFailure() throws JsonValidationException, IOException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     when(decoratedConfigPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(List.of(SOURCE_1, SOURCE_2));
 
@@ -179,7 +163,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testGetConfigWithMetadataFailure() throws IOException, JsonValidationException, ConfigNotFoundException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     when(decoratedConfigPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
         .thenReturn(withMetadata(SOURCE_1));
 
@@ -204,7 +188,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testListConfigsWithMetadataFailure() throws JsonValidationException, IOException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     when(decoratedConfigPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(List.of(withMetadata(SOURCE_1), withMetadata(SOURCE_2)));
 
@@ -222,7 +206,7 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testReplaceAllConfigsFailure() throws IOException, JsonValidationException {
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+    doThrow(new JsonValidationException(ERROR_MESSAGE)).when(schemaValidator).ensure(any(), any());
     consumeConfigInputStreams(decoratedConfigPersistence);
     final Map<AirbyteConfig, Stream<?>> configs = ImmutableMap.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_1));
     // because this takes place in a lambda the JsonValidationException gets rethrown as a

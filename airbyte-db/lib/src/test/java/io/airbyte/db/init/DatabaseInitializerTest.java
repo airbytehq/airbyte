@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.init;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatabaseInitializerTest {
+class DatabaseInitializerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializerTest.class);
 
@@ -60,7 +60,7 @@ public class DatabaseInitializerTest {
 
     };
 
-    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.init());
+    Assertions.assertThrows(DatabaseInitializationException.class, () -> initializer.initialize());
   }
 
   @Test

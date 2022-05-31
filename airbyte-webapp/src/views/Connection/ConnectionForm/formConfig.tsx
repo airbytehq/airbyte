@@ -29,6 +29,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
 type FormikConnectionFormValues = {
+  name?: string;
   schedule?: ConnectionSchedule | null;
   prefix: string;
   syncCatalog: SyncSchema;
@@ -70,6 +71,7 @@ function useDefaultTransformation(): OperationCreate {
 
 const connectionValidationSchema = yup
   .object({
+    name: yup.string().required("form.empty.error"),
     schedule: yup
       .object({
         units: yup.number().required("form.empty.error"),
@@ -230,6 +232,7 @@ const useInitialValues = (
 
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
+      name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
       schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",

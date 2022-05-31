@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -24,6 +24,8 @@ import java.util.Set;
  * <p>
  * 2. 'Alpha support' if a var does not have proper support and should be used with care.
  */
+
+@SuppressWarnings("PMD.BooleanGetMethodName")
 public interface Configs {
 
   // CORE

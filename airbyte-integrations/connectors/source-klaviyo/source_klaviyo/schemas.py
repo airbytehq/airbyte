@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -104,6 +104,19 @@ class Event(BaseSchemaModel):
     statistic_id: str
     event_properties: dict
     person: dict
+    flow_id: Optional[str]
+    campaign_id: Optional[str]
+    flow_message_id: Optional[str]
+
+
+class Flow(BaseSchemaModel):
+    id: str
+    name: str
+    status: str
+    created: datetime
+    updated: datetime
+    customer_filter: Optional[dict]
+    trigger: dict
 
 
 class GlobalExclusion(BaseSchemaModel):
