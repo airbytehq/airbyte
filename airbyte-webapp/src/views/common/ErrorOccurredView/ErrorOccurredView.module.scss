@@ -11,8 +11,9 @@
   text-align: center;
 
   .octavia {
-    width: 130px;
-    height: 154px;
+    width: 100px;
+    height: 128px;
+    margin-bottom: 24px;
   }
 
   background: radial-gradient(
@@ -23,7 +24,6 @@
   );
 
   .content {
-    margin-top: -17px; // Offset for octavia image padding
     max-width: 600px;
     text-align: center;
   }
