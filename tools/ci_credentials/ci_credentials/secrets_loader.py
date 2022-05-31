@@ -143,8 +143,12 @@ class SecretsLoader:
                 for pattern in MASK_KEY_PATTERNS:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
-                        # has to be at the beginning of line for Github to notice it
-                        print(f"::add-mask::{value}")
+                        for line in value.splitlines():
+                            line = str(line).strip()
+                            # don't output } and such
+                            if len(line) > 1:
+                                # has to be at the beginning of line for Github to notice it
+                                print(f"::add-mask::{line}")
                         break
             # see if it's really embedded json and get those values too
             try:
