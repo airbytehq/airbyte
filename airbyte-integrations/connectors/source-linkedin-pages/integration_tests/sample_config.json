@@ -2,6 +2,6 @@
   "org_id": 12345678,
   "credentials": {
     "auth_method": "access_token",
-    "access_token": "drAL4JXBJ6v1qaU9iWargosra6ibiw0ZWEdMnC0ZizeD1gLRQP6u1pkQ"
+    "access_token": "example_token_string123"
   }
 }

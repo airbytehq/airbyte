@@ -23,13 +23,13 @@ class LinkedinPagesStream(HttpStream, ABC):
     def __init__(self, config):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
-        
+
 
     @property
     def org(self):
         """Property to return the user Organization Id from input"""
         return self.config.get("org_id")
-        
+
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
         return self.endpoint
@@ -51,7 +51,7 @@ class LinkedinPagesStream(HttpStream, ABC):
                 f"Stream {self.name}: LinkedIn API requests are rate limited. "
                 f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
                 f"These limits reset at midnight UTC every day. "
-                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-ads. "
+                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-pages. "
                 f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
             )
             self.logger.error(error_message)
@@ -60,49 +60,49 @@ class LinkedinPagesStream(HttpStream, ABC):
 class OrganizationLookup(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"organizations/{self.org}"
         return path
 
 class FollowerStatistics(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
         return path
 
 class PageStatistics(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"organizationPageStatistics?q=organization&organization=urn%3Ali%3Aorganization%3A{self.org}"
         return path
 
 class ShareStatistics(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
         return path
 
 class Shares(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"shares?q=owners&owners=urn%3Ali%3Aorganization%3A{self.org}&sortBy=LAST_MODIFIED&sharesPerOwner=50"
         return path
 
 class TotalFollowerCount(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
         return path
-    
+
 class UgcPosts(LinkedinPagesStream):
 
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-    
+
         path = f"ugcPosts?q=authors&authors=List(urn%3Ali%3Aorganization%3A{self.org})&sortBy=LAST_MODIFIED&count=50"
         return path
 
@@ -161,7 +161,7 @@ class SourceLinkedinPages(AbstractSource):
             return True, None
         except Exception as e:
             return False, e
-        
+
         # RUN: $ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -175,4 +175,3 @@ class SourceLinkedinPages(AbstractSource):
             TotalFollowerCount(config),
             UgcPosts(config)
         ]
-        
