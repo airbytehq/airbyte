@@ -15,7 +15,31 @@ DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 
 GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
 
-MASK_KEY_PATTERNS = ["password", "host", "user", "_key", "token", "secret", "bucket"]
+MASK_KEY_PATTERNS = [
+    "password",
+    "host",
+    "user",
+    "_key",
+    "_id",
+    "token",
+    "secret",
+    "bucket",
+    "role_arn",
+    "service_account_info",
+    "account_id",
+    "api",
+    "domain_url",
+    "client_id",
+    "access",
+    "jwt",
+    "base_url",
+    "key",
+    "credentials",
+    "_sid",
+    "survey_",
+    "appid",
+    "apikey",
+]
 
 
 class SecretsLoader:
@@ -112,7 +136,9 @@ class SecretsLoader:
             # regular value, check for what to mask
             for pattern in MASK_KEY_PATTERNS:
                 if re.search(pattern, key):
+                    self.logger.info(f"Add mask for key: {key}")
                     self.logger.info(f"::add-mask::{value}")
+                    continue
 
     @staticmethod
     def generate_secret_name(connector_name: str, filename: str) -> str:
