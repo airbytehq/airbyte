@@ -113,6 +113,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       try {
+        final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
+        Workflow.await(timeToWait,
+                () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+        // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+        // This catches cases where the temporal workflow was terminated and restarted while a job was
+        // actively running, leaving that job in an orphaned and non-terminal state.
+        ensureCleanJobState(connectionUpdaterInput);
+
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
         cancellableSyncWorkflow.run();
       } catch (final CanceledFailure cf) {
@@ -145,12 +154,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
-      connectionId = connectionUpdaterInput.getConnectionId();
+      if (workflowState.isDeleted()) {
+        log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
+        return;
+      }
 
-      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
-      // This catches cases where the temporal workflow was terminated and restarted while a job was
-      // actively running, leaving that job in an orphaned and non-terminal state.
-      ensureCleanJobState(connectionUpdaterInput);
+      if (workflowState.isUpdated()) {
+        // Act as a return
+        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+      }
+
+      connectionId = connectionUpdaterInput.getConnectionId();
 
       // workflow state is only ever set in test cases. for production cases, it will always be null.
       if (connectionUpdaterInput.getWorkflowState() != null) {
@@ -165,21 +179,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
       if (connectionUpdaterInput.isFromJobResetFailure()) {
         workflowState.setResetWithScheduling(true);
-      }
-
-      final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
-
-      Workflow.await(timeToWait,
-          () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
-
-      if (workflowState.isDeleted()) {
-        log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
-        return;
-      }
-
-      if (workflowState.isUpdated()) {
-        // Act as a return
-        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
       }
 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
