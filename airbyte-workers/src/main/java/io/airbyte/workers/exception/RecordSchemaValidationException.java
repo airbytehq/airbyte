@@ -13,18 +13,15 @@ import java.util.Set;
 
 public class RecordSchemaValidationException extends Exception {
 
-  public final String stream;
   public final Set<String> errorMessages;
 
-  public RecordSchemaValidationException(final String stream, final Set<String> errorMessages, final String message) {
+  public RecordSchemaValidationException(final Set<String> errorMessages, final String message) {
     super(message);
-    this.stream = stream;
     this.errorMessages = errorMessages;
   }
 
-  public RecordSchemaValidationException(final String stream, final Set<String> errorMessages, final String message, final Throwable cause) {
+  public RecordSchemaValidationException(final Set<String> errorMessages, final String message, final Throwable cause) {
     super(message, cause);
-    this.stream = stream;
     this.errorMessages = errorMessages;
   }
 

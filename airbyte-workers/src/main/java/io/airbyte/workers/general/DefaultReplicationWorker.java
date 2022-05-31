@@ -316,15 +316,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 try {
                   recordSchemaValidator.validateSchema(messageOptional.get().getRecord(), messageStream);
                 } catch (final RecordSchemaValidationException e) {
-                  final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(e.stream);
+                  final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
                   if (exceptionWithCount == null) {
-                    validationErrors.put(e.stream, new ImmutablePair<>(e.errorMessages, 1));
+                    validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
                   } else {
                     final Integer currentCount = exceptionWithCount.getRight();
                     final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
                     final Set<String> updatedErrorMessages =
                         Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
-                    validationErrors.put(e.stream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
+                    validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
                   }
                 }
 

@@ -62,9 +62,8 @@ public class RecordSchemaValidator {
         validationMessagesToDisplay.add(newMessage);
       }
 
-      final String streamWithNamespace = message.getNamespace() == null ? message.getStream() : message.getNamespace() + "-" + message.getStream();
-      throw new RecordSchemaValidationException(streamWithNamespace, validationMessagesToDisplay,
-          String.format("Record schema validation failed for %s", streamWithNamespace));
+      throw new RecordSchemaValidationException(validationMessagesToDisplay,
+          String.format("Record schema validation failed for %s", messageStream));
     }
   }
 
