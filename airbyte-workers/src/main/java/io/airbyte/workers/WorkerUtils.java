@@ -10,7 +10,6 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.scheduler.models.JobRunConfig;
 import java.nio.file.Path;
 import java.time.Duration;
