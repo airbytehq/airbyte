@@ -19,13 +19,18 @@ all_parent_data = data_first_parent_slice + data_second_parent_slice + data_thir
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 second_parent_stream_slice = [{"slice": "second_parent"}]
 
-slice_definition = {"parent_id": "{{ parent_record['id'] }}", "parent_slice": "{{ parent_stream_slice['slice'] }}"}
+slice_definition = {"{{ parent_stream_name }}_id": "{{ parent_record['id'] }}", "parent_slice": "{{ parent_stream_slice['slice'] }}"}
 
 
 class MockStream(Stream):
-    def __init__(self, slices, records):
+    def __init__(self, slices, records, name):
         self._slices = slices
         self._records = records
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -52,38 +57,43 @@ class MockStream(Stream):
 @pytest.mark.parametrize(
     "test_name, parent_streams, slice_definition, expected_slices",
     [
-        ("test_single_parent_slices_no_records", [MockStream([{}], [])], slice_definition, [{"parent_id": None, "parent_slice": None}]),
+        (
+            "test_single_parent_slices_no_records",
+            [MockStream([{}], [], "first_stream")],
+            slice_definition,
+            [{"first_stream_id": None, "parent_slice": None}],
+        ),
         (
             "test_single_parent_slices_with_records",
-            [MockStream([{}], parent_records)],
+            [MockStream([{}], parent_records, "first_stream")],
             slice_definition,
-            [{"parent_id": "1", "parent_slice": None}, {"parent_id": "2", "parent_slice": None}],
+            [{"first_stream_id": "1", "parent_slice": None}, {"first_stream_id": "2", "parent_slice": None}],
         ),
         (
             "test_with_parent_slices_and_records",
-            [MockStream(parent_slices, all_parent_data)],
+            [MockStream(parent_slices, all_parent_data, "first_stream")],
             slice_definition,
             [
-                {"parent_slice": "first", "parent_id": "0"},
-                {"parent_slice": "first", "parent_id": "1"},
-                {"parent_slice": "second", "parent_id": "2"},
-                {"parent_slice": "third", "parent_id": None},
+                {"parent_slice": "first", "first_stream_id": "0"},
+                {"parent_slice": "first", "first_stream_id": "1"},
+                {"parent_slice": "second", "first_stream_id": "2"},
+                {"parent_slice": "third", "first_stream_id": None},
             ],
         ),
         (
             "test_multiple_parent_streams",
             [
-                MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice),
-                MockStream(second_parent_stream_slice, more_records),
+                MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
+                MockStream(second_parent_stream_slice, more_records, "second_stream"),
             ],
             slice_definition,
             [
-                {"parent_slice": "first", "parent_id": "0"},
-                {"parent_slice": "first", "parent_id": "1"},
-                {"parent_slice": "second", "parent_id": "2"},
-                {"parent_slice": "third", "parent_id": None},
-                {"parent_slice": "second_parent", "parent_id": "10"},
-                {"parent_slice": "second_parent", "parent_id": "20"},
+                {"parent_slice": "first", "first_stream_id": "0"},
+                {"parent_slice": "first", "first_stream_id": "1"},
+                {"parent_slice": "second", "first_stream_id": "2"},
+                {"parent_slice": "third", "first_stream_id": None},
+                {"parent_slice": "second_parent", "second_stream_id": "10"},
+                {"parent_slice": "second_parent", "second_stream_id": "20"},
             ],
         ),
     ],

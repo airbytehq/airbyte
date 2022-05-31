@@ -37,7 +37,21 @@ class SubstreamSlicer(StreamSlicer):
                     ):
                         empty_parent_slice = False
                         slice_definition = {
-                            k: self._interpolation.eval(v, None, None, parent_stream_slice=parent_stream_slice, parent_record=parent_record)
+                            self._interpolation.eval(
+                                k,
+                                None,
+                                None,
+                                parent_stream_slice=parent_stream_slice,
+                                parent_record=parent_record,
+                                parent_stream_name=parent_stream.name,
+                            ): self._interpolation.eval(
+                                v,
+                                None,
+                                None,
+                                parent_stream_slice=parent_stream_slice,
+                                parent_record=parent_record,
+                                parent_stream_name=parent_stream.name,
+                            )
                             for k, v in self._slice_definition.items()
                         }
                         self._state.update_state(parent_record=parent_record)
@@ -46,7 +60,22 @@ class SubstreamSlicer(StreamSlicer):
                     # yield a slice definition with parent_record==None
                     if empty_parent_slice:
                         slice_definition = {
-                            k: self._interpolation.eval(v, None, None, parent_stream_slice=parent_stream_slice, parent_record=None)
+                            self._interpolation.eval(
+                                k,
+                                None,
+                                None,
+                                parent_stream_slice=parent_stream_slice,
+                                parent_record=None,
+                                parent_stream_name=parent_stream.name,
+                            ): self._interpolation.eval(
+                                v,
+                                None,
+                                None,
+                                parent_stream_slice=parent_stream_slice,
+                                parent_record=None,
+                                parent_stream_name=parent_stream.name,
+                            )
                             for k, v in self._slice_definition.items()
                         }
+                        print(f"slice_definition: {slice_definition}")
                         yield slice_definition
