@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,16 +101,17 @@ public class WorkerUtils {
   }
 
   public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
-    final String streamPrefix = syncInput.getPrefix();
     return syncInput.getCatalog().getStreams().stream().collect(
         Collectors.toMap(
             k -> {
-              final String namespace = Objects.toString(k.getStream().getNamespace(), "").trim();
-              final String name = k.getStream().getName().trim();
-              return namespace + name;
+              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
             },
             v -> v.getStream().getJsonSchema()));
 
+  }
+
+  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
+    return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
