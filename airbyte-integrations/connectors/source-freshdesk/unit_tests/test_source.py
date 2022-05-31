@@ -3,7 +3,6 @@
 #
 
 import logging
-
 from source_freshdesk import SourceFreshdesk
 
 logger = logging.getLogger("test_source")
@@ -54,4 +53,4 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceFreshdesk().streams(config)
 
-    assert len(streams) == 11
+    assert len(streams) == 28
