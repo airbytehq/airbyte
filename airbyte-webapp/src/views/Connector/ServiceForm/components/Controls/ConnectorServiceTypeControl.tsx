@@ -152,7 +152,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
   );
 };
 
-const ConnectorServiceTypeControl: React.FC<{
+interface ConnectorServiceTypeControlProps {
   property: FormBaseItem;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
@@ -160,7 +160,10 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl?: string;
   onChangeServiceType?: (id: string) => void;
   onOpenRequestConnectorModal: (initialName: string) => void;
-}> = ({
+  disabled?: boolean;
+}
+
+const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
   property,
   formType,
   isEditMode,
@@ -168,6 +171,7 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices,
   documentationUrl,
   onOpenRequestConnectorModal,
+  disabled,
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
@@ -258,7 +262,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode}
+          isDisabled={isEditMode || disabled}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",
