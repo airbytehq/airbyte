@@ -17,7 +17,11 @@ from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
+from datetime import datetime
+from datetime import timedelta
+import logging
 
+LOGGER = logging.getLogger()
 
 class ShopifyStream(HttpStream, ABC):
 
@@ -29,6 +33,7 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
+    filter_field_max = "updated_at_max"
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -54,6 +59,10 @@ class ShopifyStream(HttpStream, ABC):
         else:
             params["order"] = f"{self.order_field} asc"
             params[self.filter_field] = self.config["start_date"]
+            
+            if "no_of_days_to_fetch" in self.config.keys() and self.config["no_of_days_to_fetch"] is not None:
+                end_date = datetime.strptime(params[self.filter_field], "%Y-%m-%d") + timedelta(days=int(self.config["no_of_days_to_fetch"]))
+                params[self.filter_field_max] = end_date.strftime("%Y-%m-%d")
         return params
 
     @limiter.balance_rate_limit()
@@ -92,8 +101,19 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
             params["order"] = f"{self.order_field} asc"
+            
+            start_date = None
             if stream_state:
                 params[self.filter_field] = stream_state.get(self.cursor_field)
+                start_date = datetime.strptime(params[self.filter_field], "%Y-%m-%dT%H:%M:%S%z")
+            else:
+                start_date = datetime.strptime(params[self.filter_field], "%Y-%m-%d")
+            
+            if "no_of_days_to_fetch" in self.config.keys() and self.config["no_of_days_to_fetch"] is not None:
+                end_date = start_date + timedelta(days=int(self.config["no_of_days_to_fetch"]))
+                params[self.filter_field_max] = end_date.strftime("%Y-%m-%d")
+        
+        LOGGER.info('params {}'.format(params))
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
@@ -128,10 +148,12 @@ class Orders(IncrementalShopifyStream):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
+        LOGGER.info('params {}'.format(params))
         return params
 
 class LineItems(Orders):
     data_field = "orders"
+    fields = "id,created_at,processed_at,updated_at,source_name,line_items,source_name"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -142,6 +164,8 @@ class LineItems(Orders):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
+        params['fields'] = self.fields
+        LOGGER.info('params {}'.format(params))
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -455,6 +479,8 @@ class SourceShopify(AbstractSource):
         Defining streams to run.
         """
         config["authenticator"] = ShopifyAuthenticator(config)
+        if "no_of_days_to_fetch" in config.keys():
+            config["no_of_days_to_fetch"] = None if config["no_of_days_to_fetch"] is not None and config["no_of_days_to_fetch"] == "" else config["no_of_days_to_fetch"]
 
         return [
             Customers(config),

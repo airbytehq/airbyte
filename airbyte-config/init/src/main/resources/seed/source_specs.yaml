@@ -5119,7 +5119,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "blotout/source-shopify:0.1.23"
+- dockerImage: "blotout/source-shopify:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -5142,6 +5142,11 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        no_of_days_to_fetch": 
+          type": "string"
+          description": "Number of days for which you wants to fetch the data in one run.",
+          examples": 
+          - 30
         auth_method:
           title: "Shopify Authorization Method"
           type: "object"
