@@ -44,13 +44,13 @@ public class V0_39_1_001__CreateStreamReset extends BaseJavaMigration {
     final Field<OffsetDateTime> updatedAt =
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
-    ctx.createTableIfNotExists("stream_resets")
+    ctx.createTableIfNotExists("stream_reset")
         .columns(id, connectionId, streamNamespace, streamName, createdAt, updatedAt)
         .constraints(
           unique(connectionId, streamNamespace, streamName))
         .execute();
 
-        ctx.createIndex("connection_id_stream_namespace_name_idx").on("stream_resets", "connection_id", "stream_namespace", "stream_name").execute();
+        ctx.createIndex("connection_id_stream_namespace_name_idx").on("stream_reset", "connection_id", "stream_namespace", "stream_name").execute();
   }
 
 }
