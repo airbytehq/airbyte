@@ -21,13 +21,13 @@
       "type": ["null", "array"],
       "items": [
         {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "id": {
               "type": ["null", "integer"]
             },
             "label": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "id": {
                   "type": ["null", "integer"]
