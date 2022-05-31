@@ -649,7 +649,9 @@ class IncrementalStream(Stream, ABC):
     @property
     def state(self) -> MutableMapping[str, Any]:
         if self._state:
-            return {self.cursor_field: int(self._state.timestamp() * 1000)}
+            if self.state_pk == "timestamp":
+                return {self.cursor_field: int(self._state.timestamp() * 1000)}
+            return {self.cursor_field: self._state.to_iso8601_string()}
         return {}
 
     @state.setter
