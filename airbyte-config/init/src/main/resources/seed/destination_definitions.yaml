@@ -80,7 +80,7 @@
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
   icon: dynamodb.svg
   releaseStage: alpha
@@ -93,7 +93,7 @@
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   name: ElasticSearch
   dockerRepository: airbyte/destination-elasticsearch
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
   releaseStage: alpha
@@ -162,7 +162,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
   releaseStage: alpha

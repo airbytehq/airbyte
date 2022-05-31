@@ -17,6 +17,7 @@ type EntityTableDataItem = {
 
 type ITableDataItem = {
   connectionId: string;
+  name: string;
   entityName: string;
   connectorName: string;
   enabled: boolean;
