@@ -46,11 +46,15 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Contributing to Airbyte Docs',
+      label: 'Documentation Help',
       items: [
         {
           type: 'doc',
           id: "docusaurus/contributing_to_docs",
+        },
+        {
+          type: 'doc',
+          id: "docusaurus/making_a_redirect",
         },
         {
           type: 'doc',
