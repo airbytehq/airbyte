@@ -26,9 +26,6 @@ describe("Connection main actions", () => {
     cy.get("button[type=submit]").first().click();
     cy.wait("@updateConnection");
     cy.get("span[data-id='success-result']").should("exist");
-
-    cy.get("div[data-id='status-step']").click();
-    cy.get("div").contains("5 min").should("exist");
 });
 
   it("Delete connection", () => {
