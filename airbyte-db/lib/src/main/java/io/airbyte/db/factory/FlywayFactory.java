@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.factory;
@@ -11,8 +11,6 @@ import org.flywaydb.core.Flyway;
  * Temporary factory class that provides convenience methods for creating a {@link Flyway}
  * instances. This class will be removed once the project has been converted to leverage an
  * application framework to manage the creation and injection of {@link Flyway} objects.
- *
- * This class replaces direct calls to {@link io.airbyte.db.Databases}.
  */
 public class FlywayFactory {
 

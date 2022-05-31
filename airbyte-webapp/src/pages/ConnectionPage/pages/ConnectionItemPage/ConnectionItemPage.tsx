@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
@@ -6,7 +6,7 @@ import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { ConnectionStatus } from "core/domain/connection";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
@@ -26,6 +26,7 @@ const ConnectionItemPage: React.FC = () => {
   const connectionId = params.connectionId || "";
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useGetConnection(connectionId);
+  const [isStatusUpdating, setStatusUpdating] = useState(false);
 
   const { source, destination } = connection;
 
@@ -44,7 +45,7 @@ const ConnectionItemPage: React.FC = () => {
     });
   };
 
-  const isConnectionDeleted = connection.status === ConnectionStatus.DEPRECATED;
+  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   return (
     <MainPageWithScroll
@@ -68,6 +69,7 @@ const ConnectionItemPage: React.FC = () => {
           destination={destination}
           connection={connection}
           currentStep={currentStep}
+          onStatusUpdating={setStatusUpdating}
         />
       }
       error={
@@ -80,7 +82,7 @@ const ConnectionItemPage: React.FC = () => {
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}
-            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
+            element={<StatusView connection={connection} isStatusUpdating={isStatusUpdating} />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}

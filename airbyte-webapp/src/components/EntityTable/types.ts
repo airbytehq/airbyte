@@ -1,4 +1,4 @@
-import { ScheduleProperties } from "core/domain/connection";
+import { ConnectionSchedule } from "../../core/request/AirbyteClient";
 
 type EntityTableDataItem = {
   entityId: string;
@@ -17,13 +17,14 @@ type EntityTableDataItem = {
 
 type ITableDataItem = {
   connectionId: string;
+  name: string;
   entityName: string;
   connectorName: string;
   enabled: boolean;
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ScheduleProperties | null;
+  schedule: ConnectionSchedule | undefined;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

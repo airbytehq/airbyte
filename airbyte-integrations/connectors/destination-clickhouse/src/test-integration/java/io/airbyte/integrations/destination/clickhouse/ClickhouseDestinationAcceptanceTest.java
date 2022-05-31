@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -15,10 +15,10 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -136,9 +136,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
   }
 
   @Override
@@ -197,4 +195,5 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     super.specNormalizationValueShouldBeCorrect();
   }
+
 }

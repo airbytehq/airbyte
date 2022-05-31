@@ -2,9 +2,10 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Cell, CheckBox, DropDownRow, Toggle } from "components";
+import { Cell, CheckBox, DropDownRow, Switch } from "components";
 
-import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
@@ -62,9 +63,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   onExpand,
   mode,
 }) => {
-  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config;
+  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
 
-  const { defaultCursorField } = stream.stream;
+  const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
       syncMode,
@@ -88,17 +89,17 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle small checked={stream.config.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
+        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.namespace || ""}>
-        {stream.stream.namespace || (
+      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+        {stream.stream?.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.name || ""}>
-        {stream.stream.name}
+      <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        {stream.stream?.name}
       </HeaderCell>
       <Cell flex={1.5}>
         {mode !== "readonly" ? (

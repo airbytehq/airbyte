@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -61,9 +61,7 @@ class SourceFacebookMarketing(AbstractSource):
         api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(
-            api=api,
-            start_date=config.start_date,
-            end_date=config.end_date,
+            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
             AdAccount(api=api),
@@ -159,6 +157,7 @@ class SourceFacebookMarketing(AbstractSource):
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or default_args["start_date"],
                 end_date=insight.end_date or default_args["end_date"],
+                insights_lookback_window=insight.insights_lookback_window or default_args["insights_lookback_window"],
             )
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.factory;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link DSLContextFactory} class.
  */
-public class DSLContextFactoryTest extends AbstractFactoryTest {
+class DSLContextFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADslContext() {

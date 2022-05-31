@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -19,7 +19,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -34,9 +34,9 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

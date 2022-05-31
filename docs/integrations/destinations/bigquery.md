@@ -74,69 +74,97 @@ Note that queries written in BigQuery can only reference Datasets in the same ph
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). 
-We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions: 
-``` 
-bigquery.bireservations.get
-bigquery.capacityCommitments.get
-bigquery.capacityCommitments.list
-bigquery.config.get
-bigquery.datasets.create
-bigquery.datasets.get
-bigquery.datasets.getIamPolicy
-bigquery.jobs.create
-bigquery.jobs.list
-bigquery.models.list
-bigquery.readsessions.*
-bigquery.reservationAssignments.list
-bigquery.reservationAssignments.search
-bigquery.reservations.get
-bigquery.reservations.list
-bigquery.routines.list
-bigquery.savedqueries.get
-bigquery.savedqueries.list
-bigquery.tables.list
-bigquery.transfers.get
-resourcemanager.projects.get
-resourcemanager.projects.list
-```
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the `BigQuery User`(`roles/bigquery.user`) and `BigQuery Data Editor`(`roles/bigquery.dataEditor`) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control).
 
-"BigQuery Data Editor"(roles/bigquery.dataEditor) role permissions:
-```
-bigquery.config.get
-bigquery.datasets.create
-bigquery.datasets.get
-bigquery.datasets.getIamPolicy
-bigquery.datasets.updateTag
-bigquery.models.*
-bigquery.routines.*
-bigquery.tables.create
-bigquery.tables.createSnapshot
-bigquery.tables.delete
-bigquery.tables.export
-bigquery.tables.get
-bigquery.tables.getData
-bigquery.tables.getIamPolicy
-bigquery.tables.list
-bigquery.tables.restoreSnapshot
-bigquery.tables.update
-bigquery.tables.updateData
-bigquery.tables.updateTag
-resourcemanager.projects.get
-resourcemanager.projects.list
-```
+![create a service account with the bigquery user and data editor roles](https://user-images.githubusercontent.com/1933157/168459232-6b88458c-a038-4bc1-883d-cf506e363441.png)
 
-The easiest way to create a Service Account is to follow GCP's guide for [Creating a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Once you've created the Service Account, make sure to keep its ID handy as you will need to reference it when granting roles. Service Account IDs typically take the form `<account-name>@<project-name>.iam.gserviceaccount.com`
+We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
 
-Then, add the service account as a Member in your Google Cloud Project with the "BigQuery User" role. To do this, follow the instructions for [Granting Access](https://cloud.google.com/iam/docs/granting-changing-revoking-access#granting-console) in the Google documentation. The email address of the member you are adding is the same as the Service Account ID you just created.
+* `BigQuery User`(`roles/bigquery.user`) role permissions:
 
-At this point you should have a service account with the "BigQuery User" project-level permission.
+    ```
+    bigquery.bireservations.get
+    bigquery.capacityCommitments.get
+    bigquery.capacityCommitments.list
+    bigquery.config.get
+    bigquery.datasets.create
+    bigquery.datasets.get
+    bigquery.datasets.getIamPolicy
+    bigquery.jobs.create
+    bigquery.jobs.list
+    bigquery.models.list
+    bigquery.readsessions.*
+    bigquery.reservationAssignments.list
+    bigquery.reservationAssignments.search
+    bigquery.reservations.get
+    bigquery.reservations.list
+    bigquery.routines.list
+    bigquery.savedqueries.get
+    bigquery.savedqueries.list
+    bigquery.tables.list
+    bigquery.transfers.get
+    resourcemanager.projects.get
+    resourcemanager.projects.list
+    ```
+* `BigQuery Data Editor` (`roles/bigquery.dataEditor`) role permissions:
+    ```
+    bigquery.config.get
+    bigquery.datasets.create
+    bigquery.datasets.get
+    bigquery.datasets.getIamPolicy
+    bigquery.datasets.updateTag
+    bigquery.models.*
+    bigquery.routines.*
+    bigquery.tables.create
+    bigquery.tables.createSnapshot
+    bigquery.tables.delete
+    bigquery.tables.export
+    bigquery.tables.get
+    bigquery.tables.getData
+    bigquery.tables.getIamPolicy
+    bigquery.tables.list
+    bigquery.tables.restoreSnapshot
+    bigquery.tables.update
+    bigquery.tables.updateData
+    bigquery.tables.updateTag
+    resourcemanager.projects.get
+    resourcemanager.projects.list
+    ```
 
-#### Service account key
+#### Service account key json (required for cloud, optional for open source)
 
 Service Account Keys are used to authenticate as Google Service Accounts. For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to provide its Service Account Keys. See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys.
 
 Follow the [Creating and Managing Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create a key. Airbyte currently supports JSON Keys only, so make sure you create your key in that format. As soon as you created the key, make sure to download it, as that is the only time Google will allow you to see its contents. Once you've successfully configured BigQuery as a destination in Airbyte, delete this key from your computer.
+
+The key JSON looks like the following (copied from the example [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating)):
+
+```json
+{
+  "type": "service_account",
+  "project_id": "<PROJECT_ID>",
+  "private_key_id": "<KEY_ID>",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n<PRIVATE_KEY>\n-----END PRIVATE KEY-----\n",
+  "client_email": "<SERVICE_ACCOUNT_EMAIL>",
+  "client_id": "<CLIENT_ID>",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/<SERVICE_ACCOUNT_EMAIL>"
+}
+```
+
+This parameter is **REQUIRED** when you set up the connector on cloud. It is only optional if you deploy Airbyte in your own infra and provide the credential through the environment. The service account key json will be searched in the following order:
+
+- Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+- Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
+- Google App Engine built-in credentials
+- Google Cloud Shell built-in credentials
+- Google Compute Engine built-in credentials
+
+See the [Authenticating as a service account](https://cloud.google.com/docs/authentication/production#automatically) for details.
+
+----
 
 You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
 
@@ -184,8 +212,9 @@ This is the recommended configuration for uploading data to BigQuery. It works b
 * **GCS Bucket Keep files after migration**
     * See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
 * **HMAC Key Access ID**
-    * See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    * We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+    * See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys).
+      ![add hmac key to the bigquery service account](https://user-images.githubusercontent.com/1933157/168459101-f6d59db4-ebd6-4307-b528-f47b2ccf11e3.png)
+    * The BigQuery service account (see the doc [above](#service-account)) should have the following permissions for the bucket:
       ```
       storage.multipartUploads.abort
       storage.multipartUploads.create
@@ -194,7 +223,11 @@ This is the recommended configuration for uploading data to BigQuery. It works b
       storage.objects.get
       storage.objects.list
       ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+    * The `Storage Object Admin` role has a superset of all the above permissions. So the quickest way is to add that role to the BigQuery service account in the IAM page as shown below.
+      ![add storage object admin role to bigquery service account](https://user-images.githubusercontent.com/1933157/168458678-f3223a58-9403-4780-87dd-f44806f11d67.png)
+    * Alternatively, create a dedicated role with just the above permissions, and assign this role to the BigQuery service account. In this way, the service account will have the minimum permissions required.
+      ![create a dedicated role for gcs access](https://user-images.githubusercontent.com/1933157/168458835-05794756-4b2a-462f-baae-6811b61e9d22.png)
+
 * **Secret Access Key**
     * Corresponding key to the above access ID.
 * Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
@@ -203,12 +236,22 @@ This is the recommended configuration for uploading data to BigQuery. It works b
 
 This uploads data directly from your source to BigQuery. While this is faster to setup initially, **we strongly recommend that you do not use this option for anything other than a quick demo**. It is more than 10x slower than the GCS uploading option and will fail for many datasets. Please be aware you may see some failures for big datasets and slow sources, e.g. if reading from source takes more than 10-12 hours. This is caused by the Google BigQuery SDK client limitations. For more details please check [https://github.com/airbytehq/airbyte/issues/3549](https://github.com/airbytehq/airbyte/issues/3549)
 
+## Common Root Causes of Permission Issues
+
+The service account does not have the proper permissions.
+- Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles, or equivalent permissions as those two roles.
+- If the GCS staging mode is selected, make sure the BigQuery service account has the right permissions to the GCS bucket and path, or the `Cloud Storage Admin` role, which includes a super set of the required permissions.
+
+The HMAC key is wrong.
+- Make sure the HMAC key is created for the BigQuery service account, and the service account has the permission to access the GCS bucket and path.
+
 ## CHANGELOG
 
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.6   | 2022-05-15 | [12768](https://github.com/airbytehq/airbyte/pull/12768)   | Clarify that the service account key json field is required on cloud. |
 | 1.1.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                               |
 | 1.1.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                       |
@@ -244,6 +287,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 1.1.6   | 2022-05-15 | [12768](https://github.com/airbytehq/airbyte/pull/12768)   | Clarify that the service account key json field is required on cloud. |
 | 0.3.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                       |
 | 0.3.4   | 2022-05-04 | [12578](https://github.com/airbytehq/airbyte/pull/12578)   | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                         |
 | 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528)   | Update Dataset location field description                                                                               |
@@ -277,4 +321,3 @@ This uploads data directly from your source to BigQuery. While this is faster to
 | 0.1.2   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                            |
 | 0.1.1   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                                               |
 | 0.1.0   | 2021-06-21 | [\#4176](https://github.com/airbytehq/airbyte/pull/4176)   | Destination using Typed Struct and Repeated fields                                                                      |
-

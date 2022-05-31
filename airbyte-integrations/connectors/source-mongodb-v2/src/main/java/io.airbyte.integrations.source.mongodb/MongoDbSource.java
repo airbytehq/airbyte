@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -235,5 +235,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     }
     return connectionStrBuilder.toString();
   }
+
+  @Override
+  public void close() throws Exception {}
 
 }

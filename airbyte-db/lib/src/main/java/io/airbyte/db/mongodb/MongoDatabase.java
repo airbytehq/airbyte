@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.mongodb;
@@ -32,7 +32,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDatabase extends AbstractDatabase {
+public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
