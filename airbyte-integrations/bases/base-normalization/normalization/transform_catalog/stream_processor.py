@@ -1174,8 +1174,8 @@ where 1 = 1
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        delete from {{ '{{ final_table_relation }}' }} final_table
-                        where final_table.{{ unique_key }} in (
+                        delete from {{ '{{ final_table_relation }}' }}
+                        where {{ '{{ final_table_relation }}' }}.{{ unique_key }} in (
                             with modified_ids as (
                                 select
                                     {{ '{{' }} dbt_utils.surrogate_key([
