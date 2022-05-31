@@ -127,7 +127,6 @@ class SecretsLoader:
             if not next_token:
                 break
 
-        self.logger.info("Here is a test value to check and see.")
         return secrets
 
     def mask_secrets_from_action_log(self, key, value):
@@ -145,8 +144,7 @@ class SecretsLoader:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
                         # has to be at the beginning of line for Github to notice it
-                        # print(f"::add-mask::{value}")
-                        print("::add-mask::test value")
+                        print(f"::add-mask::{value}")
                         break
             # see if it's really embedded json and get those values too
             try:
