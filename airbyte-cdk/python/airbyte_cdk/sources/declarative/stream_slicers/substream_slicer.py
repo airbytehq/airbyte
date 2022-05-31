@@ -23,6 +23,19 @@ class SubstreamSlicer(StreamSlicer):
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Iterate over each parent stream.
+        For each stream, iterate over its stream_slices.
+        For each stream slice, iterate over each records.
+        yield a stream slice for each such records.
+
+        If a parent slice contains no record, emit a slice with parent_record=None.
+
+        The template string can interpolate the following values:
+        - parent_stream_slice: mapping representing the parent's stream slice
+        - parent_record: mapping representing the parent record
+        - parent_stream_name: string representing the parent stream name
+        """
         if not self._parent_streams:
             yield from []
         else:
