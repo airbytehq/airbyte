@@ -143,7 +143,8 @@ class SecretsLoader:
                 for pattern in MASK_KEY_PATTERNS:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
-                        self.logger.info(f"::add-mask::{value}")
+                        # self.logger.info(f"::add-mask::{value}")
+                        self.logger.info("::add-mask::test value")
                         break
             # see if it's really embedded json and get those values too
             try:
