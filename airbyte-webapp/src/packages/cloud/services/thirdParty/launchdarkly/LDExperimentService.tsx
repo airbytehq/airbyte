@@ -1,11 +1,13 @@
 import * as LDClient from "launchdarkly-js-client-sdk";
 import { useEffect, useRef, useState } from "react";
+import { useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 import { finalize, Subject } from "rxjs";
 
 import { LoadingPage } from "components";
 
 import { useConfig } from "config";
+import { useI18nContext } from "core/i18n";
 import { useAnalytics } from "hooks/services/Analytics";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
@@ -40,6 +42,23 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
   const [state, setState] = useState<LDInitState>("initializing");
   const { user } = useAuthService();
   const { addContextProps: addAnalyticsContext } = useAnalytics();
+  const { locale } = useIntl();
+  const { setMessageOverwrite } = useI18nContext();
+
+  /**
+   * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
+   * and treats them as message overwrites for our bundled messages. Empty messages will be treated as not overwritten.
+   */
+  const updateI18nMessages = () => {
+    const prefix = `i18n_${locale}_`;
+    const messageOverwrites = Object.entries(ldClient.current?.allFlags() ?? {})
+      // Only filter experiments beginning with the prefix and having an actual non-empty value set
+      .filter(([id, value]) => id.startsWith(prefix) && !!value)
+      // Slice away the prefix of the key, to only keep the actual i18n id as a key
+      .map(([id, msg]) => [id.slice(prefix.length), msg]);
+    // Use those messages as overwrites in the i18nContext
+    setMessageOverwrite(Object.fromEntries(messageOverwrites));
+  };
 
   if (!ldClient.current) {
     ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user));
@@ -53,6 +72,8 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
         setState("initialized");
         // Make sure enabled experiments are added to each analytics event
         addAnalyticsContext({ experiments: ldClient.current?.allFlags() });
+        // Check for overwritten i18n messages
+        updateI18nMessages();
       })
       .catch((reason) => {
         // If the promise fails, either because LaunchDarkly service fails to initialize, or
@@ -67,6 +88,8 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
     const onFeatureFlagsChanged = () => {
       // Update analytics context whenever a flag changes
       addAnalyticsContext({ experiments: ldClient.current?.allFlags() });
+      // Check for overwritten i18n messages
+      updateI18nMessages();
     };
     ldClient.current?.on("change", onFeatureFlagsChanged);
     return () => ldClient.current?.off("change", onFeatureFlagsChanged);
