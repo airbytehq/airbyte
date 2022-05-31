@@ -138,12 +138,20 @@ class SecretsLoader:
             for item in value:
                 self.mask_secrets_from_action_log(key, item)
         else:
-            # regular value, check for what to mask
-            for pattern in MASK_KEY_PATTERNS:
-                if re.search(pattern, key):
-                    self.logger.info(f"Add mask for key: {key}")
-                    self.logger.info(f"::add-mask::{value}")
-                    continue
+            if key:
+                # regular value, check for what to mask
+                for pattern in MASK_KEY_PATTERNS:
+                    if re.search(pattern, key):
+                        self.logger.info(f"Add mask for key: {key}")
+                        self.logger.info(f"::add-mask::{value}")
+                        break
+            # see if it's really embedded json and get those values too
+            try:
+                json_value = json.loads(value)
+                self.mask_secrets_from_action_log(None, json_value)
+            except Exception:
+                # carry on
+                pass
 
     @staticmethod
     def generate_secret_name(connector_name: str, filename: str) -> str:
