@@ -15,6 +15,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.*;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
@@ -308,9 +309,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
           if (messageOptional.isPresent()) {
             if (messageOptional.get().getRecord() != null) {
-              // the stream this message corresponds to, including the stream namespace
-              final String messageStream = String.format("%s" + messageOptional.get().getRecord().getStream(),
-                  Objects.toString(messageOptional.get().getRecord().getNamespace(), ""));
+              final AirbyteRecordMessage message = messageOptional.get().getRecord();
+              final String messageStream = WorkerUtils.streamNameWithNamespace(message.getNamespace(), message.getStream());
               // validate a record's schema if there are less than 10 records with validation errors
               if (validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10) {
                 try {

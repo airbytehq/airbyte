@@ -10,6 +10,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.scheduler.models.JobRunConfig;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -100,16 +101,17 @@ public class WorkerUtils {
   }
 
   public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
-    final String streamPrefix = syncInput.getPrefix();
     return syncInput.getCatalog().getStreams().stream().collect(
         Collectors.toMap(
             k -> {
-              final String namespace = Objects.toString(k.getStream().getNamespace(), "").trim();
-              final String name = k.getStream().getName().trim();
-              return namespace + name;
+              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
             },
             v -> v.getStream().getJsonSchema()));
 
+  }
+
+  public static String streamNameWithNamespace(final String namespace, final String streamName) {
+    return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
