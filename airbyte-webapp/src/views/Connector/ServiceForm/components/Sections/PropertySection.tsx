@@ -9,7 +9,13 @@ import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
 import { Label } from "../Property/Label";
 
-const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ property, path }) => {
+interface PropertySectionProps {
+  property: FormBaseItem;
+  path?: string;
+  disabled?: boolean;
+}
+
+const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
@@ -17,7 +23,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ 
 
   const overriddenComponent = widgetsInfo[propertyPath]?.component;
   if (overriddenComponent) {
-    return <>{overriddenComponent(property)}</>;
+    return <>{overriddenComponent(property, { disabled })}</>;
   }
 
   if (property.type === "boolean") {
@@ -27,6 +33,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ 
         label={property.title || property.fieldKey}
         message={<TextWithHTML text={property.description} />}
         value={field.value ?? property.default}
+        disabled={disabled}
       />
     );
   }
@@ -39,6 +46,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ 
         addUnfinishedFlow={addUnfinishedFlow}
         removeUnfinishedFlow={removeUnfinishedFlow}
         unfinishedFlows={unfinishedFlows}
+        disabled={disabled}
       />
     </Label>
   );
