@@ -135,22 +135,19 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
       },
-      async signUpWithEmailLink(form: { name: string; email: string; password: string }): Promise<void> {
+      async signUpWithEmailLink({ name, email, password }): Promise<void> {
         try {
-          const { user: firebaseUser } = await authService.signInWithEmailLink(form.email);
-          await authService.updatePassword(form.password);
+          const { user: firebaseUser } = await authService.signInWithEmailLink(email);
+          await authService.updatePassword(password);
 
-          // TODO: Wait for name endpoint
-          // const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
-          // await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name: form.name });
-          // user.name = form.name;
+          const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
+          await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name });
 
-          // await onAfterAuth(firebaseUser, user);
-          await onAfterAuth(firebaseUser);
+          await onAfterAuth(firebaseUser, { ...user, name });
         } catch (e) {
           await authService.signOut();
           if (e.message === EmailLinkErrorCodes.LINK_EXPIRED) {
-            await userService.resendWithSignInLink({ email: form.email });
+            await userService.resendWithSignInLink({ email });
           }
           throw e;
         }
