@@ -6,6 +6,13 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_request_header_provider import (
+    InterpolatedRequestHeaderProvider,
+)
+from airbyte_cdk.sources.declarative.requesters.request_headers.request_header_provider import RequestHeaderProvider
+from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
+    InterpolatedRequestParameterProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
@@ -21,11 +28,16 @@ class HttpRequester(Requester):
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
         http_method: Union[str, HttpMethod],
-        request_parameters_provider: RequestParameterProvider,
+        request_parameters_provider: RequestParameterProvider = None,
+        request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
         retrier: Retrier,
         config: Config,
     ):
+        if request_parameters_provider is None:
+            request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_headers={})
+        if request_headers_provider is None:
+            request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
         self._name = name
         self._authenticator = authenticator
         if type(url_base) == str:
@@ -38,6 +50,7 @@ class HttpRequester(Requester):
             http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_parameters_provider = request_parameters_provider
+        self._request_headers_provider = request_headers_provider
         self._retrier = retrier
         self._config = config
 
@@ -82,8 +95,7 @@ class HttpRequester(Requester):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        # FIXME: this should be declarative
-        return dict()
+        return self._request_headers_provider.request_headers(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

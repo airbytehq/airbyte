@@ -4,6 +4,7 @@
 
 package io.airbyte.db.check.impl;
 
+import io.airbyte.db.check.DatabaseAvailabilityCheck;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import java.util.Optional;
 import org.flywaydb.core.Flyway;
@@ -18,6 +19,9 @@ public class JobsDatabaseMigrationCheck implements DatabaseMigrationCheck {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseMigrationCheck.class);
 
   // TODO inject via dependency injection framework
+  private final JobsDatabaseAvailabilityCheck databaseAvailablityCheck;
+
+  // TODO inject via dependency injection framework
   private final Flyway flyway;
 
   // TODO inject via dependency injection framework
@@ -26,10 +30,19 @@ public class JobsDatabaseMigrationCheck implements DatabaseMigrationCheck {
   // TODO inject via dependency injection framework
   private final long timeoutMs;
 
-  public JobsDatabaseMigrationCheck(final Flyway flyway, final String minimumFlywayVersion, final long timeoutMs) {
+  public JobsDatabaseMigrationCheck(final JobsDatabaseAvailabilityCheck databaseAvailablityCheck,
+                                    final Flyway flyway,
+                                    final String minimumFlywayVersion,
+                                    final long timeoutMs) {
+    this.databaseAvailablityCheck = databaseAvailablityCheck;
     this.flyway = flyway;
     this.minimumFlywayVersion = minimumFlywayVersion;
     this.timeoutMs = timeoutMs;
+  }
+
+  @Override
+  public Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck() {
+    return Optional.ofNullable(databaseAvailablityCheck);
   }
 
   @Override

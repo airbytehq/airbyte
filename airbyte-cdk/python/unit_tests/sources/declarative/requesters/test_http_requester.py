@@ -15,6 +15,10 @@ def test():
     request_params = {"param": "value"}
     request_parameters_provider.request_params.return_value = request_params
 
+    request_headers_provider = MagicMock()
+    request_headers = {"header": "value"}
+    request_headers_provider.request_headers.return_value = request_headers
+
     authenticator = MagicMock()
 
     retrier = MagicMock()
@@ -36,6 +40,7 @@ def test():
         path="v1/{{ stream_slice['id'] }}",
         http_method=http_method,
         request_parameters_provider=request_parameters_provider,
+        request_headers_provider=request_headers_provider,
         authenticator=authenticator,
         retrier=retrier,
         config=config,
