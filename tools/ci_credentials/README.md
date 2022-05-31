@@ -19,17 +19,20 @@ Download a Service account json key that has access to Google Secrets Manager.
 export GCP_GSM_CREDENTIALS=`cat ~/Downloads/key.json`
 ```
 
-I found it necessary to change this code: `base_folder = Path("/actions-runner/_work/airbyte/airbyte")`
-to something more local like: `base_folder = Path("/Users/brian/airbytehq/airbyte")`
-
-I assume this is because that's the place the GitHub actions is doing its work.
-
 After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./tools/ci_*`
 
 ## Run it
 
+The `VERSION=dev` will make it so it knows to use your local current working directory and not the Github Action one.
+
 Pass in a connector name. For example:
 
 ```bash
-ci_credentials destination-snowflake
+VERSION=dev ci_credentials destination-snowflake
+```
+
+To make sure it get's all changes every time, you can run this:
+
+```bash
+pip install --quiet -e ./tools/ci_* && VERSION=dev ci_credentials destination-snowflake
 ```

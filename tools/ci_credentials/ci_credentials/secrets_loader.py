@@ -3,6 +3,7 @@
 #
 import base64
 import json
+import os
 import re
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -46,12 +47,16 @@ class SecretsLoader:
     """Loading and saving all requested secrets into connector folders"""
 
     logger: ClassVar[Logger] = Logger()
-    base_folder = Path("/actions-runner/_work/airbyte/airbyte")
+    if os.getenv("VERSION") == "dev":
+        base_folder = Path(os.getcwd())
+    else:
+        base_folder = Path("/actions-runner/_work/airbyte/airbyte")
 
     def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
         self.gsm_credentials = gsm_credentials
         self.connector_name = connector_name
         self._api = None
+        self.logger.info(f"base_folder: {self.base_folder}")
 
     @property
     def api(self) -> GoogleApi:
