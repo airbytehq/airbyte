@@ -24,9 +24,10 @@ import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -74,21 +75,21 @@ public class TemporalUtils {
 
   public static WorkflowServiceStubs createTemporalCloudService() {
     return createTemporalCloudService(
-        configs.getTemporalCloudClientCertPath(),
-        configs.getTemporalCloudClientKeyPath(),
+        configs.getTemporalCloudClientCert(),
+        configs.getTemporalCloudClientKey(),
         configs.getTemporalCloudHost(),
         configs.getTemporalCloudNamespace());
   }
 
   @VisibleForTesting
   public static WorkflowServiceStubs createTemporalCloudService(
-                                                                final String temporalCloudClientCertPath,
-                                                                final String temporalCloudClientKeyPath,
+                                                                final String temporalCloudClientCert,
+                                                                final String temporalCloudClientKey,
                                                                 final String temporalHost,
                                                                 final String temporalNamespace) {
     try {
-      final InputStream clientCert = new FileInputStream(temporalCloudClientCertPath);
-      final InputStream clientKey = new FileInputStream(temporalCloudClientKeyPath);
+      final InputStream clientCert = new ByteArrayInputStream(temporalCloudClientCert.getBytes(StandardCharsets.UTF_8));
+      final InputStream clientKey = new ByteArrayInputStream(temporalCloudClientKey.getBytes(StandardCharsets.UTF_8));
 
       final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
           .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
