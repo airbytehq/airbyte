@@ -38,7 +38,7 @@ class MixpanelStream(HttpStream, ABC):
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    reqs_per_hour_limit: int = 400  # 1 req in 9 secs
+    reqs_per_hour_limit: int = 50  # 1 req in 9 secs
 
     def __init__(
         self,
@@ -758,7 +758,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     primary_key: str = None
     cursor_field: str = "time"
-    reqs_per_hour_limit: str = 60  # 1 query per minute
 
     @property
     def url_base(self):

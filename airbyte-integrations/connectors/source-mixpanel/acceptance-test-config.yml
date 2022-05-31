@@ -15,11 +15,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+      timeout_seconds: 7200
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+      timeout_seconds: 7200
   incremental:
     # incremental streams Funnels, Revenue, Export
     # Funnels - fails because it has complex state, like {'funnel_idX': {'date': 'dateX'}}
@@ -32,5 +32,5 @@ tests:
       cursor_paths:
         revenue: ["date"]
         export: ["date"]
-      timeout_seconds: 3600
+      timeout_seconds: 7200
 
