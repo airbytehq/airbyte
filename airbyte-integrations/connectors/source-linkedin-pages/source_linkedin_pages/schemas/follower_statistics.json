@@ -1,24 +1,77 @@
 {
-  "type": ["null", "object"],
+  "type": [
+    "null",
+    "object"
+  ],
   "properties": {
-    "paging": {
-      "type": ["null", "object"],
-      "properties": {
-        "start": {
-          "type": ["null", "integer"]
-        },
-        "count": {
-          "type": ["null", "integer"]
-        },
-        "links": {
-          "type": ["null", "array"],
-          "items": {}
+    "elements": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "followerCountsByAssociationType": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsByRegion": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsBySeniority": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsByIndustry": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsByFunction": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsByStaffCountRange": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "followerCountsByCountry": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {}
+          },
+          "organizationalEntity": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
         }
       }
-    },
-    "elements": {
-      "type": ["null", "array"],
-      "items": {}
     }
   }
 }
