@@ -31,9 +31,6 @@
   },
   "[json]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "python.analysis.extraPaths": [
-    "./airbyte-cdk/python"
-  ]
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
