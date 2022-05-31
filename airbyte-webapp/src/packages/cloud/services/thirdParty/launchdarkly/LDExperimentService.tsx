@@ -52,8 +52,8 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
   const updateI18nMessages = () => {
     const prefix = `i18n_${locale}_`;
     const messageOverwrites = Object.entries(ldClient.current?.allFlags() ?? {})
-      // Only filter experiments beginning with the prefix and having an actual non-empty value set
-      .filter(([id, value]) => id.startsWith(prefix) && !!value)
+      // Only filter experiments beginning with the prefix and having an actual non-empty string value set
+      .filter(([id, value]) => id.startsWith(prefix) && !!value && typeof value === "string")
       // Slice away the prefix of the key, to only keep the actual i18n id as a key
       .map(([id, msg]) => [id.slice(prefix.length), msg]);
     // Use those messages as overwrites in the i18nContext
