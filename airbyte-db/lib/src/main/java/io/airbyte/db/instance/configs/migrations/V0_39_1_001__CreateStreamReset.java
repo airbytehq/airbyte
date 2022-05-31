@@ -37,7 +37,7 @@ public class V0_39_1_001__CreateStreamReset extends BaseJavaMigration {
   private static void createStreamResetTable(final DSLContext ctx) {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(false));
-    final Field<String> streamNamespace = DSL.field("stream_namespace", SQLDataType.CLOB.nullable(false));
+    final Field<String> streamNamespace = DSL.field("stream_namespace", SQLDataType.CLOB.nullable(true));
     final Field<String> streamName = DSL.field("stream_name", SQLDataType.CLOB.nullable(false));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
@@ -47,10 +47,10 @@ public class V0_39_1_001__CreateStreamReset extends BaseJavaMigration {
     ctx.createTableIfNotExists("stream_reset")
         .columns(id, connectionId, streamNamespace, streamName, createdAt, updatedAt)
         .constraints(
-            unique(connectionId, streamNamespace, streamName))
+            unique(connectionId, streamName, streamNamespace))
         .execute();
 
-    ctx.createIndex("connection_id_stream_namespace_name_idx").on("stream_reset", "connection_id", "stream_namespace", "stream_name").execute();
+    ctx.createIndex("connection_id_stream_name_namespace_idx").on("stream_reset", "connection_id", "stream_name", "stream_namespace").execute();
   }
 
 }
