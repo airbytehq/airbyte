@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Field
 from pydantic.main import BaseModel
-from source_klaviyo.streams import Campaigns, Events, GlobalExclusions, Lists, Metrics, Flows
+from source_klaviyo.streams import Campaigns, Events, Flows, GlobalExclusions, Lists, Metrics
 
 
 class ConnectorConfig(BaseModel):

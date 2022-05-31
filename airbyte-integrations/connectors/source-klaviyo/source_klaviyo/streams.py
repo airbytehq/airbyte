@@ -2,13 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-import datetime
+
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, Metric, PersonList, Flow
+from source_klaviyo.schemas import Campaign, Event, Flow, GlobalExclusion, Metric, PersonList
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -102,7 +103,7 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         latest_record = latest_record.get(self.cursor_field)
 
         if isinstance(latest_record, str):
-            latest_record = datetime.datetime.strptime(latest_record,"%Y-%m-%d %H:%M:%S")
+            latest_record = datetime.datetime.strptime(latest_record, "%Y-%m-%d %H:%M:%S")
             latest_record = datetime.datetime.timestamp(latest_record)
 
         return {self.cursor_field: max(latest_record, state_ts)}
