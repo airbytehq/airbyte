@@ -1111,7 +1111,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-dynamodb:0.1.2"
+- dockerImage: "airbyte/destination-dynamodb:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/dynamodb"
     connectionSpecification:
@@ -1119,7 +1119,7 @@
       title: "DynamoDB Destination Spec"
       type: "object"
       required:
-      - "dynamodb_table_name"
+      - "dynamodb_table_name_prefix"
       - "dynamodb_region"
       - "access_key_id"
       - "secret_access_key"
@@ -1133,10 +1133,10 @@
             \ AWS DynamoDB, just leave empty)."
           examples:
           - "http://localhost:9000"
-        dynamodb_table_name:
-          title: "DynamoDB Table Name"
+        dynamodb_table_name_prefix:
+          title: "Table name prefix"
           type: "string"
-          description: "The name of the DynamoDB table."
+          description: "The prefix to use when naming DynamoDB tables."
           examples:
           - "airbyte_sync"
         dynamodb_region:
@@ -1351,7 +1351,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-elasticsearch:0.1.1"
+- dockerImage: "airbyte/destination-elasticsearch:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/elasticsearch"
     connectionSpecification:
@@ -2417,7 +2417,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.17"
+- dockerImage: "airbyte/destination-mssql:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2473,12 +2473,19 @@
           type: "string"
           airbyte_secret: true
           order: 5
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 6
         ssl_method:
           title: "SSL Method"
           type: "object"
           description: "The encryption method which is used to communicate with the\
             \ database."
-          order: 6
+          order: 7
           oneOf:
           - title: "Unencrypted"
             additionalProperties: false
@@ -2489,6 +2496,7 @@
             properties:
               ssl_method:
                 type: "string"
+                const: "unencrypted"
                 enum:
                 - "unencrypted"
                 default: "unencrypted"
@@ -2502,6 +2510,7 @@
             properties:
               ssl_method:
                 type: "string"
+                const: "encrypted_trust_server_certificate"
                 enum:
                 - "encrypted_trust_server_certificate"
                 default: "encrypted_trust_server_certificate"
@@ -2516,6 +2525,7 @@
             properties:
               ssl_method:
                 type: "string"
+                const: "encrypted_verify_certificate"
                 enum:
                 - "encrypted_verify_certificate"
                 default: "encrypted_verify_certificate"
@@ -2524,7 +2534,7 @@
                 type: "string"
                 description: "Specifies the host name of the server. The value of\
                   \ this property must match the subject property of the certificate."
-                order: 7
+                order: 8
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"

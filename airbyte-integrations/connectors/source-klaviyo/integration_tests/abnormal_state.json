@@ -4,5 +4,8 @@
   },
   "global_exclusions": {
     "timestamp": "2120-10-10T00:00:00Z"
+  },
+  "flows": {
+    "created": "2120-10-10 00:00:00"
   }
 }

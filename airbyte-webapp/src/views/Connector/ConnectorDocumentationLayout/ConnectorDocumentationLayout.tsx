@@ -4,6 +4,7 @@ import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
+import { useWindowSize } from "react-use";
 
 import { DocumentationPanel } from "components/DocumentationPanel";
 
@@ -19,9 +20,11 @@ interface PanelContainerProps {
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
   const width = dimensions?.width ?? 0;
+  const screenWidth = useWindowSize().width;
+
   return (
     <>
-      {width < 450 && (
+      {screenWidth > 500 && width < 450 && (
         <div className={styles.darkOverlay}>
           <h3>
             <FormattedMessage id="connectorForm.expandForm" />
@@ -59,6 +62,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 
 export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
+  const screenWidth = useWindowSize().width;
 
   return (
     <ReflexContainer orientation="vertical" windowResizeAware>
@@ -72,7 +76,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </div>
         </ReflexSplitter>
       )}
-      {documentationPanelOpen && (
+      {screenWidth > 500 && documentationPanelOpen && (
         <ReflexElement className="right-pane" size={1000} propagateDimensions minSize={60}>
           <RightPanelContainer>
             <DocumentationPanel />

@@ -32,6 +32,7 @@ export const connectionsKeys = {
 };
 
 export type ValuesProps = {
+  name?: string;
   schedule: ConnectionSchedule | null;
   prefix: string;
   syncCatalog: SyncSchema;
