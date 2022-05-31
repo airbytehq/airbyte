@@ -129,7 +129,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field, ""):
+                if record.get(self.cursor_field, "1970-01-01T00:00:00+00:00") >= stream_state.get(
+                    self.cursor_field, "1970-01-01T00:00:00+00:00"
+                ):
                     yield record
         else:
             yield from records_slice
