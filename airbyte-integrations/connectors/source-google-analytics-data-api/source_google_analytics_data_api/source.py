@@ -118,23 +118,18 @@ class SourceGoogleAnalyticsDataApi(Source):
         report_name = config.get("report_name")
 
         response = self._run_report(config)
-
-        dimensions = list(map(lambda h: h.name, response.dimension_headers))
-        metrics = list(map(lambda h: h.name, response.metric_headers))
+        rows = Client.response_to_list(response)
 
         last_cursor_value = state.get(report_name, {}).get(DEFAULT_CURSOR_FIELD, "")
 
-        for row in response.rows:
-            data = dict(zip(dimensions, list(map(lambda v: v.value, row.dimension_values))))
-            data.update(dict(zip(metrics, list(map(lambda v: float(v.value), row.metric_values)))))
-
-            if last_cursor_value <= data[DEFAULT_CURSOR_FIELD]:
+        for row in rows:
+            if last_cursor_value <= row[DEFAULT_CURSOR_FIELD]:
                 yield AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=report_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                    record=AirbyteRecordMessage(stream=report_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )
 
-                last_cursor_value = data[DEFAULT_CURSOR_FIELD]
+                last_cursor_value = row[DEFAULT_CURSOR_FIELD]
 
         yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={report_name: {DEFAULT_CURSOR_FIELD: last_cursor_value}}))
 

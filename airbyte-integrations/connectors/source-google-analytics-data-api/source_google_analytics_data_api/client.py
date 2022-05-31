@@ -4,7 +4,7 @@
 
 
 from collections import Mapping
-from typing import List
+from typing import List, Any, Dict
 
 from google.analytics.data_v1beta import Dimension, Metric, RunReportRequest, OrderBy, DateRange, \
     BetaAnalyticsDataClient, RunReportResponse
@@ -40,4 +40,26 @@ class Client:
                 )
             ]
         )
+
         return client.run_report(request)
+
+    @staticmethod
+    def response_to_list(response: RunReportResponse) -> List[Dict[str, Any]]:
+        """
+        Returns the report response as a list of dictionaries
+
+        :param response: The run report response
+
+        :return: A list of dictionaries, the key is either dimension name or metric name and the value is the dimension or the metric value
+        """
+        dimensions = list(map(lambda h: h.name, response.dimension_headers))
+        metrics = list(map(lambda h: h.name, response.metric_headers))
+
+        rows = []
+
+        for row in response.rows:
+            data = dict(zip(dimensions, list(map(lambda v: v.value, row.dimension_values))))
+            data.update(dict(zip(metrics, list(map(lambda v: float(v.value), row.metric_values)))))
+            rows.append(data)
+
+        return rows
