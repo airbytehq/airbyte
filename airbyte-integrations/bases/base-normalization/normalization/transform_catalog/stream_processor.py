@@ -1148,6 +1148,12 @@ where 1 = 1
                 if do_deletions:
                     final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
                     active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
+                    if self.destination_type == DestinationType.CLICKHOUSE:
+                        delete_statement = "alter table {{ final_table_relation }} delete"
+                        noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                    else:
+                        delete_statement = "delete from {{ final_table_relation }}"
+                        noop_delete_statement = "delete from {{ this }} where 1=0"
                     deletion_hook = Template(
                         """
                         {{ '{%' }}
@@ -1174,7 +1180,7 @@ where 1 = 1
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        delete from {{ '{{ final_table_relation }}' }}
+                        {{ delete_statement }}
                         where {{ '{{ final_table_relation }}' }}.{{ unique_key }} in (
                             with modified_ids as (
                                 select
@@ -1200,10 +1206,12 @@ where 1 = 1
 
                         {{ '{% else %}' }}
                         -- We have to have a non-empty query, so just do a noop delete
-                        delete from {{ '{{ this }}' }} where 1=0
+                        {{ noop_delete_statement }}
                         {{ '{% endif %}' }}
                         """
                     ).render(
+                        delete_statement=delete_statement,
+                        noop_delete_statement=noop_delete_statement,
                         final_table_name=final_table_name,
                         quoted_final_table_name=jinja_call(self.name_transformer.apply_quote(final_table_name)),
                         unique_key=self.get_unique_key(in_jinja=False),
