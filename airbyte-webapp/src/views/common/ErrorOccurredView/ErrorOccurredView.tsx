@@ -15,7 +15,7 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, o
   return (
     <div className={styles.errorOccurredView}>
       <div className={styles.content}>
-        <img src="/images/octavia/biting-nails.png" alt="Octavia" className={styles.octavia} />
+        <img src="/images/octavia/biting-nails.png" alt="" className={styles.octavia} />
         <H2 center>
           <FormattedMessage id="errorView.title" />
         </H2>
