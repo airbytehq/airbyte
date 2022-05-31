@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -121,8 +121,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("db").asText())
-    );
+            config.get("db").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

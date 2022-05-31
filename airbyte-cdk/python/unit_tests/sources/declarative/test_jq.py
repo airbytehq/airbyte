@@ -1,19 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import json
 
-import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import RequestJsonDecoder
 from airbyte_cdk.sources.declarative.extractors.jq import JqExtractor
+from airbyte_cdk.sources.declarative.response import Response
 
 config = {"field": "record_array"}
-decoder = RequestJsonDecoder()
 
 
 def test():
     transform = ".data[]"
-    extractor = JqExtractor(transform, decoder, config)
+    extractor = JqExtractor(transform, config)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"data": records}
@@ -25,7 +22,7 @@ def test():
 
 def test_field_in_config():
     transform = ".{{ config['field'] }}[]"
-    extractor = JqExtractor(transform, decoder, config)
+    extractor = JqExtractor(transform, config)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"record_array": records}
@@ -38,7 +35,7 @@ def test_field_in_config():
 def test_field_in_kwargs():
     transform = ".{{ kwargs['data_field'] }}[]"
     kwargs = {"data_field": "records"}
-    extractor = JqExtractor(transform, decoder, config, kwargs=kwargs)
+    extractor = JqExtractor(transform, config, kwargs=kwargs)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"records": records}
@@ -49,14 +46,12 @@ def test_field_in_kwargs():
 
 
 def create_response(body):
-    response = requests.Response()
-    response._content = json.dumps(body).encode("utf-8")
-    return response
+    return Response(body=body)
 
 
 def test_default():
     transform = ".{{kwargs['field']}}[]"
-    extractor = JqExtractor(transform, decoder, config)
+    extractor = JqExtractor(transform, config)
 
     records = [{"id": 1}, {"id": 2}]
     response = create_response(records)

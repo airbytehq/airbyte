@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.io.Closeable;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
@@ -67,8 +66,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get("port").asInt(),
             config.get("sid").asText()),
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )", ";")
-    );
+            "oracle.net.encryption_types_client=( 3DES168 )", ";"));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

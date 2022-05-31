@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 from copy import deepcopy
 from typing import Any, Mapping
@@ -65,6 +65,22 @@ class YamlParser(ConfigParser):
             if ref_key is None:
                 return value
             else:
+                """
+                references are ambiguous because one could define a key containing with `.`
+                in this example, we want to refer to the limit key in the dict object:
+                    dict:
+                        limit: 50
+                    limit_ref: "*ref(dict.limit)"
+
+                whereas here we want to access the `nested.path` value.
+                  nested:
+                    path: "first one"
+                  nested.path: "uh oh"
+                  value: "ref(nested.path)
+
+                to resolve the ambiguity, we try looking for the reference key at the top level, and then traverse the structs downward
+                until we find a key with the given path, or until there is nothing to traverse.
+                """
                 key = (ref_key,)
                 while key[-1]:
                     if key in evaluated_config:

@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Any, List, Mapping, Tuple
 
@@ -11,7 +12,7 @@ from airbyte_cdk.sources.source import Source
 
 class CheckStream(ConnectionChecker):
     """
-    Checks the connections by trying to read records from one or many of the streams
+    Checks the connections by trying to read records from one or many of the streams selected by the developer
     """
 
     def __init__(self, stream_names: List[str]):

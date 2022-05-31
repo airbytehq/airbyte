@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource

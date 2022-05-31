@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -56,7 +56,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 

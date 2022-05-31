@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.jobs;
 
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DatabaseCheckFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
+import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.test.TestDatabaseProvider;
 import java.io.IOException;
@@ -22,9 +26,11 @@ public class JobsDatabaseTestProvider implements TestDatabaseProvider {
   }
 
   @Override
-  public Database create(final boolean runMigration) throws IOException {
-    final Database jobsDatabase = new JobsDatabaseInstance(dslContext)
-        .getAndInitialize();
+  public Database create(final boolean runMigration) throws IOException, DatabaseInitializationException {
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
+    DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
+
+    final Database jobsDatabase = new Database(dslContext);
 
     if (runMigration) {
       final DatabaseMigrator migrator = new JobsDatabaseMigrator(

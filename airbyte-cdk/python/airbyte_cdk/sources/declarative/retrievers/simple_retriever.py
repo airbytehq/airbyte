@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -241,4 +241,4 @@ class SimpleRetriever(Retriever, HttpStream):
         return self._iterator.stream_slices(sync_mode, stream_state)
 
     def get_state(self) -> MutableMapping[str, Any]:
-        return self._state.get_state()
+        return self._state.get_stream_state()

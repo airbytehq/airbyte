@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -10,10 +10,11 @@ import io.airbyte.config.Schedule;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class ScheduleHelpersTest {
 
   @Test
-  public void testGetSecondsInUnit() {
+  void testGetSecondsInUnit() {
     assertEquals(60, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.MINUTES));
     assertEquals(3600, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.HOURS));
     assertEquals(86_400, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.DAYS));
@@ -23,7 +24,7 @@ class ScheduleHelpersTest {
 
   // Will throw if a new TimeUnit is added but an appropriate mapping is not included in this method.
   @Test
-  public void testAllOfTimeUnitEnumValues() {
+  void testAllOfTimeUnitEnumValues() {
     Arrays.stream(Schedule.TimeUnit.values()).forEach(ScheduleHelpers::getSecondsInUnit);
   }
 

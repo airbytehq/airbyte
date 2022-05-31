@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,21 +25,27 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * This class implements the envelope encryption that Redshift and Snowflake use when loading encrypted files from S3 (or other blob stores):
+ * This class implements the envelope encryption that Redshift and Snowflake use when loading
+ * encrypted files from S3 (or other blob stores):
  * <ul>
- *   <li>A content-encrypting-key (CEK) is used to encrypt the actual data (i.e. the CSV file)</li>
- *   <li>A key-encrypting-key (KEK) is used to encrypt the CEK</li>
- *   <li>The encrypted CEK is stored in the S3 object metadata, along with the plaintext initialization vector</li>
- *   <li>The COPY command includes the KEK (in plaintext). Redshift/Snowflake will use it to decrypt the CEK, which it then uses to decrypt the CSV file.</li>
+ * <li>A content-encrypting-key (CEK) is used to encrypt the actual data (i.e. the CSV file)</li>
+ * <li>A key-encrypting-key (KEK) is used to encrypt the CEK</li>
+ * <li>The encrypted CEK is stored in the S3 object metadata, along with the plaintext
+ * initialization vector</li>
+ * <li>The COPY command includes the KEK (in plaintext). Redshift/Snowflake will use it to decrypt
+ * the CEK, which it then uses to decrypt the CSV file.</li>
  * </ul>
  * <p>
- * A new CEK is generated for each S3 object, but each sync uses a single KEK. The KEK may be either user-provided (if the user wants to keep the data
- * for further use), or generated per-sync (if they simply want to add additional security around their COPY operation).
+ * A new CEK is generated for each S3 object, but each sync uses a single KEK. The KEK may be either
+ * user-provided (if the user wants to keep the data for further use), or generated per-sync (if
+ * they simply want to add additional security around their COPY operation).
  * <p>
  * Redshift does not support loading directly from GCS or Azure Blob Storage.
  * <p>
- * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this feature in GCS (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html).
- * Azure Storage uses a similar envelope encryption technique to S3 (https://docs.microsoft.com/en-us/azure/storage/common/storage-client-side-encryption?tabs=dotnet#encryption-via-the-envelope-technique).
+ * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this
+ * feature in GCS (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html). Azure
+ * Storage uses a similar envelope encryption technique to S3
+ * (https://docs.microsoft.com/en-us/azure/storage/common/storage-client-side-encryption?tabs=dotnet#encryption-via-the-envelope-technique).
  */
 public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
 
@@ -49,12 +59,15 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
 
   public static final String KEY_ENCRYPTING_ALGO = "AES";
 
-  // There's no specific KeyGenerator for AES/CBC/PKCS5Padding, so we just use a normal AES KeyGenerator
+  // There's no specific KeyGenerator for AES/CBC/PKCS5Padding, so we just use a normal AES
+  // KeyGenerator
   private static final String CONTENT_ENCRYPTING_KEY_ALGO = "AES";
   // Redshift's UNLOAD command uses this cipher mode, so we'll use it here as well.
-  // TODO If we eventually want to expose client-side encryption in destination-s3, we should probably also implement
-  //   AES-GCM, since it's mostly superior to CBC mode. (if we do that: make sure that the output is compatible with
-  //   aws-java-sdk's AmazonS3EncryptionV2Client, which requires a slightly different set of metadata)
+  // TODO If we eventually want to expose client-side encryption in destination-s3, we should probably
+  // also implement
+  // AES-GCM, since it's mostly superior to CBC mode. (if we do that: make sure that the output is
+  // compatible with
+  // aws-java-sdk's AmazonS3EncryptionV2Client, which requires a slightly different set of metadata)
   private static final String CONTENT_ENCRYPTING_CIPHER_ALGO = "AES/CBC/PKCS5Padding";
 
   // The real "secret key". Should be handled with great care.
@@ -82,9 +95,8 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   }
 
   @SuppressFBWarnings(
-      value = {"PADORA", "CIPINT"},
-      justification = "We're using this cipher for compatibility with Redshift/Snowflake."
-  )
+                      value = {"PADORA", "CIPINT"},
+                      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
   @Override
   public OutputStream wrap(final OutputStream stream) {
     try {
@@ -97,9 +109,8 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   }
 
   @SuppressFBWarnings(
-      value = {"CIPINT", "SECECB"},
-      justification = "We're using this cipher for compatibility with Redshift/Snowflake."
-  )
+                      value = {"CIPINT", "SECECB"},
+                      justification = "We're using this cipher for compatibility with Redshift/Snowflake.")
   @Override
   public void updateMetadata(final Map<String, String> metadata, final Map<String, String> metadataKeyMapping) {
     try {
@@ -129,4 +140,5 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
     SECURE_RANDOM.nextBytes(initializationVector);
     return initializationVector;
   }
+
 }

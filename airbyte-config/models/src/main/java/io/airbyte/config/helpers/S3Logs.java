@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -30,11 +30,12 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 
+@SuppressWarnings({"PMD.ShortVariable", "PMD.CloseResource", "PMD.AvoidFileStream"})
 public class S3Logs implements CloudLogs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Logs.class);
 
-  private static S3Client S3;
+  private static S3Client s3;
 
   private final Supplier<S3Client> s3ClientFactory;
 
@@ -100,7 +101,7 @@ public class S3Logs implements CloudLogs {
 
     final var s3Bucket = getBucketName(configs.getStorageConfigs());
     LOGGER.debug("Start making S3 list request.");
-    final ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(s3Client, logPath, s3Bucket);
+    final List<String> ascendingTimestampKeys = getAscendingObjectKeys(s3Client, logPath, s3Bucket);
     final var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
 
     final var lines = new ArrayList<String>();
@@ -145,13 +146,13 @@ public class S3Logs implements CloudLogs {
   }
 
   private S3Client getOrCreateS3Client() {
-    if (S3 == null) {
-      S3 = s3ClientFactory.get();
+    if (s3 == null) {
+      s3 = s3ClientFactory.get();
     }
-    return S3;
+    return s3;
   }
 
-  private static ArrayList<String> getAscendingObjectKeys(final S3Client s3Client, final String logPath, final String s3Bucket) {
+  private static List<String> getAscendingObjectKeys(final S3Client s3Client, final String logPath, final String s3Bucket) {
     final var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
     final var ascendingTimestampObjs = new ArrayList<String>();
 
@@ -164,7 +165,7 @@ public class S3Logs implements CloudLogs {
     return ascendingTimestampObjs;
   }
 
-  private static ArrayList<String> getCurrFile(final S3Client s3Client, final String s3Bucket, final String poppedKey) throws IOException {
+  private static List<String> getCurrFile(final S3Client s3Client, final String s3Bucket, final String poppedKey) throws IOException {
     final var getObjReq = GetObjectRequest.builder()
         .key(poppedKey)
         .bucket(s3Bucket)

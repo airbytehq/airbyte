@@ -1,29 +1,30 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
 
-import static io.airbyte.db.instance.configs.jooq.Keys.ACTOR_CATALOG_FETCH_EVENT__ACTOR_CATALOG_FETCH_EVENT_ACTOR_ID_FKEY;
-import static io.airbyte.db.instance.configs.jooq.Keys.ACTOR__ACTOR_WORKSPACE_ID_FKEY;
-import static io.airbyte.db.instance.configs.jooq.Keys.CONNECTION__CONNECTION_DESTINATION_ID_FKEY;
-import static io.airbyte.db.instance.configs.jooq.Keys.CONNECTION__CONNECTION_SOURCE_ID_FKEY;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
-import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
+import static io.airbyte.db.instance.configs.jooq.generated.Keys.ACTOR_CATALOG_FETCH_EVENT__ACTOR_CATALOG_FETCH_EVENT_ACTOR_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.generated.Keys.ACTOR__ACTOR_WORKSPACE_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.generated.Keys.CONNECTION__CONNECTION_DESTINATION_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.generated.Keys.CONNECTION__CONNECTION_SOURCE_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.instance.configs.jooq.enums.ActorType;
-import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.db.instance.configs.jooq.enums.StatusType;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import io.airbyte.db.init.DatabaseInitializationException;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class MetricsQueriesTest {
   private static Database configDb;
 
   @BeforeAll
-  static void setUpAll() throws IOException, SQLException {
+  static void setUpAll() throws IOException, SQLException, DatabaseInitializationException {
     final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withUsername(USER)
         .withPassword(PASS);

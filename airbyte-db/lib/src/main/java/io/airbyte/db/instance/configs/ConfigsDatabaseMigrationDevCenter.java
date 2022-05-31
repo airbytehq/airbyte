@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.configs;
@@ -29,7 +29,7 @@ public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   @Override
   protected Database getDatabase(final DSLContext dslContext) throws IOException {
-    return new ConfigsDatabaseInstance(dslContext).getAndInitialize();
+    return new Database(dslContext);
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -21,13 +21,13 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Tag("logger-client")
-public class S3LogsTest {
+class S3LogsTest {
 
   private static final String REGION_STRING = "us-west-2";
   private static final Region REGION = Region.of(REGION_STRING);
   private static final String BUCKET_NAME = "airbyte-kube-integration-logging-test";
 
-  private static final LogConfigs logConfigs = new LogConfigs(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
+  private static final LogConfigs LOG_CONFIGS = new LogConfigs(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
       System.getenv(LogClientSingleton.S3_LOG_BUCKET),
       System.getenv(LogClientSingleton.AWS_ACCESS_KEY_ID),
       System.getenv(LogClientSingleton.AWS_SECRET_ACCESS_KEY),
@@ -47,8 +47,8 @@ public class S3LogsTest {
    * Generate enough files to force pagination and confirm all data is read.
    */
   @Test
-  public void testRetrieveAllLogs() throws IOException {
-    final var data = S3Logs.getFile(s3Client, logConfigs, "paginate", 6);
+  void testRetrieveAllLogs() throws IOException {
+    final var data = S3Logs.getFile(s3Client, LOG_CONFIGS, "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
@@ -66,8 +66,8 @@ public class S3LogsTest {
    * <li>third-file.txt - Line 7, Line 8, Line 9</li>
    */
   @Test
-  public void testTail() throws IOException {
-    final var data = new S3Logs(() -> s3Client).tailCloudLog(logConfigs, "tail", 6);
+  void testTail() throws IOException {
+    final var data = new S3Logs(() -> s3Client).tailCloudLog(LOG_CONFIGS, "tail", 6);
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }

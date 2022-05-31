@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,7 +12,7 @@ import javax.crypto.KeyGenerator;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @param key     The key to use for encryption.
+ * @param key The key to use for encryption.
  * @param keyType Where the key came from.
  */
 public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType keyType) implements EncryptionConfig {
@@ -63,4 +67,5 @@ public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType key
     result = 31 * result + keyType.hashCode();
     return result;
   }
+
 }

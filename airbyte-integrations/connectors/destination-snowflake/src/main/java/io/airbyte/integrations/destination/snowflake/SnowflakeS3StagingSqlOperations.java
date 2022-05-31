@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -122,8 +122,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         dstTableName,
         generateBucketPath(stagingPath),
         credentialConfig.getAccessKeyId(),
-        credentialConfig.getSecretAccessKey()
-    );
+        credentialConfig.getSecretAccessKey());
   }
 
   private String generateBucketPath(final String stagingPath) {

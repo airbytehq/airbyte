@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
@@ -52,7 +51,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            config.get("database").asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> {

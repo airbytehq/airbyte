@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -39,7 +39,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
+        .put("replication_type", "Standard")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -48,7 +48,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("database", dbName) // set your db name
         .put("username", "your_username")
         .put("password", "your_pass")
-        .put("replication_method", replicationMethod)
+        .put("replication", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
