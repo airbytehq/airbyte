@@ -106,6 +106,9 @@ definitions:
         type: string
       state:
         "$ref": "#/definitions/AirbyteStateBlob"
+      namespace:
+        description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
+        type: string
 
   AirbyteStateBlob:
     type: object
