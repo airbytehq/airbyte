@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -9,6 +9,7 @@ import java.util.Objects;
 /**
  * Represents a minimal io.fabric8.kubernetes.api.model.Toleration
  */
+@SuppressWarnings("PMD.ShortVariable")
 public class TolerationPOJO {
 
   private final String key;

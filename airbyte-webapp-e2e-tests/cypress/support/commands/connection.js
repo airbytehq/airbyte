@@ -11,6 +11,7 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
 
   cy.wait("@discoverSchema");
 
+  cy.get("div[data-testid='connectionName']").type("Connection name");
   cy.get("div[data-testid='schedule']").click();
   cy.get("div[data-testid='manual']").click();
 

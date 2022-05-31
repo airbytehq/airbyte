@@ -54,7 +54,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
           <Label value={yLabel} fontSize={11} fill={chartTicksColor} fontWeight={600} position="top" offset={10} />
         </YAxis>
         {legendLabels.map((barName, key) => (
-          <Bar dataKey={barName} key={barName} fill={barChartColors[key]} />
+          <Bar key={barName} dataKey={barName} fill={barChartColors[key]} />
         ))}
       </BasicBarChart>
     </ResponsiveContainer>

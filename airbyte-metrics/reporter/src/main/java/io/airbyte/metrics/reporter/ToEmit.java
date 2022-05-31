@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions.Procedure;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
@@ -57,7 +57,7 @@ public enum ToEmit {
   final public long period;
   final public TimeUnit timeUnit;
 
-  ToEmit(Runnable toEmit) {
+  ToEmit(final Runnable toEmit) {
     this(toEmit, 15, TimeUnit.SECONDS);
   }
 
@@ -68,12 +68,12 @@ public enum ToEmit {
    * @param metricQuery
    * @return
    */
-  private static Runnable countMetricEmission(Procedure metricQuery) {
+  private static Runnable countMetricEmission(final Procedure metricQuery) {
     return () -> {
       try {
         metricQuery.call();
         DogStatsDMetricSingleton.count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.error("Exception querying database for metric: ", e);
       }
     };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import org.junit.jupiter.api.Test;
 
-public class DataTypeEnumTest {
+class DataTypeEnumTest {
 
   // We use JsonSchemaPrimitive in tests to construct schemas. We want to verify that their are valid
   // conversions between JsonSchemaPrimitive to DataType so that if anything changes we won't have

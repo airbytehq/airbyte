@@ -4,13 +4,14 @@ FROM ${JDK_IMAGE} AS server
 
 EXPOSE 8000
 
-ARG VERSION=0.38.4-alpha
+ARG VERSION=0.39.5-alpha
 
 ENV APPLICATION airbyte-server
 ENV VERSION ${VERSION}
 
 WORKDIR /app
 
+# This is automatically unzipped by Docker
 ADD bin/${APPLICATION}-${VERSION}.tar /app
 
 # wait for upstream dependencies to become available before starting server

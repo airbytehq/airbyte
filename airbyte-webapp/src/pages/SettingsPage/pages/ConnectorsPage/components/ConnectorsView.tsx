@@ -5,8 +5,11 @@ import { CellProps } from "react-table";
 import HeadTitle from "components/HeadTitle";
 import Table from "components/Table";
 
-import { Connector, ConnectorDefinition, DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
+import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
 import CreateConnector from "./CreateConnector";
@@ -19,8 +22,8 @@ type ConnectorsViewProps = {
   type: "sources" | "destinations";
   isUpdateSuccess: boolean;
   hasNewConnectorVersion?: boolean;
-  usedConnectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
-  connectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
+  usedConnectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
+  connectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
   loading: boolean;
   error?: Error;
   onUpdate: () => void;
@@ -44,6 +47,8 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const { hasFeature } = useFeatureService();
   const allowUpdateConnectors = hasFeature(FeatureItem.AllowUpdateConnectors);
+  const workspace = useCurrentWorkspace();
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions(connectorsDefinitions, workspace);
 
   const columns = React.useMemo(
     () => [
@@ -138,7 +143,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
           {renderHeaderControls("available")}
         </Title>
-        <Table columns={columns} data={connectorsDefinitions} sortBy={defaultSorting} />
+        <Table columns={columns} data={availableConnectorDefinitions} sortBy={defaultSorting} />
       </Block>
     </>
   );

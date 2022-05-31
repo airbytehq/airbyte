@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -109,7 +109,7 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(self._format.get("filetype"))
+        file_reader = self.fileformatparser_map.get(filetype)
         if not file_reader:
             raise RuntimeError(
                 f"Detected mismatched file format '{filetype}'. Available values: '{list(self.fileformatparser_map.keys())}''."
@@ -221,23 +221,24 @@ class FileStream(Stream, ABC):
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
                     if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
-                        # if this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
-                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
-                        # if not, then the read will error anyway
+                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
+                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
+                        # provided schema state. If not, then the read will error anyway
                         if col in self._schema.keys():
                             LOGGER.warn(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
-                        # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
+                        # else we're inferring the schema (or at least this column) from scratch and therefore
+                        # throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
-                # missing columns in this_schema doesn't affect our master_schema so we don't check for it here
+                # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
 
                 # add to master_schema any columns from this_schema that aren't already present
                 for col, datatype in this_schema.items():
@@ -250,7 +251,7 @@ class FileStream(Stream, ABC):
         return self.master_schema
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
@@ -306,10 +307,10 @@ class FileStream(Stream, ABC):
         return record
 
     def _read_from_slice(
-            self,
-            file_reader: AbstractFileParser,
-            stream_slice: Mapping[str, Any],
-            stream_state: Mapping[str, Any] = None,
+        self,
+        file_reader: AbstractFileParser,
+        stream_slice: Mapping[str, Any],
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Uses provider-relevant StorageFile to open file and then iterates through stream_records() using format-relevant AbstractFileParser.
@@ -333,11 +334,11 @@ class FileStream(Stream, ABC):
         LOGGER.info("finished reading a stream slice")
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic
@@ -394,8 +395,11 @@ class IncrementalFileStream(FileStream, ABC):
 
         # reset history to new date state
         if current_parsed_datetime.date() != state_date:
-            history = {date: history[date] for date in history if datetime.strptime(date, "%Y-%m-%d").date() + timedelta(
-                days=self.buffer_days) >= state_date}
+            history = {
+                date: history[date]
+                for date in history
+                if datetime.strptime(date, "%Y-%m-%d").date() + timedelta(days=self.buffer_days) >= state_date
+            }
 
         return history
 
@@ -433,8 +437,9 @@ class IncrementalFileStream(FileStream, ABC):
         state_date = self._get_datetime_from_stream_state(state_dict).date()
 
         if not self.sync_all_files_always:
-            state_dict["history"] = self.get_updated_history(current_stream_state, latest_record_datetime, latest_record,
-                                                         current_parsed_datetime, state_date)
+            state_dict["history"] = self.get_updated_history(
+                current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date
+            )
 
         return self.size_history_balancer(state_dict)
 
@@ -444,18 +449,23 @@ class IncrementalFileStream(FileStream, ABC):
         or skip this file if last_mod plus delta is earlier than our cursor value
         """
         file_in_history_and_last_modified_is_earlier_than_cursor_value = (
-                stream_state is not None
-                and self.cursor_field in stream_state.keys()
-                and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-                and self.file_in_history(file_info, stream_state.get("history", {})))
+            stream_state is not None
+            and self.cursor_field in stream_state.keys()
+            and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
+            and self.file_in_history(file_info, stream_state.get("history", {}))
+        )
 
         file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
-            days=self.buffer_days) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
+            days=self.buffer_days
+        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
 
-        return file_in_history_and_last_modified_is_earlier_than_cursor_value or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
+        return (
+            file_in_history_and_last_modified_is_earlier_than_cursor_value
+            or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
+        )
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         Builds either full_refresh or incremental stream_slices based on sync_mode.
@@ -500,11 +510,11 @@ class IncrementalFileStream(FileStream, ABC):
                 yield None
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic.

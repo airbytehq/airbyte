@@ -10,13 +10,13 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 
 Several output streams are available from this source:
 
-* [Export](https://developer.mixpanel.com/docs/exporting-raw-data#section-export-api-reference) \(Incremental\)
-* [Engage](https://developer.mixpanel.com/docs/data-export-api#section-engage) \(Full table\)
-* [Funnels](https://developer.mixpanel.com/docs/data-export-api#section-funnels) \(Incremental\)
-* [Revenue](https://developer.mixpanel.com/docs/data-export-api#section-hr-span-style-font-family-courier-revenue-span) \(Incremental\)
-* [Annotations](https://developer.mixpanel.com/docs/data-export-api#section-annotations) \(Full table\)
-* [Cohorts](https://developer.mixpanel.com/docs/cohorts#section-list-cohorts) \(Full table\)
-* [Cohort Members](https://developer.mixpanel.com/docs/data-export-api#section-engage) \(Full table\)
+* [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
+* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
+* [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
+* [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
+* [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
+* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Full table\)
+* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -59,6 +59,7 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| `0.1.16` | 2022-05-30 | [\#12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter |
 | `0.1.15` | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | `0.1.14` | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams |  
 | `0.1.13` | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |  

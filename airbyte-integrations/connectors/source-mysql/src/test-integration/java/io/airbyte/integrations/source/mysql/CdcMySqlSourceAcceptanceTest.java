@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -140,7 +139,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()), SQLDialect.MYSQL)) {
+            container.getDatabaseName()),
+        SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx

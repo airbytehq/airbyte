@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 @Tag("log4j2-config")
-public class KubeLoggingConfigTest {
+class KubeLoggingConfigTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeLoggingConfigTest.class);
   // We publish every minute. See log4j2.xml.
@@ -28,14 +28,10 @@ public class KubeLoggingConfigTest {
   private String logPath;
 
   @AfterEach
-  public void cleanUpLogs() {
+  void cleanUpLogs() {
     if (logPath != null) {
-      try {
-        final EnvConfigs envConfigs = new EnvConfigs();
-        LogClientSingleton.getInstance().deleteLogs(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), logPath);
-      } catch (final Exception e) {
-        // Ignore Minio delete error.
-      }
+      final EnvConfigs envConfigs = new EnvConfigs();
+      LogClientSingleton.getInstance().deleteLogs(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), logPath);
     }
   }
 
@@ -47,7 +43,7 @@ public class KubeLoggingConfigTest {
    * This test will fail if certain env vars aren't set.
    */
   @Test
-  public void testLoggingConfiguration() throws IOException, InterruptedException {
+  void testLoggingConfiguration() throws IOException, InterruptedException {
     final EnvConfigs envConfigs = new EnvConfigs();
     final var randPath = Strings.addRandomSuffix("-", "", 5);
     // This mirrors our Log4j2 set up. See log4j2.xml.

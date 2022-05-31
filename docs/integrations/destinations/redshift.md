@@ -105,8 +105,8 @@ Therefore, Airbyte Redshift destination will create tables and schemas using the
 
 ### Data Size Limitations
 
-Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
-See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
+Redshift specifies a maximum limit of 1MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)
 
 ### Encryption
 
@@ -136,8 +136,11 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :-----       | :------ |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                 | 
+| 0.3.36  | 2022-05-23 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| 0.3.35  | 2022-05-18 | [12940](https://github.com/airbytehq/airbyte/pull/12940) | Fixed maximum record size for SUPER type |
 | 0.3.34  | 2022-05-16 | [12869](https://github.com/airbytehq/airbyte/pull/12869) | Fixed NPE in S3 staging check  |
 | 0.3.33  | 2022-05-04 | [12601](https://github.com/airbytehq/airbyte/pull/12601) | Apply buffering strategy for S3 staging  |
 | 0.3.32  | 2022-04-20 | [12085](https://github.com/airbytehq/airbyte/pull/12085) | Fixed bug with switching between INSERT and COPY config |

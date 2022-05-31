@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -144,4 +144,5 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
       return loadingMethod.get("purge_staging_data").asBoolean();
     }
   }
+
 }
