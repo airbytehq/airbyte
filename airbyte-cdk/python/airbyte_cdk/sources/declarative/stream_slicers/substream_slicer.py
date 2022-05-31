@@ -4,6 +4,7 @@
 from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -19,8 +20,7 @@ class SubstreamSlicer(StreamSlicer):
     def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any]):
         self._parent_streams = parent_streams
         self._state = state
-        self._interpolation = JinjaInterpolation()
-        self._slice_definition = slice_definition
+        self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         if not self._parent_streams:
@@ -36,46 +36,16 @@ class SubstreamSlicer(StreamSlicer):
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
                         empty_parent_slice = False
-                        slice_definition = {
-                            self._interpolation.eval(
-                                k,
-                                None,
-                                None,
-                                parent_stream_slice=parent_stream_slice,
-                                parent_record=parent_record,
-                                parent_stream_name=parent_stream.name,
-                            ): self._interpolation.eval(
-                                v,
-                                None,
-                                None,
-                                parent_stream_slice=parent_stream_slice,
-                                parent_record=parent_record,
-                                parent_stream_name=parent_stream.name,
-                            )
-                            for k, v in self._slice_definition.items()
-                        }
+                        slice_definition = self._get_slice_definition(parent_stream_slice, parent_record, parent_stream.name)
                         self._state.update_state(parent_record=parent_record)
                         yield slice_definition
                     # If the parent slice contains no records,
                     # yield a slice definition with parent_record==None
                     if empty_parent_slice:
-                        slice_definition = {
-                            self._interpolation.eval(
-                                k,
-                                None,
-                                None,
-                                parent_stream_slice=parent_stream_slice,
-                                parent_record=None,
-                                parent_stream_name=parent_stream.name,
-                            ): self._interpolation.eval(
-                                v,
-                                None,
-                                None,
-                                parent_stream_slice=parent_stream_slice,
-                                parent_record=None,
-                                parent_stream_name=parent_stream.name,
-                            )
-                            for k, v in self._slice_definition.items()
-                        }
-                        print(f"slice_definition: {slice_definition}")
+                        slice_definition = self._get_slice_definition(parent_stream_slice, None, parent_stream.name)
                         yield slice_definition
+
+    def _get_slice_definition(self, parent_stream_slice, parent_record, parent_stream_name):
+        return self._interpolation.eval(
+            None, parent_stream_slice=parent_stream_slice, parent_record=parent_record, parent_stream_name=parent_stream_name
+        )
