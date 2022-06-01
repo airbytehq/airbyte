@@ -76,6 +76,8 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         "e-commerce",
         "crm.objects.companies.read",
         "crm.lists.read",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
         "crm.objects.deals.read",
         "crm.schemas.companies.read",
         "files",
@@ -87,9 +89,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
   }
 
   private String getRequiredScopes() {
-    return String.join(" ",
-        "crm.schemas.contacts.read",
-        "crm.objects.contacts.read");
+    return "";
   }
 
   /**
