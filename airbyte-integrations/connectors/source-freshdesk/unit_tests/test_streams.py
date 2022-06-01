@@ -124,7 +124,7 @@ def test_full_refresh_settings(authenticator, config, requests_mock):
 def test_incremental(stream, resource, authenticator, config, requests_mock):
     highest_updated_at = "2022-04-25T22:00:00Z"
     other_updated_at = "2022-04-01T00:00:00Z"
-    highest_index = random.randint(0, 25)
+    highest_index = random.randint(0, 24)
     requests_mock.register_uri(
         "GET",
         f"/api/{resource}",
