@@ -4,7 +4,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sendgrid Spec",
     "type": "object",
-    "required": ["apikey"],
+    "required": [
+      "apikey"
+    ],
     "additionalProperties": false,
     "properties": {
       "apikey": {
@@ -14,7 +16,16 @@
       "start_time": {
         "type": "integer",
         "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
-        "examples": [1558359837]
+        "examples": [
+          1558359837
+        ]
+      },
+      "end_time": {
+        "type": "integer",
+        "description": "End time in timestamp integer format. Any data after this timestamp will not be replicated. If a value is not placed, it will be updated to the last current date",
+        "examples": [
+          1558359837
+        ]
       }
     }
   }
