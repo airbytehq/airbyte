@@ -164,10 +164,10 @@ export class GoogleAuthService implements AuthService {
         case AuthErrorCodes.INVALID_EMAIL:
           throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
         case AuthErrorCodes.INVALID_OOB_CODE:
-          // Maybe they already activated the link?
+          // The link was already used
           throw new Error(EmailLinkErrorCodes.LINK_INVALID);
         case AuthErrorCodes.EXPIRED_OOB_CODE:
-          // TODO - Resend invitation
+          // The link expired
           throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
 
         default:
