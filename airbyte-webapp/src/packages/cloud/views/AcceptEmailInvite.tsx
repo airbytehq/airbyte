@@ -1,19 +1,27 @@
-import { Field, FieldProps, Formik } from "formik";
+import { Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { H1, LabeledInput, LoadingButton } from "components";
+import { H1, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
 import { EmailLinkErrorCodes } from "../services/auth/types";
 import { BottomBlock, BottomBlockStatusMessage, FieldItem, Form } from "./auth/components/FormComponents";
+import {
+  EmailField,
+  NameField,
+  NewsField,
+  PasswordField,
+  SecurityField,
+} from "./auth/SignupPage/components/SignupForm";
 
 const ValidationSchema = yup.object().shape({
+  name: yup.string().required("form.empty.error"),
   email: yup.string().email("form.email.error").required("form.empty.error"),
   password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
-  name: yup.string().required("form.empty.error"),
+  security: yup.boolean().oneOf([true], "form.empty.error"),
 });
 
 export const AcceptEmailInvite: React.FC = () => {
@@ -26,16 +34,17 @@ export const AcceptEmailInvite: React.FC = () => {
         name: "",
         email: "",
         password: "",
+        news: true,
+        security: false,
       }}
       validationSchema={ValidationSchema}
-      onSubmit={async ({ name, email, password }, { setFieldError, setStatus }) => {
+      onSubmit={async ({ name, email, password, news }, { setFieldError, setStatus }) => {
         try {
-          await authService.signUpWithEmailLink({ name, email, password });
+          await authService.signUpWithEmailLink({ name, email, password, news });
         } catch (err) {
           if (err instanceof FieldError) {
             setFieldError(err.field, err.message);
           } else {
-            console.log(err.message);
             setStatus(
               formatMessage({
                 id: [EmailLinkErrorCodes.LINK_EXPIRED, EmailLinkErrorCodes.LINK_INVALID].includes(err.message)
@@ -47,58 +56,28 @@ export const AcceptEmailInvite: React.FC = () => {
         }
       }}
     >
-      {({ isSubmitting, status }) => (
+      {({ isSubmitting, status, values, isValid }) => (
         <Form>
           <FieldItem>
-            <Field name="name">
-              {({ field, meta }: FieldProps<string>) => (
-                <LabeledInput
-                  {...field}
-                  label={<FormattedMessage id="login.fullName" />}
-                  placeholder={formatMessage({
-                    id: "login.fullName.placeholder",
-                  })}
-                  type="text"
-                  error={!!meta.error && meta.touched}
-                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                />
-              )}
-            </Field>
+            <NameField />
           </FieldItem>
           <FieldItem>
-            <Field name="email">
-              {({ field, meta }: FieldProps<string>) => (
-                <LabeledInput
-                  {...field}
-                  label={<FormattedMessage id="login.inviteEmail" />}
-                  placeholder={formatMessage({
-                    id: "login.yourEmail.placeholder",
-                  })}
-                  type="email"
-                  error={!!meta.error && meta.touched}
-                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                />
-              )}
-            </Field>
+            <EmailField label={<FormattedMessage id="login.inviteEmail" />} />
           </FieldItem>
           <FieldItem>
-            <Field name="password">
-              {({ field, meta }: FieldProps<string>) => (
-                <LabeledInput
-                  {...field}
-                  label={<FormattedMessage id="login.createPassword" />}
-                  placeholder={formatMessage({
-                    id: "login.password.placeholder",
-                  })}
-                  type="password"
-                  error={!!meta.error && meta.touched}
-                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                />
-              )}
-            </Field>
+            <PasswordField label={<FormattedMessage id="login.createPassword" />} />
+          </FieldItem>
+          <FieldItem>
+            <NewsField />
+            <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.signup">
+            <LoadingButton
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!isValid || !values.security}
+              data-testid="login.signup"
+            >
               <FormattedMessage id="login.signup" />
             </LoadingButton>
             {status && <BottomBlockStatusMessage>{status}</BottomBlockStatusMessage>}

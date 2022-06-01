@@ -1,6 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-import { User } from "./types";
+import { User, UserUpdate } from "./types";
 
 export class UserService extends AirbyteRequestService {
   get url(): string {
@@ -20,7 +20,7 @@ export class UserService extends AirbyteRequestService {
     });
   }
 
-  public async updateName(params: { userId: string; authUserId: string; name: string }): Promise<void> {
+  public async update(params: UserUpdate): Promise<void> {
     return this.fetch<void>(`${this.url}/update`, params);
   }
 

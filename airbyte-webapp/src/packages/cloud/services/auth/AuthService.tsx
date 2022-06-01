@@ -44,7 +44,7 @@ interface AuthContextApi {
   isLoading: boolean;
   loggedOut: boolean;
   login: AuthLogin;
-  signUpWithEmailLink: (form: { name: string; email: string; password: string }) => Promise<void>;
+  signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
@@ -135,7 +135,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
       },
-      async signUpWithEmailLink({ name, email, password }): Promise<void> {
+      async signUpWithEmailLink({ name, email, password, news }): Promise<void> {
         let firebaseUser: FbUser;
 
         try {
@@ -151,7 +151,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
 
         if (firebaseUser) {
           const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
-          await userService.updateName({ userId: user.userId, authUserId: firebaseUser.uid, name });
+          await userService.update({ userId: user.userId, authUserId: firebaseUser.uid, name, news });
           await onAfterAuth(firebaseUser, { ...user, name });
         }
       },
