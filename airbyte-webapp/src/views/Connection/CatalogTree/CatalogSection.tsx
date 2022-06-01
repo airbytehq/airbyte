@@ -18,6 +18,7 @@ import {
   SyncMode,
 } from "../../../core/request/AirbyteClient";
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
+import styles from "./CatalogSection.module.scss";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
@@ -37,7 +38,7 @@ const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   }
 `;
 
-type TreeViewRowProps = {
+interface CatalogSectionInnerProps {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
@@ -46,9 +47,10 @@ type TreeViewRowProps = {
   prefix: string;
   updateStream: (id: string | undefined, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
   mode?: ConnectionFormMode;
-};
+  changedSelected: boolean;
+}
 
-const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
+const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   streamNode,
   updateStream,
   namespaceDefinition,
@@ -57,10 +59,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   errors,
   destinationSupportedSyncModes,
   mode,
+  changedSelected,
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
-
   const [isSelected] = useBulkEditSelect(streamNode.id);
 
   const updateStreamWithConfig = useCallback(
@@ -145,8 +147,20 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
 
+  const isEnabled = streamNode.config?.selected;
+
   return (
-    <Section error={hasError} isSelected={isSelected}>
+    <Section
+      error={hasError}
+      isSelected={isSelected}
+      className={
+        changedSelected && isEnabled
+          ? styles.greenBackground
+          : changedSelected && !isEnabled
+          ? styles.redBackground
+          : undefined
+      }
+    >
       <TreeRowWrapper>
         <StreamHeader
           stream={streamNode}
