@@ -13,8 +13,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
-from .testing import adapt_slicing_for_testing
+from .streams import (
+    Annotations,
+    CohortMembers,
+    Cohorts,
+    Engage,
+    Export,
+    Funnels,
+    FunnelsList,
+    Revenue,
+)
+from .testing import adapt_streams_if_testing
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
@@ -56,7 +65,7 @@ class SourceMixpanel(AbstractSource):
 
         return True, None
 
-    @adapt_slicing_for_testing
+    @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.

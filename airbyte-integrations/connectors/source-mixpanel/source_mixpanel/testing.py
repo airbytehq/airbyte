@@ -21,7 +21,7 @@ def funnel_slices_patched(self: Funnels, sync_mode):
     return [funnel_slices_values[0]] if funnel_slices_values else funnel_slices_values
 
 
-def adapt_slicing_for_testing(func):
+def adapt_streams_if_testing(func):
     """
     Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
     so we're reducing amount of requests by, if `is_testing` flag is set in config:
