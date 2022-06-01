@@ -5,7 +5,7 @@
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 
-config = {"parent": {"key_with_true": True}, "string_key": "compare_me"}
+config = {"parent": {"key_with_true": True}, "string_key": "compare_me", "empty_array": [], "empty_dict": {}}
 
 
 @pytest.mark.parametrize(
@@ -17,6 +17,8 @@ config = {"parent": {"key_with_true": True}, "string_key": "compare_me"}
         ("test_interpolated_false_condition", "{{ config['string_key'] == \"witness_me\" }}", False),
         ("test_path_has_value_returns_true", "{{ config['string_key'] }}", True),
         ("test_missing_key_defaults_to_false", "{{ path_to_nowhere }}", False),
+        ("test_empty_array_is_false", "{{ config['empty_array'] }}", False),
+        ("test_empty_dict_is_false", "{{ config['empty_dict'] }}", False),
     ],
 )
 def test_interpolated_boolean(test_name, template, expected_result):

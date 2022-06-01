@@ -18,5 +18,7 @@ class InterpolatedBoolean:
             evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
             if evaluated == "True" or evaluated == "False":
                 return True if evaluated == "True" else False
+            if evaluated == "[]" or evaluated == "{}":
+                return False
             # The presence of a value is generally regarded as truthy, so we treat it as such
             return True

@@ -19,6 +19,7 @@ from airbyte_cdk.sources.declarative.states.dict_state import DictState
         ("test_continue_pagination_from_response_body", "{{ decoded_response['end'] == decoded_response['total'] - 1 }}", {"page": 2}, 2),
         ("test_continue_pagination_from_response_headers", "{{ decoded_response['headers']['has_more'] }}", {"page": 2}, 2),
         ("test_continue_pagination_from_last_records", "{{ last_records[-1]['more_records'] == False }}", {"page": 2}, 2),
+        ("test_continue_pagination_for_empty_dict_evaluates_false", "{{ decoded_response['characters'] }}", {"page": 2}, 2),
     ],
 )
 def test_interpolated_request_header(test_name, stop_condition_template, expected_next_page_token, expected_page):
@@ -29,7 +30,7 @@ def test_interpolated_request_header(test_name, stop_condition_template, expecte
 
     response = requests.Response()
     response.headers = {"has_more": True}
-    response_body = {"_metadata": {"content": "stop_if_you_see_me"}, "accounts": [], "end": 99, "total": 200}
+    response_body = {"_metadata": {"content": "stop_if_you_see_me"}, "accounts": [], "end": 99, "total": 200, "characters": {}}
     response._content = json.dumps(response_body).encode("utf-8")
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
 
