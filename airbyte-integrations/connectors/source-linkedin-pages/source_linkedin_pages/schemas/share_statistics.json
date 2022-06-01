@@ -1,27 +1,26 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "paging": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "start": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "count": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "links": {
-          "type": "array",
+          "type": ["null", "array"],
           "items": {}
         },
         "total": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
     "elements": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {}
     }
   }
