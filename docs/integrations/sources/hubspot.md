@@ -1,6 +1,62 @@
 # HubSpot
 
-## Features
+This page contains the setup guide and reference information for the HubSpot source connector.
+
+## Prerequisites
+
+Chose `start date` which is any data before this date will not be replicated and should be UTC date and time in the format 2017-01-25T00:00:00Z. 
+
+## Setup guide
+### Step 1: Set up HubSpot
+
+If you are using OAuth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
+
+| Stream | Required Scope |
+| :--- | :--- |
+| `campaigns` | `content` |
+| `companies` | `contacts` |
+| `contact_lists` | `contacts` |
+| `contacts` | `contacts` |
+| `contacts_list_memberships` | `contacts` |
+| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
+| `deals` | `contacts` |
+| `email_events` | `content` |
+| `engagements` | `contacts` |
+| `engagements_emails` | `sales-email-read` |
+| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
+| `forms` | `forms` |
+| `form_submissions`| `forms` |
+| `line_items` | `e-commerce` |
+| `owners` | `contacts` |
+| `products` | `e-commerce` |
+| `property_history` | `contacts` |
+| `quotes` | no scope required |
+| `subscription_changes` | `content` |
+| `tickets` | `tickets` |
+| `workflows` | `automation` |
+
+
+## Step 2: Set up the HubSpot connector in Airbyte
+
+### For Airbyte Cloud:
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the HubSpot connector and select **HubSpot** from the Source type dropdown. 
+4. Click `Authenticate your account` to sign in with Google and authorize your account.
+5. Fill out a `start date`.
+6. You're done.
+
+### For Airbyte OSS:
+1. Fill out a `API Key`.
+2. Fill out a `start date`.
+3. You're done.
+
+To obtain the API Key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; API Key. If you already have an API Key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+
+
+## Supported sync modes
+
+The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported? |
 | :--- | :--- |
@@ -9,13 +65,7 @@
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 
-## Troubleshooting
-
-Check out common troubleshooting issues for the HubSpot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
-
 ## Supported Streams
-
-This source is capable of syncing the following tables and their data:
 
 * [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
 * [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
@@ -59,47 +109,7 @@ Depending on the type of engagement, different properties will be set for that o
 
 **Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
-## Getting Started
-
-### Requirements \(Airbyte Cloud\)
-
-1. Click `Authenticate your account` to sign in with Google and authorize your account.
-2. Fill out a start date
-3. You're done.
-
-:::info
-
-HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-
-:::
-
-### Requirements \(Airbyte Open-Source\)
-
-* HubSpot Account
-* API or OAuth2.0 Credentials (See below)
-
-#### Using API Credentials
-
-* API Key
-
-To obtain the API Key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; API Key. If you already have an API Key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
-
-#### Using OAuth2.0 Credentials
-
-* Client ID
-* Client Secret
-* Refresh Token
-* If using OAuth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
-
-See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart) if you need help finding these fields
-
-:::info
-
-HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-
-:::
-
-## Rate Limiting & Performance
+## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
@@ -117,41 +127,16 @@ Example of the output message when trying to read `workflows` stream with missin
 }
 ```
 
-## Required scopes
-
-If you are using OAuth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
-
-| Stream | Required Scope |
-| :--- | :--- |
-| `campaigns` | `content` |
-| `companies` | `contacts` |
-| `contact_lists` | `contacts` |
-| `contacts` | `contacts` |
-| `contacts_list_memberships` | `contacts` |
-| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals` | `contacts` |
-| `email_events` | `content` |
-| `engagements` | `contacts` |
-| `engagements_emails` | `sales-email-read` |
-| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
-| `forms` | `forms` |
-| `form_submissions`| `forms` |
-| `line_items` | `e-commerce` |
-| `owners` | `contacts` |
-| `products` | `e-commerce` |
-| `property_history` | `contacts` |
-| `quotes` | no scope required |
-| `subscription_changes` | `content` |
-| `tickets` | `tickets` |
-| `workflows` | `automation` |
+HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.59  | 2022-05-10 | [\#12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure oauth2.0 token has all needed scopes in "check" command |
-| 0.1.58  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
-| 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes
+| 0.1.60  | 2022-05-25 | [\#13159](https://github.com/airbytehq/airbyte/pull/13159) | Use RFC3339 datetime                                                                                                                         |
+| 0.1.59  | 2022-05-10 | [\#12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure oauth2.0 token has all needed scopes in "check" command                                                                               |
+| 0.1.58  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                              |
+| 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes                                                                                                              |
 | 0.1.56  | 2022-05-02 | [12515](https://github.com/airbytehq/airbyte/pull/12515) | Extra logs for troubleshooting 403 errors                                                                                                      |
 | 0.1.55  | 2022-04-28 | [12424](https://github.com/airbytehq/airbyte/pull/12424) | Correct schema for ticket_pipeline stream                                                                                                      |
 | 0.1.54  | 2022-04-28 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Mock time slep in unit test s                                                                                                                  |

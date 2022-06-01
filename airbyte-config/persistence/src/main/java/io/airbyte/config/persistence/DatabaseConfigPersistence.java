@@ -1516,8 +1516,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                       ConfigSchema.STANDARD_SOURCE_DEFINITION,
                       sourceDefinitionId.toString(),
                       StandardSourceDefinition.class);
+
                   final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  return jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  final JsonNode sanitizedConfig =
+                      jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
+
+                  configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
+                  return Jsons.jsonNode(configWithMetadata.getConfig());
                 } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
                   throw new RuntimeException(e);
                 }
@@ -1534,8 +1539,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   ConfigSchema.STANDARD_DESTINATION_DEFINITION,
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
-              final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              return jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
+              final JsonNode sanitizedConfig =
+                  jsonSecretsProcessor.prepareSecretsForOutput(configWithMetadata.getConfig().getConfiguration(), connectionSpecs);
+
+              configWithMetadata.getConfig().setConfiguration(sanitizedConfig);
+              return Jsons.jsonNode(configWithMetadata.getConfig());
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);
             }

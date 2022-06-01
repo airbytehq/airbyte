@@ -14,8 +14,6 @@ import org.jooq.impl.DSL;
  * Temporary factory class that provides convenience methods for creating a {@link DSLContext}
  * instances. This class will be removed once the project has been converted to leverage an
  * application framework to manage the creation and injection of {@link DSLContext} objects.
- *
- * This class replaces direct calls to {@link io.airbyte.db.Databases}.
  */
 public class DSLContextFactory {
 

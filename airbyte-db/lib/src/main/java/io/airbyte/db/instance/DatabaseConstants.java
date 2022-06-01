@@ -44,6 +44,16 @@ public final class DatabaseConstants {
   public static final String JOBS_SCHEMA_PATH = "jobs_database/schema.sql";
 
   /**
+   * Default database connection timeout in milliseconds.
+   */
+  public static final long DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
+
+  /**
+   * Default amount of time to wait to assert that a database has been migrated, in milliseconds.
+   */
+  public static final long DEFAULT_ASSERT_DATABASE_TIMEOUT_MS = 2 * DEFAULT_CONNECTION_TIMEOUT_MS;
+
+  /**
    * Private constructor to prevent instantiation.
    */
   private DatabaseConstants() {}

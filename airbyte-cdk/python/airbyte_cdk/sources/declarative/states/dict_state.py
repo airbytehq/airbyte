@@ -25,12 +25,12 @@ class StateType(Enum):
 class DictState(State):
     stream_state_field = "stream_state"
 
-    def __init__(self, d: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
-        if d is None:
-            d = dict()
+    def __init__(self, initial_mapping: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
+        if initial_mapping is None:
+            initial_mapping = dict()
         if config is None:
             config = dict()
-        self._d = d
+        self._templates_to_evaluate = initial_mapping
         if type(state_type) == str:
             self._state_type = StateType[state_type].value
         elif type(state_type) == StateType:
@@ -50,9 +50,6 @@ class DictState(State):
 
         self._context[self.stream_state_field] = self._compute_state(prev_stream_state)
 
-    def get_context(self):
-        return self._context
-
     def get_state(self, state_field):
         return self._context.get(state_field, {})
 
@@ -62,7 +59,7 @@ class DictState(State):
     def _compute_state(self, prev_state):
         updated_state = {
             self._interpolator.eval(name, self._config): self._interpolator.eval(value, self._config, **self._context)
-            for name, value in self._d.items()
+            for name, value in self._templates_to_evaluate.items()
         }
         updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
 
