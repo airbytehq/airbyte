@@ -1,0 +1,13 @@
+.headerCell {
+  font-size: 10px;
+  line-height: 13px;
+}
+
+.checkboxCell {
+  @extend .headerCell;
+  max-width: 43px;
+  text-align: center;
+  margin-left: -43px;
+  display: flex;
+  flex-direction: row;
+}

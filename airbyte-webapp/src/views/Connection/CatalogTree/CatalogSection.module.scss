@@ -15,18 +15,17 @@
 
 .catalogSectionRow {
   height: 40px;
-  border-bottom: 1px solid colors.$greyColor0;
   height: 100%;
   white-space: nowrap;
   font-size: 12px;
 }
 
 .redBackground {
-  background-color: rgb(255, 94, 123, 0.14);
+  background-color: colors.$dangerColor14;
 }
 
 .greenBackground {
-  background-color: rgb(103, 218, 225, 0.14);
+  background-color: colors.$successColor14;
 }
 
 .redBorder {
@@ -34,5 +33,5 @@
 }
 
 .purpleBackground {
-  background-color: rgba(97, 94, 255, 0.1);
+  background-color: colors.$primaryColor10;
 }

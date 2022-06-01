@@ -160,6 +160,7 @@ export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
           hasFields={hasChildren}
           onExpand={onExpand}
           mode={mode}
+          changedSelected={changedSelected}
         />
       </Row>
       {isRowExpanded && hasChildren && (

@@ -1,0 +1,13 @@
+@use "../../../scss/colors";
+@forward "./CatalogTree.module.scss";
+
+.greenText {
+  color: colors.$successColor;
+}
+
+.redText {
+  color: colors.$dangerColor;
+}
+
+.icon {
+}

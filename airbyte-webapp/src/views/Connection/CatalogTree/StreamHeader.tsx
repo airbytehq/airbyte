@@ -1,3 +1,6 @@
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
@@ -12,7 +15,8 @@ import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
-import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
+import styles from "./StreamHeader.module.scss";
+import { ArrowCell, HeaderCell } from "./styles";
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
@@ -32,18 +36,16 @@ interface StreamHeaderProps {
   }[];
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
-
   primitiveFields: SyncSchemaField[];
-
   pkType: IndexerType;
   onPrimaryKeyChange: (pkPath: Path[]) => void;
   cursorType: IndexerType;
   onCursorChange: (cursorPath: Path) => void;
-
   isRowExpanded: boolean;
   hasFields: boolean;
   onExpand: () => void;
   mode?: ConnectionFormMode;
+  changedSelected: boolean;
 }
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
@@ -62,8 +64,10 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   hasFields,
   onExpand,
   mode,
+  changedSelected,
 }) => {
   const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
+  const isEnabled = stream.config?.selected;
 
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
@@ -78,12 +82,26 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   const paths = primitiveFields.map((field) => field.path);
 
+  const iconStyle = classnames(styles.icon, {
+    [styles.greenText]: isEnabled,
+    [styles.redText]: !isEnabled,
+  });
+
   return (
     <>
       {mode !== "readonly" && (
-        <CheckboxCell>
+        <Cell className={styles.checkboxCell}>
+          {changedSelected && (
+            <div>
+              {isEnabled ? (
+                <FontAwesomeIcon icon={faPlus} className={iconStyle} />
+              ) : (
+                <FontAwesomeIcon icon={faMinus} className={iconStyle} />
+              )}
+            </div>
+          )}
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-        </CheckboxCell>
+        </Cell>
       )}
       <ArrowCell>
         {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
