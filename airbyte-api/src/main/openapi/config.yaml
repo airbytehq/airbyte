@@ -3310,7 +3310,6 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
-          nullable: true
     ConnectionSearch:
       type: object
       properties:
@@ -4133,7 +4132,6 @@ components:
           type: string
         oauthConfigSpecification:
           "$ref": "#/components/schemas/OAuthConfigSpecification"
-      nullable: true
     OAuthConfigSpecification:
       type: object
       properties:
@@ -4377,7 +4375,6 @@ components:
           description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
           format: int64
-          nullable: true
         latestSyncJobStatus:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
@@ -4387,7 +4384,6 @@ components:
         catalogId:
           type: string
           format: uuid
-          nullable: true
     WebBackendConnectionReadList:
       type: object
       required:
