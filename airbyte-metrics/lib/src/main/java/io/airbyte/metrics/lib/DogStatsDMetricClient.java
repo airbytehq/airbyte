@@ -63,7 +63,7 @@ public class DogStatsDMetricClient implements MetricClient {
    * @param tags
    */
   @Override
-  public void count(final MetricsRegistry metric, final double amt, final String... tags) {
+  public void count(final MetricsRegistry metric, final long amt, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption

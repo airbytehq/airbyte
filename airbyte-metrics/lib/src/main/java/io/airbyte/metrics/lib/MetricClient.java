@@ -16,7 +16,7 @@ public interface MetricClient {
    * @param val to record.
    * @param tags
    */
-  void count(MetricsRegistry metric, double val, final String... tags);
+  void count(MetricsRegistry metric, long val, final String... tags);
 
   /**
    * Record the latest value for a gauge.
