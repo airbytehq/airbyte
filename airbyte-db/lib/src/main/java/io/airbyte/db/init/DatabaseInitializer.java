@@ -27,15 +27,6 @@ import org.slf4j.Logger;
 public interface DatabaseInitializer {
 
   /**
-   * Initializes the configured database.
-   *
-   * @throws DatabaseInitializationException if unable to perform the initialization.
-   */
-  default void init() throws DatabaseInitializationException {
-    initialize();
-  }
-
-  /**
    * Initializes the configured database by using the following steps:
    *
    * <ol>

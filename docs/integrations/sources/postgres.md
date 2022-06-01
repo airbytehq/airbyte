@@ -257,7 +257,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `timetz`                              | string         |                                                                                                             |
 | `timestamp`                           | string         |                                                                                                             |
 | `timestamptz`                         | string         |                                                                                                             |
-| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsquery`                             | string         |                                                                                                             |
 | `tsvector`                            | string         |                                                                                                             |
 | `uuid`                                | string         |                                                                                                             |
 | `xml`                                 | string         |                                                                                                             |
@@ -270,6 +270,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.18  | 2022-05-25 | [13083](https://github.com/airbytehq/airbyte/pull/13083) | Add support for tsquey type |
+| 0.4.17  | 2022-05-19 | [13016](https://github.com/airbytehq/airbyte/pull/13016) | CDC modify schema to allow null values |
 | 0.4.16  | 2022-05-14 | [12840](https://github.com/airbytehq/airbyte/pull/12840) | Added custom JDBC parameters field |
 | 0.4.15  | 2022-05-13 | [12834](https://github.com/airbytehq/airbyte/pull/12834) | Fix the bug that the connector returns empty catalog for Azure Postgres database |
 | 0.4.14  | 2022-05-08 | [12689](https://github.com/airbytehq/airbyte/pull/12689) | Add table retrieval according to role-based `SELECT` privilege |

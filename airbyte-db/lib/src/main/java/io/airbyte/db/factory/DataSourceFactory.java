@@ -15,8 +15,6 @@ import javax.sql.DataSource;
  * Temporary factory class that provides convenience methods for creating a {@link DataSource}
  * instance. This class will be removed once the project has been converted to leverage an
  * application framework to manage the creation and injection of {@link DataSource} objects.
- *
- * This class replaces direct calls to {@link io.airbyte.db.Databases}.
  */
 public class DataSourceFactory {
 

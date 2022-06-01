@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 @Builder
 @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+@Slf4j
 public class JsonSecretsProcessor {
 
   @Builder.Default
@@ -55,6 +57,7 @@ public class JsonSecretsProcessor {
       // todo (cgardens) this is not safe. should throw.
       // if schema is an object and has a properties field
       if (!isValidJsonSchema(schema)) {
+        log.error("The schema is not valid, the secret can't be hidden");
         return obj;
       }
 
