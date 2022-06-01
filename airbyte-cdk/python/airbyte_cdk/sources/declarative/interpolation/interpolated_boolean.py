@@ -4,6 +4,15 @@
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
+false_values = {
+    "{}",
+    "[]",
+    "()",
+    "",
+    "0",
+    "0.0",
+}
+
 
 class InterpolatedBoolean:
     def __init__(self, condition):
@@ -18,7 +27,7 @@ class InterpolatedBoolean:
             evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
             if evaluated == "True" or evaluated == "False":
                 return True if evaluated == "True" else False
-            if evaluated == "[]" or evaluated == "{}":
+            if evaluated in false_values:
                 return False
             # The presence of a value is generally regarded as truthy, so we treat it as such
             return True
