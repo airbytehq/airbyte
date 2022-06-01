@@ -215,9 +215,16 @@ const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
 
+const useGetConnectionState = () => {
+  const service = useConnectionService();
+
+  return useMutation((connectionId: string) => service.getState(connectionId));
+};
+
 export {
   useConnectionList,
   useGetConnection,
+  useGetConnectionState,
   useUpdateConnection,
   useCreateConnection,
   useDeleteConnection,
