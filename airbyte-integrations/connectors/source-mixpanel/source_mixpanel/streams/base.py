@@ -16,7 +16,7 @@ class MixpanelStream(HttpStream, ABC):
     """
     Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
       A maximum of 5 concurrent queries
-      400 queries per hour.
+      60 queries per hour.
 
     API Rate Limit Handler: after each request freeze for the time period: 3600/reqs_per_hour_limit seconds
     """
