@@ -632,13 +632,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should do nothing to job already in terminal state")
-    void testCancelJobAlreadyTerminal() throws IOException {
+    @DisplayName("Should raise an exception if job is already succeeded")
+    void testCancelJobAlreadySuccessful() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      jobPersistence.cancelJob(jobId);
+      assertThrows(IllegalStateException.class, () -> jobPersistence.cancelJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -786,13 +786,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should ignore job already in terminal state")
-    void testFailJobAlreadyTerminal() throws IOException {
+    @DisplayName("Should raise an exception if job is already succeeded")
+    void testFailJobAlreadySucceeded() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      jobPersistence.failJob(jobId);
+      assertThrows(IllegalStateException.class, () -> jobPersistence.failJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
