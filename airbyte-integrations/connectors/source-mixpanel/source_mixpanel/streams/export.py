@@ -9,8 +9,9 @@ from typing import Any, Iterable, Mapping
 import requests
 from airbyte_cdk.models import SyncMode
 
-from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 from ..property_transformation import transform_property_names
+from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
+
 
 class ExportSchema(MixpanelStream):
     """
