@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.models;
 
 import com.google.common.collect.Sets;
+import java.util.Map;
 import java.util.Set;
 
 public enum JobStatus {
@@ -18,5 +19,13 @@ public enum JobStatus {
 
   public static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
   public static final Set<JobStatus> NON_TERMINAL_STATUSES = Sets.difference(Set.of(values()), TERMINAL_STATUSES);
+
+  public static final Map<JobStatus, Set<JobStatus>> VALID_STATUS_CHANGES = Map.of(
+      PENDING, Set.of(RUNNING, FAILED, CANCELLED),
+      RUNNING, Set.of(INCOMPLETE, SUCCEEDED, FAILED, CANCELLED),
+      INCOMPLETE, Set.of(PENDING, RUNNING, FAILED, CANCELLED),
+      SUCCEEDED, Set.of(),
+      FAILED, Set.of(),
+      CANCELLED, Set.of());
 
 }
