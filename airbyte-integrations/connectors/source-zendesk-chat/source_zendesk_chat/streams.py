@@ -104,11 +104,21 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
-    def __init__(self, start_date, **kwargs):
+    state_checkpoint_interval = 1000
+    api_pagination_limit = 0
+    current_pagination = 1
+
+    def __init__(self, start_date, api_pagination_limit, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
+        self.api_pagination_limit = api_pagination_limit
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.api_pagination_limit > 0:
+            if self.current_pagination >= self.api_pagination_limit:
+                return None
+            self.current_pagination += 1
+            
         response_data = response.json()
         if response_data["count"] == self.limit:
             return {"start_time": response_data["end_time"]}
