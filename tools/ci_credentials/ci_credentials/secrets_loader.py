@@ -131,7 +131,9 @@ class SecretsLoader:
 
     def mask_secrets_from_action_log(self, key, value):
         # recursive masking of json based on leaf key
-        if isinstance(value, dict):
+        if not value:
+            return
+        elif isinstance(value, dict):
             for child, item in value.items():
                 self.mask_secrets_from_action_log(child, item)
         elif isinstance(value, list):
