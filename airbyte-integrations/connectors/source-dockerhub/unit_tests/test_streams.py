@@ -1,17 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
-import json
+
 import requests
-import pytest
 from source_dockerhub.source import DockerHub
+
 
 def test_next_page_token(patch_base_class):
     stream = DockerHub(jwt="foo", config={"docker_username": "foo"})
-    
+
     # mocking the request with a response that has a next page token
     response = requests.Response()
     response.url = "https://foo"
@@ -19,11 +18,11 @@ def test_next_page_token(patch_base_class):
     response.json.return_value = {"next": "https://foo?page=2"}
     inputs = {"response": response}
 
-    expected_token = "?page=2" # expected next page token
+    expected_token = "?page=2"  # expected next page token
     assert stream.next_page_token(**inputs) == expected_token
 
 
-## cant get this to work - TypeError: 'list' object is not an iterator
+# cant get this to work - TypeError: 'list' object is not an iterator
 # def test_parse_response(patch_base_class, mocker):
 #     response = mocker.MagicMock()
 #     response.json.return_value = {"one": 1}
