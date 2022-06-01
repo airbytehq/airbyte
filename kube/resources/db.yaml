@@ -16,6 +16,8 @@ metadata:
   name: airbyte-db
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       airbyte: db
