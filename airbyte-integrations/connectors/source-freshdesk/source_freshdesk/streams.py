@@ -146,12 +146,9 @@ class CannedResponseFolders(FreshdeskStream):
 
 
 class CannedResponses(HttpSubStream, FreshdeskStream):
-
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=CannedResponseFolders(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=CannedResponseFolders(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -176,12 +173,9 @@ class DiscussionCategories(FreshdeskStream):
 
 
 class DiscussionForums(HttpSubStream, FreshdeskStream):
-
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=DiscussionCategories(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionCategories(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -189,12 +183,9 @@ class DiscussionForums(HttpSubStream, FreshdeskStream):
 
 
 class DiscussionTopics(HttpSubStream, FreshdeskStream):
-
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=DiscussionForums(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionForums(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -202,12 +193,9 @@ class DiscussionTopics(HttpSubStream, FreshdeskStream):
 
 
 class DiscussionComments(HttpSubStream, FreshdeskStream):
-
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=DiscussionTopics(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionTopics(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -249,7 +237,7 @@ class Settings(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "settings/helpdesk"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
@@ -272,17 +260,15 @@ class SolutionCategories(FreshdeskStream):
 class SolutionFolders(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=SolutionCategories(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=SolutionCategories(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"solutions/categories/{stream_slice['parent']['id']}/folders"
-    
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         records = response.json()
-        category_id = stream_slice['parent']['id']
+        category_id = stream_slice["parent"]["id"]
         for record in records:
             record.setdefault("category_id", category_id)
             yield record
@@ -291,9 +277,7 @@ class SolutionFolders(HttpSubStream, FreshdeskStream):
 class SolutionArticles(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator,
-            config=config,
-            parent=SolutionFolders(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=SolutionFolders(authenticator=authenticator, config=config, **kwargs)
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -357,6 +341,7 @@ class Tickets(IncrementalFreshdeskStream):
 
 class Conversations(FreshdeskStream):
     """Notes and Replies"""
+
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator, config=config, args=args, kwargs=kwargs)
         self.tickets_stream = Tickets(authenticator=authenticator, config=config)

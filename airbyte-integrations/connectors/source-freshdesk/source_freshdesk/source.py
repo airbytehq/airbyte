@@ -68,7 +68,7 @@ class SourceFreshdesk(AbstractSource):
             error_msg = repr(error)
 
         return alive, error_msg
-    
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = FreshdeskAuth(config["api_key"])
         stream_kwargs = {"authenticator": authenticator, "config": config}
@@ -100,5 +100,5 @@ class SourceFreshdesk(AbstractSource):
             TicketFields(**stream_kwargs),
             Tickets(**stream_kwargs),
             SatisfactionRatings(**stream_kwargs),
-            Surveys(**stream_kwargs)
+            Surveys(**stream_kwargs),
         ]

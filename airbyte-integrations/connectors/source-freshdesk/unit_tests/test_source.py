@@ -3,6 +3,7 @@
 #
 
 import logging
+
 from source_freshdesk import SourceFreshdesk
 
 logger = logging.getLogger("test_source")

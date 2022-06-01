@@ -103,12 +103,8 @@ def test_full_refresh_conversations(authenticator, config, requests_mock):
 
 
 def test_full_refresh_settings(authenticator, config, requests_mock):
-    json_resp = {
-        "primary_language": "en",
-        "supported_languages": [],
-        "portal_languages": []
-    }
-    requests_mock.register_uri("GET", f"/api/settings/helpdesk", json=json_resp)
+    json_resp = {"primary_language": "en", "supported_languages": [], "portal_languages": []}
+    requests_mock.register_uri("GET", "/api/settings/helpdesk", json=json_resp)
 
     stream = Settings(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -146,16 +142,16 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
 @pytest.mark.parametrize(
     "stream_class, parent_path, sub_paths",
     [
-        (CannedResponses, 'canned_response_folders', [f"canned_response_folders/{x}/responses" for x in range(5)]),
-        (Conversations, 'tickets', [f"tickets/{x}/conversations" for x in range(5)]),
-        (DiscussionForums, 'discussions/categories', [f"discussions/categories/{x}/forums" for x in range(5)]),
-        (SolutionFolders, 'solutions/categories', [f"solutions/categories/{x}/folders" for x in range(5)]),
-    ]
+        (CannedResponses, "canned_response_folders", [f"canned_response_folders/{x}/responses" for x in range(5)]),
+        (Conversations, "tickets", [f"tickets/{x}/conversations" for x in range(5)]),
+        (DiscussionForums, "discussions/categories", [f"discussions/categories/{x}/forums" for x in range(5)]),
+        (SolutionFolders, "solutions/categories", [f"solutions/categories/{x}/folders" for x in range(5)]),
+    ],
 )
 def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_paths, authenticator, config):
-    requests_mock.register_uri("GET", "/api/"+parent_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
+    requests_mock.register_uri("GET", "/api/" + parent_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
     for sub_path in sub_paths:
-        requests_mock.register_uri("GET", "/api/"+sub_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(10)])
+        requests_mock.register_uri("GET", "/api/" + sub_path, json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(10)])
 
     stream = stream_class(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
@@ -166,16 +162,26 @@ def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_pa
 @pytest.mark.parametrize(
     "stream_class, parent_path, sub_paths, sub_sub_paths",
     [
-        (DiscussionTopics, 'discussions/categories', [f"discussions/categories/{x}/forums" for x in range(5)], [f"discussions/forums/{x}/topics" for x in range(5)]),
-        (SolutionArticles, 'solutions/categories', [f"solutions/categories/{x}/folders" for x in range(5)], [f"solutions/folders/{x}/articles" for x in range(5)]),
-    ]
+        (
+            DiscussionTopics,
+            "discussions/categories",
+            [f"discussions/categories/{x}/forums" for x in range(5)],
+            [f"discussions/forums/{x}/topics" for x in range(5)],
+        ),
+        (
+            SolutionArticles,
+            "solutions/categories",
+            [f"solutions/categories/{x}/folders" for x in range(5)],
+            [f"solutions/folders/{x}/articles" for x in range(5)],
+        ),
+    ],
 )
 def test_full_refresh_with_two_sub_levels(requests_mock, stream_class, parent_path, sub_paths, sub_sub_paths, authenticator, config):
-    requests_mock.register_uri("GET", "/api/"+parent_path, json=[{"id": x} for x in range(5)])
+    requests_mock.register_uri("GET", f"/api/{parent_path}", json=[{"id": x} for x in range(5)])
     for sub_path in sub_paths:
-        requests_mock.register_uri("GET", f"/api/"+sub_path, json=[{"id": x} for x in range(5)])
+        requests_mock.register_uri("GET", f"/api/{sub_path}", json=[{"id": x} for x in range(5)])
         for sub_sub_path in sub_sub_paths:
-            requests_mock.register_uri("GET", f"/api/"+sub_sub_path, json=[{"id": x} for x in range(10)])
+            requests_mock.register_uri("GET", f"/api/{sub_sub_path}", json=[{"id": x} for x in range(10)])
 
     stream = stream_class(authenticator=authenticator, config=config)
     records = _read_full_refresh(stream)
