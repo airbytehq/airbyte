@@ -3,10 +3,15 @@
 #
 
 import datetime
+from base64 import b64encode
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
+
+
+def coolfunc(s):
+    return s + " is cool"
 
 
 class JinjaInterpolation(Interpolation):
@@ -17,9 +22,12 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_local"] = datetime.datetime.now
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
+        self._environment.globals["base64"] = lambda s: b64encode(s.encode("utf8")).decode("utf8")
+        self._environment.globals["encode"] = lambda s, encoding: s.encode(encoding)
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
+        print(self._environment.globals)
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
