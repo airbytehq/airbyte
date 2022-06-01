@@ -8,7 +8,7 @@ Cypress.Commands.add("fillPgSourceForm", (name) => {
   
   cy.wait("@getSourceSpecifications");
   
-  cy.get("input[name=name]").type(name);
+  cy.get("input[name=name]").clear().type(name);
   cy.get("input[name='connectionConfiguration.host']").type("localhost");
   cy.get("input[name='connectionConfiguration.port']").type("{selectAll}{del}5433");
   cy.get("input[name='connectionConfiguration.database']").type("airbyte_ci");

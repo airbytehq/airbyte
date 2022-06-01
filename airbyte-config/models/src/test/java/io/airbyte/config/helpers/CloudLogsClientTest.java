@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -12,10 +12,11 @@ import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import org.junit.jupiter.api.Test;
 
-public class CloudLogsClientTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class CloudLogsClientTest {
 
   @Test
-  public void createCloudLogClientTestMinio() {
+  void createCloudLogClientTestMinio() {
     final var configs = new LogConfigs(CloudStorageConfigs.minio(new MinioConfig(
         "test-bucket",
         "access-key",
@@ -26,7 +27,7 @@ public class CloudLogsClientTest {
   }
 
   @Test
-  public void createCloudLogClientTestAws() {
+  void createCloudLogClientTestAws() {
     final var configs = new LogConfigs(CloudStorageConfigs.s3(new S3Config(
         "test-bucket",
         "access-key",
@@ -37,7 +38,7 @@ public class CloudLogsClientTest {
   }
 
   @Test
-  public void createCloudLogClientTestGcs() {
+  void createCloudLogClientTestGcs() {
     final var configs = new LogConfigs(CloudStorageConfigs.gcs(new GcsConfig(
         "storage-bucket",
         "path/to/google/secret")));

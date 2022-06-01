@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# We frequently encounter issues running emulated amd64-built connectors on ARM/M1. 
 # When running acceptance tests, this often manifests as a conenctor sometimes getting stuck for no discernable reason.
 # This script allows building all of the connector images used in the acceptance tests.
 # We will need to update this file if the versions used for source-e2e-test and destination-e2e-test change before we start publishing ARM images.

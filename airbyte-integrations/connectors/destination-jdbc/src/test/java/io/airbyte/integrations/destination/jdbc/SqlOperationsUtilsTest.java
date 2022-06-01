@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -53,9 +53,7 @@ class SqlOperationsUtilsTest {
             config.get("username").asText(),
             config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            config.get("jdbc_url").asText()
-        )
-    );
+            config.get("jdbc_url").asText()));
 
     uuidSupplier = mock(Supplier.class);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -33,8 +33,9 @@ import java.util.stream.Stream;
  * This config persistence contains all seed definitions according to the yaml files. It is
  * read-only.
  */
-public class YamlSeedConfigPersistence implements ConfigPersistence {
+final public class YamlSeedConfigPersistence implements ConfigPersistence {
 
+  private static final String PERSISTENCE_READ_ONLY_ERROR_MSG = "The seed config persistence is read only.";
   public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
 
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
@@ -178,22 +179,22 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) {
-    throw new UnsupportedOperationException("The seed config persistence is read only.");
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
 
   @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
-    throw new UnsupportedOperationException("The seed config persistence is read only.");
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
 
   @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) {
-    throw new UnsupportedOperationException("The seed config persistence is read only.");
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
 
   @Override
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) {
-    throw new UnsupportedOperationException("The seed config persistence is read only.");
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
 
   @Override
@@ -205,7 +206,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    throw new UnsupportedOperationException("The seed config persistence is read only.");
+    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
   }
 
 }

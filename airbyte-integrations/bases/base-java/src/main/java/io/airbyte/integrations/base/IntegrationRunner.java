@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -86,6 +86,8 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
+
+    Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
   @VisibleForTesting

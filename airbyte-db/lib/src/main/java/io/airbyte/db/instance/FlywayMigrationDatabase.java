@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance;
@@ -8,7 +8,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import java.io.Closeable;
+import io.airbyte.db.init.DatabaseInitializationException;
 import java.io.IOException;
 import java.sql.Connection;
 import javax.sql.DataSource;
@@ -46,7 +46,7 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
   private DSLContext dslContext;
 
-  protected abstract Database getAndInitializeDatabase(DSLContext dslContext) throws IOException;
+  protected abstract Database getDatabase(DSLContext dslContext) throws IOException;
 
   protected abstract DatabaseMigrator getDatabaseMigrator(Database database, Flyway flyway);
 
@@ -55,6 +55,8 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
   protected abstract String getDbIdentifier();
 
   protected abstract String[] getMigrationFileLocations();
+
+  protected abstract void initializeDatabase(final DSLContext dslContext) throws DatabaseInitializationException, IOException;
 
   @Override
   protected DSLContext create0() {
@@ -87,8 +89,11 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     dataSource =
         DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+
+    initializeDatabase(dslContext);
+
     final Flyway flyway = FlywayFactory.create(dataSource, getInstalledBy(), getDbIdentifier(), getMigrationFileLocations());
-    final Database database = getAndInitializeDatabase(dslContext);
+    final Database database = getDatabase(dslContext);
     final DatabaseMigrator migrator = getDatabaseMigrator(database, flyway);
     migrator.migrate();
 
@@ -101,12 +106,10 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     JDBCUtils.safeClose(connection);
     connection = null;
     dslContext.close();
-    if (dataSource instanceof Closeable closeable) {
-      try {
-        closeable.close();
-      } catch (final IOException e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
+    try {
+      DataSourceFactory.close(dataSource);
+    } catch (final Exception e) {
+      LOGGER.warn("Unable to close data source.", e);
     }
     super.close();
   }

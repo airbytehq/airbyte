@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -47,9 +47,8 @@ import org.slf4j.LoggerFactory;
 // to rewrite so much data. it is enough for now to sanity check that our JdbcSources can actually
 // handle more data than fits in memory.
 @SuppressFBWarnings(
-    value = {"MS_SHOULD_BE_FINAL"},
-    justification = "The static variables are updated in sub classes for convenience, and cannot be final."
-)
+                    value = {"MS_SHOULD_BE_FINAL"},
+                    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
 public abstract class JdbcStressTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStressTest.class);
@@ -120,9 +119,7 @@ public abstract class JdbcStressTest {
             jdbcConfig.get("username").asText(),
             jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
             getDriverClass(),
-            jdbcConfig.get("jdbc_url").asText()
-        )
-    );
+            jdbcConfig.get("jdbc_url").asText()));
 
     database.execute(connection -> connection.createStatement().execute(
         createTableQuery("id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));
