@@ -238,10 +238,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobCancelled(final JobCancelledInput input) {
     try {
       final long jobId = input.getJobId();
-      jobPersistence.cancelJob(jobId);
       final int attemptId = input.getAttemptId();
       jobPersistence.failAttempt(jobId, attemptId);
       jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
+      jobPersistence.cancelJob(jobId);
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
