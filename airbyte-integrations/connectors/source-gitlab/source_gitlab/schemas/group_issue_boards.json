@@ -19,42 +19,40 @@
     },
     "lists": {
       "type": ["null", "array"],
-      "items": [
-        {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "label": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "description": {
-                  "type": ["null", "string"]
-                },
-                "description_html": {
-                  "type": ["null", "string"]
-                },
-                "text_color": {
-                  "type": ["null", "string"]
-                },
-                "color": {
-                  "type": ["null", "string"]
-                }
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "label": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "description_html": {
+                "type": ["null", "string"]
+              },
+              "text_color": {
+                "type": ["null", "string"]
+              },
+              "color": {
+                "type": ["null", "string"]
               }
-            },
-            "position": {
-              "type": ["null", "integer"]
             }
+          },
+          "position": {
+            "type": ["null", "integer"]
           }
         }
-      ]
+      }
     },
     "group_id": {
       "type": ["null", "integer"]
