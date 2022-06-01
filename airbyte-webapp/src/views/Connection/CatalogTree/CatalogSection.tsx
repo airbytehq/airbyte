@@ -1,9 +1,9 @@
+import classnames from "classnames";
 import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
-import styled from "styled-components";
 
-import { DropDownRow } from "components";
+import { DropDownRow, Row } from "components";
 
 import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
@@ -19,24 +19,9 @@ import {
 } from "../../../core/request/AirbyteClient";
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import styles from "./CatalogSection.module.scss";
-import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
-
-const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
-  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : "none")};
-  background: ${({ theme, isSelected }) => (isSelected ? "rgba(97, 94, 255, 0.1);" : theme.greyColor0)};
-  padding: 2px;
-
-  &:first-child {
-    border-radius: 8px 8px 0 0;
-  }
-
-  &:last-child {
-    border-radius: 0 0 8px 8px;
-  }
-`;
 
 interface CatalogSectionInnerProps {
   streamNode: SyncSchemaStream;
@@ -50,7 +35,7 @@ interface CatalogSectionInnerProps {
   changedSelected: boolean;
 }
 
-const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
+export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   streamNode,
   updateStream,
   namespaceDefinition,
@@ -149,19 +134,16 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const isEnabled = streamNode.config?.selected;
 
+  const sectionStyle = classnames(styles.catalogSection, {
+    [styles.greenBackground]: changedSelected && isEnabled,
+    [styles.redBackground]: changedSelected && !isEnabled,
+    [styles.purpleBackground]: isSelected,
+    [styles.redBorder]: hasError,
+  });
+
   return (
-    <Section
-      error={hasError}
-      isSelected={isSelected}
-      className={
-        changedSelected && isEnabled
-          ? styles.greenBackground
-          : changedSelected && !isEnabled
-          ? styles.redBackground
-          : undefined
-      }
-    >
-      <TreeRowWrapper>
+    <div className={sectionStyle}>
+      <Row className={styles.catalogSectionRow}>
         <StreamHeader
           stream={streamNode}
           destNamespace={destNamespace}
@@ -179,7 +161,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
           onExpand={onExpand}
           mode={mode}
         />
-      </TreeRowWrapper>
+      </Row>
       {isRowExpanded && hasChildren && (
         <StreamFieldTable
           config={config}
@@ -190,7 +172,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
           shouldDefineCursor={shouldDefineCursor}
         />
       )}
-    </Section>
+    </div>
   );
 };
 

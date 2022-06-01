@@ -1,7 +1,38 @@
+@use "../../../scss/colors";
+
+.catalogSection {
+  background: colors.$greyColor0;
+  padding: 2px;
+
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+}
+
+.catalogSectionRow {
+  height: 40px;
+  border-bottom: 1px solid colors.$greyColor0;
+  height: 100%;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
 .redBackground {
-  background: red;
+  background-color: rgb(255, 94, 123, 0.14);
 }
 
 .greenBackground {
-  background: green;
+  background-color: rgb(103, 218, 225, 0.14);
+}
+
+.redBorder {
+  border: 1px solid colors.$dangerColor;
+}
+
+.purpleBackground {
+  background-color: rgba(97, 94, 255, 0.1);
 }
