@@ -1149,10 +1149,28 @@ where 1 = 1
                     final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
                     active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
                     if self.destination_type == DestinationType.CLICKHOUSE:
-                        delete_statement = "alter table {{ final_table_relation }} delete"
+                        # Clickhouse has special delete syntax
+                        delete_statement = (
+                            "alter table {{ final_table_relation }} delete where {{ final_table_relation }}."
+                            + self.get_unique_key(in_jinja=False)
+                            + " in"
+                        )
                         noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                    elif self.destination_type == DestinationType.BIGQUERY:
+                        # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
+                        # it requires "delete from project.schema.table table_alias where table_alias.column in"
+                        delete_statement = (
+                            "delete from {{ final_table_relation }} final_table where final_table."
+                            + self.get_unique_key(in_jinja=False)
+                            + " in"
+                        )
+                        noop_delete_statement = "delete from {{ this }} where 1=0"
                     else:
-                        delete_statement = "delete from {{ final_table_relation }}"
+                        delete_statement = (
+                            "delete from {{ final_table_relation }} where {{ final_table_relation }}."
+                            + self.get_unique_key(in_jinja=False)
+                            + " in"
+                        )
                         noop_delete_statement = "delete from {{ this }} where 1=0"
                     deletion_hook = Template(
                         """
@@ -1180,8 +1198,7 @@ where 1 = 1
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        {{ delete_statement }}
-                        where {{ '{{ final_table_relation }}' }}.{{ unique_key }} in (
+                        {{ delete_statement }} (
                             with modified_ids as (
                                 select
                                     {{ '{{' }} dbt_utils.surrogate_key([
@@ -1203,7 +1220,6 @@ where 1 = 1
                             group by modified_ids.{{ unique_key }}
                             having count(scd_active_rows.{{ unique_key }}) = 0
                         )
-
                         {{ '{% else %}' }}
                         -- We have to have a non-empty query, so just do a noop delete
                         {{ noop_delete_statement }}
