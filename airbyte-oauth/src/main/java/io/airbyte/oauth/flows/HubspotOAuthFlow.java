@@ -39,7 +39,8 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
-          .addParameter("optional_scopes", getScopes())
+          .addParameter("scopes", getScopes())
+          .addParameter("getRequiredScopes", getOptionalScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -61,7 +62,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         .build();
   }
 
-  private String getScopes() {
+  private String getOptionalScopes() {
     return String.join(" ", "content",
         "crm.schemas.deals.read",
         "crm.objects.owners.read",
@@ -71,8 +72,6 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         "crm.objects.companies.read",
         "crm.lists.read",
         "crm.objects.deals.read",
-        "crm.schemas.contacts.read",
-        "crm.objects.contacts.read",
         "crm.schemas.companies.read",
         "files",
         "forms-uploaded-files",
@@ -80,6 +79,12 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         "crm.objects.feedback_submissions.read",
         "sales-email-read",
         "automation");
+  }
+
+  private String getRequiredScopes() {
+    return String.join(" ",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read");
   }
 
   /**
