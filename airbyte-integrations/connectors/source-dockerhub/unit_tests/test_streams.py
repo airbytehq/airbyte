@@ -8,7 +8,7 @@ import requests
 from source_dockerhub.source import DockerHub
 
 
-def test_next_page_token(patch_base_class):
+def test_next_page_token():
     stream = DockerHub(jwt="foo", config={"docker_username": "foo"})
 
     # mocking the request with a response that has a next page token
@@ -39,7 +39,7 @@ def test_next_page_token(patch_base_class):
 #     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
+def test_request_headers():
     stream = DockerHub(jwt="foo", config={"docker_username": "foo"})
 
     inputs = {
