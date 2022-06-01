@@ -80,6 +80,11 @@ substream_retriever:
   parent_extractor:
     class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
     transform: ".lines"
+  additional_fields:
+    class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_mapping.InterpolatedMapping"
+    mapping:
+      parent_id: "{{ parent_record['id'] }}"
+    state: "*ref(state)"
 
 substream_slicer:
   class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"

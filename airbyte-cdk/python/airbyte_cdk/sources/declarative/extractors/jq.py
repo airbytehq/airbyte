@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
+from typing import Any, List, Mapping, Union
 
 import pyjq
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
@@ -22,6 +22,9 @@ class JqExtractor(HttpExtractor):
         self._config = config
         self._kwargs = kwargs
 
-    def extract_records(self, response: Response) -> List[Record]:
+    def extract_records(self, response: Response) -> Union[List[Record], Mapping[str, Any]]:
         script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
-        return pyjq.all(script, response.body)
+        if script.endswith("[]"):
+            return pyjq.all(script, response.body)
+        else:
+            return pyjq.first(script, response.body)

@@ -58,3 +58,15 @@ def test_default():
     actual_records = extractor.extract_records(response)
 
     assert actual_records == records
+
+
+def test_extract_an_object():
+    transform = "."
+    extractor = JqExtractor(transform, config)
+
+    records = [{"id": 1}, {"id": 2}]
+    body = {"records": records}
+    response = create_response(body)
+    actual_records = extractor.extract_records(response)
+
+    assert actual_records == body

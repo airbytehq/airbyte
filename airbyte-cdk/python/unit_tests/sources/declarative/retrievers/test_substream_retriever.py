@@ -1,9 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.retrievers.substream_retriever import SubstreamRetriever
 
 
@@ -18,8 +20,18 @@ def test_substream_retriever(method):
     state = MagicMock()
     parent_stream = MagicMock()
     parent_extractor = MagicMock()
+    additional_fields = InterpolatedMapping({"parent_id": "{{ parent_record['id'] }}"})
     retriever = SubstreamRetriever(
-        substream_name, primary_key, requester, paginator, extractor, stream_slicer, state, parent_stream, parent_extractor
+        substream_name,
+        primary_key,
+        requester,
+        paginator,
+        extractor,
+        stream_slicer,
+        state,
+        parent_stream,
+        parent_extractor,
+        additional_fields,
     )
 
     paginator.next_page_token.return_value = {"starting_after": 0}
@@ -30,6 +42,6 @@ def test_substream_retriever(method):
     extractor.extract_records.return_value = [{"id": 0, "data": "A"}]
 
     records = [r for r in retriever.read_records(SyncMode.full_refresh)]
-    expected_records = [{"id": 0, "data": "A"}, {"id": 1, "data": "B"}]
+    expected_records = [{"id": 0, "data": "A", "parent_id": "1234"}, {"id": 1, "data": "B", "parent_id": "1234"}]
 
     assert records == expected_records
