@@ -1,0 +1,89 @@
+{
+  "title": "ListFinancialEvents",
+  "description": "List of Financial Events",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ShipmentEventList": {
+      "type": ["null", "array"]
+    },
+    "RefundEventList": {
+      "type": ["null", "array"]
+    },
+    "GuaranteeClaimEventList": {
+      "type": ["null", "array"]
+    },
+    "ChargebackEventList": {
+      "type": ["null", "array"]
+    },
+    "PayWithAmazonEventList": {
+      "type": ["null", "array"]
+    },
+    "ServiceProviderCreditEventList": {
+      "type": ["null", "array"]
+    },
+    "RetrochargeEventList": {
+      "type": ["null", "array"]
+    },
+    "RentalTransactionEventList": {
+      "type": ["null", "array"]
+    },
+    "ProductAdsPaymentEventList": {
+      "type": ["null", "array"]
+    },
+    "ServiceFeeEventList": {
+      "type": ["null", "array"]
+    },
+    "SellerDealPaymentEventList": {
+      "type": ["null", "array"]
+    },
+    "DebtRecoveryEventList": {
+      "type": ["null", "array"]
+    },
+    "LoanServicingEventList": {
+      "type": ["null", "array"]
+    },
+    "AdjustmentEventList": {
+      "type": ["null", "array"]
+    },
+    "SAFETReimbursementEventList": {
+      "type": ["null", "array"]
+    },
+    "SellerReviewEnrollmentPaymentEventList": {
+      "type": ["null", "array"]
+    },
+    "FBALiquidationEventList": {
+      "type": ["null", "array"]
+    },
+    "CouponPaymentEventList": {
+      "type": ["null", "array"]
+    },
+    "ImagingServicesFeeEventList": {
+      "type": ["null", "array"]
+    },
+    "NetworkComminglingTransactionEventList": {
+      "type": ["null", "array"]
+    },
+    "AffordabilityExpenseEventList": {
+      "type": ["null", "array"]
+    },
+    "AffordabilityExpenseReversalEventList": {
+      "type": ["null", "array"]
+    },
+    "TrialShipmentEventList": {
+      "type": ["null", "array"]
+    },
+    "ShipmentSettleEventList": {
+      "type": ["null", "array"]
+    },
+    "TaxWithholdingEventList": {
+      "type": ["null", "array"]
+    },
+    "RemovalShipmentEventList": {
+      "type": ["null", "array"]
+    },
+    "RemovalShipmentAdjustmentEventList": {
+      "type": ["null", "array"]
+    }
+  }
+}
