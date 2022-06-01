@@ -13,8 +13,6 @@ public final class FetchSizeConstants {
   public static final long TARGET_BUFFER_BYTE_SIZE = 200L * 1024L * 1024L; // 200 MB
   // sample size for making the first estimation of the row size
   public static final int INITIAL_SAMPLE_SIZE = 10;
-  // sample size for making the post-initial estimation of the row size
-  public static final int POST_INITIAL_SAMPLE_SIZE = 10;
   // sample every N rows during the post-initial stage
   public static final int SAMPLE_FREQUENCY = 100;
 

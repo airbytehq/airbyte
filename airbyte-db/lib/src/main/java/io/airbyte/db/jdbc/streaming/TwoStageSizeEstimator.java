@@ -45,9 +45,8 @@ public class TwoStageSizeEstimator implements FetchSizeEstimator {
       if (delegate instanceof InitialSizeEstimator && counter > initialSampleSize) {
         delegate = new SamplingSizeEstimator(
             FetchSizeConstants.TARGET_BUFFER_BYTE_SIZE,
-            FetchSizeConstants.POST_INITIAL_SAMPLE_SIZE,
             FetchSizeConstants.SAMPLE_FREQUENCY,
-            delegate.getMeanRowByteSize(),
+            delegate.getMaxRowByteSize(),
             FetchSizeConstants.MIN_FETCH_SIZE,
             FetchSizeConstants.DEFAULT_FETCH_SIZE,
             FetchSizeConstants.MAX_FETCH_SIZE);
