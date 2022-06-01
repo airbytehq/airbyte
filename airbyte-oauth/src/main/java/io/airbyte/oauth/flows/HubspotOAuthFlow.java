@@ -39,8 +39,8 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
-          .addParameter("scopes", getScopes())
-          .addParameter("getRequiredScopes", getOptionalScopes())
+          .addParameter("scopes", getRequiredScopes())
+          .addParameter("optional_scopes", getOptionalScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
