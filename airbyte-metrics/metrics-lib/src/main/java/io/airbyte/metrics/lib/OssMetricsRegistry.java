@@ -95,7 +95,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "oldest running job in seconds"),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "overall_job_runtime_in_last_hour_by_terminal_state_secs",
-      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states.");
+      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states."),
+  NUM_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
+      "record_schema_validation_error",
+      "number of record schema validation errors");
 
   private final MetricEmittingApp application;
   private final String metricName;

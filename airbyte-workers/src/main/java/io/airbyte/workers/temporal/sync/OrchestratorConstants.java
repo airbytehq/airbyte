@@ -42,6 +42,7 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
           EnvConfigs.JOB_DEFAULT_ENV_MAP,
           EnvConfigs.LOCAL_ROOT,
+          EnvConfigs.PUBLISH_METRICS,
           LOG_LEVEL,
           LogClientSingleton.GCS_LOG_BUCKET,
           LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
