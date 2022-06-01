@@ -36,6 +36,16 @@ describe("I18nProvider", () => {
     expect(wrapper.getByTestId("msg").textContent).toBe("Hello world!");
   });
 
+  it("should allow render <b></b> tags for every message", () => {
+    const wrapper = render(
+      <span data-testid="msg">
+        <FormattedMessage id="test.id" />
+      </span>,
+      { wrapper: provider({ "test.id": "Hello <b>world</b>!" }) }
+    );
+    expect(wrapper.getByTestId("msg").innerHTML).toBe("Hello <strong>world</strong>!");
+  });
+
   describe("useI18nContext", () => {
     it("should allow overwriting default and setting additional messages", () => {
       const { result } = renderHook(() => useMessages(), {
