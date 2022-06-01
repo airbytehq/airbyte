@@ -5,13 +5,13 @@ This page guides you through the process of setting up the Zendesk Support sourc
 This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/api-reference/apps/apps-support-api/introduction/). This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Incremental sync are implemented on API side by its filters.
 
 ## Prerequisites (Airbyte Cloud)
-* Start Date - the starting point for the data replication.
-* Subdomain - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
+* `Start Date` - the starting point for the data replication.
+* `Subdomain` - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
 * Your Zendesk Account with configured permissions to fetch the data.
 
 ## Prerequisites (Airbyte Open Source)
-* Start Date - the starting point for the data replication.
-* Subdomain - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
+* `Start Date` - the starting point for the data replication.
+* `Subdomain` - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
 * The `Email` used to register your Zendesk Account.
 * The `API Token` generated for your Zendesk Account.
 
