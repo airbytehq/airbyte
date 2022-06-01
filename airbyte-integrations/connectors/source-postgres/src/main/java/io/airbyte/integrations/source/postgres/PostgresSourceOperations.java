@@ -13,6 +13,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.Gson;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -98,6 +99,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case "bytea" -> putString(json, columnName, resultSet, colIndex);
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -209,6 +211,12 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+  }
+
+  private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
+    HashMap<String, String> data = (HashMap<String, String>) resultSet.getObject(index);
+    node.put(columnName, new Gson().toJson(data));
   }
 
   /**

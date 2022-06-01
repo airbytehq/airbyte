@@ -68,6 +68,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
       ctx.execute("SET TIMEZONE TO 'MST'");
+      ctx.execute("CREATE EXTENSION hstore;");
       return null;
     });
 
@@ -561,6 +562,18 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'\"paperback\" => \"243\",\n"
+                + "\t   \"publisher\" => \"postgresqltutorial.com\",\n"
+                + "\t   \"language\"  => \"English\",\n"
+                + "\t   \"ISBN-13\"   => \"978-1449370000\",\n"
+                + "\t\t \"weight\"    => \"11.2 ounces\"'", null)
+            .addExpectedValues("{\"ISBN-13\":\"978-1449370000\",\"weight\":\"11.2 ounces\",\"paperback\":\"243\",\"publisher\":\"postgresqltutorial.com\",\"language\":\"English\"}", null)
             .build());
   }
 

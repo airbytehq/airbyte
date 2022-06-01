@@ -73,6 +73,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
+      ctx.execute("CREATE EXTENSION hstore;");
 
       return null;
     });
@@ -540,6 +541,16 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'fat & (rat | cat)'::tsquery", "'fat:ab & cat'::tsquery")
             .addExpectedValues(null, "'fat' & ( 'rat' | 'cat' )", "'fat':AB & 'cat'")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'\"paperback\" => \"243\",\"publisher\" => \"postgresqltutorial.com\","
+                + "\"language\"  => \"English\",\"ISBN-13\"   => \"978-1449370000\","
+                + "\"weight\"    => \"11.2 ounces\"'", null)
+            .addExpectedValues("{\"ISBN-13\":\"978-1449370000\",\"weight\":\"11.2 ounces\",\"paperback\":\"243\",\"publisher\":\"postgresqltutorial.com\",\"language\":\"English\"}", null)
             .build());
   }
 
