@@ -484,11 +484,16 @@ class Stream(HttpStream, ABC):
 
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
+
+        skip_date = self._start_date
+        if self._state:
+            skip_date = max(self._start_date, self._state)
+
         for record in records:
             updated_at = record[self.updated_at_field]
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
-                if updated_at < self._start_date:
+                if updated_at < skip_date:
                     continue
             yield record
 
@@ -631,6 +636,24 @@ class IncrementalStream(Stream, ABC):
     state_checkpoint_interval = 500
 
     @property
+    def incremental(self):
+        if self._incremental is None:
+            raise NotImplementedError('sync_mode not defined')
+        return self._incremental
+
+    @property
+    def max_start(self):
+        if self._max_start is None:
+            raise NotImplementedError('max_start not defined')
+        return self._max_start
+
+    def udpate_max_start(self):
+        if self._state:
+            self._max_start = max(self._start_date, self._state)
+        else:
+            self._max_start = self._start_date
+
+    @property
     def cursor_field(self) -> Union[str, List[str]]:
         return self.updated_at_field
 
@@ -658,13 +681,13 @@ class IncrementalStream(Stream, ABC):
     def state(self, value: MutableMapping[str, Any]):
         if value.get(self.cursor_field):
             self._state = self._field_to_datetime(value[self.cursor_field])
-            self._start_date = max(self._state, self._start_date)
-        else:
-            self._state = self._start_date
+        self.udpate_max_start()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+        self._incremental = None
+        self._max_start = self._start_date
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -709,7 +732,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.incremental else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -741,12 +764,12 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_records = {}
         payload = (
             {
-                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "filters": [{"value": int(self.max_start.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
                 "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
-            if self.state
+            if self.incremental
             else {}
         )
         if next_page_token:
@@ -765,6 +788,9 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+
+        self._incremental = sync_mode == SyncMode.incremental
+
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
@@ -774,7 +800,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             while not pagination_complete:
                 properties_list = list(self.properties.keys())
 
-                if self.state:
+                if self.incremental:
                     stream_records, raw_response = self._process_search(
                         properties_list,
                         next_page_token=next_page_token,
@@ -794,19 +820,17 @@ class CRMSearchStream(IncrementalStream, ABC):
                 records = self._filter_old_records(records)
                 records = self._flat_associations(records)
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+                yield from records
 
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
                     pagination_complete = True
-                elif self.state and next_page_token["payload"]["after"] >= 10000:
+                elif self.incremental and next_page_token["payload"]["after"] >= 10000:
                     # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                     # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                     # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
                     # start a new search query with the latest state that has been collected.
+                    self.udpate_max_start()
                     next_page_token = None
 
             # Always return an empty generator just in case no records were ever yielded
@@ -837,6 +861,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._incremental = sync_mode == SyncMode.incremental
         return [None]
 
 
@@ -1048,7 +1073,7 @@ class Engagements(IncrementalStream):
 
     @property
     def url(self):
-        if self.state:
+        if self.incremental:
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
 
@@ -1061,16 +1086,18 @@ class Engagements(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+
         params = {"count": 250}
         if next_page_token:
             params["offset"] = next_page_token["offset"]
-        if self.state:
-            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
+        if self.incremental:
+            params.update({"since": int(self.max_start.timestamp() * 1000), "count": 100})
         return params
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._incremental = sync_mode == SyncMode.incremental
         return [None]
 
     def read_records(
@@ -1080,6 +1107,9 @@ class Engagements(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+
+        self._incremental = sync_mode == SyncMode.incremental
+
         stream_state = stream_state or {}
         pagination_complete = False
 
@@ -1093,13 +1123,10 @@ class Engagements(IncrementalStream):
                 if self.filter_old_records:
                     records = self._filter_old_records(records)
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+                yield from records
 
                 next_page_token = self.next_page_token(response)
-                if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                if self.incremental and next_page_token and next_page_token["offset"] >= 10000:
                     # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
                     # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
                     # descending order, we stop getting records if we have already reached 10,000. Attempting
