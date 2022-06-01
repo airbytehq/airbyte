@@ -51,6 +51,7 @@ class SubstreamRetriever(SimpleRetriever):
             records = self._extractor.extract_records(sub_response)
             print(f"records: {records[0]}")
             next_page_token = self._paginator.next_page_token(sub_response, records)
+            # FIXME: need to be able to add parent record id
             if next_page_token:
                 next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             else:
