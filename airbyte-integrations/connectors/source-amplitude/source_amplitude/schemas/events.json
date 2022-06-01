@@ -3,8 +3,7 @@
   "type": "object",
   "properties": {
     "server_received_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "app": {
       "type": ["null", "integer"]
@@ -25,8 +24,7 @@
       "type": ["null", "string"]
     },
     "event_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "platform": {
       "type": ["null", "string"]
@@ -38,12 +36,10 @@
       "type": ["null", "integer"]
     },
     "processed_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "user_creation_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "version_name": {
       "type": ["null", "string"]
@@ -64,8 +60,7 @@
       "type": ["null", "object"]
     },
     "client_upload_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "$insert_id": {
       "type": ["null", "string"]
@@ -92,8 +87,7 @@
       "type": ["null", "number"]
     },
     "server_upload_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "event_id": {
       "type": ["null", "integer"]
@@ -153,8 +147,7 @@
       "type": ["null", "string"]
     },
     "client_event_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     }
   }
 }
