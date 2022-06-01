@@ -732,6 +732,7 @@ temporal:
   ##
   extraVolumes: []
 
+<<<<<<< HEAD
   ## Temporal resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
@@ -751,6 +752,15 @@ temporal:
     ##    cpu: 200m
     ##    memory: 1Gi
     limits: {}
+=======
+## External Temporal configuration
+## All of these values are only used when temporal.enabled is set to false
+## @param externalTemporal.host temporal API host
+## @param externalDatabase.port temporal API port
+externalTemporal:
+  host: ""
+  port: ""
+>>>>>>> edef452a78 (add eof lines and documentation on values yaml)
 
 ## @section Airbyte Database parameters
 
@@ -797,9 +807,6 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
-externalTemporal:
-  host: ""
-  port: ""
 ## @section Logs parameters
 logs:
   ## @param logs.accessKey.password Logs Access Key
