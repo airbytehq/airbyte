@@ -1,0 +1,34 @@
+
+{
+      "$schema": "http://json-schema.org/draft-06/schema#",
+      "title":"Items",
+      "type":"object",
+      "additionalProperties": false,
+      "properties":{
+      	 "id":{
+            "type":["null","string"]
+         },
+         "createdAt":{
+            "type":["null","string"]
+         },
+         "customerName": {
+            "type": ["null", "string"]
+         },
+         "customerEmail":{
+            "type":["null","string"]
+         },
+         "phone":{
+            "type":["null","string"]
+         },
+         "updatedAt":{
+            "type":["null","string"]
+         },
+         "traveler_id":{
+            "type":["null","string"]
+         },
+         "dateOfBirth": { 
+         	"type":["null","string"]
+         }
+      }
+}
+

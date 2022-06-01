@@ -201,6 +201,114 @@ class Orders(IncrementalXolaStream):
                 pass
         return modified_response
 
+class Users(IncrementalXolaStream):
+    primary_key = "id"
+    cursor_field = "updatedAt"
+    seller_id = None
+
+    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
+        super().__init__(x_api_key, **kwargs)
+        self.seller_id = seller_id
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "users". Required.
+        """
+        return "orders"
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        seller id is returned as a form of parameters
+        """
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        
+        if self.cursor_field in stream_state.keys():
+            params[self.cursor_field + '[gt]'] = stream_state[self.cursor_field]
+            
+        params['seller'] = self.seller_id
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        raw_response = response.json()["data"]
+        modified_response = []
+        for data in raw_response:
+            try:
+                createdByIdPresent = False
+                
+                if "waivers" in data.keys():
+                    for waivers in data["waivers"]:
+                        if "participants" in waivers.keys():   
+                            for participant in waivers["participants"]:
+                                resp = {}
+                                resp["order_id"] = data["id"]
+                                if "id" in data.keys(): resp["id"] = data["id"]
+                                if "createdAt" in data.keys(): resp["order_createdAt"] = data["createdAt"]
+                                if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
+                                if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
+                                if "customerEmail" in participant.keys(): resp["customerEmail"] = participant["customerEmail"]
+                                if "phone" in participant.keys(): resp["phone"] = participant["phone"]
+                                if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
+                                
+                                if "traveler" in participant.keys(): 
+                                    traveler = participant["traveler"]
+                                    if "$id" in traveler.keys():
+                                        id = traveler["$id"]
+                                        resp["traveler_id"] = id["$id"]
+                                    else:
+                                        resp["traveler_id"] = ""
+                                else:
+                                    resp["traveler_id"] = ""
+
+                                if resp["customerEmail"] == data["customerEmail"] and resp["customerName"] == data["customerName"]:
+                                    createdByIdPresent = True
+                                    
+                                modified_response.append(resp)
+                
+                if createdByIdPresent == False:
+                    resp = {}
+                    resp["order_id"] = data["id"]
+    
+                    if "createdBy" in data.keys():
+                        if isinstance(data["createdBy"], dict):
+                            resp["id"] = data["createdBy"]["id"]
+                        else:
+                            resp["id"] = data["createdBy"]
+                    else:
+                        resp["id"] = ""
+                    
+                    if "createdAt" in data.keys(): resp["order_createdAt"] = data["createdAt"]
+                    if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
+                    resp["dateOfBirth"] = ""
+                    if "customerEmail" in data.keys(): resp["customerEmail"] = data["customerEmail"]
+                    if "phone" in data.keys(): resp["phone"] = data["phone"]
+                    if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
+                    
+                    if "traveler" in data.keys():
+                        if isinstance(data["traveler"], dict):
+                            resp["traveler_id"] = data["traveler"]["id"]
+                        else:
+                            resp["traveler_id"] = data["createdBy"]
+                    else:
+                        resp["traveler_id"] = ""
+
+                    modified_response.append(resp)
+            except:
+                pass
+        return modified_response
+    
 class Transactions(IncrementalXolaStream):
     primary_key = "id"
     seller_id = None
@@ -215,7 +323,7 @@ class Transactions(IncrementalXolaStream):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        should return "orders". Required.
+        should return "transactions". Required.
         """
         return "transactions"
 
@@ -322,5 +430,6 @@ class SourceXola(AbstractSource):
         
         return [
             Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
+            Users(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]
