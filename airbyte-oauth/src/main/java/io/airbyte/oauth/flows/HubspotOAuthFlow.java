@@ -44,6 +44,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
+          .addParameter("scopes", getRequiredScopes())
           .addParameter("optional_scopes", getOptionalScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
