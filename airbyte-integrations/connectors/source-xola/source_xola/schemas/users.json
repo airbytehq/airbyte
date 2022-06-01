@@ -4,6 +4,12 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "order_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "id": {
       "type": [
         "null",
