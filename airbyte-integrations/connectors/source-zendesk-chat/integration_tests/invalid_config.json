@@ -4,5 +4,6 @@
   "credentials": {
     "credentials": "access_token",
     "access_token": "wrong_access_token"
-  }
+  },
+  "api_pagination_limit": -1
 }
