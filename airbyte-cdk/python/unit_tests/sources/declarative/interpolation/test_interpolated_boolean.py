@@ -28,6 +28,7 @@ config = {
         ("test_empty_array_is_false", "{{ config['empty_array'] }}", False),
         ("test_empty_dict_is_false", "{{ config['empty_dict'] }}", False),
         ("test_empty_tuple_is_false", "{{ config['empty_tuple'] }}", False),
+        ("test_lowercase_false", '{{ "false" }}', False),
     ],
 )
 def test_interpolated_boolean(test_name, template, expected_result):

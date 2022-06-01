@@ -7,7 +7,7 @@ import json
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.requesters.paginators.conditional_page_paginator import ConditionalPagePaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 
 
@@ -34,7 +34,7 @@ def test_interpolated_request_header(test_name, stop_condition_template, expecte
     response._content = json.dumps(response_body).encode("utf-8")
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
 
-    paginator = ConditionalPagePaginator(stop_condition_template, state, decoder, config, "page")
+    paginator = ConditionalPaginator(stop_condition_template, state, decoder, config)
     next_page_token = paginator.next_page_token(response, last_records)
 
     assert next_page_token == expected_next_page_token

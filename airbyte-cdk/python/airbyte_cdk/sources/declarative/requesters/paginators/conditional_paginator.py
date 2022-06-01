@@ -10,9 +10,12 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import I
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 
 
-class ConditionalPagePaginator:
-    def __init__(self, stop_condition_template: str, state: DictState, decoder: Decoder, config, page_key: str = None):
-        self._page_key = page_key or "page"
+class ConditionalPaginator:
+    """
+    A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
+    """
+
+    def __init__(self, stop_condition_template: str, state: DictState, decoder: Decoder, config):
         self._stop_condition_template = InterpolatedBoolean(stop_condition_template)
         self._state: DictState = state
         self._decoder = decoder
@@ -27,12 +30,12 @@ class ConditionalPagePaginator:
 
         if should_stop:
             return None
-        new_page = self._get_page() + 1
-        self._update_page_state(new_page)
-        return {self._page_key: new_page}
+        next_page = self._get_page() + 1
+        self._update_page_state(next_page)
+        return {"page": next_page}
 
     def _get_page(self):
-        return self._state.get_state(self._page_key)
+        return self._state.get_state("page")
 
     def _update_page_state(self, page):
-        self._state.update_state(**{self._page_key: page})
+        self._state.update_state(**{"page": page})
