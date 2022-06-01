@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -39,14 +39,18 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   const [state, setState] = useState<ConnectionStateObject>();
   const { mutateAsync: getState } = useGetConnectionState();
 
-  async function loadState() {
+  const loadState = async () => {
     const state = await getState(connectionId);
     if (state) setState(state.state);
-  }
+  };
+
+  const loadStateMemoized = useCallback(() => {
+    loadState();
+  }, [connectionId]);
 
   useEffect(() => {
-    loadState();
-  }, []);
+    loadStateMemoized();
+  }, [loadStateMemoized]);
 
   return (
     <StateBlockComponent>
@@ -54,8 +58,9 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
         <H5 bold>
           <FormattedMessage id={`tables.State.title`} />
         </H5>
-        <FormattedMessage id={`tables.State.p1`} />.<br />
-        <FormattedMessage id={`tables.State.p2`} />.
+        <FormattedMessage id={`tables.State.p1`} />.
+        <FormattedMessage id={`tables.State.p2`} />.<br />
+        <FormattedMessage id={`tables.State.p3`} />.
       </Text>
       <CodeBox>{state ? formatState(state) : <FormattedMessage id={`tables.State.stateLoading`} />}</CodeBox>
     </StateBlockComponent>
