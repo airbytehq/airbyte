@@ -83,10 +83,10 @@ public class TemporalUtils {
   }
 
   private static WorkflowServiceStubs createTemporalCloudService(
-                                                                final String temporalCloudClientCert,
-                                                                final String temporalCloudClientKey,
-                                                                final String temporalHost,
-                                                                final String temporalNamespace) {
+                                                                 final String temporalCloudClientCert,
+                                                                 final String temporalCloudClientKey,
+                                                                 final String temporalHost,
+                                                                 final String temporalNamespace) {
     try {
       final InputStream clientCert = new ByteArrayInputStream(temporalCloudClientCert.getBytes(StandardCharsets.UTF_8));
       final InputStream clientKey = new ByteArrayInputStream(temporalCloudClientKey.getBytes(StandardCharsets.UTF_8));

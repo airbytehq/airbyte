@@ -130,8 +130,7 @@ public class TemporalClient {
   /**
    * Direct termination of Temporal Workflows should generally be avoided. This method exists for some
    * rare circumstances where this may be required. Originally added to facilitate Airbyte's migration
-   * to Temporal Cloud.
-   * TODO consider deleting this after Temporal Cloud migration
+   * to Temporal Cloud. TODO consider deleting this after Temporal Cloud migration
    */
   public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
     this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
