@@ -42,8 +42,10 @@ class SubstreamRetriever(SimpleRetriever):
         parent_records = [r for r in self._parent_stream.read_records(SyncMode.full_refresh)]
         for parent_record in parent_records:
             parent_response = Response(body=parent_record)
-            records = self._parent_extractor.extract_records(parent_response)
-            sub_response = Response(body=records)
+
+            sub_response_body = self._parent_extractor.extract_records(parent_response)
+            sub_response = Response(body=sub_response_body)
+            records = self._extractor.extract_records(sub_response)
             next_page_token = self._paginator.next_page_token(sub_response, records)
             if next_page_token:
                 next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
