@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -145,7 +145,7 @@ class API:
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
-            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+            raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
         self._session.headers = {
             "Content-Type": "application/json",
@@ -331,39 +331,48 @@ class Stream(HttpStream, ABC):
         pagination_complete = False
 
         next_page_token = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
+        try:
+            with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+                while not pagination_complete:
 
-                properties_list = list(self.properties.keys())
-                if properties_list:
-                    stream_records, response = self._read_stream_records(
-                        properties_list=properties_list,
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
-                    records = [value for key, value in stream_records.items()]
-                else:
-                    response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                    properties_list = list(self.properties.keys())
+                    if properties_list:
+                        stream_records, response = self._read_stream_records(
+                            properties_list=properties_list,
+                            stream_slice=stream_slice,
+                            stream_state=stream_state,
+                            next_page_token=next_page_token,
+                        )
+                        records = [value for key, value in stream_records.items()]
+                    else:
+                        response = self.handle_request(
+                            stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token
+                        )
+                        records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
-                yield from records
+                    if self.filter_old_records:
+                        records = self._filter_old_records(records)
+                    yield from records
 
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        pagination_complete = True
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+                # Always return an empty generator just in case no records were ever yielded
+                yield from []
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            if status_code == 403:
+                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
+            else:
+                raise e
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
         if declared_format == "date":
             return dt.to_date_string()
         elif declared_format == "date-time":
-            return dt.to_datetime_string()
+            return dt.to_rfc3339_string()
 
     @classmethod
     def _cast_datetime(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -1273,7 +1282,7 @@ class PropertyHistory(IncrementalStream):
                     continue
                 if versions:
                     for version in versions:
-                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_rfc3339_string()
                         version["property"] = key
                         version["vid"] = vid
                         yield version
@@ -1375,4 +1384,5 @@ class Tickets(CRMObjectIncrementalStream):
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
+    associations = ["deals"]
     primary_key = "id"

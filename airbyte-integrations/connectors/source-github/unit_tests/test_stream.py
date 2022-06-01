@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -14,6 +14,7 @@ from source_github.streams import (
     Branches,
     Collaborators,
     Comments,
+    CommitCommentReactions,
     CommitComments,
     Commits,
     Deployments,
@@ -32,6 +33,8 @@ from source_github.streams import (
     Reviews,
     Stargazers,
     Tags,
+    TeamMembers,
+    TeamMemberships,
     Teams,
     Users,
 )
@@ -46,7 +49,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 def test_internal_server_error_retry(time_mock):
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
-    stream_slice = {"repository": "test_repo", "id": "id"}
+    stream_slice = {"repository": "test_repo", "comment_id": "id"}
 
     time_mock.reset_mock()
     responses.add(
@@ -155,20 +158,27 @@ def test_stream_repositories_404():
 
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
 def test_stream_repositories_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Repositories(**organization_args)
-    responses.add("GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1}, {"id": 2}])
-    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3}])
+    updated_at = "2020-01-01T00:00:00Z"
+    responses.add(
+        "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
+    )
+    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
     records = read_full_refresh(stream)
-    assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
+    assert records == [
+        {"id": 1, "organization": "org1", "updated_at": updated_at},
+        {"id": 2, "organization": "org1", "updated_at": updated_at},
+        {"id": 3, "organization": "org2", "updated_at": updated_at},
+    ]
     assert len(responses.calls) == 2
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100"
-    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
@@ -744,3 +754,113 @@ def test_stream_reviews_incremental_read():
     assert responses.calls[0].request.params["direction"] == "asc"
     assert urlbase(responses.calls[3].request.url) == url_pulls
     assert responses.calls[3].request.params["direction"] == "asc"
+
+
+@responses.activate
+def test_stream_team_members_full_refresh():
+    organization_args = {"organizations": ["org1"]}
+    repository_args = {"repositories": [], "page_size_for_large_streams": 100}
+
+    responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"slug": "team1"}, {"slug": "team2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/members", json=[{"login": "login1"}, {"login": "login2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/memberships/login1", json={"username": "login1"})
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/memberships/login2", json={"username": "login2"})
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
+
+    stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {"login": "login1", "organization": "org1", "team_slug": "team1"},
+        {"login": "login2", "organization": "org1", "team_slug": "team1"},
+        {"login": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
+
+    stream = TeamMemberships(parent=stream, **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {"username": "login1", "organization": "org1", "team_slug": "team1"},
+        {"username": "login2", "organization": "org1", "team_slug": "team1"},
+        {"username": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
+
+
+@responses.activate
+def test_stream_commit_comment_reactions_incremental_read():
+
+    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
+    stream = CommitCommentReactions(**repository_args)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538825/reactions",
+        json=[
+            {"id": 154935429, "created_at": "2022-01-01T15:00:00Z"},
+            {"id": 154935430, "created_at": "2022-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[{"id": 154935431, "created_at": "2022-01-01T17:00:00Z"}],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+
+    assert stream_state == {
+        "airbytehq/integration-test": {
+            "55538825": {"created_at": "2022-01-01T16:00:00Z"},
+            "55538826": {"created_at": "2022-01-01T17:00:00Z"},
+        }
+    }
+
+    assert records == [
+        {"id": 154935429, "comment_id": 55538825, "created_at": "2022-01-01T15:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935430, "comment_id": 55538825, "created_at": "2022-01-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935431, "comment_id": 55538826, "created_at": "2022-01-01T17:00:00Z", "repository": "airbytehq/integration-test"},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+            {"id": 55538827, "updated_at": "2022-02-01T15:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[
+            {"id": 154935431, "created_at": "2022-01-01T17:00:00Z"},
+            {"id": 154935432, "created_at": "2022-02-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538827/reactions",
+        json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
+    )
+
+    records = read_incremental(stream, stream_state)
+
+    assert records == [
+        {"id": 154935432, "comment_id": 55538826, "created_at": "2022-02-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935433, "comment_id": 55538827, "created_at": "2022-02-01T17:00:00Z", "repository": "airbytehq/integration-test"},
+    ]

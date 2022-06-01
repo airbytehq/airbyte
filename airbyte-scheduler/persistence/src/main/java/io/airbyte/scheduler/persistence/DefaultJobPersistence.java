@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -32,6 +32,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -166,8 +167,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void resetJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.PENDING, now,
-          new IllegalStateException(String.format("Attempt to reset a job that is in a terminal state. job id: %s", jobId)));
+      updateJobStatus(ctx, jobId, JobStatus.PENDING, now);
       return null;
     });
   }
@@ -176,7 +176,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void cancelJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.CANCELLED, now);
+      updateJobStatus(ctx, jobId, JobStatus.CANCELLED, now);
       return null;
     });
   }
@@ -185,29 +185,14 @@ public class DefaultJobPersistence implements JobPersistence {
   public void failJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.FAILED, now);
+      updateJobStatus(ctx, jobId, JobStatus.FAILED, now);
       return null;
     });
   }
 
-  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx,
-                                                   final long jobId,
-                                                   final JobStatus newStatus,
-                                                   final LocalDateTime now,
-                                                   final RuntimeException e) {
-    final Job job = getJob(ctx, jobId);
-    if (!job.isJobInTerminalState()) {
-      updateJobStatus(ctx, jobId, newStatus, now);
-    } else if (e != null) {
-      throw e;
-    }
-  }
-
-  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
-    updateJobStatusIfNotInTerminalState(ctx, jobId, newStatus, now, null);
-  }
-
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
+    final Job job = getJob(ctx, jobId);
+    job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
         Sqls.toSqlName(newStatus),
@@ -235,7 +220,7 @@ public class DefaultJobPersistence implements JobPersistence {
         throw new IllegalStateException(errMsg);
       }
 
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
+      updateJobStatus(ctx, jobId, JobStatus.RUNNING, now);
 
       // will fail if attempt number already exists for the job id.
       return ctx.fetch(
@@ -258,8 +243,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void failAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
-      // do not overwrite terminal states.
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
+      updateJobStatus(ctx, jobId, JobStatus.INCOMPLETE, now);
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
@@ -276,7 +260,6 @@ public class DefaultJobPersistence implements JobPersistence {
   public void succeedAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
-      // override any other terminal statuses if we are now succeeded.
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
       ctx.execute(
@@ -386,18 +369,36 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final Set<ConfigType> configTypes, final Instant jobCreatedAtTimestamp)
+  public List<Job> listJobsForConnectionWithStatuses(final UUID connectionId, final Set<ConfigType> configTypes, final Set<JobStatus> statuses)
+      throws IOException {
+    return jobDatabase.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "scope = ? AND " +
+            "config_type IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "jobs.status IN " + Sqls.toSqlInFragment(statuses) + " " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
+            connectionId.toString())));
+  }
+
+  @Override
+  public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
+                                                                                 final Set<ConfigType> configTypes,
+                                                                                 final Instant jobCreatedAtTimestamp)
       throws IOException {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
 
-    final String JobStatusSelect = "SELECT status FROM jobs ";
+    final String JobStatusSelect = "SELECT id, status, created_at, updated_at FROM jobs ";
     return jobDatabase.query(ctx -> ctx
         .fetch(JobStatusSelect + "WHERE " +
             "scope = ? AND " +
             "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
         .stream()
-        .map(r -> JobStatus.valueOf(r.get("status", String.class).toUpperCase()))
+        .map(r -> new JobWithStatusAndTimestamp(
+            r.get("id", Long.class),
+            JobStatus.valueOf(r.get("status", String.class).toUpperCase()),
+            r.get("created_at", Long.class) / 1000,
+            r.get("updated_at", Long.class) / 1000))
         .toList();
   }
 
@@ -527,6 +528,58 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(final Record record, final String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  private final String SECRET_MIGRATION_STATUS = "secretMigration";
+
+  @Override
+  public boolean isSecretMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SECRET_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSecretMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SECRET_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
+  }
+
+  private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
+
+  @Override
+  public boolean isSchedulerMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SCHEDULER_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSchedulerMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SCHEDULER_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
   }
 
   @Override

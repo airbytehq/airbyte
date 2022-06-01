@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
@@ -71,7 +71,7 @@ public class DogStatsDMetricSingleton {
       }
 
       log.info("publishing count, name: {}, value: {}, tags: {}", metric, amt, tags);
-      statsDClient.count(metric.metricName, amt, tags);
+      statsDClient.count(metric.getMetricName(), amt, tags);
     }
   }
 
@@ -91,7 +91,7 @@ public class DogStatsDMetricSingleton {
       }
 
       log.info("publishing gauge, name: {}, value: {}, tags: {}", metric, val, tags);
-      statsDClient.gauge(metric.metricName, val, tags);
+      statsDClient.gauge(metric.getMetricName(), val, tags);
     }
   }
 
@@ -118,7 +118,7 @@ public class DogStatsDMetricSingleton {
       }
 
       log.info("recording histogram, name: {}, value: {}, tags: {}", metric, val, tags);
-      statsDClient.histogram(metric.metricName, val, tags);
+      statsDClient.histogram(metric.getMetricName(), val, tags);
     }
   }
 
@@ -139,7 +139,7 @@ public class DogStatsDMetricSingleton {
       }
 
       log.info("recording distribution, name: {}, value: {}, tags: {}", metric, val, tags);
-      statsDClient.distribution(metric.metricName, val, tags);
+      statsDClient.distribution(metric.getMetricName(), val, tags);
     }
   }
 

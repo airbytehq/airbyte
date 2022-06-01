@@ -1,5 +1,5 @@
-import React from "react";
 import { FieldArray, useField } from "formik";
+import React from "react";
 
 import { ArrayOfObjectsEditor } from "components";
 import GroupControls from "components/GroupControls";
@@ -7,8 +7,14 @@ import GroupControls from "components/GroupControls";
 import { FormObjectArrayItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
-import { FormSection } from "./FormSection";
 import { SectionContainer } from "./common";
+import { FormSection } from "./FormSection";
+
+interface ArraySectionProps {
+  formField: FormObjectArrayItem;
+  path: string;
+  disabled?: boolean;
+}
 
 /**
  * ArraySection is responsible for handling array of objects
@@ -16,10 +22,7 @@ import { SectionContainer } from "./common";
  * @param path
  * @constructor
  */
-export const ArraySection: React.FC<{
-  formField: FormObjectArrayItem;
-  path: string;
-}> = ({ formField, path }) => {
+export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
   const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
   const [field, , form] = useField(path);
 
@@ -55,8 +58,11 @@ export const ArraySection: React.FC<{
               }}
               onRemove={arrayHelpers.remove}
               items={items}
+              disabled={disabled}
             >
-              {() => <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} skipAppend />}
+              {() => (
+                <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} disabled={disabled} skipAppend />
+              )}
             </ArrayOfObjectsEditor>
           )}
         />

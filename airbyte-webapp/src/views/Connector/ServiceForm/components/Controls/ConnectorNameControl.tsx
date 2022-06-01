@@ -1,16 +1,19 @@
+import { useField } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useField } from "formik";
 
 import { Input, ControlLabels } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-const ConnectorNameControl: React.FC<{
+interface ConnnectorNameControlProps {
   property: FormBaseItem;
   formType: "source" | "destination";
-}> = ({ property, formType }) => {
-  const formatMessage = useIntl().formatMessage;
+  disabled?: boolean;
+}
+
+export const ConnectorNameControl: React.FC<ConnnectorNameControlProps> = ({ property, formType, disabled }) => {
+  const { formatMessage } = useIntl();
   const [field, fieldMeta] = useField(property.path);
 
   return (
@@ -28,9 +31,8 @@ const ConnectorNameControl: React.FC<{
         placeholder={formatMessage({
           id: `form.${formType}Name.placeholder`,
         })}
+        disabled={disabled}
       />
     </ControlLabels>
   );
 };
-
-export { ConnectorNameControl };

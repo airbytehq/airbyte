@@ -1,15 +1,16 @@
 import { setIn, useFormikContext } from "formik";
-import merge from "lodash/merge";
-import pick from "lodash/pick";
 import get from "lodash/get";
 import isEmpty from "lodash/isEmpty";
+import merge from "lodash/merge";
+import pick from "lodash/pick";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
-import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
-import { ServiceFormValues } from "../../../types";
+import { isSourceDefinitionSpecification } from "../../../../../../core/domain/connector/source";
 import { useServiceForm } from "../../../serviceFormContext";
+import { ServiceFormValues } from "../../../types";
+import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 
 function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   loading: boolean;
@@ -23,7 +24,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
     let newValues: ServiceFormValues;
 
-    if (connector.advancedAuth) {
+    if (connector.advancedAuth && !isSourceDefinitionSpecification(connector)) {
       const oauthPaths = serverProvidedOauthPaths(connector);
 
       newValues = Object.entries(oauthPaths).reduce(
@@ -47,8 +48,11 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
     done,
     run: async () => {
       const oauthInputProperties =
-        connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification?.properties ??
-        {};
+        (
+          connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
+            properties: { path_in_connector_config: string[] }[];
+          }
+        )?.properties ?? {};
 
       if (!isEmpty(oauthInputProperties)) {
         const oauthInputFields =

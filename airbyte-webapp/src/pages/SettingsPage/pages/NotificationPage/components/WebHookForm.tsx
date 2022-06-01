@@ -1,10 +1,10 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton, LabeledToggle } from "components";
+import { Label, Input, LoadingButton, LabeledSwitch } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 import { WebhookPayload } from "hooks/services/useWorkspace";
@@ -141,7 +141,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
             <Cell flex={1}>
               <Field name="sendOnFailure">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}
@@ -153,7 +153,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
             <Cell flex={1}>
               <Field name="sendOnSuccess">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}

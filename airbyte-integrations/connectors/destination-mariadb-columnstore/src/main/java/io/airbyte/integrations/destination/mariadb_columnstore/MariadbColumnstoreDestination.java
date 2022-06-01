@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.mariadb_columnstore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -17,13 +19,14 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MariadbColumnstoreDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestination.class);
-  public static final String DRIVER_CLASS = "org.mariadb.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MARIADB.getDriverClassName();
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -40,7 +43,9 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
       final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
 
@@ -63,6 +68,12 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
 
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -75,9 +86,9 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:mariadb://%s:%s/%s",
+    final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
         config.get("host").asText(),
-        config.get("port").asText(),
+        config.get("port").asInt(),
         config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

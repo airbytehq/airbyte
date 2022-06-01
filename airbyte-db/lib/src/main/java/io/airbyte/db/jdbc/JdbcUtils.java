@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -29,17 +29,25 @@ public class JdbcUtils {
   }
 
   public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcUrlParamsKey) {
+    return parseJdbcParameters(config, jdbcUrlParamsKey, "&");
+  }
+
+  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcUrlParamsKey, final String delimiter) {
     if (config.has(jdbcUrlParamsKey)) {
-      return parseJdbcParameters(config.get(jdbcUrlParamsKey).asText());
+      return parseJdbcParameters(config.get(jdbcUrlParamsKey).asText(), delimiter);
     } else {
       return Maps.newHashMap();
     }
   }
 
   public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
+    return parseJdbcParameters(jdbcPropertiesString, "&");
+  }
+
+  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {
-      final String[] keyValuePairs = jdbcPropertiesString.split("&");
+      final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
       for (final String kv : keyValuePairs) {
         final String[] split = kv.split("=");
         if (split.length == 2) {

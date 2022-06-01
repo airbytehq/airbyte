@@ -1,12 +1,12 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
+import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 
 type IProps = {
   formType: "source" | "destination";

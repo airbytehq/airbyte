@@ -1,12 +1,12 @@
-import React, { useContext, useMemo } from "react";
 import { getIn, useFormikContext } from "formik";
+import React, { useContext, useMemo } from "react";
 
-import { WidgetConfigMap } from "core/form/types";
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { WidgetConfigMap } from "core/form/types";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 import { ServiceFormValues } from "./types";
+import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
 type Context = {
   formType: "source" | "destination";
@@ -69,7 +69,7 @@ const ServiceFormContextProvider: React.FC<{
       hasFeature(FeatureItem.AllowOAuthConnector) &&
       selectedConnector?.advancedAuth &&
       selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey)),
+        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
     [selectedConnector, hasFeature, values, getValues]
   );
 

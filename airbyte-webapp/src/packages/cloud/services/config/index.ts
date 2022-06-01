@@ -22,6 +22,7 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
   firebase: {
     apiKey: "",
     authDomain: "",
+    authEmulatorHost: "",
   },
   fullstory: {
     orgId: "",

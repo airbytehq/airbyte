@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -23,26 +23,36 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
+@SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.JUnitTestsShouldIncludeAssert", "PMD.DetachedTestCase"})
+class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
-  public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-
+  void setup() throws Exception {
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+        new ConfigsDatabaseMigrator(database, flyway);
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     truncateAllTables();
@@ -50,11 +60,12 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    dslContext.close();
+    DataSourceFactory.close(dataSource);
   }
 
   @Test
-  public void test() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void test() throws JsonValidationException, IOException, ConfigNotFoundException {
     standardWorkspace();
     standardSourceDefinition();
     standardDestinationDefinition();
@@ -66,6 +77,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     standardSync();
     standardSyncState();
     standardActorCatalog();
+    workspaceServiceAccounts();
     deletion();
   }
 
@@ -80,6 +92,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, SourceConnection.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class).isEmpty());
+    assertTrue(configPersistence.listConfigs(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, ActorCatalogFetchEvent.class).isEmpty());
 
     assertFalse(configPersistence.listConfigs(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
@@ -275,13 +288,12 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
-
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
       final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
           ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
       assertEquals(actorCatalog, retrievedActorCatalog);
-    } ;
+    }
     final List<ActorCatalog> actorCatalogs = configPersistence
         .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
     assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());
@@ -299,6 +311,20 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
         .listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class);
     assertEquals(MockData.actorCatalogFetchEvents().size(), actorCatalogFetchEvents.size());
     assertThat(MockData.actorCatalogFetchEvents()).hasSameElementsAs(actorCatalogFetchEvents);
+  }
+
+  public void workspaceServiceAccounts() throws JsonValidationException, IOException, ConfigNotFoundException {
+    for (final WorkspaceServiceAccount expected : MockData.workspaceServiceAccounts()) {
+      configPersistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, expected.getWorkspaceId().toString(),
+          expected);
+      final WorkspaceServiceAccount actual = configPersistence.getConfig(
+          ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, expected.getWorkspaceId().toString(), WorkspaceServiceAccount.class);
+      assertEquals(expected, actual);
+    }
+    final List<WorkspaceServiceAccount> actorConfigurationBindings = configPersistence
+        .listConfigs(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, WorkspaceServiceAccount.class);
+    assertEquals(MockData.workspaceServiceAccounts().size(), actorConfigurationBindings.size());
+    assertThat(MockData.workspaceServiceAccounts()).hasSameElementsAs(actorConfigurationBindings);
   }
 
 }

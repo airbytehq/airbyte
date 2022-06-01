@@ -1,4 +1,4 @@
-# On Kubernetes \(Beta\)
+# On Kubernetes (Beta)
 
 ## Overview
 
@@ -189,6 +189,7 @@ As we improve our Kubernetes offering, we would like to point out some common pa
 * UI does not include configured buckets in the displayed log path. \([\#4204](https://github.com/airbytehq/airbyte/issues/4204)\)
 * Logs are not reset when Airbyte is re-deployed. \([\#4235](https://github.com/airbytehq/airbyte/issues/4235)\)
 * File sources reading from and file destinations writing to local mounts are not supported on Kubernetes.
+* Cannot run custom DBT transformation. \([\#5091](https://github.com/airbytehq/airbyte/issues/5091)\)
 
 ## Customizing Airbyte Manifests
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -221,5 +221,17 @@ public interface JobCreationAndStatusUpdateActivity {
 
   @ActivityMethod
   void reportJobStart(ReportJobStartInput reportJobStartInput);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class EnsureCleanJobStateInput {
+
+    private UUID connectionId;
+
+  }
+
+  @ActivityMethod
+  void ensureCleanJobState(EnsureCleanJobStateInput input);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -9,40 +9,40 @@ import static java.util.stream.Collectors.toMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.api.model.AirbyteCatalog;
-import io.airbyte.api.model.AirbyteStream;
-import io.airbyte.api.model.AirbyteStreamAndConfiguration;
-import io.airbyte.api.model.AirbyteStreamConfiguration;
-import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionSearch;
-import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobStatus;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationUpdate;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.WebBackendConnectionCreate;
-import io.airbyte.api.model.WebBackendConnectionRead;
-import io.airbyte.api.model.WebBackendConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.WebBackendConnectionSearch;
-import io.airbyte.api.model.WebBackendConnectionUpdate;
-import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
-import io.airbyte.api.model.WebBackendWorkspaceState;
-import io.airbyte.api.model.WebBackendWorkspaceStateResult;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.ConnectionCreate;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionUpdate;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.JobStatus;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.OperationCreate;
+import io.airbyte.api.model.generated.OperationReadList;
+import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.WebBackendConnectionCreate;
+import io.airbyte.api.model.generated.WebBackendConnectionRead;
+import io.airbyte.api.model.generated.WebBackendConnectionReadList;
+import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.generated.WebBackendConnectionSearch;
+import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.generated.WebBackendWorkspaceState;
+import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -120,6 +121,7 @@ public class WebBackendConnectionsHandler {
     final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
     WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
     setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
+    WebBackendConnectionRead.setCatalogId(connectionRead.getSourceCatalogId());
     return WebBackendConnectionRead;
   }
 
@@ -197,18 +199,24 @@ public class WebBackendConnectionsHandler {
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
+    final Optional<AirbyteCatalog> discovered;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
       final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
           new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
-      final AirbyteCatalog original = connection.getSyncCatalog();
-      final AirbyteCatalog discovered = discoverSchema.getCatalog();
-      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
-
-      connection.setSyncCatalog(combined);
+      discovered = Optional.of(discoverSchema.getCatalog());
+      connection.setSourceCatalogId(discoverSchema.getCatalogId());
+    } else {
+      discovered = connectionsHandler.getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
     }
-
+    final AirbyteCatalog original = connection.getSyncCatalog();
+    if (discovered.isPresent()) {
+      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered.get());
+      connection.setSyncCatalog(combined);
+    } else {
+      connection.setSyncCatalog(original);
+    }
     return buildWebBackendConnectionRead(connection);
   }
 
@@ -250,9 +258,10 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
-        outputStreamConfig.setSelected(originalStreamConfig.getSelected());
+        outputStreamConfig.setSelected(true);
       } else {
         outputStreamConfig = s.getConfig();
+        outputStreamConfig.setSelected(false);
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
           .stream(Jsons.clone(stream))
@@ -380,6 +389,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
+    connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
 
     return connectionCreate;
   }
@@ -398,6 +408,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
+    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
 
     return connectionUpdate;
   }

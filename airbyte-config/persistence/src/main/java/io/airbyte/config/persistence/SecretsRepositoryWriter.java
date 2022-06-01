@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -13,6 +13,8 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
@@ -27,8 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class takes secrets as arguments but never returns a secrets as return values (even the ones
@@ -36,10 +36,8 @@ import org.slf4j.LoggerFactory;
  * secrets store and then making sure the remainder of the configuration is written to the Config
  * Database.
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "PMD.AvoidThrowingRawExceptionTypes"})
 public class SecretsRepositoryWriter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryWriter.class);
 
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
@@ -261,6 +259,63 @@ public class SecretsRepositoryWriter {
       configRepository.replaceAllConfigsNoSecrets(augmentedMap, dryRun);
     } else {
       configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
+    }
+  }
+
+  public void writeServiceAccountJsonCredentials(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    final WorkspaceServiceAccount workspaceServiceAccountForDB = getWorkspaceServiceAccountWithSecretCoordinate(workspaceServiceAccount);
+    configRepository.writeWorkspaceServiceAccountNoSecrets(workspaceServiceAccountForDB);
+  }
+
+  /**
+   * This method is to encrypt the secret JSON key and HMAC key of a GCP service account a associated
+   * with a workspace. If in future we build a similar feature i.e. an AWS account associated with a
+   * workspace, we will have to build new implementation for it
+   */
+  private WorkspaceServiceAccount getWorkspaceServiceAccountWithSecretCoordinate(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    if (longLivedSecretPersistence.isPresent()) {
+      final WorkspaceServiceAccount clonedWorkspaceServiceAccount = Jsons.clone(workspaceServiceAccount);
+      final Optional<WorkspaceServiceAccount> optionalWorkspaceServiceAccount = getOptionalWorkspaceServiceAccount(
+          workspaceServiceAccount.getWorkspaceId());
+      // Convert the JSON key of Service Account into secret co-oridnate. Ref :
+      // https://cloud.google.com/iam/docs/service-accounts#key-types
+      if (workspaceServiceAccount.getJsonCredential() != null) {
+        final SecretCoordinateToPayload jsonCredSecretCoordinateToPayload =
+            SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getJsonCredential().toPrettyString(),
+                longLivedSecretPersistence.get(),
+                workspaceServiceAccount.getWorkspaceId(),
+                UUID::randomUUID,
+                optionalWorkspaceServiceAccount.map(WorkspaceServiceAccount::getJsonCredential).orElse(null),
+                "json");
+        longLivedSecretPersistence.get().write(jsonCredSecretCoordinateToPayload.secretCoordinate(), jsonCredSecretCoordinateToPayload.payload());
+        clonedWorkspaceServiceAccount.setJsonCredential(jsonCredSecretCoordinateToPayload.secretCoordinateForDB());
+      }
+      // Convert the HMAC key of Service Account into secret co-oridnate. Ref :
+      // https://cloud.google.com/storage/docs/authentication/hmackeys
+      if (workspaceServiceAccount.getHmacKey() != null) {
+        final SecretCoordinateToPayload hmackKeySecretCoordinateToPayload =
+            SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getHmacKey().toString(),
+                longLivedSecretPersistence.get(),
+                workspaceServiceAccount.getWorkspaceId(),
+                UUID::randomUUID,
+                optionalWorkspaceServiceAccount.map(WorkspaceServiceAccount::getHmacKey).orElse(null),
+                "hmac");
+        longLivedSecretPersistence.get().write(hmackKeySecretCoordinateToPayload.secretCoordinate(), hmackKeySecretCoordinateToPayload.payload());
+        clonedWorkspaceServiceAccount.setHmacKey(hmackKeySecretCoordinateToPayload.secretCoordinateForDB());
+      }
+      return clonedWorkspaceServiceAccount;
+    }
+    return workspaceServiceAccount;
+  }
+
+  public Optional<WorkspaceServiceAccount> getOptionalWorkspaceServiceAccount(final UUID workspaceId)
+      throws JsonValidationException, IOException {
+    try {
+      return Optional.of(configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId));
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
     }
   }
 

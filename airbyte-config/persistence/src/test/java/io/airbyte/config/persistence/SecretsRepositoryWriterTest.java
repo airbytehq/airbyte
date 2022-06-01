@@ -1,17 +1,25 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_1;
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_2;
+import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_1;
+import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_2;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +32,11 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -42,6 +52,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.UnusedPrivateField"})
 class SecretsRepositoryWriterTest {
 
   private static final UUID UUID1 = UUID.randomUUID();
@@ -69,6 +80,9 @@ class SecretsRepositoryWriterTest {
   private static final StandardDestinationDefinition DEST_DEF = new StandardDestinationDefinition()
       .withDestinationDefinitionId(DESTINATION_WITH_FULL_CONFIG.getDestinationDefinitionId())
       .withSpec(SPEC);
+
+  private static final String PASSWORD_PROPERTY_NAME = "password";
+  private static final String PASSWORD_FIELD_NAME = "_secret";
 
   private ConfigRepository configRepository;
   private MemorySecretPersistence longLivedSecretPersistence;
@@ -177,17 +191,17 @@ class SecretsRepositoryWriterTest {
     // we can't easily get the pointer, so verify the secret has been stripped out and then make sure
     // the rest of the object meets expectations.
     final SourceConnection actualSource = (SourceConnection) actual.get(ConfigSchema.SOURCE_CONNECTION).get(0);
-    assertTrue(actualSource.getConfiguration().get("password").has("_secret"));
-    ((ObjectNode) actualSource.getConfiguration()).remove("password");
+    assertTrue(actualSource.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
+    ((ObjectNode) actualSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     final SourceConnection expectedSource = Jsons.clone(SOURCE_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedSource.getConfiguration()).remove("password");
+    ((ObjectNode) expectedSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     assertEquals(expectedSource, actualSource);
 
     final DestinationConnection actualDest = (DestinationConnection) actual.get(ConfigSchema.DESTINATION_CONNECTION).get(0);
-    assertTrue(actualDest.getConfiguration().get("password").has("_secret"));
-    ((ObjectNode) actualDest.getConfiguration()).remove("password");
+    assertTrue(actualDest.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
+    ((ObjectNode) actualDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     final DestinationConnection expectedDest = Jsons.clone(DESTINATION_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedDest.getConfiguration()).remove("password");
+    ((ObjectNode) expectedDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     assertEquals(expectedDest, actualDest);
   }
 
@@ -210,6 +224,162 @@ class SecretsRepositoryWriterTest {
 
   private static DestinationConnection injectCoordinateIntoDestination(final String coordinate) {
     return Jsons.clone(DESTINATION_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate));
+  }
+
+  @Test
+  void testWriteWorkspaceServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID workspaceId = UUID.randomUUID();
+
+    final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
+    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
+        .withWorkspaceId(workspaceId)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
+
+    doThrow(new ConfigNotFoundException(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId.toString()))
+        .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+    secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
+
+    assertEquals(2, longLivedSecretPersistence.getMap().size());
+
+    String jsonPayloadInPersistence = null;
+    String hmacPayloadInPersistence = null;
+
+    SecretCoordinate jsonSecretCoordinate = null;
+    SecretCoordinate hmacSecretCoordinate = null;
+    for (final Map.Entry<SecretCoordinate, String> entry : longLivedSecretPersistence.getMap().entrySet()) {
+      if (entry.getKey().getFullCoordinate().contains("json")) {
+        jsonSecretCoordinate = entry.getKey();
+        jsonPayloadInPersistence = entry.getValue();
+      } else if (entry.getKey().getFullCoordinate().contains("hmac")) {
+        hmacSecretCoordinate = entry.getKey();
+        hmacPayloadInPersistence = entry.getValue();
+      } else {
+        throw new RuntimeException("");
+      }
+    }
+
+    assertNotNull(jsonPayloadInPersistence);
+    assertNotNull(hmacPayloadInPersistence);
+    assertNotNull(jsonSecretCoordinate);
+    assertNotNull(hmacSecretCoordinate);
+
+    assertEquals(jsonSecretPayload, jsonPayloadInPersistence);
+    assertEquals(HMAC_SECRET_PAYLOAD_1.toString(), hmacPayloadInPersistence);
+
+    verify(configRepository).writeWorkspaceServiceAccountNoSecrets(
+        Jsons.clone(workspaceServiceAccount.withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretCoordinate.getFullCoordinate())))
+            .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretCoordinate.getFullCoordinate())))));
+  }
+
+  @Test
+  void testWriteSameStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final SecretsRepositoryWriter secretsRepositoryWriter = spy(
+        new SecretsRepositoryWriter(configRepository, Optional.of(secretPersistence), Optional.of(secretPersistence)));
+
+    final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+
+    final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
+    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(
+        HMAC_SECRET_PAYLOAD_1)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
+
+    final SecretCoordinate jsonSecretCoordinate = new SecretCoordinate(
+        "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    final SecretCoordinate hmacSecretCoordinate = new SecretCoordinate(
+        "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    final WorkspaceServiceAccount cloned = Jsons.clone(workspaceServiceAccount)
+        .withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretCoordinate.getFullCoordinate())))
+        .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretCoordinate.getFullCoordinate())));
+
+    doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(jsonSecretCoordinate);
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(hmacSecretCoordinate);
+    secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
+
+    final ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
+    final ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
+
+    verify(secretPersistence, times(2)).write(coordinates.capture(), payloads.capture());
+    final List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
+    assertEquals(2, actualCoordinates.size());
+    assertThat(actualCoordinates, containsInAnyOrder(jsonSecretCoordinate, hmacSecretCoordinate));
+
+    final List<String> actualPayload = payloads.getAllValues();
+    assertEquals(2, actualPayload.size());
+    assertThat(actualPayload, containsInAnyOrder(jsonSecretPayload, HMAC_SECRET_PAYLOAD_1.toString()));
+
+    verify(secretPersistence).write(hmacSecretCoordinate, HMAC_SECRET_PAYLOAD_1.toString());
+    verify(configRepository).writeWorkspaceServiceAccountNoSecrets(
+        cloned);
+  }
+
+  @Test
+  void testWriteDifferentStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final SecretsRepositoryWriter secretsRepositoryWriter =
+        spy(new SecretsRepositoryWriter(configRepository, Optional.of(secretPersistence), Optional.of(secretPersistence)));
+
+    final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+
+    final String jsonSecretOldPayload = MOCK_SERVICE_ACCOUNT_1;
+    final String jsonSecretNewPayload = MOCK_SERVICE_ACCOUNT_2;
+
+    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
+        .withWorkspaceId(workspaceId)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_2)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withJsonCredential(Jsons.deserialize(jsonSecretNewPayload));
+
+    final SecretCoordinate jsonSecretOldCoordinate = new SecretCoordinate(
+        "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    final SecretCoordinate hmacSecretOldCoordinate = new SecretCoordinate(
+        "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    final WorkspaceServiceAccount cloned = Jsons.clone(workspaceServiceAccount)
+        .withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretOldCoordinate.getFullCoordinate())))
+        .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretOldCoordinate.getFullCoordinate())));
+
+    doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(hmacSecretOldCoordinate);
+    doReturn(Optional.of(jsonSecretOldPayload)).when(secretPersistence).read(jsonSecretOldCoordinate);
+
+    secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
+
+    final SecretCoordinate jsonSecretNewCoordinate = new SecretCoordinate(
+        "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);
+
+    final SecretCoordinate hmacSecretNewCoordinate = new SecretCoordinate(
+        "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);
+
+    final ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
+    final ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
+
+    verify(secretPersistence, times(2)).write(coordinates.capture(), payloads.capture());
+    final List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
+    assertEquals(2, actualCoordinates.size());
+    assertThat(actualCoordinates, containsInAnyOrder(jsonSecretNewCoordinate, hmacSecretNewCoordinate));
+
+    final List<String> actualPayload = payloads.getAllValues();
+    assertEquals(2, actualPayload.size());
+    assertThat(actualPayload, containsInAnyOrder(jsonSecretNewPayload, HMAC_SECRET_PAYLOAD_2.toString()));
+
+    verify(configRepository).writeWorkspaceServiceAccountNoSecrets(Jsons.clone(workspaceServiceAccount).withJsonCredential(Jsons.jsonNode(
+        Map.of(PASSWORD_FIELD_NAME, jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
+            Map.of(PASSWORD_FIELD_NAME, hmacSecretNewCoordinate.getFullCoordinate()))));
   }
 
 }

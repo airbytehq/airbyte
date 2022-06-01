@@ -1,13 +1,13 @@
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
 import { BigButton } from "components/CenteredPageComponents";
-import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
-import LabeledToggle from "components/LabeledToggle";
+import LabeledInput from "components/LabeledInput";
+import { LabeledSwitch } from "components/LabeledSwitch";
 
 import { useConfig } from "config";
 
@@ -135,7 +135,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="anonymousDataCollection">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.anonymizeData" />}
@@ -149,7 +149,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="news">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
@@ -164,7 +164,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="securityUpdates">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.securityUpdates" />}

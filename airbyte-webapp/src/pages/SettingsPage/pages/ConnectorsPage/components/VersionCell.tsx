@@ -1,7 +1,7 @@
-import React from "react";
 import { Field, FieldProps, Form, Formik } from "formik";
-import styled from "styled-components";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 
 import { Input, LoadingButton } from "components";
 

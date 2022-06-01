@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -13,6 +13,8 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import org.apache.avro.file.CodecFactory;
 
 public class S3AvroFormatConfig implements S3FormatConfig {
+
+  public static final String DEFAULT_SUFFIX = ".avro";
 
   private final CodecFactory codecFactory;
   private final Long partSize;
@@ -96,6 +98,11 @@ public class S3AvroFormatConfig implements S3FormatConfig {
 
   public Long getPartSize() {
     return partSize;
+  }
+
+  @Override
+  public String getFileExtension() {
+    return DEFAULT_SUFFIX;
   }
 
   @Override

@@ -1,33 +1,32 @@
+import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
-import { FormikErrors, getIn } from "formik";
 
 import { DropDownRow } from "components";
+
+import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
+import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+import { equal, naturalComparatorBy } from "utils/objects";
+import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
-  getDestinationNamespace,
+  NamespaceDefinitionType,
   SyncMode,
-  SyncSchemaField,
-  SyncSchemaFieldObject,
-  SyncSchemaStream,
-} from "core/domain/catalog";
-import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
-import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
-import { equal, naturalComparatorBy } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
-
-import { StreamHeader } from "./StreamHeader";
+} from "../../../core/request/AirbyteClient";
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
+import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
 
 const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : "none")};
   background: ${({ theme, isSelected }) => (isSelected ? "rgba(97, 94, 255, 0.1);" : theme.greyColor0)};
+  padding: 2px;
 
   &:first-child {
     border-radius: 8px 8px 0 0;
@@ -42,10 +41,11 @@ type TreeViewRowProps = {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
-  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat: string;
   prefix: string;
-  updateStream: (id: string, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
+  updateStream: (id: string | undefined, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
+  mode?: ConnectionFormMode;
 };
 
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
@@ -56,6 +56,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   prefix,
   errors,
   destinationSupportedSyncModes,
+  mode,
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
@@ -75,7 +76,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const onSelectStream = useCallback(
     () =>
       updateStreamWithConfig({
-        selected: !config.selected,
+        selected: !(config && config.selected),
       }),
     [config, updateStreamWithConfig]
   );
@@ -84,15 +85,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     (pkPath: string[]) => {
       let newPrimaryKey: string[][];
 
-      if (config.primaryKey.find((pk) => equal(pk, pkPath))) {
+      if (config?.primaryKey?.find((pk) => equal(pk, pkPath))) {
         newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
       } else {
-        newPrimaryKey = [...config.primaryKey, pkPath];
+        newPrimaryKey = [...(config?.primaryKey ?? []), pkPath];
       }
 
       updateStreamWithConfig({ primaryKey: newPrimaryKey });
     },
-    [config.primaryKey, updateStreamWithConfig]
+    [config?.primaryKey, updateStreamWithConfig]
   );
 
   const onCursorSelect = useCallback(
@@ -105,33 +106,33 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     [updateStreamWithConfig]
   );
 
-  const pkRequired = config.destinationSyncMode === DestinationSyncMode.Dedupted;
-  const cursorRequired = config.syncMode === SyncMode.Incremental;
-  const shouldDefinePk = stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
-  const shouldDefineCursor = !stream.sourceDefinedCursor && cursorRequired;
+  const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
+  const cursorRequired = config?.syncMode === SyncMode.incremental;
+  const shouldDefinePk = stream?.sourceDefinedPrimaryKey?.length === 0 && pkRequired;
+  const shouldDefineCursor = !stream?.sourceDefinedCursor && cursorRequired;
 
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(
         ([syncMode, destinationSyncMode]) =>
-          stream.supportedSyncModes.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode)
+          stream?.supportedSyncModes?.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
       })),
-    [stream.supportedSyncModes, destinationSupportedSyncModes]
+    [stream?.supportedSyncModes, destinationSupportedSyncModes]
   );
 
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
-    sourceNamespace: stream.namespace,
+    sourceNamespace: stream?.namespace ?? undefined,
   });
 
   const fields = useMemo(() => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, stream.name);
+    const traversedFields = traverseSchemaToField(stream?.jsonSchema, stream?.name);
 
     return traversedFields.sort(naturalComparatorBy((field) => field.cleanedName));
-  }, [stream.jsonSchema, stream.name]);
+  }, [stream?.jsonSchema, stream?.name]);
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
@@ -150,7 +151,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         <StreamHeader
           stream={streamNode}
           destNamespace={destNamespace}
-          destName={prefix + streamNode.stream.name}
+          destName={prefix + (streamNode.stream?.name ?? "")}
           availableSyncModes={availableSyncModes}
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
@@ -162,6 +163,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}
+          mode={mode}
         />
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (
@@ -178,6 +180,4 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 };
 
-const CatalogSection = memo(CatalogSectionInner);
-
-export { CatalogSection };
+export const CatalogSection = memo(CatalogSectionInner);

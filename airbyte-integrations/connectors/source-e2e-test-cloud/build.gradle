@@ -20,9 +20,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test-cloud')
 }
-
-allprojects {
-    repositories {
-        maven { url 'https://jitpack.io' }
-    }
-}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,6 +37,11 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
     return Jsons.jsonNode(Map.of(
         "format_type", "Parquet",
         "compression_codec", "GZIP"));
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new GcsAvroTestDataComparator();
   }
 
   @Override

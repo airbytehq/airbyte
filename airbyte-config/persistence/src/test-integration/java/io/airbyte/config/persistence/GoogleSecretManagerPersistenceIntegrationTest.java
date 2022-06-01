@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Test;
  * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the
  * integration testing GCP project.
  */
-public class GoogleSecretManagerPersistenceIntegrationTest {
+@SuppressWarnings("PMD.EmptyCatchBlock")
+class GoogleSecretManagerPersistenceIntegrationTest {
 
   private GoogleSecretManagerPersistence persistence;
   private String baseCoordinate;

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -11,7 +11,7 @@ import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
 from pyarrow import csv as pa_csv
-from source_s3.utils import run_in_external_process
+from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
 
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
@@ -40,9 +40,10 @@ class CsvParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
+        advanced_options = get_value_or_json_if_empty_string(self.format.advanced_options)
         return {
             **{"block_size": self.format.block_size, "encoding": self.format.encoding},
-            **json.loads(self.format.advanced_options),
+            **json.loads(advanced_options),
         }
 
     def _parse_options(self) -> Mapping[str, str]:
@@ -66,11 +67,11 @@ class CsvParser(AbstractFileParser):
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
         check_utf8 = self.format.encoding.lower().replace("-", "") == "utf8"
-
+        additional_reader_options = get_value_or_json_if_empty_string(self.format.additional_reader_options)
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
-            **json.loads(self.format.additional_reader_options),
+            **json.loads(additional_reader_options),
         }
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:

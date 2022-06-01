@@ -1,16 +1,17 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
+import HeadTitle from "components/HeadTitle";
 
+import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
-import useRouter from "hooks/useRouter";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -20,10 +21,11 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const { login } = useAuthService();
-  const { location, replace } = useRouter();
+  const { query, replace } = useRouter();
 
   return (
     <div>
+      <HeadTitle titles={[{ id: "login.login" }]} />
       <FormTitle bold>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
@@ -35,18 +37,15 @@ const LoginPage: React.FC = () => {
         }}
         validationSchema={LoginPageValidationSchema}
         onSubmit={async (values, { setFieldError }) => {
-          return (
-            login(values)
-              // @ts-expect-error state is now unkown, needs proper typing
-              .then((_) => replace(location.state?.from ?? "/"))
-              .catch((err) => {
-                if (err instanceof FieldError) {
-                  setFieldError(err.field, err.message);
-                } else {
-                  setFieldError("password", err.message);
-                }
-              })
-          );
+          return login(values)
+            .then(() => replace(query.from ?? "/"))
+            .catch((err) => {
+              if (err instanceof FieldError) {
+                setFieldError(err.field, err.message);
+              } else {
+                setFieldError("password", err.message);
+              }
+            });
         }}
         validateOnBlur
         validateOnChange={false}

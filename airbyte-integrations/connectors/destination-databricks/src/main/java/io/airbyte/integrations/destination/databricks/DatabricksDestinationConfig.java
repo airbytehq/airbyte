@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -63,6 +63,9 @@ public class DatabricksDestinationConfig {
         dataSource.get("s3_bucket_name").asText(),
         dataSource.get("s3_bucket_path").asText(),
         dataSource.get("s3_bucket_region").asText())
+        .withAccessKeyCredential(
+            dataSource.get("s3_access_key_id").asText(),
+            dataSource.get("s3_secret_access_key").asText())
         .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()))
         .get();
   }

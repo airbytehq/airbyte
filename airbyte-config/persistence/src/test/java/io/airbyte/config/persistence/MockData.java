@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
@@ -33,6 +34,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
 import io.airbyte.protocol.models.AuthSpecification.AuthType;
@@ -47,7 +49,10 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MockData {
 
@@ -77,6 +82,7 @@ public class MockData {
   private static final UUID CONNECTION_ID_3 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_4 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_5 = UUID.randomUUID();
+  private static final UUID CONNECTION_ID_6 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
@@ -87,7 +93,40 @@ public class MockData {
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_1 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_2 = UUID.randomUUID();
 
+  public static final String MOCK_SERVICE_ACCOUNT_1 = "{\n"
+      + "  \"type\" : \"service_account\",\n"
+      + "  \"project_id\" : \"random-gcp-project\",\n"
+      + "  \"private_key_id\" : \"123a1234ab1a123ab12345678a1234ab1abc1a12\",\n"
+      + "  \"private_key\" : \"-----BEGIN RSA PRIVATE KEY-----\\nMIIEoQIBAAKCAQBtkKBs9oe9pFhEWjBls9OrY0PXE/QN6nL4Bfw4+UqcBpTyItXo\\n3aBXuVqDIZ377zjbJUcYuc4NzAsLImy7VVT1XrdAkkCKQEMoA9pQgONA/3kD8Xff\\nSUGfdup8UJg925paaRhM7u81e3XKGwGyL/qcxpuHtfqimeWWfSPy5AawyOFl+l25\\nOqbm8PK4/QVqk4pcorQuISUkrehY0Ji0gVQF+ZeBvg7lvBtjNEl//eysGtcZvk7X\\nHqg+EIBqRjVNDsViHj0xeoDFcFgXDeWzxeQ0c7gMsDthfm4SjgaVFdQwsJUeoC6X\\nlwUoBbFIVVKW0n+SH+kxLc7mhaGjyRYJLS6tAgMBAAECggEAaowetlf4IR/VBoN+\\nVSjPSvg5XMr2pyG7tB597RngyGJOLjpaMx5zc1u4/ZSPghRdAh/6R71I+HnYs3dC\\nrdqJyCPXqV+Qi+F6bUtx3p+4X9kQ4hjMLcOboWuPFF1774vDSvCwxQAGd8gb//LL\\nb3DhEdzCGvOJTN7EOdhwQSAmsXsfj0qKlmm8vv0HBQDvjYYWhy/UcPry5sAGQ8KU\\nnUPTkz/OMS56nBIgKXgZtGRTP1Q7Q9a6oLmlvbDxuKGUByUPNlveZplzyWDO3RUN\\nNPt9dwgGk6rZK0umunGr0lq+WOK33Ue1RJy2VIvvV6dt32x20ehfVKND8N8q+wJ3\\neJQggQKBgQC//dOX8RwkmIloRzzmbu+qY8o44/F5gtxj8maR+OJhvbpFEID49bBr\\nzYqcMKfcgHJr6638CXVGSO66IiKtQcTMJ/Vd8TQVPcNPI1h/RD+wT/nkWX6R/0YH\\njwwNmikeUDH2/hLQlRZ8O45hc4frDGRMeHn3MSS2YsBDSl6YL/zHpQKBgQCSF9Ka\\nyCZmw5eS63G5/X9SVXbLRPuc6Fus+IbRPttOzSRviUXHaBjwwVEJgIKODx/eVXgD\\nA/OvFUmwIn73uZD/XgJrhkwAendaa+yhWKAkO5pO/EdAslxRmgxqTXfRcyslKBbo\\ns4YAgeYUgzOaMH4UxY4pJ7H6BLsFlboL+8BcaQKBgDSCM1Cm/M91eH8wnJNZW+r6\\nB+CvVueoxqX/MdZSf3fD8CHbdaqhZ3LUcEhvdjl0V9b0Sk1YON7UK5Z0p49DIZPE\\nifL7eQcmMTh/rkCAZfrOpMWzRE6hxoFiuiUuOHi17jRjILozTEcF8tbsRgwfA392\\no8Tbh/Lp5zOAL4bn+PaRAoGAZ2AgEJJsSe9BRB8CPF+aRoJfKvrHKIJqzHyXuVzH\\nBn22uI3kKHQKoeHJG/Ypa6hcHpFP+KJFPrDLkaz3NwfCCFFXWQqQoQ4Hgp43tPvn\\nZXwfdqChMrCDDuL4wgfLLxRVhVdWzpapzZYdXopwazzBGqWoMIr8LzRFum/2VCBy\\nP3ECgYBGqjuYud6gtrzaQwmMfcA0pSYsii96d2LKwWzjgcMzLxge59PIWXeQJqOb\\nh97m3qCkkPzbceD6Id8m/EyrNb04V8Zr0ERlcK/a4nRSHoIWQZY01lDSGhneRKn1\\nncBvRqCfz6ajf+zBg3zK0af98IHL0FI2NsNJLPrOBFMcthjx/g==\\n-----END RSA PRIVATE KEY-----\",\n"
+      + "  \"client_email\" : \"a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com\",\n"
+      + "  \"client_id\" : \"123456789012345678901\",\n"
+      + "  \"auth_uri\" : \"https://blah.blah.com/x/blah1/blah\",\n"
+      + "  \"token_uri\" : \"https://blah.blah.com/blah\",\n"
+      + "  \"auth_provider_x509_cert_url\" : \"https://www.blah.com/blah/v1/blah\",\n"
+      + "  \"client_x509_cert_url\" : \"https://www.blah.com/blah/v1/blah/a123/a1e5ac98-7531-48e1-943b-b46636%40random-gcp-project.abc.abcdefghijklmno.com\"\n"
+      + "}";
+
+  public static final String MOCK_SERVICE_ACCOUNT_2 = "{\n"
+      + "  \"type\" : \"service_account-2\",\n"
+      + "  \"project_id\" : \"random-gcp-project\",\n"
+      + "  \"private_key_id\" : \"123a1234ab1a123ab12345678a1234ab1abc1a12\",\n"
+      + "  \"private_key\" : \"-----BEGIN RSA PRIVATE KEY-----\\nMIIEoQIBAAKCAQBtkKBs9oe9pFhEWjBls9OrY0PXE/QN6nL4Bfw4+UqcBpTyItXo\\n3aBXuVqDIZ377zjbJUcYuc4NzAsLImy7VVT1XrdAkkCKQEMoA9pQgONA/3kD8Xff\\nSUGfdup8UJg925paaRhM7u81e3XKGwGyL/qcxpuHtfqimeWWfSPy5AawyOFl+l25\\nOqbm8PK4/QVqk4pcorQuISUkrehY0Ji0gVQF+ZeBvg7lvBtjNEl//eysGtcZvk7X\\nHqg+EIBqRjVNDsViHj0xeoDFcFgXDeWzxeQ0c7gMsDthfm4SjgaVFdQwsJUeoC6X\\nlwUoBbFIVVKW0n+SH+kxLc7mhaGjyRYJLS6tAgMBAAECggEAaowetlf4IR/VBoN+\\nVSjPSvg5XMr2pyG7tB597RngyGJOLjpaMx5zc1u4/ZSPghRdAh/6R71I+HnYs3dC\\nrdqJyCPXqV+Qi+F6bUtx3p+4X9kQ4hjMLcOboWuPFF1774vDSvCwxQAGd8gb//LL\\nb3DhEdzCGvOJTN7EOdhwQSAmsXsfj0qKlmm8vv0HBQDvjYYWhy/UcPry5sAGQ8KU\\nnUPTkz/OMS56nBIgKXgZtGRTP1Q7Q9a6oLmlvbDxuKGUByUPNlveZplzyWDO3RUN\\nNPt9dwgGk6rZK0umunGr0lq+WOK33Ue1RJy2VIvvV6dt32x20ehfVKND8N8q+wJ3\\neJQggQKBgQC//dOX8RwkmIloRzzmbu+qY8o44/F5gtxj8maR+OJhvbpFEID49bBr\\nzYqcMKfcgHJr6638CXVGSO66IiKtQcTMJ/Vd8TQVPcNPI1h/RD+wT/nkWX6R/0YH\\njwwNmikeUDH2/hLQlRZ8O45hc4frDGRMeHn3MSS2YsBDSl6YL/zHpQKBgQCSF9Ka\\nyCZmw5eS63G5/X9SVXbLRPuc6Fus+IbRPttOzSRviUXHaBjwwVEJgIKODx/eVXgD\\nA/OvFUmwIn73uZD/XgJrhkwAendaa+yhWKAkO5pO/EdAslxRmgxqTXfRcyslKBbo\\ns4YAgeYUgzOaMH4UxY4pJ7H6BLsFlboL+8BcaQKBgDSCM1Cm/M91eH8wnJNZW+r6\\nB+CvVueoxqX/MdZSf3fD8CHbdaqhZ3LUcEhvdjl0V9b0Sk1YON7UK5Z0p49DIZPE\\nifL7eQcmMTh/rkCAZfrOpMWzRE6hxoFiuiUuOHi17jRjILozTEcF8tbsRgwfA392\\no8Tbh/Lp5zOAL4bn+PaRAoGAZ2AgEJJsSe9BRB8CPF+aRoJfKvrHKIJqzHyXuVzH\\nBn22uI3kKHQKoeHJG/Ypa6hcHpFP+KJFPrDLkaz3NwfCCFFXWQqQoQ4Hgp43tPvn\\nZXwfdqChMrCDDuL4wgfLLxRVhVdWzpapzZYdXopwazzBGqWoMIr8LzRFum/2VCBy\\nP3ECgYBGqjuYud6gtrzaQwmMfcA0pSYsii96d2LKwWzjgcMzLxge59PIWXeQJqOb\\nh97m3qCkkPzbceD6Id8m/EyrNb04V8Zr0ERlcK/a4nRSHoIWQZY01lDSGhneRKn1\\nncBvRqCfz6ajf+zBg3zK0af98IHL0FI2NsNJLPrOBFMcthjx/g==\\n-----END RSA PRIVATE KEY-----\",\n"
+      + "  \"client_email\" : \"a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com\",\n"
+      + "  \"client_id\" : \"123456789012345678901\",\n"
+      + "  \"auth_uri\" : \"https://blah.blah.com/x/blah1/blah\",\n"
+      + "  \"token_uri\" : \"https://blah.blah.com/blah\",\n"
+      + "  \"auth_provider_x509_cert_url\" : \"https://www.blah.com/blah/v1/blah\",\n"
+      + "  \"client_x509_cert_url\" : \"https://www.blah.com/blah/v1/blah/a123/a1e5ac98-7531-48e1-943b-b46636%40random-gcp-project.abc.abcdefghijklmno.com\"\n"
+      + "}";
+
+  public static final JsonNode HMAC_SECRET_PAYLOAD_1 = Jsons.jsonNode(sortMap(
+      Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
+  public static final JsonNode HMAC_SECRET_PAYLOAD_2 = Jsons.jsonNode(sortMap(
+      Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEX", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeX")));
+
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
+
+  private static final String CONNECTION_SPECIFICATION = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
 
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
@@ -198,7 +237,7 @@ public class MockData {
   private static ConnectorSpecification connectorSpecification() {
     return new ConnectorSpecification()
         .withAuthSpecification(new AuthSpecification().withAuthType(AuthType.OAUTH_2_0))
-        .withConnectionSpecification(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConnectionSpecification(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDocumentationUrl(URI.create("whatever"))
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
@@ -279,14 +318,14 @@ public class MockData {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_2);
     final SourceConnection sourceConnection3 = new SourceConnection()
         .withName("source-3")
@@ -304,14 +343,14 @@ public class MockData {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_2);
     final DestinationConnection destinationConnection3 = new DestinationConnection()
         .withName("destination-3")
@@ -325,12 +364,12 @@ public class MockData {
 
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_2);
@@ -339,12 +378,12 @@ public class MockData {
 
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_2);
@@ -465,7 +504,23 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule);
-    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5);
+
+    final StandardSync standardSync6 = new StandardSync()
+        .withOperationIds(Arrays.asList())
+        .withConnectionId(CONNECTION_ID_6)
+        .withSourceId(SOURCE_ID_3)
+        .withDestinationId(DESTINATION_ID_3)
+        .withCatalog(getConfiguredCatalog())
+        .withName("standard-sync-6")
+        .withManual(true)
+        .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("")
+        .withPrefix("")
+        .withResourceRequirements(resourceRequirements)
+        .withStatus(Status.DEPRECATED)
+        .withSchedule(schedule);
+
+    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
@@ -484,16 +539,16 @@ public class MockData {
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState2 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_2)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState3 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_3)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     final StandardSyncState standardSyncState4 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_4)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(CONNECTION_SPECIFICATION)));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
   }
 
@@ -526,7 +581,23 @@ public class MockData {
         .withActorId(SOURCE_ID_2)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
-    return Arrays.asList(actorCatalogFetchEvent1);
+    return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
+  }
+
+  public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
+    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
+        .withWorkspaceId(WORKSPACE_ID_1)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
+        .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+        .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+        .withJsonCredential(Jsons.deserialize(MOCK_SERVICE_ACCOUNT_1));
+
+    return Arrays.asList(workspaceServiceAccount);
+  }
+
+  private static Map<String, String> sortMap(final Map<String, String> originalMap) {
+    return originalMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
   public static Instant now() {

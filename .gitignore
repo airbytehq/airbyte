@@ -1,6 +1,5 @@
 .gradle
 .idea
-.vscode
 *.iml
 *.swp
 build
@@ -11,6 +10,7 @@ data
 .classpath
 .project
 .settings
+.vscode
 **/gmon.out
 static_checker_reports/
 .vscode

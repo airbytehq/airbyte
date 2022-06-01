@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
 
 import com.google.api.client.util.Preconditions;
 import java.util.Objects;
+import lombok.ToString;
 
 /**
  * A secret coordinate represents a specific secret at a specific version stored within a
@@ -25,6 +26,8 @@ import java.util.Objects;
  * This coordinate system was designed to work well with Google Secrets Manager but should work with
  * other secret storage backends as well.
  */
+@ToString
+@SuppressWarnings("PMD.ShortVariable")
 public class SecretCoordinate {
 
   private final String coordinateBase;
@@ -66,10 +69,12 @@ public class SecretCoordinate {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
+    }
     final SecretCoordinate that = (SecretCoordinate) o;
     return toString().equals(that.toString());
   }
