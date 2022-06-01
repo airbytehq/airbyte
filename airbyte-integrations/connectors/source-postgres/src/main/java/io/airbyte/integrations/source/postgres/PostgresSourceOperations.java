@@ -215,7 +215,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    HashMap<String, String> data = (HashMap<String, String>) resultSet.getObject(index);
+    final var data = resultSet.getObject(index);
     node.put(columnName, new Gson().toJson(data));
   }
 
