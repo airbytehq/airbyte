@@ -1,12 +1,52 @@
 # Zendesk Support
 
-## Sync overview
+This page guides you through the process of setting up the Zendesk Support source connector.
 
-The Zendesk Support source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/api-reference/apps/apps-support-api/introduction/). This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Incremental sync are implemented on API side by its filters.
 
-This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/api-reference/apps/apps-support-api/introduction/). This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Incremental sync are implemented on API side by its filters
+## Prerequisites (Airbyte Cloud)
+* Start Date - the starting point for the data replication.
+* Subdomain - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
+* Your Zendesk Account with configured permissions to fetch the data.
 
-### Output schema
+## Prerequisites (Airbyte Open Source)
+* Start Date - the starting point for the data replication.
+* Subdomain - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
+* The `Email` used to register your Zendesk Account.
+* The `API Token` generated for your Zendesk Account.
+
+## Step 1: Set up Zendesk Support
+
+1. Create your `Zendesk Account` or use existing one, check [this link](thttps://www.zendesk.com/register/#step-1)
+2. Prepare the `API Token` for usage, check [this link](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token)
+3. Find your `Subdomain`, this could be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where `MY_SUBDOMAIN` is the value of your subdomain.
+
+## Step 2: Set up the Zendesk Support source connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Zendesk Support** from the Source type dropdown and enter a name for this connector.
+4. Fill in `Subdomain` value.
+5. Click `Authenticate your account`.
+6. Log in and Authorize to the Zendesk Support account.
+7. Choose required `Start Date`.
+8. Click `Set up source`.
+
+**For Airbyte OSS:**
+
+1. Go to local Airbyte page.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+3. On the Set up the source page, enter the name for the connector and select **Zendesk Support** from the Source type dropdown. 
+4. Enter `Subdomain` value.
+5. In `Authentication *` section choose `API Token`.
+    * Enter your `API Token` - the value of the API token generated. See the [generating API Token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token) for more information.
+    * `Email` - the user email for your Zendesk account.
+7. Choose required `Start Date`.
+8. Click `Set up source`.
+
+### Supported Streams & Sync Modes
 
 This Source is capable of syncing the following core Streams:
 
@@ -29,46 +69,17 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
 
-### Data type mapping
 
-| Integration Type | Airbyte Type |
-|:-----------------|:-------------|
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
-
-### Features
-
-| Feature                              | Supported?\(Yes/No\) | Notes                                    |
-|:-------------------------------------|:---------------------|:-----------------------------------------|
-| Full Refresh Sync                    | Yes                  |                                          |
-| Incremental - Append Sync            | Yes                  |                                          |
-| Incremental - Debuped + History Sync | Yes                  | Enabled according to type of destination |
-| Namespaces                           | No                   |                                          |
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+ - Full Refresh - overwrite
+ - Full Refresh - append
+ - Incremental - append
 
 ### Performance considerations
 
 The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
 
 The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
-1. Click `Authenticate your Zendesk account`
-2. Enter a `Start Date` as the minimum date of your data replication.
-3. Enter your `Subdomain`. Learn how to find it in the `Requirements` section.
-4. Click on `Setup Source`.
-5. You're now ready to sync your data.
-
-### Requirements
-
-* `Subdomain` - this is your Zendesk subdomain that can be found in your account URL. For example, in `https://{MY_SUBDOMAIN}.zendesk.com/`, where `MY_SUBDOMAIN` is the value of your subdomain.
-* `Authentication` - Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.
-  * Authentication using `OAuth2.0` (Only for Airbyte Cloud) - obtain `access_token` by authorising using your Zendesk Account credentials. Simply proceed by pressing "Authenticate your Zendesk Account" and complete the authentication.
-  * Authentication using `API Token`:
-    * `API Token` - the value of the API token generated. See the [generating API Token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token) for more information.
-    * `Email` - the user email for your Zendesk account.
-
 
 ### CHANGELOG
 
