@@ -240,4 +240,4 @@ class SimpleRetriever(Retriever, HttpStream):
         return self._iterator.stream_slices(sync_mode, stream_state)
 
     def get_state(self) -> MutableMapping[str, Any]:
-        return self._state.get_state()
+        return self._state.get_stream_state()
