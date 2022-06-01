@@ -1,11 +1,14 @@
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import logging
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from urllib.parse import urlparse
+
+logger = logging.getLogger("airbyte")
 
 class SourceDockerhub(AbstractSource):
     jwt = None
@@ -28,17 +31,17 @@ class SourceDockerhub(AbstractSource):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                print(str(e))
+                logger.info(str(e))
                 return False, "Invalid JWT received, check if auth.docker.io changed API"
             elif e.response.status_code == 404:
-                print(str(e))
+                logger.info(str(e))
                 return False, f"User '{username}' not found, check if hub.docker.com/u/{username} exists"
             else:
-                print(str(e))
+                logger.info(str(e))
                 return False, f"Error getting basic user info for Docker user '{username}', unexpected error"
         json_response = response.json()
         repocount = json_response["count"]
-        print(f"Connection check for Docker user '{username}' successful: {repocount} repos found")
+        logger.info(f"Connection check for Docker user '{username}' successful: {repocount} repos found")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -51,13 +54,12 @@ class DockerHub(HttpStream):
     primary_key = None
 
     def __init__(self, jwt: str, config: Mapping[str, Any], **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
         # Here's where we set the variable from our input to pass it down to the source.
         self.jwt = jwt
         self.docker_username = config["docker_username"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
         decoded_response = response.json()
         if (decoded_response["next"] is None):
             return None

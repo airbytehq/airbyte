@@ -38,6 +38,8 @@ To build using Gradle, from the Airbyte repository root, run:
 ./gradlew :airbyte-integrations:connectors:source-dockerhub:build
 ```
 
+<!-- TODO: If we implement auth someday, reimplement secrets and document them.
+
 #### Create credentials
 
 Create a file `secrets/config.json` that fits the `source_dockerhub/spec.yaml` file.
@@ -56,12 +58,14 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source dockerhub test creds`
 and place them into `secrets/config.json`.
 
+-->
+
 ### Locally running the connector
 ```
 python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py check --config sample_files/config.json
+python main.py discover --config sample_files/config.json
+python main.py read --config sample_files/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -83,9 +87,9 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-dockerhub:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dockerhub:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dockerhub:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-dockerhub:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dockerhub:dev check --config /sample_files/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-dockerhub:dev discover --config /sample_files/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-dockerhub:dev read --config /sample_files/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
