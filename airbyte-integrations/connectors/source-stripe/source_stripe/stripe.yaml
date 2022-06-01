@@ -79,7 +79,7 @@ substream_retriever:
   ref: "*ref(retriever)"
   parent_extractor:
     class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
-    transform: ".lines.data[]"
+    transform: ".lines"
 
 substream_slicer:
   class_name: "airbyte_cdk.sources.declarative.stream_slicers.substream_slicer.SubstreamSlicer"
