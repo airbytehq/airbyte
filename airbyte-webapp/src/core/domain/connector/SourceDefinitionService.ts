@@ -4,7 +4,7 @@ import {
   createSourceDefinition,
   getSourceDefinition,
   listLatestSourceDefinitions,
-  listSourceDefinitionsForWorkspace,
+  listSourceDefinitions,
   SourceDefinitionCreate,
   SourceDefinitionUpdate,
   updateSourceDefinition,
@@ -15,8 +15,8 @@ export class SourceDefinitionService extends AirbyteRequestService {
     return getSourceDefinition({ sourceDefinitionId }, this.requestOptions);
   }
 
-  public list(workspaceId: string) {
-    return listSourceDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
+  public list() {
+    return listSourceDefinitions(this.requestOptions);
   }
 
   public listLatest() {

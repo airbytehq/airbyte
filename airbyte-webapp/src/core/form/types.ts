@@ -48,3 +48,6 @@ export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };
 export type WidgetConfigMap = { [key: string]: WidgetConfig };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FormComponentOverrideProps = Record<string, any>;

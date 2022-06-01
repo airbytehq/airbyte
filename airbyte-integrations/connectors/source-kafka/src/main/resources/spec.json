@@ -78,6 +78,12 @@
         "type": "integer",
         "default": 500
       },
+      "polling_time": {
+        "title": "Polling Time",
+        "description": "Amount of time Kafka connector should try to poll for messages.",
+        "type": "integer",
+        "default": 100
+      },
       "protocol": {
         "title": "Protocol",
         "type": "object",
