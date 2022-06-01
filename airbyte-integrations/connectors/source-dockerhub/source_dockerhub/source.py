@@ -1,14 +1,17 @@
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+import logging
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from urllib.parse import urlparse
 
 import requests
-import logging
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from urllib.parse import urlparse
 
 logger = logging.getLogger("airbyte")
+
 
 class SourceDockerhub(AbstractSource):
     jwt = None
@@ -21,12 +24,9 @@ class SourceDockerhub(AbstractSource):
         response = requests.get(jwt_url)
         self.jwt = response.json()["token"]
 
-
         # check that jwt is valid and that username is valid
         url = f"https://hub.docker.com/v2/repositories/{username}/"
-        auth = TokenAuthenticator(token=self.jwt)
         try:
-            # response = requests.get(url, headers=auth.get_auth_header())
             response = requests.get(url, headers={"Authorization": self.jwt})
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
@@ -47,6 +47,7 @@ class SourceDockerhub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [DockerHub(jwt=self.jwt, config=config)]
 
+
 class DockerHub(HttpStream):
     url_base = "https://hub.docker.com/v2"
 
@@ -61,19 +62,16 @@ class DockerHub(HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        if (decoded_response["next"] is None):
+        if decoded_response["next"] is None:
             return None
         else:
             para = urlparse(decoded_response["next"]).query
-            return '?' + para
+            return "?" + para
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = ""
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = ""
     ) -> str:
-        return f"/v2/repositories/{self.docker_username}/" + str(next_page_token or '')
+        return f"/v2/repositories/{self.docker_username}/" + str(next_page_token or "")
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -87,4 +85,5 @@ class DockerHub(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        return [response.json()]
+        for repository in response.json().get("results"):
+            yield repository
