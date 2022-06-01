@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.config.Configs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -14,6 +15,10 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.*;
@@ -78,6 +83,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
+  private final Configs configs;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -85,7 +91,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
-                                  final RecordSchemaValidator recordSchemaValidator) {
+                                  final RecordSchemaValidator recordSchemaValidator,
+                                  final Configs configs) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -94,9 +101,20 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
+    this.configs = configs;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
+  }
+
+  public DefaultReplicationWorker(final String jobId,
+                                  final int attempt,
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker messageTracker,
+                                  final RecordSchemaValidator recordSchemaValidator) {
+    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null);
   }
 
   /**
@@ -112,7 +130,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
+  public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -154,7 +172,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, configs),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -293,7 +311,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final RecordSchemaValidator recordSchemaValidator) {
+                                                 final RecordSchemaValidator recordSchemaValidator,
+                                                 final Configs configs) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -335,8 +354,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
+          DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
+            final String[] validationErrorMetadata = {
+                "docker_repo:airbyte/test", // dockerImage.split(":")[0]
+                "docker_version:0.0.0", // dockerImage.split(":")[1]
+                "stream:" + stream
+            };
+            DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
           });
         }
 
