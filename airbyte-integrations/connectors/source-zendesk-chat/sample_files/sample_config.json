@@ -1,5 +1,6 @@
 {
   "access_token": "<your_access_token>",
   "start_date": "2020-11-01T00:00:00Z",
-  "subdomain": ""
+  "subdomain": "",
+  "api_pagination_limit": 10
 }
