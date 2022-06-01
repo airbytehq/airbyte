@@ -537,11 +537,13 @@ class DbtIntegrationTest(object):
         then the tests are run only on that subsets of destinations
         Otherwise tests are run against all destinations
         """
-        if os.getenv(NORMALIZATION_TEST_TARGET):
-            target_str = os.getenv(NORMALIZATION_TEST_TARGET)
-            return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
-        else:
-            return [d.value for d in DestinationType]
+        # TODO alvova: return previous
+        return [d.value for d in [DestinationType.POSTGRES]]
+        # if os.getenv(NORMALIZATION_TEST_TARGET):
+        #     target_str = os.getenv(NORMALIZATION_TEST_TARGET)
+        #     return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
+        # else:
+        #     return [d.value for d in DestinationType]
 
     @staticmethod
     def update_yaml_file(filename: str, callback: Callable):

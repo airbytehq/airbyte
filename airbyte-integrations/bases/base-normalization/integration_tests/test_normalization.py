@@ -28,7 +28,9 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
-    for integration_type in [d.value for d in DestinationType]:
+    # TODO alvova: return previous
+    # for integration_type in [d.value for d in DestinationType]:
+    for integration_type in [d.value for d in [DestinationType.POSTGRES]]:
         if integration_type in destinations_to_test:
             test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
             shutil.rmtree(test_root_dir, ignore_errors=True)
@@ -39,7 +41,8 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    dbt_test_utils.tear_down_db()
+    # TODO alvova: return previous
+    # dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
@@ -64,7 +67,9 @@ def setup_test_path(request):
         ]
     ),
 )
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+# TODO alvova: return previous
+# @pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
@@ -89,10 +94,10 @@ def run_test_normalization(destination_type: DestinationType, test_resource_name
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(destination_type, test_resource_name)
     run_first_normalization(destination_type, test_resource_name, test_root_dir)
-    if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_incremental.txt")):
-        run_incremental_normalization(destination_type, test_resource_name, test_root_dir)
-    if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")):
-        run_schema_change_normalization(destination_type, test_resource_name, test_root_dir)
+    # if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_incremental.txt")):
+    #     run_incremental_normalization(destination_type, test_resource_name, test_root_dir)
+    # if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")):
+    #     run_schema_change_normalization(destination_type, test_resource_name, test_root_dir)
 
 
 def run_first_normalization(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -496,42 +501,43 @@ def to_lower_identifier(input: re.Match) -> str:
         raise Exception(f"Unexpected number of groups in {input}")
 
 
-def test_redshift_normalization_migration(tmp_path, setup_test_path):
-    destination_type = DestinationType.REDSHIFT
-    if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
-    resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
-    catalog_file = base_dir / resources_dir / "destination_catalog.json"
-    messages_file1 = base_dir / resources_dir / "messages1.txt"
-    messages_file2 = base_dir / resources_dir / "messages2.txt"
-    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql"
-
-    shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
-    shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
-    shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
-
-    (tmp_path / "tests").mkdir()
-    shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
-
-    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
-    with open(tmp_path / "destination_config.json", "w") as f:
-        f.write(json.dumps(destination_config))
-
-    transform_catalog = TransformCatalog()
-    transform_catalog.config = {
-        "integration_type": destination_type.value,
-        "schema": destination_config["schema"],
-        "catalog": [catalog_file],
-        "output_path": os.path.join(tmp_path, "models", "generated"),
-        "json_column": "_airbyte_data",
-        "profile_config_dir": tmp_path,
-    }
-    transform_catalog.process_catalog()
-
-    run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", docker_tag="0.3.29")
-    dbt_test_utils.dbt_check(destination_type, tmp_path)
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
-    run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", docker_tag="dev")
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
-    dbt_test(destination_type, tmp_path)
+# TODO alvova: return previous
+# def test_redshift_normalization_migration(tmp_path, setup_test_path):
+#     destination_type = DestinationType.REDSHIFT
+#     if destination_type.value not in dbt_test_utils.get_test_targets():
+#         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+#     base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
+#     resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
+#     catalog_file = base_dir / resources_dir / "destination_catalog.json"
+#     messages_file1 = base_dir / resources_dir / "messages1.txt"
+#     messages_file2 = base_dir / resources_dir / "messages2.txt"
+#     dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql"
+#
+#     shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
+#     shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
+#     shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
+#
+#     (tmp_path / "tests").mkdir()
+#     shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
+#
+#     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
+#     with open(tmp_path / "destination_config.json", "w") as f:
+#         f.write(json.dumps(destination_config))
+#
+#     transform_catalog = TransformCatalog()
+#     transform_catalog.config = {
+#         "integration_type": destination_type.value,
+#         "schema": destination_config["schema"],
+#         "catalog": [catalog_file],
+#         "output_path": os.path.join(tmp_path, "models", "generated"),
+#         "json_column": "_airbyte_data",
+#         "profile_config_dir": tmp_path,
+#     }
+#     transform_catalog.process_catalog()
+#
+#     run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", docker_tag="0.3.29")
+#     dbt_test_utils.dbt_check(destination_type, tmp_path)
+#     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
+#     run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", docker_tag="dev")
+#     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
+#     dbt_test(destination_type, tmp_path)
