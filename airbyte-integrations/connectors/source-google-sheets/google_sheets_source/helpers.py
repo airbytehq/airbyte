@@ -37,7 +37,13 @@ class Helpers(object):
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
         auth_type = credentials.pop("auth_type")
         if auth_type == "Service":
-            return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
+            try:
+                service_account_json = json.loads(credentials["service_account_info"])
+                return service_account.Credentials.from_service_account_info(service_account_json, scopes=scopes)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse Service Account JSON credentials, please make sure the input is valid JSON.")
+                raise
+
         elif auth_type == "Client":
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
