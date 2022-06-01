@@ -59,9 +59,10 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| `0.1.16` | 2022-05-30 | [\#12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter |
-| `0.1.15` | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
-| `0.1.14` | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams |  
+| `0.1.17` | 2022-06-01 | [\#12801](https://github.com/airbytehq/airbyte/pull/13372) | Integration tests fix, ratelimit value update                                                        |
+| `0.1.16` | 2022-05-30 | [\#12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter                                                                               |
+| `0.1.15` | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                      |
+| `0.1.14` | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |  
 | `0.1.13` | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |  
 | `0.1.12` | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |  
 | `0.1.11` | 2022-04-04 | [11318](https://github.com/airbytehq/airbyte/pull/11318) | Change Response Reading                                                                              |
