@@ -82,6 +82,7 @@ public class TemporalClient {
     return WorkerFactory.newInstance(airbyteWorkflowClient(TemporalUtils.createTemporalAirbyteService()));
   }
 
+  // TODO consider making this private after the Temporal Cloud migration
   public static TemporalClient cloud(final Configs configs) {
     log.info("Using Temporal Cloud with:\nhost: {}\nnamespace: {}", configs.getTemporalCloudHost(), configs.getTemporalCloudNamespace());
     final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalCloudService();
@@ -95,6 +96,7 @@ public class TemporalClient {
         temporalCloudService);
   }
 
+  // TODO consider making this private after the Temporal Cloud migration
   public static TemporalClient airbyte(final Configs configs) {
     final String temporalHost = configs.getTemporalHost();
     log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", temporalHost, TemporalUtils.DEFAULT_NAMESPACE);
@@ -129,6 +131,7 @@ public class TemporalClient {
    * Direct termination of Temporal Workflows should generally be avoided. This method exists for some
    * rare circumstances where this may be required. Originally added to facilitate Airbyte's migration
    * to Temporal Cloud.
+   * TODO consider deleting this after Temporal Cloud migration
    */
   public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
     this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
