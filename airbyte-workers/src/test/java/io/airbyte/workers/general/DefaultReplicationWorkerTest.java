@@ -148,8 +148,8 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(source, atLeastOnce()).close();
     verify(destination).close();
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord());
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord());
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(), STREAM_NAME);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(), STREAM_NAME);
   }
 
   @Test
@@ -171,9 +171,9 @@ class DefaultReplicationWorkerTest {
     verify(destination).start(destinationConfig, jobRoot);
     verify(destination).accept(RECORD_MESSAGE1);
     verify(destination).accept(RECORD_MESSAGE2);
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord());
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord());
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord());
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(), STREAM_NAME);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(), STREAM_NAME);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord(), STREAM_NAME);
     verify(source).close();
     verify(destination).close();
   }

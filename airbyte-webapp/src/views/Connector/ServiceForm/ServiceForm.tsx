@@ -8,13 +8,14 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
 import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
-import { FormBaseItem } from "core/form/types";
+import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";
@@ -154,7 +155,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
-  const documentationUrl = useMemo(() => {
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  useMemo(() => {
     if (!selectedConnectorDefinitionSpecification) {
       return undefined;
     }
@@ -174,20 +176,23 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         );
       }
     });
-    return selectedServiceDefinition?.documentationUrl;
-  }, [availableServices, selectedConnectorDefinitionSpecification]);
+    setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
+    setDocumentationPanelOpen(true);
+    return;
+  }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
   const uiOverrides = useMemo(
     () => ({
       name: {
-        component: (property: FormBaseItem) => <ConnectorNameControl property={property} formType={formType} />,
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
+          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
+        ),
       },
       serviceType: {
-        component: (property: FormBaseItem) => (
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
@@ -195,18 +200,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               setInitialRequestName(name);
               toggleOpenRequestModal();
             }}
+            {...componentProps}
           />
         ),
       },
     }),
-    [
-      formType,
-      documentationUrl,
-      props.onServiceSelect,
-      props.availableServices,
-      props.isEditMode,
-      toggleOpenRequestModal,
-    ]
+    [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
