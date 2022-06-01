@@ -190,7 +190,7 @@ public class BootloaderAppTest {
       val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       initBootloader.load();
 
-      final ConfigPersistence localSchema = YamlSeedConfigPersistence.getDefault();
+      final ConfigPersistence localSchema = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
       final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
       configRepository.loadDataNoSecrets(localSchema);
 
