@@ -36,7 +36,7 @@ class MixpanelStream(HttpStream, ABC):
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    reqs_per_hour_limit: int = 400  # 1 req in 9 secs
+    reqs_per_hour_limit: str = 60  # 1 query per minute
 
     def __init__(
         self,
@@ -233,14 +233,16 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "funnels"
 
-    def funnel_slices(self, sync_mode) -> List[dict]:
+    def funnel_slice_value(self, sync_mode) -> List[dict]:
         funnel_slices = FunnelsList(**self.get_stream_params()).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
         self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
-
         return funnel_slices
+
+    def funnel_slices(self, sync_mode) -> List[dict]:
+        return self.funnel_slice_value(sync_mode)
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -756,7 +758,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     primary_key: str = None
     cursor_field: str = "time"
-    reqs_per_hour_limit: str = 60  # 1 query per minute
 
     @property
     def url_base(self):
@@ -878,7 +879,51 @@ class SourceMixpanel(AbstractSource):
 
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def _streams_testing(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        Due to API limitations (60 requests per hour) there is unavailable to make acceptance tests in normal mode,
+        so we're reducing amount of requests by:
+
+        1. Take time range in only 1 month
+        2. Take data only from one Funnels entity
+        3. Removing RPS limit for faster testing
+        """
+        AirbyteLogger().log("INFO", "SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
+
+        # 1. Take time range in only 1 month
+        tzone = pendulum.timezone(config.get("project_timezone", "US/Pacific"))
+        now = datetime.now(tzone).date()
+        start_date = now - timedelta(days=30)
+        config["start_date"] = start_date
+        config["end_date"] = now
+
+        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+
+        # 2. Take data only from one Funnels entity
+        def _funnel_slices_patched(self: Funnels, sync_mode):
+            """
+            Take all funnels dict, and save only first random key
+            """
+            funnel_slices_values = self.funnel_slice_value(sync_mode)
+            return [funnel_slices_values[0]] if funnel_slices_values else funnel_slices_values
+
+        Funnels.funnel_slices = _funnel_slices_patched
+
+        streams = [
+            Annotations(authenticator=auth, **config),
+            Cohorts(authenticator=auth, **config),
+            CohortMembers(authenticator=auth, **config),
+            Engage(authenticator=auth, **config),
+            Export(authenticator=auth, **config),
+            Funnels(authenticator=auth, **config),
+            Revenue(authenticator=auth, **config),
+        ]
+        # 3. Removing RPS limit for faster testing
+        for stream in streams:
+            stream.reqs_per_hour_limit = 0
+        return streams
+
+    def _streams_normal(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
@@ -907,6 +952,13 @@ class SourceMixpanel(AbstractSource):
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
         ]
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        is_testing = config.get("is_testing", False)
+        if is_testing:
+            return self._streams_testing(config)
+        else:
+            return self._streams_normal(config)
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
