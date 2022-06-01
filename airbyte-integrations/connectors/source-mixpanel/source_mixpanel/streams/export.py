@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
-
+from ..property_transformation import transform_property_names
 
 class ExportSchema(MixpanelStream):
     """
@@ -113,16 +113,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             # transform record into flat dict structure
             item = {"event": record["event"]}
             properties = record["properties"]
-            for property_name in properties:
-                this_property_name = property_name
-                if property_name.startswith("$"):
-                    # Just remove leading '$' for 'reserved' mixpanel properties name, example:
-                    # from API: '$browser'
-                    # to stream: 'browser'
-                    this_property_name = this_property_name[1:]
+            for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
                 # because API does not provide properties type information
-                item[this_property_name] = str(properties[property_name])
+                item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
             if item.get("time") and item["time"].isdigit():
@@ -147,16 +141,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
         # read existing Export schema from API
         schema_properties = ExportSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
-        for property_entry in schema_properties:
-            property_name: str = property_entry
-            if property_name.startswith("$"):
-                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
-                # from API: '$browser'
-                # to stream: 'browser'
-                property_name = property_name[1:]
+        for result in transform_property_names(schema_properties):
             # Schema does not provide exact property type
             # string ONLY for event properties (no other datatypes)
             # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
-            schema["properties"][property_name] = {"type": ["null", "string"]}
+            schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
