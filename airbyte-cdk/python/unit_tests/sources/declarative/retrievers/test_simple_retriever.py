@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"
@@ -14,9 +15,11 @@ records = [{"id": 1}, {"id": 2}]
 
 
 def test():
+    response = Response()
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.request_params.return_value = request_params
+    requester.parse_response.return_value = response
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
@@ -29,7 +32,7 @@ def test():
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
     iterator.stream_slices.return_value = stream_slices
 
-    response = requests.Response()
+    request_response = requests.Response()
 
     state = MagicMock()
     underlying_state = {"date": "2021-01-01"}
@@ -71,13 +74,13 @@ def test():
     assert retriever.url_base == url_base
     assert retriever.path() == path
     assert retriever.get_state() == underlying_state
-    assert retriever.next_page_token(response) == next_page_token
+    assert retriever.next_page_token(request_response) == next_page_token
     assert retriever.request_params(None, None, None) == request_params
     assert retriever.stream_slices(sync_mode=SyncMode.incremental) == stream_slices
 
     assert retriever._last_response is None
     assert retriever._last_records is None
-    assert retriever.parse_response(response, stream_state=None) == records
+    assert retriever.parse_response(request_response, stream_state=None) == records
     assert retriever._last_response == response
     assert retriever._last_records == records
 
