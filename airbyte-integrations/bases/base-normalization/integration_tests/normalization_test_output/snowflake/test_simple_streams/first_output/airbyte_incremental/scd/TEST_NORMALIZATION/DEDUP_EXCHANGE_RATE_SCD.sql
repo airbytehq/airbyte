@@ -3,7 +3,7 @@
       create or replace  table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
       (select * from(
             
--- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
+-- depends on: "INTEGRATION_TEST_NORMALIZATION"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD_NEW_DATA"
 with
 
 input_data as (

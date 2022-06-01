@@ -21,5 +21,5 @@ select
 from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }} as table_alias
 -- DEDUP_EXCHANGE_RATE
 where 1 = 1
-{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+{{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 

@@ -2,21 +2,62 @@
     cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
-    post_hook = ["drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG"],
+    post_hook = ["
+                        {%
+                        set final_table_relation = adapter.get_relation(
+                                database=this.database,
+                                schema=this.schema,
+                                identifier='DEDUP_EXCHANGE_RATE'
+                            )
+                        %}
+                        {#
+                        If the final table doesn't exist, then obviously we can't delete anything from it.
+                        Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
+                        So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
+                        #}
+                        {%
+                        if final_table_relation is not none and '_AIRBYTE_UNIQUE_KEY' in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
+                        %}
+                        -- Delete records which are no longer active:
+                        -- 1. Find the records which are being updated by querying the _scd_new_data model
+                        -- 2. Then join that against the SCD model to find the records which have no row with _airbyte_active_row = 1
+                        -- We can't just delete all the modified_ids from final_table because those records might still be active, but not included
+                        -- in the most recent increment (i.e. the final table model would not re-insert them, so the data would be incorrectly lost).
+                        -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
+                        -- so we _must_ join against the entire SCD table to find the active row for each record.
+                        -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
+                        delete from {{ final_table_relation }} where {{ final_table_relation }}._AIRBYTE_UNIQUE_KEY in (
+                            with modified_ids as (
+                                select
+                                    {{ dbt_utils.surrogate_key([
+                                            'ID',
+                                            'CURRENCY',
+                                            'NZD',
+                                    ]) }} as _AIRBYTE_UNIQUE_KEY
+                                from {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }}
+                                where 1=1
+                                    {{ incremental_clause('_AIRBYTE_EMITTED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
+                            ),
+                            scd_active_rows as (
+                                select scd_table.* from {{ this }} scd_table
+                                inner join modified_ids on scd_table._AIRBYTE_UNIQUE_KEY = modified_ids._AIRBYTE_UNIQUE_KEY
+                                where _AIRBYTE_ACTIVE_ROW =  1
+                            )
+                            select modified_ids._AIRBYTE_UNIQUE_KEY from scd_active_rows
+                            right outer join modified_ids on modified_ids._AIRBYTE_UNIQUE_KEY = scd_active_rows._AIRBYTE_UNIQUE_KEY
+                            group by modified_ids._AIRBYTE_UNIQUE_KEY
+                            having count(scd_active_rows._AIRBYTE_UNIQUE_KEY) = 0
+                        )
+                        {% else %}
+                        -- We have to have a non-empty query, so just do a noop delete
+                        delete from {{ this }} where 1=0
+                        {% endif %}
+                        ","drop view {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }}","drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG"],
     tags = [ "top-level" ]
 ) }}
--- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
+-- depends on: {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }}
 with
 {% if is_incremental() %}
-new_data as (
-    -- retrieve incremental "new" data
-    select
-        *
-    from {{ ref('DEDUP_EXCHANGE_RATE_STG')  }}
-    -- DEDUP_EXCHANGE_RATE from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }}
-    where 1 = 1
-    {{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
-),
 new_data_ids as (
     -- build a subset of _AIRBYTE_UNIQUE_KEY from rows that are new
     select distinct
@@ -25,11 +66,11 @@ new_data_ids as (
             'CURRENCY',
             'NZD',
         ]) }} as _AIRBYTE_UNIQUE_KEY
-    from new_data
+    from {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }}
 ),
 empty_new_data as (
     -- build an empty table to only keep the table's column types
-    select * from new_data where 1 = 0
+    select * from {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }} where 1 = 0
 ),
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
@@ -43,7 +84,7 @@ previous_active_scd_data as (
     where _AIRBYTE_ACTIVE_ROW = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_STG')) }} from new_data
+    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_STG')) }} from {{ ref('DEDUP_EXCHANGE_RATE_SCD_NEW_DATA') }}
     union all
     select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_STG')) }} from previous_active_scd_data
 ),
