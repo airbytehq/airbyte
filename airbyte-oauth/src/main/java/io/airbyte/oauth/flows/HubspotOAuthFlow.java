@@ -39,7 +39,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
-          .addParameter("scopes", getScopes())
+          .addParameter("optional_scopes", getScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -84,7 +84,6 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
 
   /**
    * Returns the URL where to retrieve the access token from.
-   *
    */
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
