@@ -92,6 +92,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
+    include ':airbyte-integrations:bases:debezium-new-version'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
