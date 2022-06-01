@@ -36,7 +36,8 @@ task generateApiServer(type: GenerateTask) {
     configOptions = [
             dateLibrary  : "java8",
             generatePom  : "false",
-            interfaceOnly: "true"
+            interfaceOnly: "true",
+            additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)"
     ]
 }
 compileJava.dependsOn tasks.generateApiServer
