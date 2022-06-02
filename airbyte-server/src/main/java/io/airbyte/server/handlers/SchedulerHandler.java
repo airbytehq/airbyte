@@ -335,9 +335,8 @@ public class SchedulerHandler {
   }
 
   public ConnectionState setState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
-    final JsonNode jsonState = Jsons.jsonNode(connectionUpdateStateBody.getState());
     final State state = new State();
-    state.setState(jsonState);
+    state.setState(connectionUpdateStateBody.getState());
     configRepository.updateConnectionState(connectionUpdateStateBody.getConnectionId(), state);
     final Optional<State> newState = configRepository.getConnectionState(connectionUpdateStateBody.getConnectionId());
     final ConnectionState connectionState = new ConnectionState().connectionId(connectionUpdateStateBody.getConnectionId());
