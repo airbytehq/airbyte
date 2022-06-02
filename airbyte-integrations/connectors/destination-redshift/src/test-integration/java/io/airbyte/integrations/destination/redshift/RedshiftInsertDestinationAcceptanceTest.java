@@ -25,6 +25,8 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -63,17 +65,8 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  public JsonNode getStaticConfig() {
-    return removeStagingConfigurationFromRedshift(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
-  }
-
-  public static JsonNode removeStagingConfigurationFromRedshift(final JsonNode config) {
-    final var original = (ObjectNode) Jsons.clone(config);
-    original.remove("s3_bucket_name");
-    original.remove("s3_bucket_region");
-    original.remove("access_key_id");
-    original.remove("secret_access_key");
-    return original;
+  public JsonNode getStaticConfig() throws IOException {
+    return Jsons.deserialize(Files.readString(Path.of("secrets/config.json")));
   }
 
   void setup() {

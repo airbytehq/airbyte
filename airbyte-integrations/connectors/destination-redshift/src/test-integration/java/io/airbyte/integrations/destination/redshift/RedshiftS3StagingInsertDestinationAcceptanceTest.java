@@ -59,7 +59,7 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftSt
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
 
   void setup() {
