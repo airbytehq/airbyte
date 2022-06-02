@@ -5,12 +5,12 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
-import com.mongodb.MongoTimeoutException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.util.MoreIterators;
@@ -25,6 +25,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -84,10 +85,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final var databaseName = config.get(DATABASE).asText();
       final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
-        throw new ConnectionErrorException("incorrect_host_or_port_or_database", INCORRECT_HOST_OR_PORT_OR_DATABASE.getValue());
+        throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionErrorException e) {
+    }
+    catch (final ConnectionErrorException e) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
           .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
@@ -104,7 +106,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private Set<String> getDatabaseNames(final MongoDatabase mongoDatabase) {
     try {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
-    } catch (MongoTimeoutException e) {
+    }     catch (MongoSecurityException e){
+      MongoCommandException exception = (MongoCommandException) e.getCause();
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
+    }
+    catch (MongoException e){
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }
