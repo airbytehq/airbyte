@@ -96,6 +96,8 @@ import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -259,7 +261,9 @@ public class AcceptanceTests {
   @BeforeEach
   public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
     apiClient = new AirbyteApiClient(
-        new ApiClient().setScheme("http")
+        new ApiClient()
+            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
+            .setScheme("http")
             .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
