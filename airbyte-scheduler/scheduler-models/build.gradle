@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-models", "$rootProject.ext.version", project)

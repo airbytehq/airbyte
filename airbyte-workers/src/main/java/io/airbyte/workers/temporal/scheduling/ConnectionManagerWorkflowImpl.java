@@ -171,11 +171,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState.setResetWithScheduling(true);
       }
 
-      final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
-
-      Workflow.await(timeToWait,
-          () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
-
       if (workflowState.isDeleted()) {
         log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
         return;

@@ -8,9 +8,9 @@ dependencies {
     api libs.jooq
     api libs.postgresql
 
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation libs.flyway.core
     implementation libs.testcontainers.postgresql
     // These are required because gradle might be using lower version of Jna from other
