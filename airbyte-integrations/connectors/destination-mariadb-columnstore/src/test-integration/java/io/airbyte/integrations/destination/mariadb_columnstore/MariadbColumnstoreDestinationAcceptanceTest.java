@@ -18,6 +18,8 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -25,6 +27,7 @@ import org.testcontainers.utility.DockerImageName;
 public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
+  private ExecutorService executorService;
 
   private MariaDBContainer db;
 
@@ -116,6 +119,14 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
+    executorService = Executors.newFixedThreadPool(1);
+    executorService.submit(() -> {
+      while (true) {
+        System.out.println("some test logs for CI");
+        Thread.sleep(10000);
+      }
+    });
+
     final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer(mcsImage);
     db.start();
@@ -130,6 +141,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
+    executorService.shutdownNow();
   }
 
 }
