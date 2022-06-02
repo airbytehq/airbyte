@@ -1,4 +1,5 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .leftPanelStyle {
   min-width: 200px;
@@ -21,7 +22,7 @@
 }
 
 .container > *:last-child {
-  padding-bottom: 150px;
+  padding-bottom: variables.$defaultBottomMargin;
 }
 
 .noScroll {

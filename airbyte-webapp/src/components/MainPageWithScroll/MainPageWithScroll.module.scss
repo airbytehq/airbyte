@@ -1,3 +1,5 @@
+@use "../../scss/variables";
+
 .page {
   overflow-y: hidden;
   height: 100%;
@@ -13,5 +15,5 @@
   overflow-y: auto;
   padding-top: 17px;
   height: 100%;
-  padding-bottom: 150px;
+  padding-bottom: variables.$defaultBottomMargin;
 }
