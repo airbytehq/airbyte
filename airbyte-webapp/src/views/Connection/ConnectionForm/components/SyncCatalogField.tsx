@@ -17,20 +17,15 @@ import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import { ConnectionFormMode } from "../ConnectionForm";
 import InformationToolTip from "./InformationToolTip";
 import Search from "./Search";
+import styles from "./SyncCatalogField.module.scss";
 
 const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
   margin-bottom: 29px;
   max-height: 600px;
   overflow-y: auto;
   --webkit-overlay: true;
-  // Find better way (for checkbox)
-  margin-left: -43px;
-  padding-left: ${({ mode }) => (mode === "readonly" ? "0" : "43px")};
-  width: calc(100% + 43px);
-`;
 
-const SchemaHeader = styled(Header)`
-  min-height: 33px;
+  width: 100%;
 `;
 
 const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
@@ -38,21 +33,6 @@ const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   line-height: 12px;
   border-top: 1px solid ${({ theme }) => theme.greyColor0};
   padding-top: 5px;
-`;
-
-const CheckboxCell = styled(Cell)`
-  max-width: 43px;
-  text-align: center;
-  margin-left: -43px;
-`;
-
-const ArrowCell = styled(Cell)`
-  width: 40px;
-  max-width: 40px;
-`;
-
-const StreamsContent = styled.div`
-  margin-left: 43px;
 `;
 
 const ClearSubtitleCell = styled(SubtitleCell)`
@@ -96,15 +76,15 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
   const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
   return (
-    <SchemaHeader>
+    <Header className={styles.catalogHeader}>
       {mode !== "readonly" && (
-        <CheckboxCell>
+        <Cell className={styles.checkboxCell}>
           <CheckBox
             onChange={onCheckAll}
             indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
             checked={allChecked}
           />
-        </CheckboxCell>
+        </Cell>
       )}
       {mode !== "readonly" && <Cell flex={0.2} />}
       <Cell lighter flex={0.4}>
@@ -148,15 +128,12 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
         </InformationToolTip>
       </Cell>
       <Cell />
-    </SchemaHeader>
+    </Header>
   );
 };
 
-const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => (
-  <SchemaHeader>
-    {mode !== "readonly" && <CheckboxCell />}
-    <ArrowCell />
-    <ClearSubtitleCell flex={mode === "readonly" ? 0.1 : 0.4} />
+const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = () => (
+  <Header className={styles.catalogSubheader}>
     <SubtitleCell>
       <FormattedMessage id="form.namespace" />
     </SubtitleCell>
@@ -174,7 +151,7 @@ const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => 
     <SubtitleCell>
       <FormattedMessage id="form.streamName" />
     </SubtitleCell>
-  </SchemaHeader>
+  </Header>
 );
 
 const SyncCatalogField: React.FC<SchemaViewProps> = ({
@@ -190,7 +167,9 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const setField = form.setFieldValue;
 
   const onChangeSchema = useCallback(
-    (newValue: SyncSchemaStream[]) => setField(fieldName, newValue),
+    (newValue: SyncSchemaStream[]) => {
+      setField(fieldName, newValue);
+    },
     [fieldName, setField]
   );
 
@@ -214,6 +193,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
+
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
       <HeaderBlock>
@@ -227,19 +207,17 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         )}
       </HeaderBlock>
       {mode !== "readonly" && <Search onSearch={setSearchString} />}
-      <StreamsContent>
-        <CatalogHeader mode={mode} />
-        <CatalogSubheader mode={mode} />
-        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
-        <TreeViewContainer mode={mode}>
-          <CatalogTree
-            streams={filteredStreams}
-            onChangeStream={onChangeStream}
-            destinationSupportedSyncModes={destinationSupportedSyncModes}
-            mode={mode}
-          />
-        </TreeViewContainer>
-      </StreamsContent>
+      <CatalogHeader mode={mode} />
+      <CatalogSubheader mode={mode} />
+      <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
+      <TreeViewContainer mode={mode}>
+        <CatalogTree
+          streams={filteredStreams}
+          onChangeStream={onChangeStream}
+          destinationSupportedSyncModes={destinationSupportedSyncModes}
+          mode={mode}
+        />
+      </TreeViewContainer>
     </BatchEditProvider>
   );
 };

@@ -1,3 +1,7 @@
+// These are utility classes that will be used by multiple sub-components
+// of the CatalogTree component once we finish migrating to scss,
+// not only styles used directly in CatalogTree
+
 .headerCell {
   font-size: 10px;
   line-height: 13px;
@@ -7,7 +11,6 @@
   @extend .headerCell;
   max-width: 43px;
   text-align: center;
-  margin-left: -43px;
   display: flex;
   flex-direction: row;
 }
