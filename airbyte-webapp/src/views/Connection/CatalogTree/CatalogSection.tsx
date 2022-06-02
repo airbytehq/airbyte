@@ -1,13 +1,11 @@
-import classnames from "classnames";
 import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
-import { DropDownRow, Row } from "components";
+import { DropDownRow } from "components";
 
 import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
@@ -18,7 +16,6 @@ import {
   SyncMode,
 } from "../../../core/request/AirbyteClient";
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
-import styles from "./CatalogSection.module.scss";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -48,7 +45,6 @@ export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
-  const [isSelected] = useBulkEditSelect(streamNode.id);
 
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) => updateStream(streamNode.id, config),
@@ -132,37 +128,27 @@ export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
 
-  const isEnabled = streamNode.config?.selected;
-
-  const sectionStyle = classnames(styles.catalogSection, {
-    [styles.greenBackground]: changedSelected && isEnabled,
-    [styles.redBackground]: changedSelected && !isEnabled,
-    [styles.purpleBackground]: isSelected,
-    [styles.redBorder]: hasError,
-  });
-
   return (
-    <div className={sectionStyle}>
-      <Row className={styles.catalogSectionRow}>
-        <StreamHeader
-          stream={streamNode}
-          destNamespace={destNamespace}
-          destName={prefix + (streamNode.stream?.name ?? "")}
-          availableSyncModes={availableSyncModes}
-          onSelectStream={onSelectStream}
-          onSelectSyncMode={onSelectSyncMode}
-          isRowExpanded={isRowExpanded}
-          primitiveFields={primitiveFields}
-          pkType={getPathType(pkRequired, shouldDefinePk)}
-          onPrimaryKeyChange={onPkUpdate}
-          cursorType={getPathType(cursorRequired, shouldDefineCursor)}
-          onCursorChange={onCursorSelect}
-          hasFields={hasChildren}
-          onExpand={onExpand}
-          mode={mode}
-          changedSelected={changedSelected}
-        />
-      </Row>
+    <>
+      <StreamHeader
+        stream={streamNode}
+        destNamespace={destNamespace}
+        destName={prefix + (streamNode.stream?.name ?? "")}
+        availableSyncModes={availableSyncModes}
+        onSelectStream={onSelectStream}
+        onSelectSyncMode={onSelectSyncMode}
+        isRowExpanded={isRowExpanded}
+        primitiveFields={primitiveFields}
+        pkType={getPathType(pkRequired, shouldDefinePk)}
+        onPrimaryKeyChange={onPkUpdate}
+        cursorType={getPathType(cursorRequired, shouldDefineCursor)}
+        onCursorChange={onCursorSelect}
+        hasFields={hasChildren}
+        onExpand={onExpand}
+        mode={mode}
+        changedSelected={changedSelected}
+        hasError={hasError}
+      />
       {isRowExpanded && hasChildren && (
         <StreamFieldTable
           config={config}
@@ -173,7 +159,7 @@ export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
           shouldDefineCursor={shouldDefineCursor}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Cell, CheckBox, DropDownRow, Switch } from "components";
+import { Cell, CheckBox, DropDownRow, Row, Switch } from "components";
 
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
@@ -46,6 +46,7 @@ interface StreamHeaderProps {
   onExpand: () => void;
   mode?: ConnectionFormMode;
   changedSelected: boolean;
+  hasError: boolean;
 }
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
@@ -65,6 +66,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   onExpand,
   mode,
   changedSelected,
+  hasError,
 }) => {
   const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
   const isEnabled = stream.config?.selected;
@@ -87,10 +89,19 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [styles.redText]: !isEnabled,
   });
 
+  const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
+    [styles.greenBackground]: changedSelected && isEnabled,
+    [styles.redBackground]: changedSelected && !isEnabled,
+    [styles.purpleBackground]: isSelected,
+    [styles.redBorder]: hasError,
+  });
+
+  const checkboxCellCustomStyle = classnames(styles.checkboxCell, { [styles.streamRowCheckboxCell]: true });
+
   return (
-    <>
+    <Row className={styles.catalogSectionRow}>
       {mode !== "readonly" && (
-        <Cell className={styles.checkboxCell}>
+        <div className={checkboxCellCustomStyle}>
           {changedSelected && (
             <div>
               {isEnabled ? (
@@ -101,62 +112,64 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             </div>
           )}
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-        </Cell>
+        </div>
       )}
       <ArrowCell>
         {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
-      <HeaderCell flex={0.4}>
-        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
-      </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
-        {stream.stream?.namespace || (
-          <EmptyField>
-            <FormattedMessage id="form.noNamespace" />
-          </EmptyField>
-        )}
-      </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream?.name || ""}>
-        {stream.stream?.name}
-      </HeaderCell>
-      <Cell flex={1.5}>
-        {mode !== "readonly" ? (
-          <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
-        ) : (
-          <HeaderCell ellipsis title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
-            {syncSchema.syncMode} | {syncSchema.destinationSyncMode}
-          </HeaderCell>
-        )}
-      </Cell>
-      <HeaderCell>
-        {cursorType && (
-          <PathPopout
-            pathType={cursorType}
-            paths={paths}
-            path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
-            placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
-            onPathChange={onCursorChange}
-          />
-        )}
-      </HeaderCell>
-      <HeaderCell ellipsis>
-        {pkType && (
-          <PathPopout
-            pathType={pkType}
-            paths={paths}
-            path={primaryKey}
-            isMulti={true}
-            placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
-            onPathChange={onPrimaryKeyChange}
-          />
-        )}
-      </HeaderCell>
-      <HeaderCell ellipsis title={destNamespace}>
-        {destNamespace}
-      </HeaderCell>
-      <HeaderCell ellipsis title={destName}>
-        {destName}
-      </HeaderCell>
-    </>
+      <div className={streamHeaderContentStyle}>
+        <HeaderCell flex={0.4}>
+          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
+        </HeaderCell>
+        <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+          {stream.stream?.namespace || (
+            <EmptyField>
+              <FormattedMessage id="form.noNamespace" />
+            </EmptyField>
+          )}
+        </HeaderCell>
+        <HeaderCell ellipsis title={stream.stream?.name || ""}>
+          {stream.stream?.name}
+        </HeaderCell>
+        <Cell flex={1.5}>
+          {mode !== "readonly" ? (
+            <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
+          ) : (
+            <HeaderCell ellipsis title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
+              {syncSchema.syncMode} | {syncSchema.destinationSyncMode}
+            </HeaderCell>
+          )}
+        </Cell>
+        <HeaderCell>
+          {cursorType && (
+            <PathPopout
+              pathType={cursorType}
+              paths={paths}
+              path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
+              placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
+              onPathChange={onCursorChange}
+            />
+          )}
+        </HeaderCell>
+        <HeaderCell ellipsis>
+          {pkType && (
+            <PathPopout
+              pathType={pkType}
+              paths={paths}
+              path={primaryKey}
+              isMulti={true}
+              placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
+              onPathChange={onPrimaryKeyChange}
+            />
+          )}
+        </HeaderCell>
+        <HeaderCell ellipsis title={destNamespace}>
+          {destNamespace}
+        </HeaderCell>
+        <HeaderCell ellipsis title={destName}>
+          {destName}
+        </HeaderCell>
+      </div>
+    </Row>
   );
 };
