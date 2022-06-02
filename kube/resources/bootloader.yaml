@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: airbyte-bootloader
 spec:
+  # This ttl is necessary to prevent errors when upgrading airbyte
   ttlSecondsAfterFinished: 5
   template:
     spec:
