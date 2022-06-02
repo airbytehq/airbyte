@@ -81,8 +81,6 @@ Task dockerBuildTask = getDockerBuildTask("worker", "$project.projectDir", "$roo
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-workers", "$rootProject.ext.version", project)
-
 task cloudStorageIntegrationTest(type: Test) {
     useJUnitPlatform {
         includeTags cloudStorageTestTagName

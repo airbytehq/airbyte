@@ -89,4 +89,4 @@ tasks.named('generateJobsDatabaseJooq').configure {
     outputs.cacheIf { true }
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-jooq", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

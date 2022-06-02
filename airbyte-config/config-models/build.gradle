@@ -53,4 +53,4 @@ task logClientsIntegrationTest(type: Test) {
     }
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-config-models", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

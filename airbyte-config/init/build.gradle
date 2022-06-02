@@ -23,4 +23,4 @@ Task dockerBuildTask = getDockerBuildTask("init", "$project.projectDir", "$rootP
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-config-init", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

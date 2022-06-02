@@ -69,4 +69,4 @@ Task dockerBuildTask = getDockerBuildTask("scheduler", "$project.projectDir", "$
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-app", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

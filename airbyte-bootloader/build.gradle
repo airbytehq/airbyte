@@ -46,4 +46,4 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-bootloader", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

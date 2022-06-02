@@ -107,4 +107,4 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-server", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

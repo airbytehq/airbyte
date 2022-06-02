@@ -10,4 +10,4 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-commons-docker", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

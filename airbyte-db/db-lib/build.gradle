@@ -82,4 +82,4 @@ Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootPro
 dockerBuildTask.dependsOn(copyInitSql)
 assemble.dependsOn(dockerBuildTask)
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-db", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

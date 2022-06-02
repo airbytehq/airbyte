@@ -6,4 +6,4 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("commons-cli", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

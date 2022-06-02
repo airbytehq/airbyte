@@ -8,4 +8,4 @@ dependencies {
     implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-json-validation", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

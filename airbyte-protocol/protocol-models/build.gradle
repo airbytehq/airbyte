@@ -23,4 +23,4 @@ jsonSchema2Pojo {
     includeSetters = true
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-protocol-models", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

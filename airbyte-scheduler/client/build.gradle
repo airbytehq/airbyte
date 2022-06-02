@@ -16,4 +16,4 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-client", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

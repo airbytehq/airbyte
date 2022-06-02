@@ -20,4 +20,4 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-scheduler-persistence", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

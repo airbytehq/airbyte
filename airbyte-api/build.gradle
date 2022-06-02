@@ -143,4 +143,4 @@ sourceSets {
     }
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-api", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

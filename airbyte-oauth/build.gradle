@@ -11,4 +11,4 @@ dependencies {
     testImplementation project(':airbyte-oauth')
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("airbyte-oauth", "$rootProject.ext.version", project)
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
