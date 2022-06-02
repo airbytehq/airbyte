@@ -140,7 +140,10 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     executorService = Executors.newFixedThreadPool(1);
     executorService.submit(() -> {
       while (true) {
-        System.out.println("some test logs for CI");
+        System.out.println("\t Free Memory \t Total Memory \t Max Memory");
+        System.out.println(" \t " + Runtime.getRuntime().freeMemory() +
+            " \t \t " + Runtime.getRuntime().totalMemory() +
+            " \t \t " + Runtime.getRuntime().maxMemory());
         Thread.sleep(10000);
       }
     });
