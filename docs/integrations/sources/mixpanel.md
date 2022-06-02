@@ -61,7 +61,7 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| `0.1.17` | 2022-06-01 | [\#12801](https://github.com/airbytehq/airbyte/pull/13372) | Integration tests fix, ratelimit value update, add date_window_size into config                      |
+| `0.1.17` | 2022-06-01 | [\#12801](https://github.com/airbytehq/airbyte/pull/13372) | Acceptance tests fix, fixing some bugs for beta release                                              |
 | `0.1.16` | 2022-05-30 | [\#12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter                                                                               |
 | `0.1.15` | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                      |
 | `0.1.14` | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |  
