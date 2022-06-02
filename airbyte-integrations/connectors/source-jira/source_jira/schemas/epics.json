@@ -34,7 +34,7 @@
           "description": "Epic summary"
         },
         "description": {
-          "type": ["string", "null"],
+          "type": ["string", "null", "object"],
           "description": "Epic description"
         },
         "status": {
