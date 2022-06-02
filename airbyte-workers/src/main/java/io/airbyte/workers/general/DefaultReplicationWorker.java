@@ -84,6 +84,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final Configs configs;
+  private final String dockerImage;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -92,7 +93,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
-                                  final Configs configs) {
+                                  final Configs configs,
+                                  final String dockerImage) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -102,6 +104,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.configs = configs;
+    this.dockerImage = dockerImage;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -114,7 +117,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator) {
-    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null);
+    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null, null);
   }
 
   /**
@@ -172,7 +175,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, configs),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, configs, dockerImage),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -312,7 +315,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
-                                                 final Configs configs) {
+                                                 final Configs configs,
+                                                 final String dockerImage) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -358,9 +362,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
             final String[] validationErrorMetadata = {
-                "docker_repo:airbyte/test", // dockerImage.split(":")[0]
-                "docker_version:0.0.0", // dockerImage.split(":")[1]
-                "stream:" + stream
+              "docker_repo:" + dockerImage.split(":")[0],
+              "docker_version:" + dockerImage.split(":")[1],
+              "stream:" + stream
             };
             DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
           });
