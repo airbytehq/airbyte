@@ -15,7 +15,9 @@ ERRORS_TO_RETRY_ON = {status_codes.TOO_MANY_REQUESTS, status_codes.SERVICE_UNAVA
 
 
 def error_handler(error):
-    return error.resp.status not in ERRORS_TO_RETRY_ON
+    code = error.resp.status
+    # Throw an error if it's not a problem with the rate limit or on the server end
+    return not (code == status_codes.TOO_MANY_REQUESTS or 500 <= code < 600)
 
 
 class GoogleSheetsClient:
