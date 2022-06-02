@@ -3,7 +3,7 @@ import {
   resetConnection,
   syncConnection,
   getState,
-  setState,
+  updateState,
   ConnectionState,
 } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
@@ -25,7 +25,7 @@ export class ConnectionService extends AirbyteRequestService {
     return getState({ connectionId }, this.requestOptions);
   }
 
-  public setState(connectionId: string, state: ConnectionState) {
-    return setState({ connectionId, state }, this.requestOptions);
+  public updateState(connectionId: string, state: ConnectionState) {
+    return updateState({ connectionId, state }, this.requestOptions);
   }
 }

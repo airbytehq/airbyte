@@ -1407,7 +1407,7 @@ paths:
       tags:
         - connection
       summary: Set the current state for a connection.
-      operationId: setState
+      operationId: updateState
       requestBody:
         content:
           application/json:

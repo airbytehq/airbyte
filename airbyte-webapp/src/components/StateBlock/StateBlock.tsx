@@ -12,7 +12,7 @@ import ContentCard from "components/ContentCard";
 
 import { ConnectionState, ConnectionStateObject } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useGetConnectionState, useSetConnectionState } from "hooks/services/useConnectionHook";
+import { useGetConnectionState, useUpdateConnectionState } from "hooks/services/useConnectionHook";
 
 type IProps = {
   connectionId: string;
@@ -61,7 +61,7 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   const [validation, setValidation] = useState<Validation>({ valid: true });
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { mutateAsync: getState } = useGetConnectionState();
-  const { mutateAsync: setState } = useSetConnectionState();
+  const { mutateAsync: updateState } = useUpdateConnectionState();
 
   const loadState = async () => {
     setLoading(true);
@@ -75,7 +75,7 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   const saveState = async () => {
     setLoading(true);
     const stateObject = JSON.parse(stateString) as ConnectionState;
-    const newState = await setState({ connectionId, state: stateObject });
+    const newState = await updateState({ connectionId, state: stateObject });
     if (newState?.state) {
       setStateString(formatState(newState.state));
       setLoading(false);

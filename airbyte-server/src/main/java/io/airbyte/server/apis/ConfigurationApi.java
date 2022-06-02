@@ -729,8 +729,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public ConnectionState setState(final ConnectionUpdateStateBody connectionUpdateStateBody) {
-    return execute(() -> schedulerHandler.setState(connectionUpdateStateBody));
+  public ConnectionState updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) {
+    return execute(() -> schedulerHandler.updateState(connectionUpdateStateBody));
   }
 
   // SCHEDULER

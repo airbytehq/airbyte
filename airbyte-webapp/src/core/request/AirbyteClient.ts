@@ -905,7 +905,7 @@ export interface WebBackendConnectionSearch {
 
 export interface ConnectionUpdateStateBody {
   connectionId: ConnectionId;
-  state: ConnectionState;
+  state: ConnectionStateObject;
 }
 
 export interface ConnectionUpdate {
@@ -2460,7 +2460,7 @@ export const getState = (
 /**
  * @summary Set the current state for a connection.
  */
-export const setState = (
+export const updateState = (
   connectionUpdateStateBody: ConnectionUpdateStateBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {
@@ -3232,7 +3232,7 @@ export type ListAllConnectionsForWorkspaceResult = NonNullable<
 >;
 export type GetConnectionResult = NonNullable<Awaited<ReturnType<typeof getConnection>>>;
 export type GetStateResult = NonNullable<Awaited<ReturnType<typeof getState>>>;
-export type SetStateResult = NonNullable<Awaited<ReturnType<typeof setState>>>;
+export type UpdateStateResult = NonNullable<Awaited<ReturnType<typeof updateState>>>;
 export type SearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof searchConnections>>>;
 export type DeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>;
 export type SyncConnectionResult = NonNullable<Awaited<ReturnType<typeof syncConnection>>>;
