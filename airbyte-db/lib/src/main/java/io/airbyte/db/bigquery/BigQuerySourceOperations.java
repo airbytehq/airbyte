@@ -9,6 +9,7 @@ import static io.airbyte.db.DataTypeUtils.toISO8601String;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
@@ -19,6 +20,7 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
+import io.airbyte.db.util.JsonUtil;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -43,20 +45,19 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
     return jsonNode;
   }
 
-  private void fillObjectNode(final String fieldName, final StandardSQLTypeName fieldType, final FieldValue fieldValue, final ObjectNode node) {
+  private void fillObjectNode(final String fieldName, final StandardSQLTypeName fieldType, final FieldValue fieldValue, final ContainerNode<?> node) {
     switch (fieldType) {
-      case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
-      case INT64 -> node.put(fieldName, fieldValue.getLongValue());
-      case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
-      case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
-      case BIGNUMERIC -> node.put(fieldName, returnNullIfInvalid(fieldValue::getNumericValue));
-      case STRING -> node.put(fieldName, fieldValue.getStringValue());
-      case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-      case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));
-      case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
-      case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue() / 1000));
-      case TIME -> node.put(fieldName, fieldValue.getStringValue());
-      default -> node.put(fieldName, fieldValue.getStringValue());
+      case BOOL -> JsonUtil.putBooleanValueIntoJson(node, fieldValue.getBooleanValue(), fieldName);
+      case INT64 -> JsonUtil.putLongValueIntoJson(node, fieldValue.getLongValue(), fieldName);
+      case FLOAT64 -> JsonUtil.putDoubleValueIntoJson(node, fieldValue.getDoubleValue(), fieldName);
+      case NUMERIC -> JsonUtil.putBigDecimalValueIntoJson(node, fieldValue.getNumericValue(), fieldName);
+      case BIGNUMERIC -> JsonUtil.putBigDecimalValueIntoJson(node, returnNullIfInvalid(fieldValue::getNumericValue), fieldName);
+      case STRING, TIME -> JsonUtil.putStringValueIntoJson(node, fieldValue.getStringValue(), fieldName);
+      case BYTES -> JsonUtil.putBytesValueIntoJson(node, fieldValue.getBytesValue(), fieldName);
+      case DATE -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)), fieldName);
+      case DATETIME -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)), fieldName);
+      case TIMESTAMP -> JsonUtil.putStringValueIntoJson(node, toISO8601String(fieldValue.getTimestampValue() / 1000), fieldName);
+      default -> JsonUtil.putStringValueIntoJson(node, fieldValue.getStringValue(), fieldName);
     }
   }
 
@@ -74,7 +75,7 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
       final FieldList subFields = field.getSubFields();
       // Array of primitive
       if (subFields == null || subFields.isEmpty()) {
-        fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
+        fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode));
         // Array of records
       } else {
         for (final FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {

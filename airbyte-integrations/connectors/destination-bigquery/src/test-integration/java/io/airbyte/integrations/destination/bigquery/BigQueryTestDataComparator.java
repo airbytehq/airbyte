@@ -50,6 +50,19 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
   }
 
   @Override
+  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
+    if (destinationValue != null) {
+      if (destinationValue.matches(".+Z")) {
+        return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
+      } else {
+        return ZonedDateTime.parse(destinationValue, getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
+      }
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseDateTime(actualValue);
     var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
@@ -68,11 +81,6 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
     var destinationDate = parseDate(actualValue);
     var expectedDate = LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT));
     return expectedDate.equals(destinationDate);
-  }
-
-  @Override
-  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
   }
 
   @Override
