@@ -229,6 +229,7 @@ font-style: italic;
   <li><a href="#listConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list</code></a></li>
   <li><a href="#resetConnection"><code><span class="http-method">post</span> /v1/connections/reset</code></a></li>
   <li><a href="#searchConnections"><code><span class="http-method">post</span> /v1/connections/search</code></a></li>
+  <li><a href="#setState"><code><span class="http-method">post</span> /v1/state/set</code></a></li>
   <li><a href="#syncConnection"><code><span class="http-method">post</span> /v1/connections/sync</code></a></li>
   <li><a href="#updateConnection"><code><span class="http-method">post</span> /v1/connections/update</code></a></li>
   </ul>
@@ -1345,6 +1346,64 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#ConnectionReadList">ConnectionReadList</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/set</code></pre></div>
+    <div class="method-summary">Set the current state for a connection. (<span class="nickname">setState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionUpdateStateBody <a href="#ConnectionUpdateStateBody">ConnectionUpdateStateBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionState">ConnectionState</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -9799,6 +9858,7 @@ font-style: italic;
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
+    <li><a href="#ConnectionUpdateStateBody"><code>ConnectionUpdateStateBody</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
@@ -10213,6 +10273,14 @@ font-style: italic;
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionUpdateStateBody"><code>ConnectionUpdateStateBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">state </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

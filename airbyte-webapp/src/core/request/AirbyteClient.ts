@@ -587,14 +587,6 @@ export const JobConfigType = {
   reset_connection: "reset_connection",
 } as const;
 
-export interface JobListRequestBody {
-  configTypes: JobConfigType[];
-  configId: string;
-  pagination?: Pagination;
-}
-
-export type JobId = number;
-
 export interface JobDebugRead {
   id: JobId;
   configType: JobConfigType;
@@ -604,6 +596,14 @@ export interface JobDebugRead {
   sourceDefinition: SourceDefinitionRead;
   destinationDefinition: DestinationDefinitionRead;
 }
+
+export interface JobListRequestBody {
+  configTypes: JobConfigType[];
+  configId: string;
+  pagination?: Pagination;
+}
+
+export type JobId = number;
 
 export interface JobRead {
   id: JobId;
@@ -753,6 +753,19 @@ export interface OperationReadList {
   operations: OperationRead[];
 }
 
+export interface WebBackendOperationCreateOrUpdate {
+  operationId?: OperationId;
+  workspaceId: WorkspaceId;
+  name: string;
+  operatorConfiguration: OperatorConfiguration;
+}
+
+export interface OperationUpdate {
+  operationId: OperationId;
+  name: string;
+  operatorConfiguration: OperatorConfiguration;
+}
+
 export interface OperationCreate {
   workspaceId: WorkspaceId;
   name: string;
@@ -760,12 +773,6 @@ export interface OperationCreate {
 }
 
 export type OperationId = string;
-
-export interface OperationUpdate {
-  operationId: OperationId;
-  name: string;
-  operatorConfiguration: OperatorConfiguration;
-}
 
 export interface OperationIdRequestBody {
   operationId: OperationId;
@@ -880,7 +887,7 @@ export interface DbMigrationRequestBody {
 
 export type ConnectionId = string;
 
-export interface ConnectionSearch {
+export interface WebBackendConnectionSearch {
   connectionId?: ConnectionId;
   name?: string;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -894,6 +901,11 @@ export interface ConnectionSearch {
   status?: ConnectionStatus;
   source?: SourceSearch;
   destination?: DestinationSearch;
+}
+
+export interface ConnectionUpdateStateBody {
+  connectionId: ConnectionId;
+  state: ConnectionState;
 }
 
 export interface ConnectionUpdate {
@@ -979,7 +991,7 @@ export interface DestinationCoreConfig {
 
 export type DestinationId = string;
 
-export interface WebBackendConnectionSearch {
+export interface ConnectionSearch {
   connectionId?: ConnectionId;
   name?: string;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -1369,13 +1381,6 @@ export interface WorkspaceCreate {
 export type CustomerId = string;
 
 export type WorkspaceId = string;
-
-export interface WebBackendOperationCreateOrUpdate {
-  operationId?: OperationId;
-  workspaceId: WorkspaceId;
-  name: string;
-  operatorConfiguration: OperatorConfiguration;
-}
 
 export interface SourceSearch {
   sourceDefinitionId?: SourceDefinitionId;
@@ -2453,6 +2458,24 @@ export const getState = (
 };
 
 /**
+ * @summary Set the current state for a connection.
+ */
+export const setState = (
+  connectionUpdateStateBody: ConnectionUpdateStateBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionState>(
+    {
+      url: `/v1/state/set`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionUpdateStateBody,
+    },
+    options
+  );
+};
+
+/**
  * @summary Search connections
  */
 export const searchConnections = (
@@ -3209,6 +3232,7 @@ export type ListAllConnectionsForWorkspaceResult = NonNullable<
 >;
 export type GetConnectionResult = NonNullable<Awaited<ReturnType<typeof getConnection>>>;
 export type GetStateResult = NonNullable<Awaited<ReturnType<typeof getState>>>;
+export type SetStateResult = NonNullable<Awaited<ReturnType<typeof setState>>>;
 export type SearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof searchConnections>>>;
 export type DeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>;
 export type SyncConnectionResult = NonNullable<Awaited<ReturnType<typeof syncConnection>>>;

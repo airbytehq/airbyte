@@ -10,9 +10,9 @@ import styled from "styled-components";
 import { H5, LoadingButton } from "components";
 import ContentCard from "components/ContentCard";
 
-import { ConnectionStateObject } from "core/request/AirbyteClient";
+import { ConnectionState, ConnectionStateObject } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useGetConnectionState } from "hooks/services/useConnectionHook";
+import { useGetConnectionState, useSetConnectionState } from "hooks/services/useConnectionHook";
 
 type IProps = {
   connectionId: string;
@@ -48,6 +48,7 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   const [loading, setLoading] = useState(false);
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { mutateAsync: getState } = useGetConnectionState();
+  const { mutateAsync: setState } = useSetConnectionState();
 
   const loadState = async () => {
     setLoading(true);
@@ -58,13 +59,15 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
     }
   };
 
-  const saveState = useCallback(
-    () => async () => {
-      setLoading(true);
+  const saveState = async () => {
+    setLoading(true);
+    const stateObject = JSON.parse(stateString) as ConnectionState;
+    const newState = await setState({ connectionId, state: stateObject });
+    if (newState?.state) {
+      setStateString(formatState(newState.state));
       setLoading(false);
-    },
-    []
-  );
+    }
+  };
 
   const onSaveButtonClick = useCallback(() => {
     openConfirmationModal({
@@ -101,7 +104,7 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
         onValueChange={(code) => setStateString(code)}
         highlight={(code) => highlight(code, languages.js)}
         padding={10}
-        contentEditable={!loading}
+        disabled={loading}
         style={codeStyle}
       />
       <LoadingButton type="submit" onClick={onSaveButtonClick} isLoading={loading} data-id="open-state-modal">

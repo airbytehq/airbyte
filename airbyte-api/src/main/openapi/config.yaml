@@ -1402,6 +1402,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/state/set:
+    post:
+      tags:
+        - connection
+      summary: Set the current state for a connection.
+      operationId: setState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionUpdateStateBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -3263,6 +3286,16 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+    ConnectionUpdateStateBody:
+      type: object
+      required:
+        - connectionId
+        - state
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
     ConnectionRead:
       type: object
       required:

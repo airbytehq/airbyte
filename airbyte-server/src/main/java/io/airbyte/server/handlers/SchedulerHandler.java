@@ -14,6 +14,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -333,6 +334,18 @@ public class SchedulerHandler {
     return connectionState;
   }
 
+  public ConnectionState setState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
+    final JsonNode jsonState = Jsons.jsonNode(connectionUpdateStateBody.getState());
+    final State state = new State();
+    state.setState(jsonState);
+    configRepository.updateConnectionState(connectionUpdateStateBody.getConnectionId(), state);
+    final Optional<State> newState = configRepository.getConnectionState(connectionUpdateStateBody.getConnectionId());
+    final ConnectionState connectionState = new ConnectionState().connectionId(connectionUpdateStateBody.getConnectionId());
+    newState.ifPresent(s -> connectionState.state(s.getState()));
+    return connectionState;
+  }
+
+  // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
