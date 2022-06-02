@@ -24,6 +24,15 @@ def test_get_value_from_stream_slice():
     assert val == "2020-09-09"
 
 
+def test_get_array():
+    interpolation = JinjaInterpolation()
+    s = "[{% for i in config['array'] %}{{i}},{% endfor %}]"
+    config = {"date": "2022-01-01", "array": [1, 2, 3]}
+    stream_slice = {"date": "2020-09-09"}
+    val = interpolation.eval(s, config, **{"stream_slice": stream_slice})
+    assert val == [1, 2, 3]
+
+
 def test_get_value_from_a_list_of_mappings():
     interpolation = JinjaInterpolation()
     s = "{{ records[0]['date'] }}"

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import ast
 import datetime
 from base64 import b64encode
 
@@ -32,7 +32,7 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    return result
+                    return ast.literal_eval(result)
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
