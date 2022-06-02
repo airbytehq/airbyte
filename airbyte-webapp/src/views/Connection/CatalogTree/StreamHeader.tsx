@@ -105,9 +105,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           {changedSelected && (
             <div>
               {isEnabled ? (
-                <FontAwesomeIcon icon={faPlus} className={iconStyle} />
+                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
               ) : (
-                <FontAwesomeIcon icon={faMinus} className={iconStyle} />
+                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
               )}
             </div>
           )}

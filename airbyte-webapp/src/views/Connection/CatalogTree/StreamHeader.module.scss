@@ -11,7 +11,7 @@
 
 .icon {
   margin-right: 7px;
-  margin-top: 3px;
+  margin-top: -1px;
 }
 
 .streamRowCheckboxCell {
@@ -25,19 +25,22 @@
   background: colors.$greyColor0;
   width: 100%;
   padding: 2px;
+  padding-left: 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
   vertical-align: middle;
+  height: 50px;
 }
 
 .catalogSectionRow {
-  height: 40px;
   height: 100%;
   white-space: nowrap;
   font-size: 12px;
   display: flex;
   flex-direction: row;
+  margin-top: 18px;
+  margin-bottom: 18px;
 }
 
 .redBackground {
