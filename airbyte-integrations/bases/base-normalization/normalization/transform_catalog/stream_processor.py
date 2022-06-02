@@ -1150,26 +1150,18 @@ where 1 = 1
                     active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
                     if self.destination_type == DestinationType.CLICKHOUSE:
                         # Clickhouse has special delete syntax
-                        delete_statement = (
-                            "alter table {{ final_table_relation }} delete where {{ final_table_relation }}."
-                            + self.get_unique_key(in_jinja=False)
-                            + " in"
-                        )
+                        delete_statement = "alter table {{ final_table_relation }} delete where " + self.get_unique_key(in_jinja=False)
                         noop_delete_statement = "alter table {{ this }} delete where 1=0"
                     elif self.destination_type == DestinationType.BIGQUERY:
                         # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
                         # it requires "delete from project.schema.table table_alias where table_alias.column in"
-                        delete_statement = (
-                            "delete from {{ final_table_relation }} final_table where final_table."
-                            + self.get_unique_key(in_jinja=False)
-                            + " in"
+                        delete_statement = "delete from {{ final_table_relation }} final_table where final_table." + self.get_unique_key(
+                            in_jinja=False
                         )
                         noop_delete_statement = "delete from {{ this }} where 1=0"
                     else:
-                        delete_statement = (
-                            "delete from {{ final_table_relation }} where {{ final_table_relation }}."
-                            + self.get_unique_key(in_jinja=False)
-                            + " in"
+                        delete_statement = "delete from {{ final_table_relation }} where {{ final_table_relation }}." + self.get_unique_key(
+                            in_jinja=False
                         )
                         noop_delete_statement = "delete from {{ this }} where 1=0"
                     deletion_hook = Template(
@@ -1198,25 +1190,28 @@ where 1 = 1
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        {{ delete_statement }} (
-                            with modified_ids as (
-                                select
-                                    {{ '{{' }} dbt_utils.surrogate_key([
-                                        {%- for primary_key in primary_keys %}
-                                            {{ primary_key }},
-                                        {%- endfor %}
-                                    ]) {{ '}}' }} as {{ unique_key }}
-                                from {{ quoted_scd_new_data_table }}
-                                where 1=1
-                                    {{ incremental_clause }}
-                            ),
-                            scd_active_rows as (
-                                select scd_table.* from {{ '{{ this }}' }} scd_table
-                                inner join modified_ids on scd_table.{{ unique_key }} = modified_ids.{{ unique_key }}
-                                where {{ active_row_column_name }} =  1
-                            )
-                            select modified_ids.{{ unique_key }} from scd_active_rows
-                            right outer join modified_ids on modified_ids.{{ unique_key }} = scd_active_rows.{{ unique_key }}
+                        -- Similarly, the subquery doesn't use CTEs because Clickhouse doesn't support CTEs inside delete conditions.
+                        {{ delete_statement }} in (
+                            select modified_ids.{{ unique_key }}
+                            from
+                                (
+                                    select nullif(scd_table.{{ unique_key }}, '') as {{ unique_key }} from {{ '{{ this }}' }} scd_table
+-- TODO is this even necessary?
+--                              inner join modified_ids on scd_table.{{ unique_key }} = modified_ids.{{ unique_key }}
+                                    where {{ active_row_column_name }} =  1
+                                ) scd_active_rows
+                                right outer join (
+                                    select
+                                        {{ '{{' }} dbt_utils.surrogate_key([
+                                            {%- for primary_key in primary_keys %}
+                                                {{ primary_key }},
+                                            {%- endfor %}
+                                        ]) {{ '}}' }} as {{ unique_key }}
+                                    from {{ quoted_scd_new_data_table }}
+                                    where 1=1
+                                        {{ incremental_clause }}
+                                ) modified_ids
+                                on modified_ids.{{ unique_key }} = scd_active_rows.{{ unique_key }}
                             group by modified_ids.{{ unique_key }}
                             having count(scd_active_rows.{{ unique_key }}) = 0
                         )
