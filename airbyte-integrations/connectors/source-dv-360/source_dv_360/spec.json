@@ -9,11 +9,12 @@
       "partner_id",
       "start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "type": "object",
         "description": "Oauth2 credentials",
+        "order": 0,
         "required": [
           "access_token",
           "refresh_token",
@@ -24,48 +25,53 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "description": "",
+            "description": "Access token",
             "airbyte_secret": true
           },
           "refresh_token": {
             "type": "string",
-            "description": "",
+            "description": "Refresh token",
             "airbyte_secret": true
           },
           "token_uri": {
             "type": "string",
-            "description": "",
+            "description": "Token URI",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
-            "description": "",
+            "description": "Client ID",
             "airbyte_secret": true
           },
           "client_secret": {
             "type": "string",
-            "description": "",
+            "description": "Client secret",
             "airbyte_secret": true
           }
         }
       },
       "partner_id": {
         "type": "integer",
-        "description": ""
+        "description": "Partner ID",
+        "order": 1
       },
       "start_date": {
         "type": "string",
-        "description": "",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 2
       },
       "end_date": {
         "type": "string",
-        "description": "",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "description": "UTC date and time in the format 2017-01-25. Any data after this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3
       },
       "filters":{
         "type":"array",
-        "description": "filters for the dimensions. each filter object had 2 keys: 'type' for the name of the dimension to be used as. and 'value' for the value of the filter"
+        "description": "filters for the dimensions. each filter object had 2 keys: 'type' for the name of the dimension to be used as. and 'value' for the value of the filter",
+        "default":[],
+        "order": 4
       }
     }
   }
