@@ -168,6 +168,8 @@ class TestSpec(BaseTest):
 @pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
+        pytest.fail("Testing that this fails on local branch")
+
         if inputs.status == ConnectionTestConfig.Status.Succeed:
             output = docker_runner.call_check(config=connector_config)
             con_messages = filter_output(output, Type.CONNECTION_STATUS)
@@ -387,6 +389,8 @@ class TestBasicRead(BaseTest):
         docker_runner: ConnectorRunner,
         detailed_logger,
     ):
+        pytest.fail("failing to test local sat running on branch")
+
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
