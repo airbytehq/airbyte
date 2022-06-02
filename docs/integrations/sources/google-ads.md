@@ -114,6 +114,8 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 **Note**: Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
 
+**Note**: Please take into account Google's note on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords, and remove any row that is not associated with a keyword. This is often not obvious and undesired behaviour and can lead to missing data records. If you do need this field in the stream, please choose adding a new stream instead of editing existing ones.
+
 ## Performance considerations
 
 This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
