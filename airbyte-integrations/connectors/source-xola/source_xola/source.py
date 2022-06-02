@@ -202,7 +202,7 @@ class Orders(IncrementalXolaStream):
         return modified_response
 
 class Users(IncrementalXolaStream):
-    primary_key = "id"
+    primary_key = "user_id"
     cursor_field = "updatedAt"
     seller_id = None
 
@@ -246,65 +246,44 @@ class Users(IncrementalXolaStream):
         modified_response = []
         for data in raw_response:
             try:
-                createdByIdPresent = False
+                organiserAdded = False
                 
+                user_resp = {}
+                
+                if "createdAt" in data.keys(): user_resp["order_createdAt"] = data["createdAt"]
+                if "customerName" in data.keys(): user_resp["customerName"] = data["customerName"]
+                if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
+                if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
+                if "phone" in data.keys(): user_resp["phone"] = data["phone"]
+                if "updatedAt" in data.keys(): user_resp["updatedAt"] = data["updatedAt"]
+                
+                user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
+                
+                ## Fetch waivers information.
                 if "waivers" in data.keys():
-                    for waivers in data["waivers"]:
-                        if "participants" in waivers.keys():   
-                            for participant in waivers["participants"]:
+                    for waiver in data["waivers"]:
+                        if "participants" in waiver.keys():   
+                            for participant in waiver["participants"]:
                                 resp = {}
-                                resp["order_id"] = data["id"]
-                                if "id" in data.keys(): resp["id"] = data["id"]
-                                if "createdAt" in data.keys(): resp["order_createdAt"] = data["createdAt"]
+                                if "createdAt" in waiver.keys(): resp["order_createdAt"] = waiver["createdAt"]
                                 if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
                                 if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
-                                if "customerEmail" in participant.keys(): resp["customerEmail"] = participant["customerEmail"]
+                                resp["customerEmail"] = participant["customerEmail"] if "customerEmail" in participant.keys() and participant["customerEmail"] is not None else waiver["customerEmail"]
                                 if "phone" in participant.keys(): resp["phone"] = participant["phone"]
-                                if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
-                                
-                                if "traveler" in participant.keys(): 
-                                    traveler = participant["traveler"]
-                                    if "$id" in traveler.keys():
-                                        id = traveler["$id"]
-                                        resp["traveler_id"] = id["$id"]
-                                    else:
-                                        resp["traveler_id"] = ""
+                                if "updatedAt" in waiver.keys(): resp["updatedAt"] = waiver["updatedAt"]
+        
+                                resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
+
+                                if (resp["customerEmail"], resp["customerName"]) == (user_resp["customerEmail"], user_resp["customerName"]):
+                                    if organiserAdded == False:
+                                        organiserAdded = True
+                                        if resp["user_id"].empty(): resp["user_id"] = user_resp["user_id"] 
+                                        modified_response.append(resp)
                                 else:
-                                    resp["traveler_id"] = ""
-
-                                if resp["customerEmail"] == data["customerEmail"] and resp["customerName"] == data["customerName"]:
-                                    createdByIdPresent = True
-                                    
-                                modified_response.append(resp)
-                
-                if createdByIdPresent == False:
-                    resp = {}
-                    resp["order_id"] = data["id"]
-    
-                    if "createdBy" in data.keys():
-                        if isinstance(data["createdBy"], dict):
-                            resp["id"] = data["createdBy"]["id"]
-                        else:
-                            resp["id"] = data["createdBy"]
-                    else:
-                        resp["id"] = ""
-                    
-                    if "createdAt" in data.keys(): resp["order_createdAt"] = data["createdAt"]
-                    if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
-                    resp["dateOfBirth"] = ""
-                    if "customerEmail" in data.keys(): resp["customerEmail"] = data["customerEmail"]
-                    if "phone" in data.keys(): resp["phone"] = data["phone"]
-                    if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
-                    
-                    if "traveler" in data.keys():
-                        if isinstance(data["traveler"], dict):
-                            resp["traveler_id"] = data["traveler"]["id"]
-                        else:
-                            resp["traveler_id"] = data["createdBy"]
-                    else:
-                        resp["traveler_id"] = ""
-
-                    modified_response.append(resp)
+                                    modified_response.append(resp)
+                                
+                if organiserAdded == False:
+                    modified_response.append(user_resp)
             except:
                 pass
         return modified_response

@@ -4,13 +4,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "order_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "id": {
+    "user_id": {
       "type": [
         "null",
         "string"
@@ -41,12 +35,6 @@
       ]
     },
     "updatedAt": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "traveler_id": {
       "type": [
         "null",
         "string"
