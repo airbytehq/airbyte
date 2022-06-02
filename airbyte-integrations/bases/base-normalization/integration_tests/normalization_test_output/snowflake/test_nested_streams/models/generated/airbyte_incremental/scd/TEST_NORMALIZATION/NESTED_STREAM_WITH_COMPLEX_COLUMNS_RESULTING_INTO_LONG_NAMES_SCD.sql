@@ -26,23 +26,26 @@
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
+                        -- Similarly, the subquery doesn't use CTEs because Clickhouse doesn't support CTEs inside delete conditions.
                         delete from {{ final_table_relation }} where {{ final_table_relation }}._AIRBYTE_UNIQUE_KEY in (
-                            with modified_ids as (
-                                select
-                                    {{ dbt_utils.surrogate_key([
-                                            'ID',
-                                    ]) }} as _AIRBYTE_UNIQUE_KEY
-                                from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_SCD_NEW_DATA') }}
-                                where 1=1
-                                    {{ incremental_clause('_AIRBYTE_EMITTED_AT', this.schema + '.' + adapter.quote('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES')) }}
-                            ),
-                            scd_active_rows as (
-                                select scd_table.* from {{ this }} scd_table
-                                inner join modified_ids on scd_table._AIRBYTE_UNIQUE_KEY = modified_ids._AIRBYTE_UNIQUE_KEY
-                                where _AIRBYTE_ACTIVE_ROW =  1
-                            )
-                            select modified_ids._AIRBYTE_UNIQUE_KEY from scd_active_rows
-                            right outer join modified_ids on modified_ids._AIRBYTE_UNIQUE_KEY = scd_active_rows._AIRBYTE_UNIQUE_KEY
+                            select modified_ids._AIRBYTE_UNIQUE_KEY
+                            from
+                                (
+                                    select nullif(scd_table._AIRBYTE_UNIQUE_KEY, '') as _AIRBYTE_UNIQUE_KEY from {{ this }} scd_table
+-- TODO is this even necessary?
+--                              inner join modified_ids on scd_table._AIRBYTE_UNIQUE_KEY = modified_ids._AIRBYTE_UNIQUE_KEY
+                                    where _AIRBYTE_ACTIVE_ROW =  1
+                                ) scd_active_rows
+                                right outer join (
+                                    select
+                                        {{ dbt_utils.surrogate_key([
+                                                'ID',
+                                        ]) }} as _AIRBYTE_UNIQUE_KEY
+                                    from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_SCD_NEW_DATA') }}
+                                    where 1=1
+                                        {{ incremental_clause('_AIRBYTE_EMITTED_AT', this.schema + '.' + adapter.quote('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES')) }}
+                                ) modified_ids
+                                on modified_ids._AIRBYTE_UNIQUE_KEY = scd_active_rows._AIRBYTE_UNIQUE_KEY
                             group by modified_ids._AIRBYTE_UNIQUE_KEY
                             having count(scd_active_rows._AIRBYTE_UNIQUE_KEY) = 0
                         )

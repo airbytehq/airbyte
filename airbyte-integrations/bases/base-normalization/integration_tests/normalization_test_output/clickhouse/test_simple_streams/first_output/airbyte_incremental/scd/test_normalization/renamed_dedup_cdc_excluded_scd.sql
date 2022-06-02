@@ -12,7 +12,7 @@
     
   as (
     
--- depends_on: ref('renamed_dedup_cdc_excluded_stg')
+-- depends on: _airbyte_test_normalization.renamed_dedup_cdc_excluded_scd_new_data
 with
 
 input_data as (

@@ -26,23 +26,26 @@
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
+                        -- Similarly, the subquery doesn't use CTEs because Clickhouse doesn't support CTEs inside delete conditions.
                         delete from {{ final_table_relation }} where {{ final_table_relation }}._airbyte_unique_key in (
-                            with modified_ids as (
-                                select
-                                    {{ dbt_utils.surrogate_key([
-                                            adapter.quote('id'),
-                                    ]) }} as _airbyte_unique_key
-                                from {{ ref('1_prefix_startwith_number_scd_new_data') }}
-                                where 1=1
-                                    {{ incremental_clause('_airbyte_emitted_at', this.schema + '.' + adapter.quote('1_prefix_startwith_number')) }}
-                            ),
-                            scd_active_rows as (
-                                select scd_table.* from {{ this }} scd_table
-                                inner join modified_ids on scd_table._airbyte_unique_key = modified_ids._airbyte_unique_key
-                                where _airbyte_active_row =  1
-                            )
-                            select modified_ids._airbyte_unique_key from scd_active_rows
-                            right outer join modified_ids on modified_ids._airbyte_unique_key = scd_active_rows._airbyte_unique_key
+                            select modified_ids._airbyte_unique_key
+                            from
+                                (
+                                    select nullif(scd_table._airbyte_unique_key, '') as _airbyte_unique_key from {{ this }} scd_table
+-- TODO is this even necessary?
+--                              inner join modified_ids on scd_table._airbyte_unique_key = modified_ids._airbyte_unique_key
+                                    where _airbyte_active_row =  1
+                                ) scd_active_rows
+                                right outer join (
+                                    select
+                                        {{ dbt_utils.surrogate_key([
+                                                adapter.quote('id'),
+                                        ]) }} as _airbyte_unique_key
+                                    from {{ ref('1_prefix_startwith_number_scd_new_data') }}
+                                    where 1=1
+                                        {{ incremental_clause('_airbyte_emitted_at', this.schema + '.' + adapter.quote('1_prefix_startwith_number')) }}
+                                ) modified_ids
+                                on modified_ids._airbyte_unique_key = scd_active_rows._airbyte_unique_key
                             group by modified_ids._airbyte_unique_key
                             having count(scd_active_rows._airbyte_unique_key) = 0
                         )

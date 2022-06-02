@@ -25,25 +25,28 @@
                         -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
                         -- so we _must_ join against the entire SCD table to find the active row for each record.
                         -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
+                        -- Similarly, the subquery doesn't use CTEs because Clickhouse doesn't support CTEs inside delete conditions.
                         delete from {{ final_table_relation }} where {{ final_table_relation }}.{{ quote('_AIRBYTE_UNIQUE_KEY') }} in (
-                            with modified_ids as (
-                                select
-                                    {{ dbt_utils.surrogate_key([
-                                            'id',
-                                            'currency',
-                                            'nzd',
-                                    ]) }} as {{ quote('_AIRBYTE_UNIQUE_KEY') }}
-                                from {{ ref('dedup_exchange_rate_scd_new_data') }}
-                                where 1=1
-                                    {{ incremental_clause(quote('_AIRBYTE_EMITTED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
-                            ),
-                            scd_active_rows as (
-                                select scd_table.* from {{ this }} scd_table
-                                inner join modified_ids on scd_table.{{ quote('_AIRBYTE_UNIQUE_KEY') }} = modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
-                                where {{ quote('_AIRBYTE_ACTIVE_ROW') }} =  1
-                            )
-                            select modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }} from scd_active_rows
-                            right outer join modified_ids on modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }} = scd_active_rows.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                            select modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                            from
+                                (
+                                    select nullif(scd_table.{{ quote('_AIRBYTE_UNIQUE_KEY') }}, '') as {{ quote('_AIRBYTE_UNIQUE_KEY') }} from {{ this }} scd_table
+-- TODO is this even necessary?
+--                              inner join modified_ids on scd_table.{{ quote('_AIRBYTE_UNIQUE_KEY') }} = modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                                    where {{ quote('_AIRBYTE_ACTIVE_ROW') }} =  1
+                                ) scd_active_rows
+                                right outer join (
+                                    select
+                                        {{ dbt_utils.surrogate_key([
+                                                'id',
+                                                'currency',
+                                                'nzd',
+                                        ]) }} as {{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                                    from {{ ref('dedup_exchange_rate_scd_new_data') }}
+                                    where 1=1
+                                        {{ incremental_clause(quote('_AIRBYTE_EMITTED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
+                                ) modified_ids
+                                on modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }} = scd_active_rows.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
                             group by modified_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
                             having count(scd_active_rows.{{ quote('_AIRBYTE_UNIQUE_KEY') }}) = 0
                         )
