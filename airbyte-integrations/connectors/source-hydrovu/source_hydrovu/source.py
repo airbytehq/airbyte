@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
+from datetime import datetime
 import json
 
 """
@@ -367,6 +368,8 @@ class Readings(HydroVuStream):
 
                 if timestamp > cursor_timestamp:
 
+                    time_utc_iso = datetime.utcfromtimestamp(timestamp).isoformat()
+
                     value = reading['value']
 
                     flat_reading = {}
@@ -376,6 +379,7 @@ class Readings(HydroVuStream):
                     flat_reading['unitId'] = unitId
                     flat_reading['customParameter'] = customParameter
                     flat_reading['timestamp'] = timestamp
+                    flat_reading['time_utc_iso'] = time_utc_iso
                     flat_reading['value'] = value
 
                     flat_readings_list.append(flat_reading)
