@@ -352,7 +352,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
-|                 | 0.2.2 | 2022-05-27 | [\#13289](https://github.com/airbytehq/airbyte/pull/13289) | Improve array parsing for BigQuery |
+|                 | 0.2.2 | 2022-06-02 | [\#13289](https://github.com/airbytehq/airbyte/pull/13289) | BigQuery use `json_extract_string_array` for array of simple type elements |
 |                 | 0.2.1 | 2022-05-17 | [\#12924](https://github.com/airbytehq/airbyte/pull/12924) | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
 |                 | 0.2.0 | 2022-05-15 | [\#12745](https://github.com/airbytehq/airbyte/pull/12745) | Snowflake: add datetime without timezone |
 |                 | 0.1.78 | 2022-05-06 | [\#12305](https://github.com/airbytehq/airbyte/pull/12305) | Mssql: use NVARCHAR and datetime2 by default |
