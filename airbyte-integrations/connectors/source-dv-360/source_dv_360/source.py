@@ -7,7 +7,7 @@ from typing import Dict, Generator, Mapping, Any, List, Tuple, MutableMapping
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteConnectionStatus,
+    AirbyteStateMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
@@ -121,9 +121,10 @@ class SourceDV360(AbstractSource):
             stream_state= state.get(stream_name, {})
             #if stream_state and "state" in dir(stream_instance):
             stream_instance.state= stream_state
+            logger.info(f"Syncing {stream_name} stream")
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
+            yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
             try:
-                logger.info(f"Syncing {stream_name} stream")
                 config_catalog_fields= configured_stream.stream.json_schema.get('properties').keys()
                 slices= stream_instance.stream_slices(
                     cursor_field= configured_stream.cursor_field,

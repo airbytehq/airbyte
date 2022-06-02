@@ -258,7 +258,7 @@ class DBMStream(Stream, ABC):
 class DBMIncrementalStream(DBMStream, ABC):
   cursor_field = "date"
   primary_key = None
-  range_days = 15
+  range_days = 30 #range of stream slice
   
   def __init__(self, credentials: Credentials, partner_id: str, filters:List[dict], start_date: str, end_date: str=None):
     super().__init__(credentials, partner_id, filters, start_date, end_date)
