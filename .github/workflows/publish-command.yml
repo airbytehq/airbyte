@@ -65,8 +65,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          # 80 gb disk
-          ec2-image-id: ami-0d648081937c75a73
   publish-image:
     timeout-minutes: 240
     needs: start-publish-image-runner
@@ -155,12 +153,12 @@ jobs:
           SENTRY_PROJECT: airbyte-connectors
       - name: Publish ${{ github.event.inputs.connector }}
         run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
-          DOCKER_USERNAME: airbytebot
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
       - name: Finalize Sentry release

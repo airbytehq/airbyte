@@ -28,14 +28,13 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
 import java.util.UUID;
@@ -97,6 +96,8 @@ public class BootloaderAppTest {
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(version));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
+    when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
+    when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
@@ -116,19 +117,20 @@ public class BootloaderAppTest {
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
 
+      val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
+
       val bootloader =
           new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       bootloader.load();
 
-      val jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
-      val configDatabase = new ConfigsDatabaseInstance(configsDslContext).getAndInitialize();
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
-      assertEquals("0.38.4.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.39.1.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(version, jobsPersistence.getVersion().get());
@@ -151,6 +153,8 @@ public class BootloaderAppTest {
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(version));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
     when(mockedConfigs.getSecretPersistenceType()).thenReturn(TESTING_CONFIG_DB_TABLE);
+    when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
+    when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
@@ -166,10 +170,11 @@ public class BootloaderAppTest {
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
 
-      final Database configDatabase = new Database(configsDslContext);
-      final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val configDatabase = new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      val jobDatabase = new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
-      val jobsPersistence = new DefaultJobPersistence(configDatabase);
+      val configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+      val jobsPersistence = new DefaultJobPersistence(jobDatabase);
 
       val spiedSecretMigrator =
           spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(configsDslContext, mockedConfigs)));
@@ -293,6 +298,8 @@ public class BootloaderAppTest {
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(version));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
+    when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
+    when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
@@ -304,6 +311,9 @@ public class BootloaderAppTest {
 
       val configsFlyway = createConfigsFlyway(configsDataSource);
       val jobsFlyway = createJobsFlyway(jobsDataSource);
+
+      new ConfigsDatabaseTestProvider(configsDslContext, configsFlyway).create(false);
+      new JobsDatabaseTestProvider(jobsDslContext, jobsFlyway).create(false);
 
       new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags, mockedSecretMigrator, configsDslContext, jobsDslContext,
           configsFlyway, jobsFlyway)
