@@ -180,6 +180,8 @@ def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
                       "$subproject.name"(MavenPublication) {
                           from subproject.components.java
 
+                          // use the subproject group and name with the assumption there are no identical subproject
+                          // names, group names or subproject group/name combination.
                           groupId = "$subproject.group"
                           artifactId = "$subproject.name"
                           version = "$buildVersion"
