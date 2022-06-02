@@ -54,7 +54,7 @@
               "type": ["null", "string"]
             },
             "value": {
-              "type": ["null", "string", "integer", "boolean"]
+              "type": ["null", "string"]
             },
             "operator": {
               "type": ["null", "string"]

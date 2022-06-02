@@ -19,6 +19,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -968,6 +969,8 @@ class ContactLists(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     url = "/contacts/v1/lists"
     data_field = "lists"
