@@ -3633,7 +3633,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.60"
+- dockerImage: "airbyte/source-hubspot:0.1.62"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6700,7 +6700,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.18"
+- dockerImage: "airbyte/source-postgres:0.4.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9659,7 +9659,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.8"
+- dockerImage: "airbyte/source-zendesk-support:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
