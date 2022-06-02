@@ -205,10 +205,12 @@ public class ConnectionManagerUtils {
   }
 
   static WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
+    log.info("PARKER: getConnectionManagerWorkflowStatus namespace: {}", workflowClient.getOptions().getNamespace());
     final DescribeWorkflowExecutionRequest describeWorkflowExecutionRequest = DescribeWorkflowExecutionRequest.newBuilder()
-        .setExecution(WorkflowExecution.newBuilder().setWorkflowId(getConnectionManagerName(connectionId)).build())
-        .setNamespace(workflowClient.getOptions().getNamespace())
-        .build();
+        .setExecution(WorkflowExecution.newBuilder()
+            .setWorkflowId(getConnectionManagerName(connectionId))
+            .build())
+        .setNamespace(workflowClient.getOptions().getNamespace()).build();
 
     final DescribeWorkflowExecutionResponse describeWorkflowExecutionResponse = workflowClient.getWorkflowServiceStubs().blockingStub()
         .describeWorkflowExecution(describeWorkflowExecutionRequest);
