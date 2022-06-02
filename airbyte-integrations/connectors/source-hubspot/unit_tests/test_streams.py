@@ -4,6 +4,7 @@
 
 import pendulum
 import pytest
+from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -129,7 +130,9 @@ def test_streams_read(stream, endpoint, requests_mock, common_params, fake_prope
         }
     ]
     is_form_submission = isinstance(stream, FormSubmissions)
+    stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
@@ -175,7 +178,10 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
         ],
     }
     requests_mock.register_uri("GET", "/properties/v2/company/properties", responses)
-    requests_mock.register_uri("GET", stream.url, [{"json": response}])
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.url
+    stream._sync_mode = None
+    requests_mock.register_uri("GET", stream_url, [{"json": response}])
     records = read_full_refresh(stream)
 
     assert [response[stream.data_field][0]] == records

@@ -659,6 +659,8 @@ class IncrementalStream(Stream, ABC):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
+        if self._sync_mode is None:
+            raise RuntimeError("sync_mode is not defined")
         if self._state:
             if self.state_pk == "timestamp":
                 return {self.cursor_field: int(self._state.timestamp() * 1000)}
@@ -671,7 +673,8 @@ class IncrementalStream(Stream, ABC):
             self._state = self._field_to_datetime(value[self.cursor_field])
 
     def set_sync(self, sync_mode: SyncMode):
-        if sync_mode == SyncMode.incremental:
+        self._sync_mode = sync_mode
+        if self._sync_mode == SyncMode.incremental:
             if not self._state:
                 self._state = self._start_date
             self._state = self._start_date = max(self._state, self._start_date)
@@ -679,6 +682,7 @@ class IncrementalStream(Stream, ABC):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+        self._sync_mode = None
 
     def _update_state(self, latest_cursor):
         if latest_cursor:
