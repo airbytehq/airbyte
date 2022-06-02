@@ -655,38 +655,34 @@ class IncrementalStream(Stream, ABC):
         self._update_state(latest_cursor=latest_cursor)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        if self.state:
-            return self.state
-        return (
-            {self.updated_at_field: int(self._start_date.timestamp() * 1000)}
-            if self.state_pk == "timestamp"
-            else {self.updated_at_field: str(self._start_date)}
-        )
+        return self.state
 
     @property
-    def state(self) -> Optional[Mapping[str, Any]]:
-        """Current state, if wasn't set return None"""
+    def state(self) -> MutableMapping[str, Any]:
+        if self._sync_mode is None:
+            raise RuntimeError("sync_mode is not defined")
         if self._state:
-            return (
-                {self.updated_at_field: int(self._state.timestamp() * 1000)}
-                if self.state_pk == "timestamp"
-                else {self.updated_at_field: str(self._state)}
-            )
-        return None
+            if self.state_pk == "timestamp":
+                return {self.cursor_field: int(self._state.timestamp() * 1000)}
+            return {self.cursor_field: self._state.to_iso8601_string()}
+        return {}
 
     @state.setter
-    def state(self, value):
-        state_value = value.get(self.updated_at_field, self._state)
-        self._state = (
-            pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
-            if isinstance(state_value, int)
-            else pendulum.parse(state_value)
-        )
-        self._start_date = max(self._state, self._start_date)
+    def state(self, value: MutableMapping[str, Any]):
+        if value.get(self.cursor_field):
+            self._state = self._field_to_datetime(value[self.cursor_field])
+
+    def set_sync(self, sync_mode: SyncMode):
+        self._sync_mode = sync_mode
+        if self._sync_mode == SyncMode.incremental:
+            if not self._state:
+                self._state = self._start_date
+            self._state = self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+        self._sync_mode = None
 
     def _update_state(self, latest_cursor):
         if latest_cursor:
@@ -699,6 +695,7 @@ class IncrementalStream(Stream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         chunk_size = pendulum.duration(days=30)
         slices = []
 
@@ -869,6 +866,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         return [None]
 
 
@@ -1103,6 +1101,7 @@ class Engagements(IncrementalStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         return [None]
 
     def read_records(
