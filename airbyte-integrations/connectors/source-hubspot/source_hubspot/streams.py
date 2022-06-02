@@ -1025,7 +1025,7 @@ class Deals(CRMSearchStream):
 
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "companies"]
+    associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
 
 
