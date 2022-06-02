@@ -144,6 +144,14 @@ create table "public"."state"(
       "connection_id"
     )
 );
+create table "public"."stream_reset"(
+  "id" uuid not null,
+  "connection_id" uuid not null,
+  "stream_namespace" text null,
+  "stream_name" text not null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null
+);
 create table "public"."workspace"(
   "id" uuid not null,
   "customer_id" uuid null,
@@ -271,6 +279,16 @@ create unique index "operation_pkey" on "public"."operation"("id" asc);
 create unique index "state_pkey" on "public"."state"(
   "id" asc, 
   "connection_id" asc
+);
+create index "connection_id_stream_name_namespace_idx" on "public"."stream_reset"(
+  "connection_id" asc, 
+  "stream_name" asc, 
+  "stream_namespace" asc
+);
+create unique index "stream_reset_connection_id_stream_name_stream_namespace_key" on "public"."stream_reset"(
+  "connection_id" asc, 
+  "stream_name" asc, 
+  "stream_namespace" asc
 );
 create unique index "workspace_pkey" on "public"."workspace"("id" asc);
 create unique index "workspace_service_account_pkey" on "public"."workspace_service_account"(
