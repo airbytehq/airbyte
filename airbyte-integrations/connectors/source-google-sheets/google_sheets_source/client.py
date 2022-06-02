@@ -11,9 +11,11 @@ from requests import codes as status_codes
 
 from .helpers import SCOPES, Helpers
 
+ERRORS_TO_RETRY_ON = {status_codes.TOO_MANY_REQUESTS, status_codes.SERVICE_UNAVAILABLE, status_codes.BAD_GATEWAY, status_codes.SERVER_ERROR}
+
 
 def error_handler(error):
-    return error.resp.status != status_codes.TOO_MANY_REQUESTS
+    return error.resp.status not in ERRORS_TO_RETRY_ON
 
 
 class GoogleSheetsClient:
