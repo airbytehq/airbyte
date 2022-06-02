@@ -8,7 +8,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kinesis Destination Spec",
     "type": "object",
-    "required": ["shardCount", "accessKey", "privateKey", "bufferSize"],
+    "required": [
+      "endpoint",
+      "region",
+      "shardCount",
+      "accessKey",
+      "privateKey",
+      "bufferSize"
+    ],
     "additionalProperties": true,
     "properties": {
       "endpoint": {
