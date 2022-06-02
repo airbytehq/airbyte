@@ -179,7 +179,7 @@ jobs:
     needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
     name: "Connectors Base: Build"
-    timeout-minutes: 240
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
