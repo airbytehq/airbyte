@@ -101,6 +101,11 @@ const TransformationForm: React.FC<TransformationProps> = ({
     },
   });
 
+  const onFormCancel: React.MouseEventHandler<HTMLButtonElement> = () => {
+    clearFormChange(formId);
+    onCancel?.();
+  };
+
   return (
     <>
       <FormChangeTracker changed={isNewTransformation || formik.dirty} formId={formId} />
@@ -157,7 +162,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         </Column>
       </Content>
       <ButtonContainer>
-        <SmallButton onClick={onCancel} type="button" secondary>
+        <SmallButton onClick={onFormCancel} type="button" secondary>
           <FormattedMessage id="form.cancel" />
         </SmallButton>
         <SmallButton
