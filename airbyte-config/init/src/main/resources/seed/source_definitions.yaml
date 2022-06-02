@@ -289,7 +289,7 @@
   dockerRepository: airbyte/source-freshservice
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshservice
-  icon: freshdesk.svg
+  icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
 - name: GitHub
@@ -390,7 +390,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.60
+  dockerImageTag: 0.1.61
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
