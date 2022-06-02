@@ -7,7 +7,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.ATLAS;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_ACCESS_PERMISSION;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CLUSTER;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -131,14 +130,14 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   @Test
   public void testCheckIncorrectCluster() throws Exception {
     ((ObjectNode) config).with("instance_type")
-            .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
+        .put("cluster_url", "cluster0.iqgf8.mongodb.netfail");
     testIncorrectParams(config, INCORRECT_CLUSTER);
   }
 
   @Test
   public void testCheckIncorrectAccessToDataBase() throws Exception {
-  ((ObjectNode) config).put("user", "test_user_without_access")
-            .put("password", "test12321");
+    ((ObjectNode) config).put("user", "test_user_without_access")
+        .put("password", "test12321");
     testIncorrectParams(config, INCORRECT_ACCESS_PERMISSION);
   }
 

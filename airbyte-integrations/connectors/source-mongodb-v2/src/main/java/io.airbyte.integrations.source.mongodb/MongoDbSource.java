@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
-
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -145,22 +144,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      */
     try {
       Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-                      .append("authorizedCollections", true)
-                      .append("nameOnly", true))
-              .append("filter", "{ 'type': 'collection' }");
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
+          .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
-              .get("cursor").asDocument()
-              .getArray("firstBatch")
-              .stream()
-              .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-              .collect(Collectors.toSet());
+          .get("cursor").asDocument()
+          .getArray("firstBatch")
+          .stream()
+          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+          .collect(Collectors.toSet());
 
-    }
-    catch (MongoSecurityException e){
+    } catch (MongoSecurityException e) {
       MongoCommandException exception = (MongoCommandException) e.getCause();
       throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
-    }
-    catch (MongoException e){
+    } catch (MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }

@@ -88,8 +88,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    }
-    catch (final ConnectionErrorException e) {
+    } catch (final ConnectionErrorException e) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
           .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
@@ -106,11 +105,10 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private Set<String> getDatabaseNames(final MongoDatabase mongoDatabase) {
     try {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
-    }     catch (MongoSecurityException e){
+    } catch (MongoSecurityException e) {
       MongoCommandException exception = (MongoCommandException) e.getCause();
       throw new ConnectionErrorException(String.valueOf(exception.getCode()), exception);
-    }
-    catch (MongoException e){
+    } catch (MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
   }

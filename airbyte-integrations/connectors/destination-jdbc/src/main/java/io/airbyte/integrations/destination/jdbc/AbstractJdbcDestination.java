@@ -105,7 +105,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
     } catch (SQLException e) {
       throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e : e.getCause());
-     } catch (Exception e) {
+    } catch (Exception e) {
       throw new Exception(e);
     }
   }

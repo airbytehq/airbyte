@@ -26,14 +26,13 @@ import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -227,10 +226,10 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   public void testCheckIncorrectHmacKeyAccessIdCredential() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-            .put("credential_type", "HMAC_KEY")
-            .put("hmac_key_access_id", "fake-key")
-            .put("hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
-            .build());
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", "fake-key")
+        .put("hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
+        .build());
 
     ((ObjectNode) baseJson).put("credential", credential);
     ((ObjectNode) baseJson).set("format", getFormatConfig());
@@ -245,10 +244,10 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   public void testCheckIncorrectHmacKeySecretCredential() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-            .put("credential_type", "HMAC_KEY")
-            .put("hmac_key_access_id", baseJson.get("credential").get("hmac_key_access_id").asText())
-            .put("hmac_key_secret", "fake-secret")
-            .build());
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", baseJson.get("credential").get("hmac_key_access_id").asText())
+        .put("hmac_key_secret", "fake-secret")
+        .build());
 
     ((ObjectNode) baseJson).put("credential", credential);
     ((ObjectNode) baseJson).set("format", getFormatConfig());
