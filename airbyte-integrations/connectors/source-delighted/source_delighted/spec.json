@@ -8,9 +8,10 @@
     "additionalProperties": false,
     "properties": {
       "since": {
-        "type": "integer",
-        "description": "An Unix timestamp to retrieve records created on or after this time.",
-        "examples": [1625328167]
+        "type": "string",
+        "description": "A timestamp to retrieve records created on or after this time.",
+        "examples": ["2022-05-30,04:50:23"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2},([0-9]{2}:[0-9]{2}:[0-9]{2})?$"
       },
       "api_key": {
         "type": "string",

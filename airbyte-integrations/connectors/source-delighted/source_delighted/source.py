@@ -15,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+import datetime
 
 # Basic full refresh stream
 class DelightedStream(HttpStream, ABC):
@@ -145,6 +146,13 @@ class SourceDelighted(AbstractSource):
         token = base64.b64encode(f"{config['api_key']}:".encode("utf-8")).decode("utf-8")
         return TokenAuthenticator(token=token, auth_method="Basic")
 
+    #Function to covert a timestamp to UNIX time format
+    def toUnix (self,config):
+        timeDate = config["since"]
+        dateFormat = datetime.datetime.strptime(timeDate, "%m-%d-%Y,%H:%M:%S")
+        unixDate = datetime.datetime.timestamp(dateFormat)
+        return unixDate
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
 
@@ -157,7 +165,7 @@ class SourceDelighted(AbstractSource):
 
         try:
             auth = self._get_authenticator(config)
-            args = {"authenticator": auth, "since": config["since"]}
+            args = {"authenticator": auth, "since": self.toUnix(config)}
             stream = SurveyResponses(**args)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
