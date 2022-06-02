@@ -19,6 +19,8 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -44,6 +46,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   private final SshBastionContainer bastion = new SshBastionContainer();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
+
+  private ExecutorService executorService;
 
   @Override
   protected boolean implementsNamespaces() {
@@ -133,6 +137,14 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   private void startAndInitJdbcContainer() throws Exception {
+    executorService = Executors.newFixedThreadPool(1);
+    executorService.submit(() -> {
+      while (true) {
+        System.out.println("some test logs for CI");
+        Thread.sleep(10000);
+      }
+    });
+
     final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer<>(mcsImage)
         .withNetwork(bastion.getNetWork());
@@ -147,6 +159,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
+    executorService.shutdownNow();
   }
 
 }
