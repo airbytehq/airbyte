@@ -1,3 +1,0 @@
-- op: move
-  from: /metadata/name
-  path: /metadata/generateName
