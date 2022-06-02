@@ -5,7 +5,7 @@
 from datetime import date, timedelta
 
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_mixpanel.source import Annotations
+from source_mixpanel.streams import Annotations
 
 
 def test_date_slices():
