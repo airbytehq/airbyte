@@ -286,28 +286,13 @@ public class WebBackendConnectionsHandler {
 
     ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-    if (!featureFlags.usesNewScheduler()) {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-      if (needReset) {
-        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
-        // wait for this to execute
-        schedulerHandler.resetConnection(connectionId);
 
-        // just create the job
-        schedulerHandler.syncConnection(connectionId);
-      }
-    } else {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-      if (needReset) {
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-      }
+    if (needReset) {
+      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);

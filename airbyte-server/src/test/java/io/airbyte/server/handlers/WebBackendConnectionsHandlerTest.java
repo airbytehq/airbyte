@@ -590,43 +590,6 @@ class WebBackendConnectionsHandlerTest {
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));
-    when(connectionsHandler.updateConnection(any())).thenReturn(
-        new ConnectionRead()
-            .connectionId(expected.getConnectionId())
-            .sourceId(expected.getSourceId())
-            .destinationId(expected.getDestinationId())
-            .name(expected.getName())
-            .namespaceDefinition(expected.getNamespaceDefinition())
-            .namespaceFormat(expected.getNamespaceFormat())
-            .prefix(expected.getPrefix())
-            .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-            .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
-
-    final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
-
-    assertEquals(expectedWithNewSchema.getSyncCatalog(), connectionRead.getSyncCatalog());
-
-    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
-    verify(schedulerHandler, times(1)).resetConnection(connectionId);
-    verify(schedulerHandler, times(1)).syncConnection(connectionId);
-  }
-
-  @Test
-  void testUpdateConnectionWithUpdatedSchemaNewScheduler() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .connectionId(expected.getConnectionId())
-        .schedule(expected.getSchedule())
-        .status(expected.getStatus())
-        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-        .withRefreshedCatalog(true);
-
-    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead().connectionId(expected.getConnectionId()));
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(expected.getConnectionId())
         .sourceId(expected.getSourceId())
@@ -640,7 +603,6 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule());
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
-    when(featureFlags.usesNewScheduler()).thenReturn(true);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 

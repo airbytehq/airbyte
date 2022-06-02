@@ -108,12 +108,9 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
@@ -134,8 +131,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerConfigs;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -171,17 +166,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final ConfigPersistence seed,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final FileTtlManager archiveTtlManager,
-                          final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
                           final Database jobsDatabase,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final WorkerConfigs workerConfigs,
-                          final String webappUrl,
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
                           final HttpClient httpClient,
@@ -194,11 +185,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     this.workspaceRoot = workspaceRoot;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    final JobNotifier jobNotifier = new JobNotifier(
-        webappUrl,
-        configRepository,
-        new WorkspaceHelper(configRepository, jobPersistence),
-        trackingClient);
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
@@ -206,20 +192,17 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         configRepository,
         secretsRepositoryReader,
         secretsRepositoryWriter,
-        schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,
-        jobNotifier,
-        temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, eventRunner, featureFlags);
+        workerEnvironment,
+        logConfigs,
+        eventRunner);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner,
-        featureFlags,
-        workerConfigs);
+        eventRunner);
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,

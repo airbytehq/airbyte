@@ -16,12 +16,9 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import io.airbyte.workers.WorkerConfigs;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;
@@ -31,9 +28,7 @@ import org.slf4j.MDC;
 
 public interface ServerFactory {
 
-  ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                        SynchronousSchedulerClient cachingSchedulerClient,
-                        WorkflowServiceStubs temporalService,
+  ServerRunnable create(SynchronousSchedulerClient cachingSchedulerClient,
                         ConfigRepository configRepository,
                         SecretsRepositoryReader secretsRepositoryReader,
                         SecretsRepositoryWriter secretsRepositoryWriter,
@@ -44,8 +39,6 @@ public interface ServerFactory {
                         TrackingClient trackingClient,
                         WorkerEnvironment workerEnvironment,
                         LogConfigs logConfigs,
-                        WorkerConfigs workerConfigs,
-                        String webappUrl,
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
                         HttpClient httpClient,
@@ -57,9 +50,7 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
-                                 final SynchronousSchedulerClient synchronousSchedulerClient,
-                                 final WorkflowServiceStubs temporalService,
+    public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final ConfigRepository configRepository,
                                  final SecretsRepositoryReader secretsRepositoryReader,
                                  final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -70,8 +61,6 @@ public interface ServerFactory {
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final WorkerConfigs workerConfigs,
-                                 final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
                                  final HttpClient httpClient,
@@ -81,13 +70,11 @@ public interface ServerFactory {
                                  final Flyway jobsFlyway) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
-          temporalService,
           configRepository,
           secretsRepositoryReader,
           secretsRepositoryWriter,
           jobPersistence,
           seed,
-          schedulerJobClient,
           synchronousSchedulerClient,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
@@ -96,8 +83,6 @@ public interface ServerFactory {
           trackingClient,
           workerEnvironment,
           logConfigs,
-          workerConfigs,
-          webappUrl,
           airbyteVersion,
           workspaceRoot,
           httpClient,
