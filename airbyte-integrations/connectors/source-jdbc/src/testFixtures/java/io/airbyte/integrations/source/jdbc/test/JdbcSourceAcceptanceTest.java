@@ -557,6 +557,10 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testIncrementalTimestampCheckCursor() throws Exception {
+    incrementalTimestampCheck();
+  }
+
+  protected void incrementalTimestampCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
         "2005-10-18T00:00:00Z",
@@ -611,6 +615,16 @@ public abstract class JdbcSourceAcceptanceTest {
 
     assertEquals(2,
         (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
+    final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
+
+    setEmittedAtToNull(actualMessagesSecondSync);
+
+    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
+    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+  }
+
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
@@ -634,12 +648,7 @@ public abstract class JdbcSourceAcceptanceTest {
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
                     .withCursor("5")))))));
-
-    setEmittedAtToNull(actualMessagesSecondSync);
-
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
-    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
-    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+    return expectedMessages;
   }
 
   @Test

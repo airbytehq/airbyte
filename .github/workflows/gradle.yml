@@ -204,6 +204,9 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
+      - name: Install automake
+        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
