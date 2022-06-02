@@ -1,6 +1,7 @@
 import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
@@ -55,6 +56,7 @@ const CustomTransformationsCard: React.FC<{
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
+  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const initialValues = useMemo(
     () => ({
@@ -73,11 +75,18 @@ const CustomTransformationsCard: React.FC<{
         enableReinitialize: true,
         onSubmit,
       }}
+      submitDisabled={editingTransformation}
       mode={mode}
     >
       <FieldArray name="transformations">
         {(formProps) => (
-          <TransformationField defaultTransformation={defaultTransformation} {...formProps} mode={mode} />
+          <TransformationField
+            defaultTransformation={defaultTransformation}
+            {...formProps}
+            mode={mode}
+            onStartEdit={toggleEditingTransformation}
+            onEndEdit={toggleEditingTransformation}
+          />
         )}
       </FieldArray>
     </FormCard>
