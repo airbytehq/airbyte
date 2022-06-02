@@ -10,6 +10,8 @@ from airbyte_cdk.sources.streams import Stream
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]):
     res = []
+    if stream_state and "state" in dir(stream_instance):
+        stream_instance.state = stream_state
     slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
     for slice in slices:
         records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=stream_state)
