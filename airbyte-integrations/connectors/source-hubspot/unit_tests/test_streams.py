@@ -69,7 +69,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
     _, stream_state = read_incremental(stream, {})
 
-    expected = int(pendulum.parse("2022-03-25T16:43:11Z").timestamp() * 1000)
+    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
 
     assert stream_state[stream.updated_at_field] == expected
 
@@ -136,8 +136,7 @@ def test_streams_read(stream, endpoint, requests_mock, common_params, fake_prope
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
 
-    records, _ = read_incremental(stream, {})
-
+    records = read_full_refresh(stream)
     assert records
 
 
