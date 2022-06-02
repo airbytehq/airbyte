@@ -10,7 +10,7 @@ lombok = "1.18.22"
 jooq = "3.13.4"
 junit-jupiter = "5.7.2"
 postgresql = "42.3.4"
-testcontainers = "1.17.1"
+testcontainers = "1.17.2"
 
 [libraries]
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
