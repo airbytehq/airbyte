@@ -38,7 +38,6 @@ class GithubStream(HttpStream, ABC):
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
-        self._session = requests_cache.CachedSession("github_cache")
         self._session.mount("https://", adapter)
         self._session.mount("http://", adapter)
 
@@ -704,7 +703,13 @@ class PullRequestStats(PullRequestSubstream):
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
 
-    use_cache = True
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        MAX_RETRIES = 3
+        adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+        self._session = requests_cache.CachedSession("pull_request_stats_cache")
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
 
     @property
     def record_keys(self) -> List[str]:
