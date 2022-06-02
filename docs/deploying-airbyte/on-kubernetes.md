@@ -219,10 +219,6 @@ Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/mast
 
 `kubectl logs deployments/airbyte-server` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
 
-### View Scheduler or Job Logs
-
-`kubectl logs deployments/airbyte-scheduler` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
-
 ### Connector Container Logs
 
 Although all logs can be accessed by viewing the scheduler logs, connector container logs may be easier to understand when isolated by accessing from the Airbyte UI or the [Airbyte API](../api-documentation.md) for a specific job attempt. Connector pods launched by Airbyte will not relay logs directly to Kubernetes logging. You must access these logs through Airbyte.

@@ -11,8 +11,6 @@ images:
     newTag: 0.39.7-alpha
   - name: airbyte/bootloader
     newTag: 0.39.7-alpha
-  - name: airbyte/scheduler
-    newTag: 0.39.7-alpha
   - name: airbyte/server
     newTag: 0.39.7-alpha
   - name: airbyte/webapp

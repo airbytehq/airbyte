@@ -71,7 +71,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
     include ':airbyte-metrics:reporter'
-    include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
     include ':airbyte-temporal'
