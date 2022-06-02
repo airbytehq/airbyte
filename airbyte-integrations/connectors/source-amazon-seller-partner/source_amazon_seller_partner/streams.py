@@ -377,6 +377,14 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
+class FbaInventoryPlanningReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """
+
+    primary_key = "sku"
+    cursor_field = "sku"
+    name = "GET_FBA_INVENTORY_PLANNING_DATA"
 
 class FbaInventoryReports(ReportsAmazonSPStream):
     """

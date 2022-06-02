@@ -48,6 +48,8 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     }
   }
 
+
+
   private void loadDataIntoTable(final JdbcDatabase database,
                                  final List<AirbyteRecordMessage> records,
                                  final String schemaName,
@@ -56,13 +58,19 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
       throws SQLException {
     database.execute(connection -> {
       try {
-        writeBatchToFile(tmpFile, records);
+        String sql;
+        final double version = getVersion(database);
+        if(version>=5.7){
+          writeBatchToFile(tmpFile, records);
+          sql = "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'";
+        }else{
+          writeBatchToFile5(tmpFile, records);
+          sql = "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY '<-|,|->' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '<-\\r\\n->'";
+        }
 
         final String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
 
-        final String query = String.format(
-            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
-            absoluteFile, schemaName, tmpTableName);
+        final String query = String.format(sql, absoluteFile, schemaName, tmpTableName);
 
         try (final Statement stmt = connection.createStatement()) {
           stmt.execute(query);
@@ -107,7 +115,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   VersionCompatibility isCompatibleVersion(final JdbcDatabase database) throws SQLException {
     final double version = getVersion(database);
-    return new VersionCompatibility(version, version >= 5.7);
+    return new VersionCompatibility(version, version >= 5.6);
   }
 
   @Override
