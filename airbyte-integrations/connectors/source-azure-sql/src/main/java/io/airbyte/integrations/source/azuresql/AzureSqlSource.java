@@ -52,9 +52,9 @@ public class AzureSqlSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureSqlSource.class);
 
-  static private String URL_STRING = "jdbc:sqlserver://$AZ_DATABASE_NAME.database.windows.net:1433;database=demo;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-  static private String USER= "demo@$AZ_DATABASE_NAME";
-  static private String PWD="$AZ_SQL_SERVER_PASSWORD";
+  static private String URL_STRING = "jdbc:sqlserver://kimerinnserver.database.windows.net:1433;database=test;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+  static private String USER= "kimerinn@$kimerinnserver";
+  static private String PWD="";//set real password here
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
@@ -68,10 +68,19 @@ public class AzureSqlSource extends AbstractJdbcSource<JDBCType> implements Sour
     return new SshWrappedSource(new AzureSqlSource(), HOST_KEY, PORT_KEY);
   }
 
+  public static void main(String args[]) {
+    AzureSqlSource asql = new AzureSqlSource();
+    System.out.println("Done!");
+  }
+
   AzureSqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new AzureSQLSourceOperations());
     LOGGER.info("Connecting to the azure db...");
-    Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties);
+    Properties props = new java.util.Properties();
+    props.put("user", USER);
+    props.put("password", PWD);
+    props.put("url", URL_STRING);
+    Connection connection = DriverManager.getConnection(URL_STRING, props);
     log.info("Database connection test: " + connection.getCatalog());
     log.info("Create database schema");
     Statement statement = connection.createStatement();
