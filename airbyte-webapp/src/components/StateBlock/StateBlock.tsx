@@ -34,18 +34,31 @@ const Text = styled.div`
   white-space: pre-line;
 `;
 
+const ErrorText = styled.div`
+  margin-left: 20px;
+  font-size: 11px;
+  line-height: 13px;
+  color: ${({ theme }) => theme.redColor};
+  white-space: pre-line;
+`;
+
 const codeStyle = {
   fontFamily: '"Fira code", "Fira Mono", monospace',
   fontSize: 12,
-  paddingLeft: "10px",
+  marginTop: "5px",
+  marginLeft: "10px",
   marginBottom: "5px",
 };
 
+type Validation = {
+  valid: boolean;
+  message?: string;
+};
+
 const StateBlock: React.FC<IProps> = ({ connectionId }) => {
-  const [stateString, setStateString] = useState<string>(
-    `// ${(<FormattedMessage id={`tables.State.stateLoading`} />)}`
-  );
+  const [stateString, setStateString] = useState<string>(`// ...`);
   const [loading, setLoading] = useState(false);
+  const [validation, setValidation] = useState<Validation>({ valid: true });
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { mutateAsync: getState } = useGetConnectionState();
   const { mutateAsync: setState } = useSetConnectionState();
@@ -70,6 +83,10 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   };
 
   const onSaveButtonClick = useCallback(() => {
+    const validationResponse = validateState(stateString);
+    setValidation(validationResponse);
+    if (!validationResponse.valid) return;
+
     openConfirmationModal({
       text: `tables.State.confirmModalText`,
       title: `tables.State.confirmModalTitle`,
@@ -101,19 +118,51 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
       </Text>
       <Editor
         value={stateString}
-        onValueChange={(code) => setStateString(code)}
+        onValueChange={(code) => {
+          if (!validation.valid) setValidation({ valid: true });
+          setStateString(code);
+        }}
         highlight={(code) => highlight(code, languages.js)}
         padding={10}
         disabled={loading}
         style={codeStyle}
       />
-      <LoadingButton type="submit" onClick={onSaveButtonClick} isLoading={loading} data-id="open-state-modal">
-        <FormattedMessage id={`tables.State.save`} />
-      </LoadingButton>
+      {validation.valid === false && <ErrorText>{validation.message}</ErrorText>}
+      <div style={{ paddingLeft: 19 }}>
+        <LoadingButton
+          type="submit"
+          onClick={onSaveButtonClick}
+          isLoading={loading}
+          data-id="open-state-modal"
+          disabled={!validation?.valid}
+        >
+          <FormattedMessage id={`tables.State.save`} />
+        </LoadingButton>
+      </div>
     </StateBlockComponent>
   );
 };
 
-const formatState = (state: ConnectionStateObject) => JSON.stringify(state, null, 2);
+const formatState = (state: ConnectionStateObject) => JSON.stringify(state, null, 4);
+
+/**
+ * There isn't much in the way of validation we can do other than:
+ * 1. (TODO) ensuring that the original properties are still present
+ * 2. (TODO) ensuring that there are no additional properties
+ * 3. Checking that we have valid JSON
+ */
+const validateState: (state: string) => Validation = (state) => {
+  let valid = true;
+  let message: string | undefined;
+
+  try {
+    JSON.parse(state);
+  } catch (e) {
+    valid = false;
+    message = "Invalid json";
+  }
+
+  return { valid, message: `Error: ${message}` };
+};
 
 export default StateBlock;

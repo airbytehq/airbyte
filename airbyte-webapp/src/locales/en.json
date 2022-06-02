@@ -404,8 +404,7 @@
   "tables.State.p1": "The connection's current state",
   "tables.State.p2": "Airbyte does not store historic connection state",
   "tables.State.confirmModalTitle": "Update connection State?",
-  "tables.State.confirmModalText": "Be extremely careful when modifying state - mistakes can lead to unrecoverable syncs",
-  "tables.State.stateLoading": "Loading Connection State",
+  "tables.State.confirmModalText": "Be extremely careful when modifying state - mistakes can lead to unrecoverable syncs!",
   "tables.State.save": "Save connection state",
 
   "admin.destinations": "Destinations",
