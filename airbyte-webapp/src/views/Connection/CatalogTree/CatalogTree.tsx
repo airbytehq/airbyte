@@ -50,7 +50,7 @@ const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupported
               destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
               mode={mode}
-              changedSelected={changedStreams.includes(streamNode)}
+              changedSelected={changedStreams.includes(streamNode) && mode === "edit"}
             />
           )}
         </Field>

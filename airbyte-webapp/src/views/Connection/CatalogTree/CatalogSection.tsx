@@ -32,7 +32,7 @@ interface CatalogSectionInnerProps {
   changedSelected: boolean;
 }
 
-export const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
+const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   streamNode,
   updateStream,
   namespaceDefinition,
