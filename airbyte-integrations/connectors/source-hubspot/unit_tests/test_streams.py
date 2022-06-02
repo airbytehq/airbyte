@@ -185,3 +185,39 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     records = read_full_refresh(stream)
 
     assert [response[stream.data_field][0]] == records
+
+
+def test_contact_lists_transform(requests_mock, common_params):
+    stream = ContactLists(**common_params)
+
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "listId": 1,
+                        "createdAt": 1654117200000,
+                        "filters": [[{"value": "@hubspot"}]],
+                    },
+                    {
+                        "listId": 2,
+                        "createdAt": 1654117200001,
+                        "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
+                    },
+                    {
+                        "listId": 3,
+                        "createdAt": 1654117200002,
+                        "filters": [[{"value": 1000}]],
+                    },
+                ]
+            }
+        }
+    ]
+
+    requests_mock.register_uri("GET", stream.url, responses)
+    records = read_full_refresh(stream)
+
+    assert records[0]["filters"][0][0]["value"] == "@hubspot"
+    assert records[1]["filters"][0][0]["value"] == "True"
+    assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
+    assert records[2]["filters"][0][0]["value"] == "1000"
