@@ -142,11 +142,14 @@ public class ConnectionManagerUtils {
   }
 
   static ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
+    log.info("PARKER: inside startConnectionManagerNoSignal...");
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
+    log.info("PARKER: created  connectionManagerWorkflow stub...");
     final ConnectionUpdaterInput input = buildStartWorkflowInput(connectionId);
-
+    log.info("PARKER: built ConnectionUpdaterInput... about to call WorkflowClient.start");
     WorkflowClient.start(connectionManagerWorkflow::run, input);
 
+    log.info("PARKER: called start, returning the workflow...");
     return connectionManagerWorkflow;
   }
 
