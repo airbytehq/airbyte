@@ -58,3 +58,4 @@ spec:
             secretKeyRef:
               name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_USER
+      resources: {{- toYaml .Values.bootloader.resources | nindent 8 }}
