@@ -9,7 +9,9 @@ from airbyte_cdk.sources.declarative.requesters.request_params.request_parameter
 
 
 class InterpolatedRequestParameterProvider(RequestParameterProvider):
-    def __init__(self, *, config, request_parameters):
+    def __init__(self, *, config, request_parameters=None):
+        if request_parameters is None:
+            request_parameters = {}
         self._interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_parameters)
 
     def request_params(
