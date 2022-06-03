@@ -27,12 +27,14 @@ class JinjaInterpolation(Interpolation):
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
-        print(self._environment.globals)
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    return ast.literal_eval(result)
+                    try:
+                        return ast.literal_eval(result)
+                    except (ValueError, SyntaxError):
+                        return result
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
