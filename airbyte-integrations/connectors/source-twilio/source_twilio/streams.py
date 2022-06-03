@@ -109,7 +109,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     def __init__(self, start_date: str = None, lookback: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date  
-        self._lookback = lookback
+        self._lookback_window = lookback_window
         self._cursor_value = None
 
     @property
