@@ -21,8 +21,11 @@ import com.google.common.collect.Sets;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class JsonsTest {
@@ -60,7 +63,8 @@ class JsonsTest {
         Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
             TEST, ABC,
             TEST2, DEF))));
-    // issue: 5878 add test for binary node serialization, binary data are serialized into base64
+    // issue: 5878 add test for binary node serialization, binary data are
+    // serialized into base64
     assertEquals(
         "{\"test\":\"dGVzdA==\"}",
         Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
@@ -83,7 +87,8 @@ class JsonsTest {
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
         Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
-    // issue: 5878 add test for binary node deserialization, for now should be base64 string
+    // issue: 5878 add test for binary node deserialization, for now should be
+    // base64 string
     assertEquals(
         "{\"test\":\"dGVzdA==\"}",
         Jsons.deserialize("{\"test\":\"dGVzdA==\"}").toString());
@@ -157,7 +162,8 @@ class JsonsTest {
 
     assertEquals(
         Lists.newArrayList(expected),
-        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
+        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {
+        }));
 
     assertEquals(
         new ToClass(),
@@ -173,7 +179,8 @@ class JsonsTest {
 
     assertEquals(
         Optional.of(expected),
-        Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), new TypeReference<ToClass>() {}));
+        Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), new TypeReference<ToClass>() {
+        }));
 
     final ToClass emptyExpected = new ToClass();
     assertEquals(
@@ -182,7 +189,8 @@ class JsonsTest {
 
     assertEquals(
         Optional.of(emptyExpected),
-        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {}));
+        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {
+        }));
 
   }
 
@@ -230,7 +238,8 @@ class JsonsTest {
 
   @Test
   void testGetOptional() {
-    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }");
+    final JsonNode json = Jsons
+        .deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }");
 
     assertEquals(Optional.of(Jsons.jsonNode("ghi")), Jsons.getOptional(json, "abc", "def"));
     assertEquals(Optional.of(Jsons.emptyObject()), Jsons.getOptional(json, "jkl"));
@@ -260,6 +269,30 @@ class JsonsTest {
     assertEquals(Jsons.toBytes(json).length, Jsons.getEstimatedByteSize(json));
   }
 
+  @Test
+  void testFlatten__noArrays() {
+    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": true, \"pqr\": 1 }");
+    Map<String, Object> expected = Stream.of(new Object[][] {
+        { "abc.def", "ghi" },
+        { "jkl", true },
+        { "pqr", 1 },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+    assertEquals(Jsons.flatten(json, false), expected);
+  }
+
+  @Test
+  void testFlatten__withArrays() {
+    final JsonNode json = Jsons
+        .deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
+    Map<String, Object> expected = Stream.of(new Object[][] {
+        { "abc.[0].def", "ghi" },
+        { "abc.[1].fed", "ihg" },
+        { "jkl", true },
+        { "pqr", 1 },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+    assertEquals(Jsons.flatten(json, true), expected);
+  }
+
   private static class ToClass {
 
     @JsonProperty("str")
@@ -271,7 +304,8 @@ class JsonsTest {
     @JsonProperty("numLong")
     long numLong;
 
-    public ToClass() {}
+    public ToClass() {
+    }
 
     public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
