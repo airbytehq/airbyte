@@ -1,0 +1,64 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+@forward "./CatalogTree.module.scss";
+
+.removedStream {
+  color: colors.$dangerColor;
+}
+
+.icon {
+  margin-right: 7px;
+  margin-top: -1px;
+  &.plus {
+    color: colors.$successColor;
+  }
+  &.minus {
+    color: colors.$dangerColor;
+  }
+}
+
+.streamRowCheckboxCell {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.streamHeaderContent {
+  background: colors.$greyColor0;
+  transition: background-color variables.$transition;
+  width: 100%;
+  padding: 2px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: middle;
+  height: 50px;
+}
+
+.catalogSectionRow {
+  height: 100%;
+  white-space: nowrap;
+  font-size: 12px;
+  display: flex;
+  flex-direction: row;
+  margin-top: 18px;
+  margin-bottom: 9px;
+}
+
+.redBackground {
+  background-color: colors.$dangerColor14;
+}
+
+.greenBackground {
+  background-color: colors.$successColor14;
+}
+
+.redBorder {
+  border: 1px solid colors.$dangerColor;
+}
+
+.purpleBackground {
+  background-color: colors.$primaryColor10;
+}
