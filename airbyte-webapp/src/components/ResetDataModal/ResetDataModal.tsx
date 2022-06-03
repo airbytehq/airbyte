@@ -7,11 +7,11 @@ import Modal from "components/Modal";
 
 import { ModalTypes } from "./types";
 
-export type IProps = {
+export interface IProps {
   onClose: () => void;
   onSubmit: (data: unknown) => void;
   modalType?: ModalTypes;
-};
+}
 
 const Content = styled.div`
   padding: 18px 37px 28px;

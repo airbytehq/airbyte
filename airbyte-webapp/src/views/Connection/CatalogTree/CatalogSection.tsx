@@ -37,7 +37,7 @@ const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   }
 `;
 
-type TreeViewRowProps = {
+interface TreeViewRowProps {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
@@ -46,7 +46,7 @@ type TreeViewRowProps = {
   prefix: string;
   updateStream: (id: string | undefined, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
   mode?: ConnectionFormMode;
-};
+}
 
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   streamNode,

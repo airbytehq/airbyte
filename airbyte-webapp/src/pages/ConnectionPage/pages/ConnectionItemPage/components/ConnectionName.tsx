@@ -9,9 +9,9 @@ import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
 
-type Props = {
+interface Props {
   connection: WebBackendConnectionRead;
-};
+}
 
 const MainContainer = styled.div`
   margin-top: 10px;

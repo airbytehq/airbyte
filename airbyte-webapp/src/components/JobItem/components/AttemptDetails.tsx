@@ -7,11 +7,11 @@ import Status from "core/statuses";
 
 import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
 
-type IProps = {
+interface IProps {
   className?: string;
   attempt: AttemptRead;
   configType?: JobConfigType;
-};
+}
 
 const Details = styled.div`
   font-size: 12px;

@@ -9,11 +9,11 @@ import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/Wor
 import { useConfig } from "../../config";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 
-export type WebhookPayload = {
+export interface WebhookPayload {
   webhook?: string;
   sendOnSuccess?: boolean;
   sendOnFailure?: boolean;
-};
+}
 
 function useGetNotificationService() {
   const config = useConfig();

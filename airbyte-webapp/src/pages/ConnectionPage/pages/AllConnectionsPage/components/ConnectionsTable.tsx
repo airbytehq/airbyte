@@ -13,9 +13,9 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
-type IProps = {
+interface IProps {
   connections: WebBackendConnectionRead[];
-};
+}
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();

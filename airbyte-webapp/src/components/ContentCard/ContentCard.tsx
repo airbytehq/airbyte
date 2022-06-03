@@ -3,13 +3,13 @@ import styled from "styled-components";
 
 import { H5, Card } from "components";
 
-type IProps = {
+interface IProps {
   title?: string | React.ReactNode;
   className?: string;
   onClick?: () => void;
   full?: boolean;
   light?: boolean;
-};
+}
 
 const Title = styled(H5)<{ light?: boolean }>`
   padding: ${({ light }) => (light ? "19px 20px 20px" : "25px 25px 22px")};

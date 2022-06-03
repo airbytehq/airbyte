@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
-type ToolTipProps = {
+interface ToolTipProps {
   control: React.ReactNode;
   className?: string;
   disabled?: boolean;
   cursor?: "pointer" | "help";
-};
+}
 
 const Control = styled.div<{ $cursor?: "pointer" | "help" }>`
   display: inline-block;

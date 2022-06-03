@@ -15,14 +15,14 @@ import CheckBoxControl from "../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
 import SpecialBlock from "./components/SpecialBlock";
 
-type FormValues = {
+interface FormValues {
   name: string;
   companyName: string;
   email: string;
   password: string;
   news: boolean;
   security: boolean;
-};
+}
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;

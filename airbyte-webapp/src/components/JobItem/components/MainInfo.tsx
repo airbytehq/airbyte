@@ -86,7 +86,7 @@ const getJobConfig = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
 const getJobCreatedAt = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
   (job as SynchronousJobReadWithStatus).createdAt ?? (job as JobsWithJobs).job.createdAt;
 
-type MainInfoProps = {
+interface MainInfoProps {
   job: SynchronousJobReadWithStatus | JobsWithJobs;
   attempts?: AttemptRead[];
   isOpen?: boolean;
@@ -94,7 +94,7 @@ type MainInfoProps = {
   isFailed?: boolean;
   isPartialSuccess?: boolean;
   shortInfo?: boolean;
-};
+}
 
 const MainInfo: React.FC<MainInfoProps> = ({
   job,

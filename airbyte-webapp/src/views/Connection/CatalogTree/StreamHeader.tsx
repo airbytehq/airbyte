@@ -18,10 +18,10 @@ const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-type SyncSchema = {
+interface SyncSchema {
   syncMode: SyncMode;
   destinationSyncMode: DestinationSyncMode;
-};
+}
 
 interface StreamHeaderProps {
   stream: SyncSchemaStream;

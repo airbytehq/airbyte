@@ -7,7 +7,7 @@ import { LabeledSwitch } from "components/LabeledSwitch";
 
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
-export type NotificationsFormProps = {
+export interface NotificationsFormProps {
   onChange: (data: { news: boolean; securityUpdates: boolean }) => void;
   preferencesValues: {
     news: boolean;
@@ -16,7 +16,7 @@ export type NotificationsFormProps = {
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   isLoading?: boolean;
-};
+}
 
 const FormItem = styled.div`
   margin-bottom: 10px;
