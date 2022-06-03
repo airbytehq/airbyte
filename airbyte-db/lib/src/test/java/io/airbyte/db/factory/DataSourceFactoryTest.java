@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test suite for the {@link DataSourceFactory} class.
  */
-public class DataSourceFactoryTest extends AbstractFactoryTest {
+class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADataSourceWithJdbcUrl() {

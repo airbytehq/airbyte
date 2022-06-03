@@ -39,6 +39,7 @@ export interface ArrayOfObjectsEditorProps<T extends { name: string }> {
   onDone?: () => void;
   onRemove: (index: number) => void;
   mode?: ConnectionFormMode;
+  disabled?: boolean;
 }
 
 export function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>({
@@ -52,10 +53,12 @@ export function ArrayOfObjectsEditor<T extends { name: string } = { name: string
   mainTitle,
   addButtonText,
   mode,
+  disabled,
 }: ArrayOfObjectsEditorProps<T>): JSX.Element {
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
+
   if (mode !== "readonly" && isEditable) {
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
     return (
@@ -64,12 +67,12 @@ export function ArrayOfObjectsEditor<T extends { name: string } = { name: string
         {onCancelEdit || onDone ? (
           <ButtonContainer>
             {onCancelEdit && (
-              <SmallButton onClick={onCancelEdit} type="button" secondary>
+              <SmallButton onClick={onCancelEdit} type="button" secondary disabled={disabled}>
                 <FormattedMessage id="form.cancel" />
               </SmallButton>
             )}
             {onDone && (
-              <SmallButton onClick={onDone} type="button" data-testid="done-button">
+              <SmallButton onClick={onDone} type="button" data-testid="done-button" disabled={disabled}>
                 <FormattedMessage id="form.done" />
               </SmallButton>
             )}
@@ -87,11 +90,19 @@ export function ArrayOfObjectsEditor<T extends { name: string } = { name: string
         mainTitle={mainTitle}
         addButtonText={addButtonText}
         mode={mode}
+        disabled={disabled}
       />
       {items.length ? (
         <ItemsList>
           {items.map((item, key) => (
-            <EditorRow key={`form-item-${key}`} name={item.name} id={key} onEdit={onStartEdit} onRemove={onRemove} />
+            <EditorRow
+              key={`form-item-${key}`}
+              name={item.name}
+              id={key}
+              onEdit={onStartEdit}
+              onRemove={onRemove}
+              disabled={disabled}
+            />
           ))}
         </ItemsList>
       ) : null}

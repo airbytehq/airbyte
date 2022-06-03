@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 import { Input } from "components";
 
-type SearchProps = {
+interface SearchProps {
   onSearch: (value: string) => void;
-};
+}
 
 const SearchInput = styled(Input)`
   padding: 10px 8px 9px;

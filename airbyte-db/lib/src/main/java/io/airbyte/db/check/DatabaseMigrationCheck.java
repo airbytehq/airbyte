@@ -15,6 +15,11 @@ import org.slf4j.Logger;
 public interface DatabaseMigrationCheck {
 
   /**
+   * Represents an unavailable schema migration version that ensures a re-test.
+   */
+  String UNAVAILABLE_VERSION = "0";
+
+  /**
    * The number of times to check if the database has been migrated to the required schema version.
    * TODO replace with a default value in a value injection annotation
    */
@@ -30,29 +35,66 @@ public interface DatabaseMigrationCheck {
     final var sleepTime = getTimeoutMs() / NUM_POLL_TIMES;
     final Optional<Flyway> flywayOptional = getFlyway();
 
-    if (flywayOptional.isPresent()) {
-      final var flyway = flywayOptional.get();
-      var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
-      getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
-      getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
+    // Verify that the database is up and reachable first
+    final Optional<DatabaseAvailabilityCheck> availabilityCheck = getDatabaseAvailabilityCheck();
+    if (availabilityCheck.isPresent()) {
+      availabilityCheck.get().check();
+      if (flywayOptional.isPresent()) {
+        final var flyway = flywayOptional.get();
 
-      while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
-        if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
-          throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
-        }
+        var currDatabaseMigrationVersion = getCurrentVersion(flyway);
+        getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
+        getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
 
-        try {
-          Thread.sleep(sleepTime);
-        } catch (final InterruptedException e) {
-          throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+        while (currDatabaseMigrationVersion.compareTo(getMinimumFlywayVersion()) < 0) {
+          if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
+            throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
+          }
+
+          try {
+            Thread.sleep(sleepTime);
+          } catch (final InterruptedException e) {
+            throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+          }
+
+          currDatabaseMigrationVersion = getCurrentVersion(flyway);
         }
-        currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+        getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
+      } else {
+        throw new DatabaseCheckException("Flyway configuration not present.");
       }
-      getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
     } else {
-      throw new DatabaseCheckException("Flyway configuration not present.");
+      throw new DatabaseCheckException("Availability check not configured.");
     }
   }
+
+  /**
+   * Retrieves the current version of the migration schema.
+   *
+   * @param flyway A {@link Flyway} that can be used to retrieve the current version.
+   * @return The current version of the migrated schema or {@link #UNAVAILABLE_VERSION} if the version
+   *         cannot be discovered.
+   */
+  default String getCurrentVersion(final Flyway flyway) {
+    /**
+     * The database may be available, but not yet migrated. If this is the case, the Flyway object will
+     * not be able to retrieve the current version of the schema. If that happens, return a fake version
+     * so that the check will fail and try again.
+     */
+    if (flyway.info().current() != null) {
+      return flyway.info().current().getVersion().getVersion();
+    } else {
+      return UNAVAILABLE_VERSION;
+    }
+  }
+
+  /**
+   * Retrieves the {@link DatabaseAvailabilityCheck} used to verify that the database is running and
+   * available.
+   *
+   * @return The {@link DatabaseAvailabilityCheck}.
+   */
+  Optional<DatabaseAvailabilityCheck> getDatabaseAvailabilityCheck();
 
   /**
    * Retrieves the configured {@link Flyway} object to be used to check the migration status of the
