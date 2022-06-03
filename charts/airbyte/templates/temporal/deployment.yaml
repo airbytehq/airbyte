@@ -66,6 +66,7 @@ spec:
         {{- if .Values.temporal.containerSecurityContext }}
         securityContext: {{- toYaml .Values.temporal.containerSecurityContext | nindent 10 }}
         {{- end }}
+        resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
