@@ -16,6 +16,7 @@ import {
   SyncMode,
 } from "../../../core/request/AirbyteClient";
 import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
+import styles from "./CatalogSection.module.scss";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -129,7 +130,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasChildren = fields && fields.length > 0;
 
   return (
-    <>
+    <div className={styles.catalogSectionContainer}>
       <StreamHeader
         stream={streamNode}
         destNamespace={destNamespace}
@@ -150,16 +151,18 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         hasError={hasError}
       />
       {isRowExpanded && hasChildren && (
-        <StreamFieldTable
-          config={config}
-          syncSchemaFields={flattenedFields}
-          onCursorSelect={onCursorSelect}
-          onPkSelect={onPkSelect}
-          shouldDefinePk={shouldDefinePk}
-          shouldDefineCursor={shouldDefineCursor}
-        />
+        <div className={styles.streamFieldTableContainer}>
+          <StreamFieldTable
+            config={config}
+            syncSchemaFields={flattenedFields}
+            onCursorSelect={onCursorSelect}
+            onPkSelect={onPkSelect}
+            shouldDefinePk={shouldDefinePk}
+            shouldDefineCursor={shouldDefineCursor}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 };
 
