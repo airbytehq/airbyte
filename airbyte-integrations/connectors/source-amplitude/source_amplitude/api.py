@@ -56,6 +56,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
     base_params = {}
     cursor_field = "date"
     date_template = "%Y%m%d"
+    compare_date_template = None
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -96,10 +97,12 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         return end_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        # save state value in source native format
+        if self.compare_date_template:
+            latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
+        else:
+            latest_state = latest_record[self.cursor_field]
+        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         parsed = urlparse.urlparse(response.url)
@@ -147,11 +150,6 @@ class Events(IncrementalAmplitudeStream):
                 for record in self._parse_zip_file(file):
                     if record[self.cursor_field] >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # save state value in source native format
-        latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
-        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
         with gzip.open(zip_file) as file:
