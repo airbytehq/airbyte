@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import io.airbyte.config.WorkspaceRetentionConfig;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
