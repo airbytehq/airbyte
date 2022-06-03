@@ -232,8 +232,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   return (
     <Formik
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}

@@ -72,9 +72,7 @@ const ConnectionItemPage: React.FC = () => {
         />
       }
       error={
-        isConnectionDeleted ? (
-          <AlertBanner alertType="connectionDeleted" id={"connection.connectionDeletedView"} />
-        ) : null
+        isConnectionDeleted ? <AlertBanner alertType="connectionDeleted" id="connection.connectionDeletedView" /> : null
       }
     >
       <Suspense fallback={<LoadingPage />}>
@@ -95,7 +93,7 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.SETTINGS}
             element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connectionId={connectionId} />}
           />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

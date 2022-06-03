@@ -39,7 +39,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),

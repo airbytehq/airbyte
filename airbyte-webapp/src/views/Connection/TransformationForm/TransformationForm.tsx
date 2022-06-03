@@ -93,7 +93,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
 
   const formik = useFormik({
     initialValues: transformation,
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values) => {
       await operationService.check(values);
       clearFormChange(formId);

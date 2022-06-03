@@ -86,7 +86,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
             }
           }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (

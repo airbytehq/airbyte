@@ -114,7 +114,7 @@ const connectionValidationSchema = yup
               name: "connectionSchema.config.validator",
               // eslint-disable-next-line no-template-curly-in-string
               message: "${path} is wrong",
-              test: function (value) {
+              test(value) {
                 if (!value.selected) {
                   return true;
                 }

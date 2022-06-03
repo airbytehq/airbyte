@@ -60,8 +60,8 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
         additionalInfo: currentValues?.additionalInfo || "",
         email: currentValues?.email || "",
       }}
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
       validationSchema={requestConnectorValidationSchema}
       onSubmit={onSubmit}
     >

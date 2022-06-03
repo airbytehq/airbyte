@@ -115,8 +115,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
             dockerImageTag: "",
             dockerRepository: "",
           }}
-          validateOnBlur={true}
-          validateOnChange={true}
+          validateOnBlur
+          validateOnChange
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);

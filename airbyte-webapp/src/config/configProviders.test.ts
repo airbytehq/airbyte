@@ -14,7 +14,7 @@ interface Value {
     innerProp: string;
   };
 }
-describe("applyProviders", function () {
+describe("applyProviders", () => {
   test("should deepMerge config returned from providers", async () => {
     const defaultValue: Value = {
       prop1: {

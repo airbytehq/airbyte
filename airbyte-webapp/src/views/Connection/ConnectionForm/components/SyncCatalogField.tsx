@@ -197,12 +197,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   );
 
   const filteredStreams = useMemo(() => {
-    const filters: Array<(s: SyncSchemaStream) => boolean> = [
+    const filters: ((s: SyncSchemaStream) => boolean)[] = [
       (_: SyncSchemaStream) => true,
       searchString
         ? (stream: SyncSchemaStream) => stream.stream?.name.toLowerCase().includes(searchString.toLowerCase())
         : null,
-    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
+    ].filter(Boolean) as ((s: SyncSchemaStream) => boolean)[];
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);

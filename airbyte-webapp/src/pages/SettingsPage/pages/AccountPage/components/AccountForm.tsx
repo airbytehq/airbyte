@@ -57,7 +57,7 @@ const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessa
   return (
     <Formik
       initialValues={{ email }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={accountValidationSchema}
       enableReinitialize

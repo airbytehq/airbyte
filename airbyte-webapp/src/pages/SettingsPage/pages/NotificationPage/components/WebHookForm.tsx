@@ -93,8 +93,8 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
   return (
     <Formik
       initialValues={webhook}
-      enableReinitialize={true}
-      validateOnBlur={true}
+      enableReinitialize
+      validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
       onSubmit={async (values: WebhookPayload) => {

@@ -41,7 +41,7 @@ const AccountSettingsView: React.FC = () => {
                       <LabeledInput
                         {...field}
                         label={<FormattedMessage id="settings.accountSettings.fullName" />}
-                        disabled={true}
+                        disabled
                         placeholder={formatMessage({
                           id: "settings.accountSettings.fullName.placeholder",
                         })}
