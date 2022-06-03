@@ -114,4 +114,5 @@ class ConfigsDatabaseMigrationCheckTest {
     final var check = new ConfigsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
+
 }
