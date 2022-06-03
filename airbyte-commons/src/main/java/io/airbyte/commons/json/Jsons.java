@@ -232,15 +232,6 @@ public class Jsons {
         mergeMaps(output, field, flatten(value));
       }
       return output;
-    } else if (node.isArray()) {
-      final Map<String, Object> output = new HashMap<>();
-      final int arrayLen = node.size();
-      for (int i = 0; i < arrayLen; i++) {
-        final String field = String.format("[%d]", i);
-        final JsonNode value = node.get(i);
-        mergeMaps(output, field, flatten(value));
-      }
-      return output;
     } else {
       final Object value;
       if (node.isBoolean()) {
@@ -254,7 +245,7 @@ public class Jsons {
       } else if (node.isValueNode() && !node.isNull()) {
         value = node.asText();
       } else {
-        // Fallback handling
+        // Fallback handling for e.g. arrays
         value = node.toString();
       }
       return singletonMap(null, value);
