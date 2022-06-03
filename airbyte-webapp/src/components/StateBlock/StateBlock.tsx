@@ -1,22 +1,18 @@
-import { highlight, languages } from "prismjs/components/prism-core";
 import React, { useState, useEffect, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import "prismjs/components/prism-clike";
-import "prismjs/components/prism-javascript";
-import "prismjs/themes/prism.css";
-import Editor from "react-simple-code-editor";
 import styled from "styled-components";
 
-import { H5, LoadingButton } from "components";
+import { H5 } from "components";
+import CodeEditor, { ValidatorFeedback } from "components/CodeEditor/CodeEditor";
 import ContentCard from "components/ContentCard";
 
 import { ConnectionState, ConnectionStateObject } from "core/request/AirbyteClient";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+
 import { useGetConnectionState, useUpdateConnectionState } from "hooks/services/useConnectionHook";
 
-type IProps = {
+interface StateBlockProps {
   connectionId: string;
-};
+}
 
 const StateBlockComponent = styled(ContentCard)`
   margin-top: 12px;
@@ -34,32 +30,9 @@ const Text = styled.div`
   white-space: pre-line;
 `;
 
-const ErrorText = styled.div`
-  margin-left: 20px;
-  font-size: 11px;
-  line-height: 13px;
-  color: ${({ theme }) => theme.redColor};
-  white-space: pre-line;
-`;
-
-const codeStyle = {
-  fontFamily: '"Fira code", "Fira Mono", monospace',
-  fontSize: 12,
-  marginTop: "5px",
-  marginLeft: "10px",
-  marginBottom: "5px",
-};
-
-type Validation = {
-  valid: boolean;
-  message?: string;
-};
-
-const StateBlock: React.FC<IProps> = ({ connectionId }) => {
+const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   const [stateString, setStateString] = useState<string>(`// ...`);
   const [loading, setLoading] = useState(false);
-  const [validation, setValidation] = useState<Validation>({ valid: true });
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { mutateAsync: getState } = useGetConnectionState();
   const { mutateAsync: updateState } = useUpdateConnectionState();
 
@@ -72,38 +45,14 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
     }
   };
 
-  const saveState = async () => {
+  const saveState: () => Promise<ValidatorFeedback> = async () => {
     setLoading(true);
     const stateObject = JSON.parse(stateString) as ConnectionState;
     const response = await updateState({ connectionId, state: stateObject });
-    if (!response.successful) {
-      setValidation({ valid: false, message: response.errorMessage });
-    }
-
-    if (response?.state) {
-      setStateString(formatState(response.state));
-    }
-
     setLoading(false);
+    if (response.state) setStateString(formatState(response.state));
+    return { valid: response.successful, errorMessage: response.errorMessage };
   };
-
-  const onSaveButtonClick = useCallback(() => {
-    const validationResponse = validateState(stateString);
-    setValidation(validationResponse);
-    if (!validationResponse.valid) return;
-
-    openConfirmationModal({
-      text: `tables.State.confirmModalText`,
-      title: `tables.State.confirmModalTitle`,
-      submitButtonText: "form.save",
-      onSubmit: async () => {
-        await saveState();
-        closeConfirmationModal();
-      },
-      submitButtonDataId: "state",
-    });
-    // eslint-disable-next-line
-  }, [closeConfirmationModal, saveState, openConfirmationModal]);
 
   const loadStateMemoized = useCallback(() => {
     loadState();
@@ -118,33 +67,21 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
     <StateBlockComponent>
       <Text>
         <H5 bold>
-          <FormattedMessage id={`tables.State.title`} />
+          <FormattedMessage id={"tables.connectionState.title"} />
         </H5>
-        <FormattedMessage id={`tables.State.p1`} />. <FormattedMessage id={`tables.State.p2`} />.
+        <FormattedMessage id={"tables.connectionState.p1"} />. <FormattedMessage id={"tables.connectionState.p2"} />.
       </Text>
-      <Editor
-        value={stateString}
-        onValueChange={(code) => {
-          if (!validation.valid) setValidation({ valid: true });
-          setStateString(code);
-        }}
-        highlight={(code) => highlight(code, languages.js)}
-        padding={10}
-        disabled={loading}
-        style={codeStyle}
+      <CodeEditor
+        code={stateString}
+        setCode={setStateString}
+        onSave={saveState}
+        validate={validateState}
+        loading={loading}
+        saveButtonCTA={<FormattedMessage id={"tables.connectionState.save"} />}
+        useModal
+        modalTitleKey="tables.connectionState.confirmModalTitle"
+        modalTextKey="tables.connectionState.confirmModalText"
       />
-      {validation.valid === false && <ErrorText>{validation.message}</ErrorText>}
-      <div style={{ paddingLeft: 19 }}>
-        <LoadingButton
-          type="submit"
-          onClick={onSaveButtonClick}
-          isLoading={loading}
-          data-id="open-state-modal"
-          disabled={!validation?.valid}
-        >
-          <FormattedMessage id={`tables.State.save`} />
-        </LoadingButton>
-      </div>
     </StateBlockComponent>
   );
 };
@@ -157,7 +94,7 @@ const formatState = (state: ConnectionStateObject) => JSON.stringify(state, null
  * 2. (TODO) ensuring that there are no additional properties
  * 3. Checking that we have valid JSON
  */
-const validateState: (state: string) => Validation = (state) => {
+const validateState: (state: string) => ValidatorFeedback = (state) => {
   let valid = true;
   let message: string | undefined;
 
@@ -168,7 +105,7 @@ const validateState: (state: string) => Validation = (state) => {
     message = "Invalid json";
   }
 
-  return { valid, message: `Error: ${message}` };
+  return { valid, errorMessage: `Error: ${message}` };
 };
 
 export default StateBlock;
