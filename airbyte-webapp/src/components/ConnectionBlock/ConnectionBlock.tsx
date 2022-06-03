@@ -6,11 +6,11 @@ import styled from "styled-components";
 import ContentCard from "../ContentCard";
 import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
 
-type IProps = {
+interface IProps {
   className?: string;
   itemFrom?: { name: string; icon?: string };
   itemTo?: { name: string; icon?: string };
-};
+}
 
 const LightContentCard = styled(ContentCard)`
   display: flex;

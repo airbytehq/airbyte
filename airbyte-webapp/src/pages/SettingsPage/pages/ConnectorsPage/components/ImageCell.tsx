@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-type ImageCellProps = {
+interface ImageCellProps {
   imageName: string;
   link: string | undefined;
-};
+}
 
 const Link = styled.a`
   height: 17px;
