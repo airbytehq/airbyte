@@ -1402,6 +1402,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/state/type/get:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current type for a connection.
+      operationId: getStateType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionStateType"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -3707,6 +3730,19 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+        streams:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamKey"
+    StreamKey:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
     JobDebugRead:
       type: object
       required:
@@ -3987,8 +4023,100 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         state:
           $ref: "#/components/schemas/ConnectionStateObject"
+        globalState:
+          $ref: "#/components/schemas/ConnectionStateObject"
+        streamState:
+          type: array
+          $ref: "#/components/schemas/StreamStateObject"
     ConnectionStateObject:
       type: object
+    StreamStateObject:
+      type: object
+      required:
+        - streamKey
+      properties:
+        streamKey:
+          $ref: "#/components/schemas/StreamKey"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionStateType:
+      type: string
+      enum:
+        - global
+        - per_stream
+        - not_set
+    SyncCatalogChanges:
+      type: object
+      description: "Describe what has changed between the result of a schema discovery and the stored catalog"
+      required:
+        - streamsRemoved
+        - streamsAdded
+        - streamsUpdated
+      properties:
+        streamsRemoved:
+          description: "Streams being removed"
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamKey"
+        streamsAdded:
+          description: "Streams being added"
+          type: array
+          items:
+            type: string
+        streamsUpdated:
+          description: "Streams being updated"
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamUpdate"
+    StreamUpdate:
+      type: object
+      description: "Contains how the field changed within a stream"
+      required:
+        - fieldsRemoved
+        - fieldsAdded
+        - fieldsUpdated
+      properties:
+        fieldsRemoved:
+          description: "Streams being removed"
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldSchema"
+        fieldsAdded:
+          description: "Streams being added"
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldSchema"
+        fieldsUpdated:
+          description: "Streams being updated"
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldSchemaTypeUpdate"
+    FieldSchema:
+      type: object
+      required:
+        - fieldType
+        - name
+      properties:
+        name:
+          type: string
+        schema:
+          type: object
+          additionalProperties: true
+    FieldSchemaTypeUpdate:
+      type: object
+      required:
+        - fromFieldType
+        - toFieldType
+        - name
+      properties:
+        name:
+          type: string
+        fromSchema:
+          type: object
+          additionalProperties: true
+        toSchema:
+          type: object
+          additionalProperties: true
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object
@@ -4372,6 +4500,8 @@ components:
         catalogId:
           type: string
           format: uuid
+        syncCatalogChanges:
+          $ref: "#/components/schemas/SyncCatalogChanges"
     WebBackendConnectionReadList:
       type: object
       required:

@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
@@ -141,6 +142,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
@@ -745,6 +747,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
+  }
+
+  @Override
+  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
+    throw new NotImplementedException();
   }
 
   // SCHEDULER
