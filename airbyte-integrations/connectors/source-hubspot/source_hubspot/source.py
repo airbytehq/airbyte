@@ -7,7 +7,8 @@ import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
@@ -45,29 +46,10 @@ from source_hubspot.streams import (
     Workflows,
 )
 
-SCOPES = [
-    "automation",
-    "content",
-    "crm.lists.read",
-    "crm.objects.companies.read",
-    "crm.objects.contacts.read",
-    "crm.objects.deals.read",
-    "crm.objects.feedback_submissions.read",
-    "crm.objects.owners.read",
-    "crm.schemas.companies.read",
-    "crm.schemas.contacts.read",
-    "crm.schemas.deals.read",
-    "e-commerce",
-    "files",
-    "files.ui_hidden.read",
-    "forms",
-    "forms-uploaded-files",
-    "sales-email-read",
-    "tickets",
-]
-
 
 class SourceHubspot(AbstractSource):
+    logger = AirbyteLogger()
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
         common_params = self.get_common_params(config=config)
@@ -80,23 +62,6 @@ class SourceHubspot(AbstractSource):
             alive = False
             error_msg = repr(error)
         return alive, error_msg
-
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """
-        Filter out streams for which the required scopes were not granted
-        """
-        common_params = self.get_common_params(config=config)
-        credentials = common_params["credentials"]
-        authenticator = API(credentials=credentials).get_authenticator(credentials)
-        granted_scopes = self.get_granted_scopes(authenticator)
-        logger.info(f"The following scopes were granted: {granted_scopes}")
-
-        streams = [stream.as_airbyte_stream() for stream in self.streams(config=config) if stream.scope_is_granted(granted_scopes)]
-        unavailable_streams = [
-            stream.as_airbyte_stream() for stream in self.streams(config=config) if not stream.scope_is_granted(granted_scopes)
-        ]
-        logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
-        return AirbyteCatalog(streams=streams)
 
     def get_granted_scopes(self, authenticator):
         try:
@@ -122,7 +87,7 @@ class SourceHubspot(AbstractSource):
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
         if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator(credentials)
+            common_params["authenticator"] = api.get_authenticator()
         return common_params
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -161,7 +126,20 @@ class SourceHubspot(AbstractSource):
         if credentials_title == "API Key Credentials":
             streams.append(Quotes(**common_params))
 
-        return streams
+        api = API(credentials=credentials)
+        if api.is_oauth2():
+            authenticator = API(credentials=credentials).get_authenticator()
+            granted_scopes = self.get_granted_scopes(authenticator)
+            self.logger.info(f"The following scopes were granted: {granted_scopes}")
+
+            available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
+            unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
+            self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+        else:
+            self.logger.info("No scopes to grant when authenticating with API key.")
+            available_streams = streams
+
+        return available_streams
 
     def read(
         self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None

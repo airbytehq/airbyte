@@ -129,20 +129,29 @@ class API:
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
 
-    def get_authenticator(self, credentials):
-        return Oauth2Authenticator(
-            token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
-            client_id=credentials["client_id"],
-            client_secret=credentials["client_secret"],
-            refresh_token=credentials["refresh_token"],
-        )
+    def is_oauth2(self) -> bool:
+        credentials_title = self.credentials.get("credentials_title")
+
+        return credentials_title == "OAuth Credentials"
+
+    def get_authenticator(self) -> Optional[Oauth2Authenticator]:
+        if self.is_oauth2():
+            return Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=self.credentials["client_id"],
+                client_secret=self.credentials["client_secret"],
+                refresh_token=self.credentials["refresh_token"],
+            )
+        else:
+            return None
 
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
+        self.credentials = credentials
         credentials_title = credentials.get("credentials_title")
 
-        if credentials_title == "OAuth Credentials":
-            self._session.auth = self.get_authenticator(credentials)
+        if self.is_oauth2():
+            self._session.auth = self.get_authenticator()
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
