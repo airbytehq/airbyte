@@ -35,9 +35,9 @@
         "type": "string",
         "order": 3
       },
-      "lookback": {
-        "title": "Lookback",
-        "description": "format in minutes. Any data between sync time and sync time minus lookback setting in minutes will be replicated.",
+      "lookback_window": {
+        "title": "Lookback window",
+        "description": "Any data between sync time and sync time minus lookback window setting in minutes will be replicated (in minutes).",
         "examples": [
           60
         ],
