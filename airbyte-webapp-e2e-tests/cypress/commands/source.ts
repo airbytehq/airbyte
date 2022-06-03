@@ -1,4 +1,6 @@
-Cypress.Commands.add("fillPgSourceForm", (name) => {
+import { deleteEntity, openNewSourceForm, openSettingForm, openSourcePage, submitButtonClick, updateField } from "./common";
+
+export const fillPgSourceForm = (name: string) => {
   cy.intercept("/api/v1/source_definition_specifications/get").as(
     "getSourceSpecifications"
   );
@@ -16,39 +18,39 @@ Cypress.Commands.add("fillPgSourceForm", (name) => {
   cy.get("input[name='connectionConfiguration.password']").type(
     "secret_password"
   );
-});
+};
 
-Cypress.Commands.add("createTestSource", (name) => {
+export const createTestSource = (name: string) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as(
     "checkSourceUpdateConnection"
   );
   cy.intercept("/api/v1/sources/create").as("createSource");
 
-  cy.openNewSourceForm();
-  cy.fillPgSourceForm(name);
-  cy.submitButtonClick();
+  openNewSourceForm();
+  fillPgSourceForm(name);
+  submitButtonClick();
 
   cy.wait("@checkSourceUpdateConnection");
   cy.wait("@createSource");
-});
+};
 
-Cypress.Commands.add("updateSource", (name, field, value) => {
+export const updateSource = (name: string, field: string, value: string) => {
   cy.intercept("/api/v1/sources/check_connection_for_update").as(
     "checkSourceConnection"
   );
   cy.intercept("/api/v1/sources/update").as("updateSource");
 
-  cy.openSourcePage();
-  cy.openSettingForm(name);
-  cy.updateField(field, value);
-  cy.submitButtonClick();
+  openSourcePage();
+  openSettingForm(name);
+  updateField(field, value);
+  submitButtonClick();
 
   cy.wait("@checkSourceConnection");
   cy.wait("@updateSource");
-});
+}
 
-Cypress.Commands.add("deleteSource", (name) => {
-  cy.openSourcePage();
-  cy.openSettingForm(name);
-  cy.deleteEntity();
-});
+export const deleteSource = (name: string) => {
+  openSourcePage();
+  openSettingForm(name);
+  deleteEntity();
+}
