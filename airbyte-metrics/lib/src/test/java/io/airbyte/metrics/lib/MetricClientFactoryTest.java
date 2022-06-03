@@ -27,10 +27,10 @@ public class MetricClientFactoryTest {
   }
 
   @Test
-  @DisplayName("Should not throw error if MetricClientFactory creates a metric client;")
+  @DisplayName("Should not throw error if MetricClientFactory creates a metric client on the first call;")
   public void testMetricClientFactoryCreateSuccess() {
     Assertions.assertDoesNotThrow(() -> {
-      MetricClientFactory.createMetricClient(MetricEmittingApps.METRICS_REPORTER);
+      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
     });
   }
 
@@ -38,8 +38,8 @@ public class MetricClientFactoryTest {
   @DisplayName("Should throw error if MetricClientFactory create a metric client multiple times;")
   public void testMetricClientFactoryCreateMultipleTimesThrows() {
     Assertions.assertThrows(RuntimeException.class, () -> {
-      MetricClientFactory.createMetricClient(MetricEmittingApps.METRICS_REPORTER);
-      MetricClientFactory.createMetricClient(MetricEmittingApps.METRICS_REPORTER);
+      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
+      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
     });
   }
 

@@ -34,8 +34,8 @@ public class MetricClientFactory {
     if (metricClient != null) {
       return metricClient;
     }
-    LOGGER.info(
-        "MetricClient has not been initialized. Must call MetricClientFactory.CreateMetricClient before using MetricClient. Using a dummy client for now");
+    LOGGER.warn(
+        "MetricClient has not been initialized. Must call MetricClientFactory.CreateMetricClient before using MetricClient. Using a dummy client for now. Ignore this if Airbyte is configured to not publish any metrics.");
 
     return new NotImplementedMetricClient();
   }
@@ -46,7 +46,7 @@ public class MetricClientFactory {
    *
    * @param metricEmittingApp the name of the app which the metric will be running under.
    */
-  public static synchronized void createMetricClient(MetricEmittingApp metricEmittingApp) {
+  public static synchronized void initialize(MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
@@ -64,6 +64,9 @@ public class MetricClientFactory {
   }
 
   static void flush() {
+    if (metricClient != null) {
+      metricClient.shutdown();
+    }
     metricClient = null;
   }
 

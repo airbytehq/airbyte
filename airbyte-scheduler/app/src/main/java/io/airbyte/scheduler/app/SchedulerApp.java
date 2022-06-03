@@ -287,7 +287,7 @@ public class SchedulerApp {
           TrackingClientSingleton.get());
       final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
-      MetricClientFactory.createMetricClient(MetricEmittingApps.SCHEDULER);
+      MetricClientFactory.initialize(MetricEmittingApps.SCHEDULER);
 
       LOGGER.info("Launching scheduler...");
       new SchedulerApp(

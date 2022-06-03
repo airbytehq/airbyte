@@ -39,4 +39,9 @@ public interface MetricClient {
    */
   void distribution(MetricsRegistry metric, double val, final String... tags);
 
+  /*
+   * Reset initialization. Can be used in a unit test to reset metric client state.
+   */
+  void shutdown();
+
 }

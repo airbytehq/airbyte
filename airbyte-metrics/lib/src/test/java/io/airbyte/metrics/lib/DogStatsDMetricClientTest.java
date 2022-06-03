@@ -22,7 +22,7 @@ public class DogStatsDMetricClientTest {
 
   @AfterEach
   void tearDown() {
-    dogStatsDMetricClient.flush();
+    dogStatsDMetricClient.shutdown();
   }
 
   @Test

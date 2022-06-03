@@ -26,4 +26,9 @@ public class NotImplementedMetricClient implements MetricClient {
     // Not Implemented.
   }
 
+  @Override
+  public void shutdown() {
+    // Not Implemented.
+  }
+
 }

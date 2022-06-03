@@ -354,7 +354,7 @@ public class WorkerApp {
   }
 
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
-    MetricClientFactory.createMetricClient(MetricEmittingApps.WORKER);
+    MetricClientFactory.initialize(MetricEmittingApps.WORKER);
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);

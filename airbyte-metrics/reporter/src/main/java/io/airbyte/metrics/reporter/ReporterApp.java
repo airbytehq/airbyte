@@ -32,7 +32,7 @@ public class ReporterApp {
   public static void main(final String[] args) throws DatabaseCheckException {
     final Configs configs = new EnvConfigs();
 
-    MetricClientFactory.createMetricClient(MetricEmittingApps.METRICS_REPORTER);
+    MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
 
     final DataSource dataSource = DataSourceFactory.create(
         configs.getConfigDatabaseUser(),

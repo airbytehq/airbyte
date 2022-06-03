@@ -30,6 +30,7 @@ public class DogStatsDMetricClient implements MetricClient {
    * Traditional singleton initialize call. Please invoke this before using any methods in this class.
    * Usually called in the main class of the application attempting to publish metrics.
    */
+
   public void initialize(final MetricEmittingApp app, final DatadogClientConfiguration config) {
     if (statsDClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
@@ -50,7 +51,8 @@ public class DogStatsDMetricClient implements MetricClient {
   }
 
   @VisibleForTesting
-  public synchronized void flush() {
+  @Override
+  public synchronized void shutdown() {
     statsDClient = null;
     instancePublish = false;
   }
