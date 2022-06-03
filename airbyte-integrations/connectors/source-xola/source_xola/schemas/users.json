@@ -4,13 +4,31 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "user_id": {
+  	"order_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "createdAt": {
+    "waiver_createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "waiver_updatedAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order_createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order_updatedAt": {
       "type": [
         "null",
         "string"
@@ -34,13 +52,13 @@
         "string"
       ]
     },
-    "updatedAt": {
+     "dateOfBirth": {
       "type": [
         "null",
         "string"
       ]
     },
-    "dateOfBirth": {
+    "user_id": {
       "type": [
         "null",
         "string"

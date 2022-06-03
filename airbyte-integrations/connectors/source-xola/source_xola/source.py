@@ -106,6 +106,8 @@ class IncrementalXolaStream(XolaStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
+        print(self.cursor_field)
+        print(latest_record)
         latest_record_date = latest_record[self.cursor_field]
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
@@ -202,8 +204,8 @@ class Orders(IncrementalXolaStream):
         return modified_response
 
 class Users(IncrementalXolaStream):
-    primary_key = "user_id"
-    cursor_field = "updatedAt"
+    primary_key = "id"
+    cursor_field = "order_updatedAt"
     seller_id = None
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
@@ -250,12 +252,15 @@ class Users(IncrementalXolaStream):
                 
                 user_resp = {}
                 
+                if "id" in data.keys(): user_resp["order_id"] = data["id"]
+                if "createdAt" in data.keys(): user_resp["waiver_createdAt"] = data["createdAt"]
+                if "updatedAt" in data.keys(): user_resp["waiver_updatedAt"] = data["updatedAt"]
                 if "createdAt" in data.keys(): user_resp["order_createdAt"] = data["createdAt"]
+                if "updatedAt" in data.keys(): user_resp["order_updatedAt"] = data["updatedAt"]
                 if "customerName" in data.keys(): user_resp["customerName"] = data["customerName"]
-                if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
                 if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
                 if "phone" in data.keys(): user_resp["phone"] = data["phone"]
-                if "updatedAt" in data.keys(): user_resp["updatedAt"] = data["updatedAt"]
+                if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
                 
                 user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
                 
@@ -265,19 +270,23 @@ class Users(IncrementalXolaStream):
                         if "participants" in waiver.keys():   
                             for participant in waiver["participants"]:
                                 resp = {}
-                                if "createdAt" in waiver.keys(): resp["order_createdAt"] = waiver["createdAt"]
+                                
+                                if "id" in data.keys(): resp["order_id"] = data["id"]
+                                if "createdAt" in waiver.keys(): resp["waiver_createdAt"] = waiver["createdAt"]
+                                if "updatedAt" in waiver.keys(): resp["waiver_updatedAt"] = waiver["updatedAt"]
+                                if "updatedAt" in waiver.keys(): resp["order_updatedAt"] = data["updatedAt"]
+                                if "createdAt" in waiver.keys(): resp["order_createdAt"] = data["createdAt"]
                                 if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
-                                if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
-                                resp["customerEmail"] = participant["customerEmail"] if "customerEmail" in participant.keys() and participant["customerEmail"] is not None else waiver["customerEmail"]
+                                resp["customerEmail"] = participant["customerEmail"] if "customerEmail" in participant.keys() and participant["customerEmail"] else waiver["customerEmail"]
                                 if "phone" in participant.keys(): resp["phone"] = participant["phone"]
-                                if "updatedAt" in waiver.keys(): resp["updatedAt"] = waiver["updatedAt"]
-        
+                                if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
+                                
                                 resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
 
                                 if (resp["customerEmail"], resp["customerName"]) == (user_resp["customerEmail"], user_resp["customerName"]):
                                     if organiserAdded == False:
                                         organiserAdded = True
-                                        if resp["user_id"].empty(): resp["user_id"] = user_resp["user_id"] 
+                                        if resp["user_id"].empty(): resp["user_id"] = user_resp["user_id"]
                                         modified_response.append(resp)
                                 else:
                                     modified_response.append(resp)
