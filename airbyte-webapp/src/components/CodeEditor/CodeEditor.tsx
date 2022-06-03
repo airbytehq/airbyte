@@ -7,6 +7,7 @@ import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism.css";
 
 import { LoadingButton } from "components";
+
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 
 const ErrorText = styled.div`
@@ -73,7 +74,7 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
         openConfirmationModal({
           text: modalTextKey ?? "",
           title: modalTitleKey ?? "",
-          submitButtonText: "form.save",
+          submitButtonText: "form.saveChange",
           onSubmit: async () => {
             const updateResponse = await onSave(code);
             if (updateResponse) setValidation(updateResponse);

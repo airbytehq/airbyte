@@ -7,7 +7,6 @@ import CodeEditor, { ValidatorFeedback } from "components/CodeEditor/CodeEditor"
 import ContentCard from "components/ContentCard";
 
 import { ConnectionState, ConnectionStateObject } from "core/request/AirbyteClient";
-
 import { useGetConnectionState, useUpdateConnectionState } from "hooks/services/useConnectionHook";
 
 interface StateBlockProps {
