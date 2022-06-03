@@ -782,6 +782,10 @@ module.exports = {
               },
               {
                 type: 'doc',
+                id: "integrations/destinations/aws-datalake",
+              },
+              {
+                type: 'doc',
                 id: "integrations/destinations/azureblobstorage",
               },
               {
