@@ -1,10 +1,12 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import Label from "components/Label";
-import LabeledToggle from "components/LabeledToggle";
+import { LabeledSwitch } from "components/LabeledSwitch";
+
 import { useConfig } from "config";
+
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {
@@ -67,19 +69,16 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
         />
       </Text>
       <FormItem>
-        <LabeledToggle
+        <LabeledSwitch
           checked={anonymousDataCollection}
           disabled={isLoading}
           label={<FormattedMessage id="preferences.anonymizeData" />}
           onChange={(event) => {
             onChange({ anonymousDataCollection: event.target.checked });
           }}
+          loading={isLoading}
         />
-        <FeedbackBlock
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          isLoading={isLoading}
-        />
+        <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isLoading} />
       </FormItem>
     </>
   );

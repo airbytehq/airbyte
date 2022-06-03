@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -18,5 +18,13 @@ public interface SecretsHydrator {
    * @return full config with secrets
    */
   JsonNode hydrate(JsonNode partialConfig);
+
+  /**
+   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store
+   *
+   * @param secretCoordinate The co-ordinate of the secret in the store in JSON format
+   * @return original secret value
+   */
+  JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinate);
 
 }

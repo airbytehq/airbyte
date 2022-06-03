@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -23,7 +24,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
-  public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -72,6 +74,10 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
         .put("schema", schema);
+
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));
+    }
 
     return Jsons.jsonNode(configBuilder.build());
   }

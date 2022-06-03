@@ -2,14 +2,16 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
-import VideoItem from "./VideoItem";
 import { BigButton } from "components/CenteredPageComponents";
+
 import { useConfig } from "config";
 
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
+import VideoItem from "./VideoItem";
+
 type WelcomeStepProps = {
-  onSubmit: () => void;
+  onNextStep: () => void;
   userName?: string;
 };
 
@@ -23,7 +25,7 @@ const Videos = styled.div`
   margin: 20px 0 67px;
 `;
 
-const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
+const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
   const config = useConfig();
 
   return (
@@ -66,7 +68,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
           link={config.ui.demoLink}
         />
       </Videos>
-      <BigButton onClick={onSubmit} shadow>
+      <BigButton onClick={onNextStep} shadow>
         <FormattedMessage id="onboarding.firstConnection" />
       </BigButton>
     </>

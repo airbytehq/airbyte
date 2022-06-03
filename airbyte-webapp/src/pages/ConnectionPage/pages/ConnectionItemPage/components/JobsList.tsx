@@ -1,22 +1,26 @@
 import React, { useMemo } from "react";
 
-import JobItem from "components/JobItem";
-import { JobListItem } from "core/domain/job/Job";
+import { JobItem } from "components/JobItem/JobItem";
 
-type IProps = {
-  jobs: JobListItem[];
+import { JobWithAttemptsRead } from "../../../../../core/request/AirbyteClient";
+
+type JobsListProps = {
+  jobs: JobWithAttemptsRead[];
 };
 
-const JobsList: React.FC<IProps> = ({ jobs }) => {
-  const sortJobs = useMemo(
-    () => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
+export type JobsWithJobs = JobWithAttemptsRead & { job: Exclude<JobWithAttemptsRead["job"], undefined> };
+
+const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
+  const sortJobs: JobsWithJobs[] = useMemo(
+    () =>
+      jobs.filter((job): job is JobsWithJobs => !!job.job).sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
     [jobs]
   );
 
   return (
     <div>
-      {sortJobs.map((item) => (
-        <JobItem key={item.job.id} job={item} />
+      {sortJobs.map((job) => (
+        <JobItem key={job.job.id} job={job} />
       ))}
     </div>
   );

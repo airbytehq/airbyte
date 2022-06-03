@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -15,20 +15,20 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.AirbyteCatalog;
-import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSchedule;
-import io.airbyte.api.model.ConnectionSearch;
-import io.airbyte.api.model.ConnectionStatus;
-import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.DestinationSearch;
-import io.airbyte.api.model.NamespaceDefinitionType;
-import io.airbyte.api.model.ResourceRequirements;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SyncMode;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.ConnectionCreate;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.ConnectionSchedule;
+import io.airbyte.api.model.generated.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.ConnectionUpdate;
+import io.airbyte.api.model.generated.DestinationSearch;
+import io.airbyte.api.model.generated.NamespaceDefinitionType;
+import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -51,6 +51,7 @@ import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
@@ -210,7 +211,7 @@ class ConnectionsHandlerTest {
           .status(ConnectionStatus.ACTIVE)
           .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
           .syncCatalog(catalog)
-          .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+          .resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
               .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
               .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
               .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
@@ -312,13 +313,15 @@ class ConnectionsHandlerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testUpdateConnection(boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
+    void testUpdateConnection(final boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
       when(featureFlags.usesNewScheduler())
           .thenReturn(useNewScheduler);
 
       final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
       catalog.getStreams().get(0).getStream().setName("azkaban_users");
       catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
+
+      final UUID newSourceCatalogId = UUID.randomUUID();
 
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
@@ -334,7 +337,8 @@ class ConnectionsHandlerTest {
               .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
               .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
               .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit())
-              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()));
+              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()))
+          .sourceCatalogId(newSourceCatalogId);
 
       final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
       configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
@@ -351,7 +355,8 @@ class ConnectionsHandlerTest {
           .withStatus(StandardSync.Status.INACTIVE)
           .withCatalog(configuredCatalog)
           .withManual(true)
-          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
+          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
+          .withSourceCatalogId(newSourceCatalogId);
 
       when(configRepository.getStandardSync(standardSync.getConnectionId()))
           .thenReturn(standardSync)
@@ -417,8 +422,8 @@ class ConnectionsHandlerTest {
       final ConnectionReadList actualConnectionReadListWithDeleted = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody, true);
       final List<ConnectionRead> connections = actualConnectionReadListWithDeleted.getConnections();
       assertEquals(2, connections.size());
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), connections.get(0));
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSyncDeleted), connections.get(1));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSync), connections.get(0));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSyncDeleted), connections.get(1));
 
     }
 
@@ -632,7 +637,7 @@ class ConnectionsHandlerTest {
           .status(ConnectionStatus.ACTIVE)
           .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
           .syncCatalog(catalog)
-          .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+          .resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
               .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
               .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
               .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
@@ -649,8 +654,8 @@ class ConnectionsHandlerTest {
       assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, SyncMode.class));
       assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
       assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
-      assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
-      assertTrue(Enums.isCompatible(DataType.class, io.airbyte.api.model.DataType.class));
+      assertTrue(Enums.isCompatible(io.airbyte.api.model.generated.DataType.class, DataType.class));
+      assertTrue(Enums.isCompatible(DataType.class, io.airbyte.api.model.generated.DataType.class));
       assertTrue(Enums.isCompatible(NamespaceDefinitionType.class, io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.class));
     }
 

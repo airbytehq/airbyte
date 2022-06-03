@@ -2,11 +2,12 @@ import React from "react";
 import styled from "styled-components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { ScheduleProperties } from "core/resources/Connection";
 import { equal } from "utils/objects";
 
+import { ConnectionSchedule } from "../../../core/request/AirbyteClient";
+
 type IProps = {
-  value: ScheduleProperties;
+  value: ConnectionSchedule;
   enabled?: boolean;
 };
 

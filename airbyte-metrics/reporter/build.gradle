@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation libs.flyway.core
+
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:lib')
@@ -25,6 +27,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("metrics-reporter",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("metrics-reporter", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

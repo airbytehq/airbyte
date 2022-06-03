@@ -1,5 +1,6 @@
-import { RoutePaths } from "pages/routes";
 import { Navigate } from "react-router-dom";
+
+import { RoutePaths } from "../../../pages/routePaths";
 import { CloudRoutes } from "../cloudRoutes";
 import { useListCloudWorkspaces } from "../services/workspaces/WorkspacesService";
 

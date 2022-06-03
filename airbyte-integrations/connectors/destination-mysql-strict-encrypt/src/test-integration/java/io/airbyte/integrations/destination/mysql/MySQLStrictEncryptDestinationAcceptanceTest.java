@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -10,7 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -99,22 +101,23 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
+        db.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+        SQLDialect.MYSQL);
+    return new Database(dslContext).query(
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -159,18 +162,18 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void executeQuery(final String query) {
-    try {
-      Databases.createDatabase(
-          "root",
-          "test",
-          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
-              ctx -> ctx
-                  .execute(query));
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        db.getUsername(),
+        db.getPassword(),
+        db.getDriverClassName(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()),
+        SQLDialect.MYSQL)) {
+      new Database(dslContext).query(
+          ctx -> ctx
+              .execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

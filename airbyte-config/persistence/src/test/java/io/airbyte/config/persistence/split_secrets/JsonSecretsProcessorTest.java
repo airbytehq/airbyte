@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -14,196 +14,234 @@ import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class JsonSecretsProcessorTest {
+@SuppressWarnings({"PMD.CloseResource", "PMD.UseProperClassLoader", "PMD.JUnitTestsShouldIncludeAssert"})
+class JsonSecretsProcessorTest {
 
   private static final JsonNode SCHEMA_ONE_LAYER = Jsons.deserialize(
-      "{\n"
-          + "  \"properties\": {\n"
-          + "    \"secret1\": {\n"
-          + "      \"type\": \"string\",\n"
-          + "      \"airbyte_secret\": true\n"
-          + "    },\n"
-          + "    \"secret2\": {\n"
-          + "      \"type\": \"string\",\n"
-          + "      \"airbyte_secret\": \"true\"\n"
-          + "    },\n"
-          + "    \"field1\": {\n"
-          + "      \"type\": \"string\"\n"
-          + "    },\n"
-          + "    \"field2\": {\n"
-          + "      \"type\": \"number\"\n"
-          + "    }\n"
-          + "  }\n"
-          + "}\n");
+      """
+      {
+        "type": "object",  "properties": {
+          "secret1": {
+            "type": "string",
+            "airbyte_secret": true
+          },
+          "secret2": {
+            "type": "string",
+            "airbyte_secret": "true"
+          },
+          "field1": {
+            "type": "string"
+          },
+          "field2": {
+            "type": "number"
+          }
+        }
+      }
+      """);
 
   private static final JsonNode SCHEMA_INNER_OBJECT = Jsons.deserialize(
-      "{\n"
-          + "    \"type\": \"object\",\n"
-          + "    \"properties\": {\n"
-          + "      \"warehouse\": {\n"
-          + "        \"type\": \"string\"\n"
-          + "      },\n"
-          + "      \"loading_method\": {\n"
-          + "        \"type\": \"object\",\n"
-          + "        \"oneOf\": [\n"
-          + "          {\n"
-          + "            \"properties\": {}\n"
-          + "          },\n"
-          + "          {\n"
-          + "            \"properties\": {\n"
-          + "              \"s3_bucket_name\": {\n"
-          + "                \"type\": \"string\"\n"
-          + "              },\n"
-          + "              \"secret_access_key\": {\n"
-          + "                \"type\": \"string\",\n"
-          + "                \"airbyte_secret\": true\n"
-          + "              }\n"
-          + "            }\n"
-          + "          }\n"
-          + "        ]\n"
-          + "      }\n"
-          + "    }\n"
-          + "  }");
+      """
+      {
+          "type": "object",
+          "properties": {
+            "warehouse": {
+              "type": "string"
+            },
+            "loading_method": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "properties": {}
+                },
+                {
+                  "properties": {
+                    "s3_bucket_name": {
+                      "type": "string"
+                    },
+                    "secret_access_key": {
+                      "type": "string",
+                      "airbyte_secret": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }""");
 
   private static final JsonNode ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS = Jsons.deserialize(
-      "{\n"
-          + "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
-          + "    \"title\": \"S3 Destination Spec\",\n"
-          + "    \"type\": \"object\",\n"
-          + "    \"required\": [\n"
-          + "      \"client_id\",\n"
-          + "      \"format\"\n"
-          + "    ],\n"
-          + "    \"additionalProperties\": false,\n"
-          + "    \"properties\": {\n"
-          + "      \"client_id\": {\n"
-          + "        \"title\": \"client it\",\n"
-          + "        \"type\": \"string\",\n"
-          + "        \"default\": \"\"\n"
-          + "      },\n"
-          + "      \"format\": {\n"
-          + "        \"title\": \"Output Format\",\n"
-          + "        \"type\": \"object\",\n"
-          + "        \"description\": \"Output data format\",\n"
-          + "        \"oneOf\": [\n"
-          + "          {\n"
-          + "            \"title\": \"Avro: Apache Avro\",\n"
-          + "            \"required\": [\"format_type\", \"compression_codec\"],\n"
-          + "            \"properties\": {\n"
-          + "              \"format_type\": {\n"
-          + "                \"type\": \"string\",\n"
-          + "                \"enum\": [\"Avro\"],\n"
-          + "                \"default\": \"Avro\"\n"
-          + "              },\n"
-          + "              \"compression_codec\": {\n"
-          + "                \"title\": \"Compression Codec\",\n"
-          + "                \"description\": \"The compression algorithm used to compress data. Default to no compression.\",\n"
-          + "                \"type\": \"object\",\n"
-          + "                \"oneOf\": [\n"
-          + "                  {\n"
-          + "                    \"title\": \"no compression\",\n"
-          + "                    \"required\": [\"codec\"],\n"
-          + "                    \"properties\": {\n"
-          + "                      \"codec\": {\n"
-          + "                        \"type\": \"string\",\n"
-          + "                        \"enum\": [\"no compression\"],\n"
-          + "                        \"default\": \"no compression\"\n"
-          + "                      }\n"
-          + "                    }\n"
-          + "                  },\n"
-          + "                  {\n"
-          + "                    \"title\": \"Deflate\",\n"
-          + "                    \"required\": [\"codec\", \"compression_level\"],\n"
-          + "                    \"properties\": {\n"
-          + "                      \"codec\": {\n"
-          + "                        \"type\": \"string\",\n"
-          + "                        \"enum\": [\"Deflate\"],\n"
-          + "                        \"default\": \"Deflate\"\n"
-          + "                      },\n"
-          + "                      \"compression_level\": {\n"
-          + "                        \"type\": \"integer\",\n"
-          + "                        \"default\": 0,\n"
-          + "                        \"minimum\": 0,\n"
-          + "                        \"maximum\": 9\n"
-          + "                      }\n"
-          + "                    }\n"
-          + "                  }\n"
-          + "                ]\n"
-          + "              }\n"
-          + "            }\n"
-          + "          },\n"
-          + "          {\n"
-          + "            \"title\": \"Parquet: Columnar Storage\",\n"
-          + "            \"required\": [\"format_type\"],\n"
-          + "            \"properties\": {\n"
-          + "              \"format_type\": {\n"
-          + "                \"type\": \"string\",\n"
-          + "                \"enum\": [\"Parquet\"],\n"
-          + "                \"default\": \"Parquet\"\n"
-          + "              },\n"
-          + "              \"compression_codec\": {\n"
-          + "                \"type\": \"string\",\n"
-          + "                \"enum\": [\n"
-          + "                  \"UNCOMPRESSED\",\n"
-          + "                  \"GZIP\"\n"
-          + "                ],\n"
-          + "                \"default\": \"UNCOMPRESSED\"\n"
-          + "              }\n"
-          + "            }\n"
-          + "          }\n"
-          + "        ]\n"
-          + "      }\n"
-          + "    }\n"
-          + "  }");
+      """
+      {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "S3 Destination Spec",
+          "type": "object",
+          "required": [
+            "client_id",
+            "format"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "client_id": {
+              "title": "client it",
+              "type": "string",
+              "default": ""
+            },
+            "format": {
+              "title": "Output Format",
+              "type": "object",
+              "description": "Output data format",
+              "oneOf": [
+                {
+                  "title": "Avro: Apache Avro",
+                  "required": ["format_type", "compression_codec"],
+                  "properties": {
+                    "format_type": {
+                      "type": "string",
+                      "enum": ["Avro"],
+                      "default": "Avro"
+                    },
+                    "compression_codec": {
+                      "title": "Compression Codec",
+                      "description": "The compression algorithm used to compress data. Default to no compression.",
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "title": "no compression",
+                          "required": ["codec"],
+                          "properties": {
+                            "codec": {
+                              "type": "string",
+                              "enum": ["no compression"],
+                              "default": "no compression"
+                            }
+                          }
+                        },
+                        {
+                          "title": "Deflate",
+                          "required": ["codec", "compression_level"],
+                          "properties": {
+                            "codec": {
+                              "type": "string",
+                              "enum": ["Deflate"],
+                              "default": "Deflate"
+                            },
+                            "compression_level": {
+                              "type": "integer",
+                              "default": 0,
+                              "minimum": 0,
+                              "maximum": 9
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "title": "Parquet: Columnar Storage",
+                  "required": ["format_type"],
+                  "properties": {
+                    "format_type": {
+                      "type": "string",
+                      "enum": ["Parquet"],
+                      "default": "Parquet"
+                    },
+                    "compression_codec": {
+                      "type": "string",
+                      "enum": [
+                        "UNCOMPRESSED",
+                        "GZIP"
+                      ],
+                      "default": "UNCOMPRESSED"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }""");
 
-  JsonSecretsProcessor processor = new JsonSecretsProcessor();
+  private static final String FIELD_1 = "field1";
+  private static final String VALUE_1 = "value1";
+  private static final String FIELD_2 = "field2";
+  private static final String ADDITIONAL_FIELD = "additional_field";
+  private static final String DONT_COPY_ME = "dont_copy_me";
+  private static final String DONT_TELL_ANYONE = "donttellanyone";
+  private static final String SECRET_1 = "secret1";
+  private static final String SECRET_2 = "secret2";
+  private static final String NAME = "name";
+  private static final String S3_BUCKET_NAME = "s3_bucket_name";
+  private static final String SECRET_ACCESS_KEY = "secret_access_key";
+  private static final String HOUSE = "house";
+  private static final String WAREHOUSE = "warehouse";
+  private static final String LOADING_METHOD = "loading_method";
+  private static final String ARRAY = "array";
+  private static final String ARRAY_OF_ONEOF = "array_of_oneof";
+  private static final String NESTED_OBJECT = "nested_object";
+  private static final String NESTED_ONEOF = "nested_oneof";
+  private static final String ONE_OF = "oneof";
+  private static final String OPTIONAL_PASSWORD = "optional_password";
+  private static final String POSTGRES_SSH_KEY = "postgres_ssh_key";
+  private static final String SIMPLE = "simple";
+
+  private JsonSecretsProcessor processor;
+
+  @BeforeEach
+  public void setup() {
+    processor = JsonSecretsProcessor.builder()
+        .copySecrets(true)
+        .maskSecrets(true)
+        .build();
+  }
 
   @Test
-  public void testCopySecrets() {
+  void testCopySecrets() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("additional_field", "dont_copy_me")
-        .put("secret1", "donttellanyone")
-        .put("secret2", "updateme")
+        .put(FIELD_1, VALUE_1)
+        .put(FIELD_2, 2)
+        .put(ADDITIONAL_FIELD, DONT_COPY_ME)
+        .put(SECRET_1, DONT_TELL_ANYONE)
+        .put(SECRET_2, "updateme")
         .build());
 
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
-        .put("secret2", "newvalue")
+        .put(FIELD_1, VALUE_1)
+        .put(FIELD_2, 2)
+        .put(SECRET_1, JsonSecretsProcessor.SECRETS_MASK)
+        .put(SECRET_2, "newvalue")
         .build());
 
     final JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
 
     final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("secret1", "donttellanyone")
-        .put("secret2", "newvalue")
+        .put(FIELD_1, VALUE_1)
+        .put(FIELD_2, 2)
+        .put(SECRET_1, DONT_TELL_ANYONE)
+        .put(SECRET_2, "newvalue")
         .build());
 
     assertEquals(expected, actual);
   }
 
   @Test
-  public void testCopySecretsNotInSrc() {
+  void testCopySecretsNotInSrc() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("additional_field", "dont_copy_me")
+        .put(FIELD_1, VALUE_1)
+        .put(FIELD_2, 2)
+        .put(ADDITIONAL_FIELD, DONT_COPY_ME)
         .build());
 
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
-        .put("field1", "value1")
-        .put("field2", 2)
-        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
+        .put(FIELD_1, VALUE_1)
+        .put(FIELD_2, 2)
+        .put(SECRET_1, JsonSecretsProcessor.SECRETS_MASK)
         .build());
 
     final JsonNode expected = dst.deepCopy();
@@ -213,48 +251,48 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecretInnerObject() {
+  void testCopySecretInnerObject() {
     final JsonNode srcOneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", "secret")
-        .put("additional_field", "dont_copy_me")
+        .put(S3_BUCKET_NAME, NAME)
+        .put(SECRET_ACCESS_KEY, "secret")
+        .put(ADDITIONAL_FIELD, DONT_COPY_ME)
         .build());
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
+        .put(WAREHOUSE, HOUSE)
         .put("loading_method", srcOneOf).build());
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .put(S3_BUCKET_NAME, NAME)
+        .put(SECRET_ACCESS_KEY, JsonSecretsProcessor.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
-        .put("loading_method", dstOneOf).build());
+        .put(WAREHOUSE, HOUSE)
+        .put(LOADING_METHOD, dstOneOf).build());
 
     final JsonNode actual = processor.copySecrets(src, dst, SCHEMA_INNER_OBJECT);
 
     final JsonNode expectedOneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", "secret").build());
+        .put(S3_BUCKET_NAME, NAME)
+        .put(SECRET_ACCESS_KEY, "secret").build());
     final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
-        .put("loading_method", expectedOneOf).build());
+        .put(WAREHOUSE, HOUSE)
+        .put(LOADING_METHOD, expectedOneOf).build());
 
     assertEquals(expected, actual);
   }
 
   @Test
-  public void testCopySecretNotInSrcInnerObject() {
+  void testCopySecretNotInSrcInnerObject() {
     final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house").build());
+        .put(WAREHOUSE, HOUSE).build());
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
-        .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .put(S3_BUCKET_NAME, NAME)
+        .put(SECRET_ACCESS_KEY, JsonSecretsProcessor.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
-        .put("warehouse", "house")
-        .put("loading_method", dstOneOf).build());
+        .put(WAREHOUSE, HOUSE)
+        .put(LOADING_METHOD, dstOneOf).build());
 
     final JsonNode actual = processor.copySecrets(src, dst, SCHEMA_INNER_OBJECT);
     final JsonNode expected = dst.deepCopy();
@@ -281,27 +319,28 @@ public class JsonSecretsProcessorTest {
         "client_id", "whatever",
         "format", parquetConfig));
 
-    final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+    processor.copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
   private static Stream<Arguments> scenarioProvider() {
     return Stream.of(
-        Arguments.of("array", true),
-        Arguments.of("array", false),
-        Arguments.of("array_of_oneof", true),
-        Arguments.of("array_of_oneof", false),
-        Arguments.of("nested_object", true),
-        Arguments.of("nested_object", false),
-        Arguments.of("nested_oneof", true),
-        Arguments.of("nested_oneof", false),
-        Arguments.of("oneof", true),
-        Arguments.of("oneof", false),
-        Arguments.of("optional_password", true),
-        Arguments.of("optional_password", false),
-        Arguments.of("postgres_ssh_key", true),
-        Arguments.of("postgres_ssh_key", false),
-        Arguments.of("simple", true),
-        Arguments.of("simple", false));
+        Arguments.of(ARRAY, true),
+        Arguments.of(ARRAY, false),
+        Arguments.of(ARRAY_OF_ONEOF, true),
+        Arguments.of(ARRAY_OF_ONEOF, false),
+        Arguments.of(NESTED_OBJECT, true),
+        Arguments.of(NESTED_OBJECT, false),
+        Arguments.of(NESTED_ONEOF, true),
+        Arguments.of(NESTED_ONEOF, false),
+        Arguments.of(ONE_OF, true),
+        Arguments.of(ONE_OF, false),
+        Arguments.of(OPTIONAL_PASSWORD, true),
+        Arguments.of(OPTIONAL_PASSWORD, false),
+        Arguments.of(POSTGRES_SSH_KEY, true),
+        Arguments.of(POSTGRES_SSH_KEY, false),
+        Arguments.of(SIMPLE, true),
+        Arguments.of(SIMPLE, false),
+        Arguments.of("enum", false));
   }
 
   @ParameterizedTest
@@ -320,13 +359,41 @@ public class JsonSecretsProcessorTest {
     final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
     final JsonNode expected = objectMapper.readTree(expectedIs);
 
-    final JsonNode actual = processor.maskSecrets(input, specs);
-
+    final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
     assertEquals(expected, actual);
   }
 
+  // todo (cgardens) - example of a case that is not properly handled. we should explicitly call out
+  // that this type of jsonschema object is not allowed to do secrets.
+  // private static Stream<Arguments> scenarioProvider2() {
+  // return Stream.of(
+  // Arguments.of("array2", true),
+  // Arguments.of("array2", false));
+  // }
+  //
+  // @ParameterizedTest
+  // @MethodSource("scenarioProvider2")
+  // void testSecretScenario2(final String folder, final boolean partial) throws IOException {
+  // final ObjectMapper objectMapper = new ObjectMapper();
+  //
+  // final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder +
+  // "/spec.json");
+  // final JsonNode specs = objectMapper.readTree(specIs);
+  //
+  // final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+  // final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+  // final JsonNode input = objectMapper.readTree(inputIs);
+  //
+  // final String expectedFilePath = folder + "/expected.json";
+  // final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+  // final JsonNode expected = objectMapper.readTree(expectedIs);
+  //
+  // final JsonNode actual = Secrets.maskAllSecrets(input, specs);
+  // assertEquals(expected, actual);
+  // }
+
   @Test
-  public void copiesSecrets_inNestedNonCombinationNode() throws JsonProcessingException {
+  void copiesSecretsInNestedNonCombinationNode() throws JsonProcessingException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     final JsonNode source = objectMapper.readTree(
@@ -377,7 +444,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void doesNotCopySecrets_inNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
+  void doesNotCopySecretsInNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
     final JsonNode source = objectMapper.readTree(
@@ -423,6 +490,90 @@ public class JsonSecretsProcessorTest {
         }
         """);
     assertEquals(expected, copied);
+  }
+
+  @Nested
+  class NoOpTest {
+
+    @BeforeEach
+    public void setup() {
+      processor = JsonSecretsProcessor.builder()
+          .copySecrets(false)
+          .maskSecrets(false)
+          .build();
+    }
+
+    @Test
+    void testCopySecrets() {
+      final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
+          .put(FIELD_1, VALUE_1)
+          .put(FIELD_2, 2)
+          .put(ADDITIONAL_FIELD, DONT_COPY_ME)
+          .put(SECRET_1, DONT_TELL_ANYONE)
+          .put(SECRET_2, "updateme")
+          .build());
+
+      final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
+          .put(FIELD_1, VALUE_1)
+          .put(FIELD_2, 2)
+          .put(SECRET_1, JsonSecretsProcessor.SECRETS_MASK)
+          .put(SECRET_2, "newvalue")
+          .build());
+
+      final JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
+
+      final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+          .put(FIELD_1, VALUE_1)
+          .put(FIELD_2, 2)
+          .put(ADDITIONAL_FIELD, DONT_COPY_ME)
+          .put(SECRET_1, DONT_TELL_ANYONE)
+          .put(SECRET_2, "updateme")
+          .build());
+
+      assertEquals(expected, actual);
+    }
+
+    private static Stream<Arguments> scenarioProvider() {
+      return Stream.of(
+          Arguments.of(ARRAY, true),
+          Arguments.of(ARRAY, false),
+          Arguments.of(ARRAY_OF_ONEOF, true),
+          Arguments.of(ARRAY_OF_ONEOF, false),
+          Arguments.of(NESTED_OBJECT, true),
+          Arguments.of(NESTED_OBJECT, false),
+          Arguments.of(NESTED_ONEOF, true),
+          Arguments.of(NESTED_ONEOF, false),
+          Arguments.of(ONE_OF, true),
+          Arguments.of(ONE_OF, false),
+          Arguments.of(OPTIONAL_PASSWORD, true),
+          Arguments.of(OPTIONAL_PASSWORD, false),
+          Arguments.of(POSTGRES_SSH_KEY, true),
+          Arguments.of(POSTGRES_SSH_KEY, false),
+          Arguments.of(SIMPLE, true),
+          Arguments.of(SIMPLE, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("scenarioProvider")
+    void testSecretScenario(final String folder, final boolean partial) throws IOException {
+      final ObjectMapper objectMapper = new ObjectMapper();
+
+      final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
+      final JsonNode specs = objectMapper.readTree(specIs);
+
+      final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+      final JsonNode input = objectMapper.readTree(inputIs);
+
+      final String expectedFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+      final JsonNode expected = objectMapper.readTree(expectedIs);
+
+      final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
+
+      assertEquals(expected, actual);
+    }
+
   }
 
 }

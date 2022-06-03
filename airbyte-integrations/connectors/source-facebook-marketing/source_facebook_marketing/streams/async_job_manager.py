@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -25,7 +25,7 @@ class InsightAsyncJobManager:
 
     # When current insights throttle hit this value no new jobs added.
     THROTTLE_LIMIT = 70
-    MAX_NUMBER_OF_ATTEMPTS = 5
+    MAX_NUMBER_OF_ATTEMPTS = 20
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
@@ -94,6 +94,12 @@ class InsightAsyncJobManager:
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:
+                if isinstance(job, ParentAsyncJob):
+                    # if this job is a ParentAsyncJob, it holds X number of jobs
+                    # we want to check that none of these nested jobs have exceeded MAX_NUMBER_OF_ATTEMPTS
+                    for nested_job in job._jobs:
+                        if nested_job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
+                            raise JobException(f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
                     raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 elif job.attempt_number == 2:

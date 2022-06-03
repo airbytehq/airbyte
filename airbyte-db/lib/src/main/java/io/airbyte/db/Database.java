@@ -1,51 +1,30 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db;
 
-import java.io.Closeable;
 import java.sql.SQLException;
-import javax.sql.DataSource;
-import org.jooq.SQLDialect;
+import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 /**
  * Database object for interacting with a Jooq connection.
  */
-public class Database implements AutoCloseable {
+public class Database {
 
-  private final DataSource ds;
-  private final SQLDialect dialect;
+  private final DSLContext dslContext;
 
-  public Database(final DataSource ds, final SQLDialect dialect) {
-    this.ds = ds;
-    this.dialect = dialect;
+  public Database(final DSLContext dslContext) {
+    this.dslContext = dslContext;
   }
 
   public <T> T query(final ContextQueryFunction<T> transform) throws SQLException {
-    return transform.query(DSL.using(ds, dialect));
+    return transform.query(dslContext);
   }
 
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
-    return DSL.using(ds, dialect).transactionResult(configuration -> transform.query(DSL.using(configuration)));
-  }
-
-  public DataSource getDataSource() {
-    return ds;
-  }
-
-  @Override
-  public void close() throws Exception {
-    // Just a safety in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-
-    if (ds instanceof AutoCloseable) {
-      ((AutoCloseable) ds).close();
-    }
-    if (ds instanceof Closeable) {
-      ((Closeable) ds).close();
-    }
+    return dslContext.transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 
 }

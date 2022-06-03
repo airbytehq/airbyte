@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -9,12 +9,18 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Function;
 
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.NullAssignment"})
 public enum ConfigSchema implements AirbyteConfig {
 
   // workspace
   STANDARD_WORKSPACE("StandardWorkspace.yaml",
       StandardWorkspace.class,
       standardWorkspace -> standardWorkspace.getWorkspaceId().toString(),
+      "workspaceId"),
+
+  WORKSPACE_SERVICE_ACCOUNT("WorkspaceServiceAccount.yaml",
+      WorkspaceServiceAccount.class,
+      workspaceServiceAccount -> workspaceServiceAccount.getWorkspaceId().toString(),
       "workspaceId"),
 
   // source
@@ -103,6 +109,7 @@ public enum ConfigSchema implements AirbyteConfig {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
+  @Override
   public <T> Class<T> getClassName() {
     return (Class<T>) className;
   }

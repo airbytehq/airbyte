@@ -1,28 +1,17 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
+
 import { useServiceForm } from "../serviceFormContext";
+import { TestingConnectionError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import TestingConnectionError from "./TestingConnectionError";
-
-type IProps = {
-  isSubmitting: boolean;
-  isValid: boolean;
-  dirty: boolean;
-  resetForm: () => void;
-  onRetest?: () => void;
-  formType: "source" | "destination";
-  successMessage?: React.ReactNode;
-  errorMessage?: React.ReactNode;
-};
 
 const Controls = styled.div`
   margin-top: 34px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
 `;
@@ -31,8 +20,22 @@ const ButtonContainer = styled.span`
   margin-left: 10px;
 `;
 
+type IProps = {
+  formType: "source" | "destination";
+  isSubmitting: boolean;
+  isValid: boolean;
+  dirty: boolean;
+  resetForm: () => void;
+  onRetest?: () => void;
+  onCancelTesting?: () => void;
+  isTestConnectionInProgress?: boolean;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+};
+
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
+  isTestConnectionInProgress,
   isValid,
   dirty,
   resetForm,
@@ -40,12 +43,14 @@ const EditControls: React.FC<IProps> = ({
   onRetest,
   successMessage,
   errorMessage,
+  onCancelTesting,
 }) => {
   const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
-    return <TestingConnectionSpinner />;
+    return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
+
   const showStatusMessage = () => {
     if (errorMessage) {
       return <TestingConnectionError errorMessage={errorMessage} />;
@@ -63,22 +68,12 @@ const EditControls: React.FC<IProps> = ({
         <div>
           <Button
             type="submit"
-            disabled={
-              isSubmitting ||
-              !isValid ||
-              !dirty ||
-              Object.keys(unfinishedFlows).length > 0
-            }
+            disabled={isSubmitting || !isValid || !dirty || Object.keys(unfinishedFlows).length > 0}
           >
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
           <ButtonContainer>
-            <Button
-              type="button"
-              secondary
-              disabled={isSubmitting || !isValid || !dirty}
-              onClick={resetForm}
-            >
+            <Button type="button" secondary disabled={isSubmitting || !isValid || !dirty} onClick={resetForm}>
               <FormattedMessage id="form.cancel" />
             </Button>
           </ButtonContainer>

@@ -1,65 +1,48 @@
 import React, { useCallback } from "react";
-import { useResource } from "rest-hooks";
+import { useQueryClient } from "react-query";
 
 import { ConnectionTable } from "components/EntityTable";
-import { RoutePaths } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import { Connection } from "core/resources/Connection";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useWorkspace from "hooks/services/useWorkspace";
+import { getConnectionTableData } from "components/EntityTable/utils";
+
+import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 type IProps = {
-  connections: Connection[];
+  connections: WebBackendConnectionRead[];
 };
 
 const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const queryClient = useQueryClient();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-
-  const data = getConnectionTableData(
-    connections,
-    sourceDefinitions,
-    destinationDefinitions,
-    "destination"
-  );
+  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "destination");
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
         await changeStatus(connection);
+        await invalidateConnectionsList(queryClient);
       }
     },
-    [changeStatus, connections]
+    [changeStatus, connections, queryClient]
   );
 
   const onSync = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         await syncManualConnection(connection);
       }
@@ -67,8 +50,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) =>
-    push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => push(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

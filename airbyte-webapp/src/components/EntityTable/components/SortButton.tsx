@@ -1,8 +1,7 @@
+import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import styled from "styled-components";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 
@@ -31,9 +30,7 @@ type IProps = {
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (
     <SortButtonView wasActive={wasActive} onClick={onClick} iconOnly>
-      <FontAwesomeIcon
-        icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown}
-      />
+      <FontAwesomeIcon icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown} />
     </SortButtonView>
   );
 };

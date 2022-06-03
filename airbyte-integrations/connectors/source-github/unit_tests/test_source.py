@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -30,7 +30,7 @@ def test_check_connection_repos_only():
 
 @responses.activate
 def test_check_connection_repos_and_org_repos():
-    repos = [{"name": f"name {i}", "full_name": f"full name {i}"} for i in range(1000)]
+    repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
     responses.add("GET", "https://api.github.com/repos/airbyte/test", json={})
     responses.add("GET", "https://api.github.com/repos/airbyte/test2", json={})
     responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
@@ -45,7 +45,7 @@ def test_check_connection_repos_and_org_repos():
 
 @responses.activate
 def test_check_connection_org_only():
-    repos = [{"name": f"name {i}", "full_name": f"full name {i}"} for i in range(1000)]
+    repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
     responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
 
     status = check_source("airbytehq/*")
@@ -107,8 +107,8 @@ def test_generate_repositories():
         "GET",
         "https://api.github.com/orgs/docker/repos",
         json=[
-            {"full_name": "docker/docker-py"},
-            {"full_name": "docker/compose"},
+            {"full_name": "docker/docker-py", "updated_at": "2020-01-01T00:00:00Z"},
+            {"full_name": "docker/compose", "updated_at": "2020-01-01T00:00:00Z"},
         ],
     )
 

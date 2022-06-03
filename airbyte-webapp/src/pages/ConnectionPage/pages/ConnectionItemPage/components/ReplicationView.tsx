@@ -1,27 +1,31 @@
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FormikHelpers } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { Button, Card } from "components";
-import useConnection, {
-  useConnectionLoad,
-  ValuesProps,
-} from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
+import LoadingSchema from "components/LoadingSchema";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import LoadingSchema from "components/LoadingSchema";
 
+import {
+  useConnectionLoad,
+  useResetConnection,
+  useUpdateConnection,
+  ValuesProps,
+} from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import ConnectionForm from "views/Connection/ConnectionForm";
 
-type IProps = {
+import { ConnectionStatus, NamespaceDefinitionType } from "../../../../../core/request/AirbyteClient";
+
+interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
-};
+}
 
 const Content = styled.div`
   max-width: 1279px;
@@ -45,42 +49,33 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const ReplicationView: React.FC<IProps> = ({
-  onAfterSaveSchema,
-  connectionId,
-}) => {
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
-    false
-  );
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    namespaceDefinition: ConnectionNamespaceDefinition.Source,
+    namespaceDefinition: NamespaceDefinitionType.source,
     namespaceFormat: "",
     schedule: null,
     prefix: "",
     syncCatalog: { streams: [] },
   });
 
-  const { updateConnection, resetConnection } = useConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: resetConnection } = useResetConnection();
 
   const onReset = () => resetConnection(connectionId);
 
-  const {
-    connection: initialConnection,
+  const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
+
+  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
     refreshConnectionCatalog,
-  } = useConnectionLoad(connectionId);
+    [connectionId]
+  );
 
-  const [
-    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
-    refreshCatalog,
-  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
+  const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
-  const connection = activeUpdatingSchemaMode
-    ? connectionWithRefreshCatalog
-    : initialConnection;
-
-  const onSubmit = async (values: ValuesProps) => {
+  const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
     const initialSyncSchema = connection?.syncCatalog;
 
     await updateConnection({
@@ -88,6 +83,7 @@ const ReplicationView: React.FC<IProps> = ({
       connectionId,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
+      sourceCatalogId: connection?.catalogId,
     });
 
     setSaved(true);
@@ -98,6 +94,8 @@ const ReplicationView: React.FC<IProps> = ({
     if (activeUpdatingSchemaMode) {
       setActiveUpdatingSchemaMode(false);
     }
+
+    formikHelpers?.resetForm({ values });
   };
 
   const onSubmitResetModal = async () => {
@@ -147,13 +145,11 @@ const ReplicationView: React.FC<IProps> = ({
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            isEditMode
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
-            successMessage={
-              saved && <FormattedMessage id="form.changesSaved" />
-            }
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
             onCancel={onExitRefreshCatalogMode}
             editSchemeMode={activeUpdatingSchemaMode}
             additionalSchemaControl={renderUpdateSchemaButton()}
@@ -172,5 +168,3 @@ const ReplicationView: React.FC<IProps> = ({
     </Content>
   );
 };
-
-export default ReplicationView;

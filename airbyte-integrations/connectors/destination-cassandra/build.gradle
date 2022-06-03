@@ -10,7 +10,6 @@ application {
 }
 
 def cassandraDriver = '4.13.0'
-def testContainersVersion = '1.16.0'
 def assertVersion = '3.21.0'
 
 dependencies {
@@ -26,7 +25,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
-    testImplementation "org.testcontainers:cassandra:${testContainersVersion}"
+    testImplementation libs.testcontainers.cassandra
 
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

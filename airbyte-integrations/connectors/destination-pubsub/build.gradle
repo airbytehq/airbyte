@@ -10,7 +10,7 @@ application {
 }
 
 dependencies {
-    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.113.3'
+    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.114.7'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')

@@ -3,24 +3,22 @@ import { Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
-import { RoutePaths } from "../routes";
-import ConnectionItemPage from "./pages/ConnectionItemPage";
-import CreationFormPage from "./pages/CreationFormPage";
-import AllConnectionsPage from "./pages/AllConnectionsPage";
-
-import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-const ConnectionPage: React.FC = () => (
+import { RoutePaths } from "../routePaths";
+import AllConnectionsPage from "./pages/AllConnectionsPage";
+import ConnectionItemPage from "./pages/ConnectionItemPage";
+import { CreationFormPage } from "./pages/CreationFormPage/CreationFormPage";
+
+export const ConnectionPage: React.FC = () => (
   <Suspense fallback={<LoadingPage />}>
     <Routes>
       <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
       <Route
         path=":connectionId/*"
         element={
-          <ResourceNotFoundErrorBoundary
-            errorComponent={<StartOverErrorView />}
-          >
+          <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
             <ConnectionItemPage />
           </ResourceNotFoundErrorBoundary>
         }
@@ -29,5 +27,3 @@ const ConnectionPage: React.FC = () => (
     </Routes>
   </Suspense>
 );
-
-export default ConnectionPage;

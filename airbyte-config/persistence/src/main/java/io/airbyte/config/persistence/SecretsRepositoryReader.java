@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -10,6 +10,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -19,16 +20,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for fetching both connectors and their secrets (from separate secrets
  * stores). All methods in this class return secrets! Use it carefully.
  */
 public class SecretsRepositoryReader {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryReader.class);
 
   private final ConfigRepository configRepository;
   private final SecretsHydrator secretsHydrator;
@@ -94,6 +91,20 @@ public class SecretsRepositoryReader {
       final Stream<JsonNode> augmentedValue = dump.get(key).map(secretsHydrator::hydrate);
       dump.put(key, augmentedValue);
     }
+  }
+
+  public WorkspaceServiceAccount getWorkspaceServiceAccountWithSecrets(final UUID workspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceServiceAccount workspaceServiceAccount = configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId);
+
+    final JsonNode jsonCredential =
+        workspaceServiceAccount.getJsonCredential() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getJsonCredential())
+            : null;
+
+    final JsonNode hmacKey =
+        workspaceServiceAccount.getHmacKey() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getHmacKey()) : null;
+
+    return Jsons.clone(workspaceServiceAccount).withJsonCredential(jsonCredential).withHmacKey(hmacKey);
   }
 
 }

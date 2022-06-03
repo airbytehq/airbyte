@@ -1,7 +1,7 @@
 connector_image: airbyte/source-hubspot:dev
 tests:
   spec:
-    - spec_path: "source_hubspot/spec.json"
+    - spec_path: "source_hubspot/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

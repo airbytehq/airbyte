@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -20,6 +20,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.chrono.IsoEra;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -244,6 +248,29 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       throws SQLException {
     final String quotedTableName = enquoteIdentifier(connection, tableName);
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
+  }
+
+  protected <DateTime> DateTime getDateTimeObject(ResultSet resultSet, int index, Class<DateTime> clazz) throws SQLException {
+    return resultSet.getObject(index, clazz);
+  }
+
+  protected void putTimeWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    OffsetTime timetz = getDateTimeObject(resultSet, index, OffsetTime.class);
+    node.put(columnName, timetz.toString());
+  }
+
+  protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    OffsetDateTime timestamptz = getDateTimeObject(resultSet, index, OffsetDateTime.class);
+    LocalDate localDate = timestamptz.toLocalDate();
+    node.put(columnName, resolveEra(localDate, timestamptz.toString()));
+  }
+
+  protected String resolveEra(LocalDate date, String value) {
+    return isBCE(date) ? value.substring(1) + " BC" : value;
+  }
+
+  public static boolean isBCE(LocalDate date) {
+    return date.getEra().equals(IsoEra.BCE);
   }
 
 }

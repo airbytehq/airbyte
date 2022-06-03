@@ -1,12 +1,14 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useUpdateEffect } from "react-use";
 import styled from "styled-components";
 
-import { Toggle } from "components";
-import { Connection } from "core/resources/Connection";
-import useConnection from "hooks/services/useConnectionHook";
-import { Status } from "components/EntityTable/types";
+import { Switch } from "components";
+
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
+
+import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -25,18 +27,15 @@ const Content = styled.div`
   align-items: center;
 `;
 
-type IProps = {
-  connection: Connection;
+interface EnabledControlProps {
+  connection: WebBackendConnectionRead;
   disabled?: boolean;
   frequencyText?: string;
-};
+  onStatusUpdating?: (updating: boolean) => void;
+}
 
-const EnabledControl: React.FC<IProps> = ({
-  connection,
-  disabled,
-  frequencyText,
-}) => {
-  const { updateConnection } = useConnection();
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText, onStatusUpdating }) => {
+  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
@@ -48,39 +47,33 @@ const EnabledControl: React.FC<IProps> = ({
       namespaceFormat: connection.namespaceFormat,
       prefix: connection.prefix,
       operations: connection.operations,
-      status:
-        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
     });
 
     analyticsService.track("Source - Action", {
-      action:
-        connection.status === Status.ACTIVE
-          ? "Disable connection"
-          : "Reenable connection",
+      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyText,
     });
   };
 
+  useUpdateEffect(() => {
+    onStatusUpdating?.(isLoading);
+  }, [isLoading]);
+
   return (
     <Content>
       <ToggleLabel htmlFor="toggle-enabled-source">
-        <FormattedMessage
-          id={
-            connection.status === Status.ACTIVE
-              ? "tables.enabled"
-              : "tables.disabled"
-          }
-        />
+        <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
       </ToggleLabel>
-      <Toggle
+      <Switch
         disabled={disabled}
         onChange={onChangeStatus}
-        checked={connection.status === Status.ACTIVE}
+        checked={connection.status === ConnectionStatus.active}
+        loading={isLoading}
         id="toggle-enabled-source"
       />
     </Content>

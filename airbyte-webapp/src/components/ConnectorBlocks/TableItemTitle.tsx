@@ -1,13 +1,15 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 
 import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { ReleaseStage } from "core/domain/connector";
 
-type IProps = {
+import { ReleaseStage } from "core/request/AirbyteClient";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
+type TableItemTitleProps = {
   type: "source" | "destination";
   dropDownData: DropDownRow.IDataItem[];
   onSelect: (item: DropDownRow.IDataItem) => void;
@@ -44,7 +46,7 @@ const EntityIcon = styled.div`
   width: 40px;
 `;
 
-const TableItemTitle: React.FC<IProps> = ({
+const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
   dropDownData,
   onSelect,
@@ -53,6 +55,8 @@ const TableItemTitle: React.FC<IProps> = ({
   entityIcon,
   releaseStage,
 }) => {
+  const { hasFeature } = useFeatureService();
+  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
   const formatMessage = useIntl().formatMessage;
   const options = [
     {
@@ -94,7 +98,7 @@ const TableItemTitle: React.FC<IProps> = ({
           }}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen}>
+            <Button onClick={onOpen} disabled={!allowCreateConnection}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}

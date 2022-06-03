@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -12,7 +12,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
  */
 public class LogConfigs {
 
-  public static LogConfigs EMPTY = new LogConfigs(null);
+  public final static LogConfigs EMPTY = new LogConfigs(null);
 
   private final CloudStorageConfigs storageConfigs;
 

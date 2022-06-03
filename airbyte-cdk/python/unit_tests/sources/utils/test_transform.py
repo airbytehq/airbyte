@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -151,15 +151,17 @@ VERY_NESTED_SCHEMA = {
         ),
     ],
 )
-def test_transform(schema, actual, expected, expected_warns, capsys):
+def test_transform(schema, actual, expected, expected_warns, caplog):
     t = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     t.transform(actual, schema)
     assert json.dumps(actual) == json.dumps(expected)
-    stdout = capsys.readouterr().out
     if expected_warns:
-        assert expected_warns in stdout
+        record = caplog.records[0]
+        assert record.name == "airbyte"
+        assert record.levelname == "WARNING"
+        assert record.message == expected_warns
     else:
-        assert not stdout
+        assert len(caplog.records) == 0
 
 
 def test_transform_wrong_config():

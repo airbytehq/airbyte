@@ -1,21 +1,17 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-
 import styled from "styled-components";
 
-import {
-  DestinationSyncMode,
-  Path,
-  SyncMode,
-  SyncSchemaField,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { Cell, CheckBox, DropDownRow, Switch } from "components";
 
-import { Cell, CheckBox, DropDownRow, Toggle } from "components";
-import { Arrow as ArrowBlock } from "./components/Arrow";
-import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
+import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
+import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
+import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 
 const EmptyField = styled.span`
@@ -47,6 +43,7 @@ interface StreamHeaderProps {
   isRowExpanded: boolean;
   hasFields: boolean;
   onExpand: () => void;
+  mode?: ConnectionFormMode;
 }
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
@@ -64,13 +61,11 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   isRowExpanded,
   hasFields,
   onExpand,
+  mode,
 }) => {
-  const {
-    primaryKey,
-    syncMode,
-    cursorField,
-    destinationSyncMode,
-  } = stream.config;
+  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
+
+  const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
       syncMode,
@@ -85,51 +80,43 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   return (
     <>
-      <CheckboxCell>
-        <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-      </CheckboxCell>
+      {mode !== "readonly" && (
+        <CheckboxCell>
+          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+        </CheckboxCell>
+      )}
       <ArrowCell>
-        {hasFields ? (
-          <ArrowBlock
-            onExpand={onExpand}
-            isItemHasChildren={hasFields}
-            isItemOpen={isRowExpanded}
-          />
-        ) : null}
+        {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle
-          small
-          checked={stream.config.selected}
-          onChange={onSelectStream}
-        />
+        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.namespace || ""}>
-        {stream.stream.namespace || (
+      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+        {stream.stream?.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.name || ""}>
-        {stream.stream.name}
+      <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        {stream.stream?.name}
       </HeaderCell>
       <Cell flex={1.5}>
-        <SyncSettingsDropdown
-          value={syncSchema}
-          options={availableSyncModes}
-          onChange={onSelectSyncMode}
-        />
+        {mode !== "readonly" ? (
+          <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
+        ) : (
+          <HeaderCell ellipsis title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
+            {syncSchema.syncMode} | {syncSchema.destinationSyncMode}
+          </HeaderCell>
+        )}
       </Cell>
       <HeaderCell>
         {cursorType && (
           <PathPopout
             pathType={cursorType}
             paths={paths}
-            path={cursorField}
-            placeholder={
-              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
-            }
+            path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
+            placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
             onPathChange={onCursorChange}
           />
         )}
@@ -141,9 +128,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             paths={paths}
             path={primaryKey}
             isMulti={true}
-            placeholder={
-              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
-            }
+            placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
             onPathChange={onPrimaryKeyChange}
           />
         )}

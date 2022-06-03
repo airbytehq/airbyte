@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.protocol.models;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class JsonSchemaType {
 
@@ -14,8 +15,10 @@ public class JsonSchemaType {
   public static final String DATE_TIME = "date-time";
   public static final String DATE = "date";
   public static final String TIME = "time";
+  public static final String TIME_WITHOUT_TIMEZONE = "time_without_timezone";
+  public static final String TIME_WITH_TIMEZONE = "time_with_timezone";
   public static final String TIMESTAMP_WITH_TIMEZONE = "timestamp_with_timezone";
-  public static final String TIMESTAMP_WITHOUT_TIMEZONE = "timestamp";
+  public static final String TIMESTAMP_WITHOUT_TIMEZONE = "timestamp_without_timezone";
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
@@ -27,6 +30,24 @@ public class JsonSchemaType {
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
   public static final JsonSchemaType NULL = JsonSchemaType.builder(JsonSchemaPrimitive.NULL).build();
   public static final JsonSchemaType STRING_BASE_64 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
+  public static final JsonSchemaType STRING_TIME_WITH_TIMEZONE =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(TIME)
+          .withAirbyteType(TIME_WITH_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIME_WITHOUT_TIMEZONE =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(TIME)
+          .withAirbyteType(TIME_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIMESTAMP_WITH_TIMEZONE =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(DATE_TIME)
+          .withAirbyteType(TIMESTAMP_WITH_TIMEZONE).build();
+  public static final JsonSchemaType STRING_TIMESTAMP_WITHOUT_TIMEZONE =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(DATE_TIME)
+          .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
+  public static final JsonSchemaType STRING_DATE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+      .withFormat(DATE).build();
 
   private final Map<String, String> jsonSchemaTypeMap;
 
@@ -51,17 +72,17 @@ public class JsonSchemaType {
       typeMapBuilder.put(TYPE, type.name().toLowerCase());
     }
 
-    public Builder withFormat(String value) {
+    public Builder withFormat(final String value) {
       typeMapBuilder.put(FORMAT, value);
       return this;
     }
 
-    public Builder withContentEncoding(String value) {
+    public Builder withContentEncoding(final String value) {
       typeMapBuilder.put(CONTENT_ENCODING, value);
       return this;
     }
 
-    public Builder withAirbyteType(String value) {
+    public Builder withAirbyteType(final String value) {
       typeMapBuilder.put(AIRBYTE_TYPE, value);
       return this;
     }
@@ -70,6 +91,27 @@ public class JsonSchemaType {
       return new JsonSchemaType(typeMapBuilder.build());
     }
 
+  }
+
+  @Override
+  public String toString() {
+    return String.format("JsonSchemaType(%s)", jsonSchemaTypeMap.toString());
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    if (other == null) {
+      return false;
+    }
+    if (!(other instanceof final JsonSchemaType that)) {
+      return false;
+    }
+    return Objects.equals(this.jsonSchemaTypeMap, that.jsonSchemaTypeMap);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this.jsonSchemaTypeMap);
   }
 
 }

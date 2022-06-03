@@ -22,11 +22,7 @@ const ErrorBlock = styled(SuccessBlock)`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const FeedbackBlock: React.FC<FeedbackBlockProps> = ({
-  isLoading,
-  errorMessage,
-  successMessage,
-}) => {
+const FeedbackBlock: React.FC<FeedbackBlockProps> = ({ isLoading, errorMessage, successMessage }) => {
   if (isLoading) {
     return (
       <SuccessBlock>

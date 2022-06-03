@@ -1,22 +1,24 @@
 import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import { Source, Destination } from "core/domain/connector/types";
-import { H6, Link } from "components";
-import { RoutePaths } from "pages/routes";
+import { H6 } from "components";
 import StepsMenu from "components/StepsMenu";
+
+import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
+import ConnectionName from "./ConnectionName";
+import { StatusMainInfo } from "./StatusMainInfo";
 
-type IProps = {
-  source: Source;
-  destination: Destination;
+interface ConnectionPageTitleProps {
+  source: SourceRead;
+  destination: DestinationRead;
+  connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
-};
+  onStatusUpdating?: (updating: boolean) => void;
+}
 
 const Title = styled.div`
   text-align: center;
@@ -24,26 +26,20 @@ const Title = styled.div`
 `;
 
 const Links = styled.div`
-  margin-bottom: 18px;
+  margin: 18px 0;
   font-size: 15px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
-const ConnectorsLink = styled(Link)`
-  font-style: normal;
-  font-weight: bold;
-  font-size: 24px;
-  line-height: 29px;
-  text-align: center;
-  display: inline-block;
-  margin: 0 16px;
-  color: ${({ theme }) => theme.textColor};
-`;
-
-const ConnectionPageTitle: React.FC<IProps> = ({
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   source,
   destination,
+  connection,
   currentStep,
+  onStatusUpdating,
 }) => {
   const { push } = useRouter<{ id: string }>();
 
@@ -60,11 +56,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({
       id: ConnectionSettingsRoutes.TRANSFORMATION,
       name: <FormattedMessage id={"connectionForm.transformation.title"} />,
     },
-    {
+  ];
+
+  connection.status !== ConnectionStatus.deprecated &&
+    steps.push({
       id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
-    },
-  ];
+    });
 
   const onSelectStep = (id: string) => {
     if (id === ConnectionSettingsRoutes.STATUS) {
@@ -79,23 +77,16 @@ const ConnectionPageTitle: React.FC<IProps> = ({
       <H6 center bold highlighted>
         <FormattedMessage id="connection.title" />
       </H6>
+      <ConnectionName connection={connection} />
       <Links>
-        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
-          {source.name}
-        </ConnectorsLink>
-        <FontAwesomeIcon icon={faArrowRight} />
-        <ConnectorsLink
-          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
-        >
-          {destination.name}
-        </ConnectorsLink>
+        <StatusMainInfo
+          connection={connection}
+          source={source}
+          destination={destination}
+          onStatusUpdating={onStatusUpdating}
+        />
       </Links>
-      <StepsMenu
-        lightMode
-        data={steps}
-        onSelect={onSelectStep}
-        activeStep={currentStep}
-      />
+      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </Title>
   );
 };

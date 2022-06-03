@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 /**
  * Wraps a {@link Database} object and throwing IOExceptions instead of SQLExceptions.
  */
-public class ExceptionWrappingDatabase implements AutoCloseable {
+public class ExceptionWrappingDatabase {
 
   private final Database database;
 
@@ -32,11 +32,6 @@ public class ExceptionWrappingDatabase implements AutoCloseable {
     } catch (final SQLException e) {
       throw new IOException(e);
     }
-  }
-
-  @Override
-  public void close() throws Exception {
-    database.close();
   }
 
 }

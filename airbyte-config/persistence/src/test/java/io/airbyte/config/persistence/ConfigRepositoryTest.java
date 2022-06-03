@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -28,16 +30,19 @@ import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@SuppressWarnings({"PMD.LongVariable", "PMD.AvoidInstantiatingObjectsInLoops"})
 class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
@@ -84,8 +89,6 @@ class ConfigRepositoryTest {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testWorkspaceByConnectionId(final boolean isTombstone) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(isTombstone);
-
     final UUID connectionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final StandardSync mSync = new StandardSync()
@@ -212,7 +215,7 @@ class ConfigRepositoryTest {
 
   @ParameterizedTest
   @ValueSource(ints = {0, 1, 2, 10})
-  void testListStandardSourceDefinitions_handlesTombstoneSourceDefinitions(final int numSourceDefinitions)
+  void testListStandardSourceDefinitionsHandlesTombstoneSourceDefinitions(final int numSourceDefinitions)
       throws JsonValidationException, IOException {
     final List<StandardSourceDefinition> allSourceDefinitions = new ArrayList<>();
     final List<StandardSourceDefinition> notTombstoneSourceDefinitions = new ArrayList<>();
@@ -344,7 +347,7 @@ class ConfigRepositoryTest {
 
   @ParameterizedTest
   @ValueSource(ints = {0, 1, 2, 10})
-  void testListStandardDestinationDefinitions_handlesTombstoneDestinationDefinitions(final int numDestinationDefinitions)
+  void testListStandardDestinationDefinitionsHandlesTombstoneDestinationDefinitions(final int numDestinationDefinitions)
       throws JsonValidationException, IOException {
     final List<StandardDestinationDefinition> allDestinationDefinitions = new ArrayList<>();
     final List<StandardDestinationDefinition> notTombstoneDestinationDefinitions = new ArrayList<>();
@@ -416,7 +419,7 @@ class ConfigRepositoryTest {
   }
 
   @Test
-  public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
     doReturn(workspace)
         .when(configRepository)
@@ -426,6 +429,23 @@ class ConfigRepositoryTest {
 
     assertTrue(workspace.getFeedbackDone());
     verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
+  @Test
+  void testHealthCheckSuccess() throws SQLException {
+    final var mResult = mock(Result.class);
+    when(database.query(any())).thenReturn(mResult);
+
+    final var check = configRepository.healthCheck();
+    assertTrue(check);
+  }
+
+  @Test
+  void testHealthCheckFailure() throws SQLException {
+    when(database.query(any())).thenThrow(RuntimeException.class);
+
+    final var check = configRepository.healthCheck();
+    assertFalse(check);
   }
 
 }
