@@ -122,13 +122,13 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return  self._cursor_value
+            return  {self.cursor_field: self._cursor_value}
         else:
-            return  self._start_date
+            return  {self.cursor_field: self._start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value
+        self._cursor_value = max(value[self.cursor_field], self._cursor_value)
 
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
