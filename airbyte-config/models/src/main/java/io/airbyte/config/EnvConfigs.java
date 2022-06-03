@@ -149,9 +149,9 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
-  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
+  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
-  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.77.0";
+  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
