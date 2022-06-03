@@ -126,6 +126,9 @@ public class EnvConfigs implements Configs {
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
+  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
+
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
@@ -651,6 +654,15 @@ public class EnvConfigs implements Configs {
   @Override
   public String getJobMainContainerMemoryLimit() {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
+  }
+
+  @Override
+  public String getMetricClient() {
+    return getEnvOrDefault(METRIC_CLIENT, "");
+  }
+
+  public String getOtelCollectorEndpoint() {
+    return getEnvOrDefault(OTEL_COLLECTOR_ENDPOINT, "");
   }
 
   /**
