@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.test;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.FlywayFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
@@ -40,14 +41,14 @@ public class TestDatabaseProviders {
     return this;
   }
 
-  public Database createNewConfigsDatabase() throws IOException {
+  public Database createNewConfigsDatabase() throws IOException, DatabaseInitializationException {
     final Flyway flyway = FlywayFactory.create(dataSource, ConfigsDatabaseTestProvider.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     return new ConfigsDatabaseTestProvider(dslContext, flyway)
         .create(runMigration);
   }
 
-  public Database createNewJobsDatabase() throws IOException {
+  public Database createNewJobsDatabase() throws IOException, DatabaseInitializationException {
     final Flyway flyway = FlywayFactory.create(dataSource, JobsDatabaseTestProvider.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
         JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     return new JobsDatabaseTestProvider(dslContext, flyway)

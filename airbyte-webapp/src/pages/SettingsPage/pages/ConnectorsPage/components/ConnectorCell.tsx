@@ -5,10 +5,10 @@ import styled from "styled-components";
 import Indicator from "components/Indicator";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
-import { ReleaseStage } from "core/domain/connector";
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-type IProps = {
+type ConnectorCellProps = {
   connectorName: string;
   img?: string;
   hasUpdate?: boolean;
@@ -40,7 +40,7 @@ const CustomAnnotation = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
+const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}

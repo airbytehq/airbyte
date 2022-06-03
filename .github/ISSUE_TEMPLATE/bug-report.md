@@ -8,6 +8,7 @@ assignees: ''
 ---
 <!-- 
 Welcome to Airbyte!
+
 We're really appreciate your report and know that this will help us build an 
 amazing tool. If you want to contribute yourself, you can find a good place 
 to start by searching for the good-first-issues label or maybe... by trying 
@@ -28,7 +29,6 @@ You can remove the examples bellow and fill out with your information.
 - **Deployment**: example are Docker or Kubernetes deploy env
 - **Source Connector and version**: (if applicable example Salesforce 0.2.3) <!-- Found in the admin page in the UI in the Source tab. -->
 - **Destination Connector and version**: (if applicable example Postgres 0.3.3) <!-- Found in the admin page in the UI in the Destination tab. -->
-- **Severity**: Very Low / Low / Medium / High / Critical
 - **Step where error happened**: Deploy / Sync job / Setup new connection / Update connector / Upgrade Airbyte
 
 ## Current Behavior
@@ -38,22 +38,14 @@ You can remove the examples bellow and fill out with your information.
 *Tell us what should happen.*
 
 ## Logs
-*If applicable, please upload the logs from the failing operation. 
-For sync jobs, you can download the full logs from the UI by going to the sync attempt page and 
-clicking the download logs button at the top right of the logs display window.*
+<!--
+Please upload the complete log files from the failing operation. 
 
-<details>
-<summary>LOG</summary> 
-
-```
-
-replace this with
-your long log
-output here
-
-```
-
-</details>
+We ask for complete log files because these files capture essential metadata about your environment.
+The team will read the full stack trace of errors and try to find the root cause of the error. 
+For a sync failure, you can download the log in the sync page, and for other errors please download the server and scheduler logs in the Settings Page -> Configuration.
+You can remove this after uploading the file.
+-->
 
 ## Steps to Reproduce
 1.

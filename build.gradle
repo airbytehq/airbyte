@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -16,10 +17,12 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.5'
+    id 'com.github.spotbugs' version '5.0.6'
     id 'version-catalog'
     id 'maven-publish'
 }
+
+apply from: "$rootDir/publish-repositories.gradle"
 
 repositories {
     mavenCentral()
@@ -102,6 +105,7 @@ def createSpotlessTarget = { pattern ->
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
         'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+        'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -165,6 +169,30 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
     })
 }
 
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
+    // generate a unique task name based on the directory name.
+    return task ("publishArtifact-$subproject.name" {
+        apply plugin: 'maven-publish'
+        publishing {
+            repositories {
+                publications {
+                    "$subproject.name"(MavenPublication) {
+                        from subproject.components.java
+
+                        // use the subproject group and name with the assumption there are no identical subproject
+                        // names, group names or subproject group/name combination.
+                        groupId = "$subproject.group"
+                        artifactId = "$subproject.name"
+                        version = "$buildVersion"
+                        repositories.add(rootProject.repositories.getByName('cloudrepo'))
+                    }
+                }
+            }
+        }
+    })
+}
+
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
@@ -196,6 +224,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
+    apply plugin: 'pmd'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -213,10 +242,11 @@ subprojects {
 
     pmd {
         consoleOutput = true
-
+        ignoreFailures = false
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
+        toolVersion = '6.43.0'
     }
 
     jacoco {
@@ -255,6 +285,15 @@ subprojects {
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
+    }
+
+    spotbugs {
+        ignoreFailures = false
+        effort = 'max'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
     }
 
     test {
@@ -302,11 +341,6 @@ subprojects {
             exceptionFormat 'full'
         }
         finalizedBy jacocoTestReport
-    }
-
-    spotbugs {
-        reportLevel = 'high'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
     }
 
     dependencies {
@@ -367,6 +401,19 @@ subprojects {
 
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/spotbugs/
+        reports {
+            xml.required = false
+            html.required = true
+        }
+    }
+
+    tasks.withType(Pmd) {
+        exclude '**/generated/**'
+        exclude '**/jooq/**'
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
@@ -439,32 +486,9 @@ catalog {
     }
 }
 
-//// TODO: Davin will turn this back on.
-//// Configure what subprojects to publish.
-//String[] toPublish = [
-//        ':airbyte-analytics',
-//        ':airbyte-api',
-//        ':airbyte-commons',
-//        ':airbyte-commons-docker',
-//        ':airbyte-config:init',
-//        ':airbyte-config:models',
-//        ':airbyte-config:persistence',
-//        ':airbyte-db:lib',
-//        ':airbyte-json-validation',
-//        ':airbyte-notification',
-//        ':airbyte-protocol:models',
-//        ':airbyte-scheduler:client',
-//        ':airbyte-scheduler:models',
-//        ':airbyte-scheduler:persistence',
-//        ':airbyte-server',
-//        ':airbyte-workers'
-//]
-//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-//    apply plugin: 'maven-publish'
-//
 publishing {
     publications {
-        // This block is present so Gradle knows to publish a Maven jar.
+        // This block is present for dependency catalog publishing.
         maven(MavenPublication) {
             groupId = 'io.airbyte'
             artifactId = 'oss-catalog'
@@ -474,17 +498,5 @@ publishing {
             // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
         }
     }
-
-    repositories {
-        maven {
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-        }
-
-        mavenLocal()
-    }
+    repositories.add(rootProject.repositories.getByName('cloudrepo'))
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -9,14 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
-import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.Db2Container;
@@ -69,7 +67,8 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("db").asText()), SQLDialect.DEFAULT);
+            config.get("db").asText()),
+        SQLDialect.DEFAULT);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST"));

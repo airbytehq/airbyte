@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.models;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,6 +58,66 @@ class JobTest {
     final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
     assertTrue(job.getSuccessfulAttempt().isPresent());
     assertEquals(job.getAttempts().get(1), job.getSuccessfulAttempt().get());
+  }
+
+  @Test
+  void testValidateStatusTransitionFromPending() {
+    final Job pendingJob = jobWithStatus(JobStatus.PENDING);
+    assertDoesNotThrow(() -> pendingJob.validateStatusTransition(JobStatus.RUNNING));
+    assertDoesNotThrow(() -> pendingJob.validateStatusTransition(JobStatus.FAILED));
+    assertDoesNotThrow(() -> pendingJob.validateStatusTransition(JobStatus.CANCELLED));
+    assertThrows(IllegalStateException.class, () -> pendingJob.validateStatusTransition(JobStatus.INCOMPLETE));
+    assertThrows(IllegalStateException.class, () -> pendingJob.validateStatusTransition(JobStatus.SUCCEEDED));
+  }
+
+  @Test
+  void testValidateStatusTransitionFromRunning() {
+    final Job runningJob = jobWithStatus(JobStatus.RUNNING);
+    assertDoesNotThrow(() -> runningJob.validateStatusTransition(JobStatus.INCOMPLETE));
+    assertDoesNotThrow(() -> runningJob.validateStatusTransition(JobStatus.SUCCEEDED));
+    assertDoesNotThrow(() -> runningJob.validateStatusTransition(JobStatus.FAILED));
+    assertDoesNotThrow(() -> runningJob.validateStatusTransition(JobStatus.CANCELLED));
+    assertThrows(IllegalStateException.class, () -> runningJob.validateStatusTransition(JobStatus.PENDING));
+  }
+
+  @Test
+  void testValidateStatusTransitionFromIncomplete() {
+    final Job incompleteJob = jobWithStatus(JobStatus.INCOMPLETE);
+    assertDoesNotThrow(() -> incompleteJob.validateStatusTransition(JobStatus.PENDING));
+    assertDoesNotThrow(() -> incompleteJob.validateStatusTransition(JobStatus.RUNNING));
+    assertDoesNotThrow(() -> incompleteJob.validateStatusTransition(JobStatus.FAILED));
+    assertDoesNotThrow(() -> incompleteJob.validateStatusTransition(JobStatus.CANCELLED));
+    assertThrows(IllegalStateException.class, () -> incompleteJob.validateStatusTransition(JobStatus.SUCCEEDED));
+  }
+
+  @Test
+  void testValidateStatusTransitionFromSucceeded() {
+    final Job suceededJob = jobWithStatus(JobStatus.SUCCEEDED);
+    assertThrows(IllegalStateException.class, () -> suceededJob.validateStatusTransition(JobStatus.PENDING));
+    assertThrows(IllegalStateException.class, () -> suceededJob.validateStatusTransition(JobStatus.RUNNING));
+    assertThrows(IllegalStateException.class, () -> suceededJob.validateStatusTransition(JobStatus.INCOMPLETE));
+    assertThrows(IllegalStateException.class, () -> suceededJob.validateStatusTransition(JobStatus.FAILED));
+    assertThrows(IllegalStateException.class, () -> suceededJob.validateStatusTransition(JobStatus.CANCELLED));
+  }
+
+  @Test
+  void testValidateStatusTransitionFromFailed() {
+    final Job failedJob = jobWithStatus(JobStatus.FAILED);
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.SUCCEEDED));
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.PENDING));
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.RUNNING));
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.INCOMPLETE));
+    assertThrows(IllegalStateException.class, () -> failedJob.validateStatusTransition(JobStatus.CANCELLED));
+  }
+
+  @Test
+  void testValidateStatusTransitionFromCancelled() {
+    final Job cancelledJob = jobWithStatus(JobStatus.CANCELLED);
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.SUCCEEDED));
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.PENDING));
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.RUNNING));
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.INCOMPLETE));
+    assertThrows(IllegalStateException.class, () -> cancelledJob.validateStatusTransition(JobStatus.CANCELLED));
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.storage;
@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.s3.S3Client;
  * pass to it. Takes in the constructor our standard format for minio configuration and provides a
  * factory that uses that configuration to create an S3Client.
  */
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class MinioS3ClientFactory implements Supplier<S3Client> {
 
   private final MinioConfig minioConfig;

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -110,6 +110,9 @@ class IncrementalConfig(BaseConfig):
         description="Allow records to be emitted with a cursor value this number of days before the state cursor",
         default=0,
         ge=0,
+    )
+    skip_comprehensive_incremental_tests: Optional[bool] = Field(
+        description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
 
 

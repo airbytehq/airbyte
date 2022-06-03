@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -87,9 +87,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
             ClickHouseSource.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
                 configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asText())
-        )
-    );
+                configWithoutDbName.get("port").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -13,6 +13,8 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
+
+from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
 
@@ -202,6 +204,8 @@ class SemiIncrementalMixin:
             return "repository"
         return "organization"
 
+    record_slice_key = __slice_key
+
     def convert_cursor_value(self, value):
         return value
 
@@ -216,7 +220,7 @@ class SemiIncrementalMixin:
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        slice_value = latest_record[self.__slice_key]
+        slice_value = getter(latest_record, self.record_slice_key)
         updated_state = self.convert_cursor_value(latest_record[self.cursor_field])
         stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
         if stream_state_value:
@@ -1051,11 +1055,14 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
 
 
-class WorkflowRuns(GithubStream):
+class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
     API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
     """
+
+    # key for accessing slice value from record
+    record_slice_key = ["repository", "full_name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"

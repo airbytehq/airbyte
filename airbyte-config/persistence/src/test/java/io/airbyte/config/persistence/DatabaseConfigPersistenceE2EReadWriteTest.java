@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -27,8 +27,8 @@ import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
@@ -40,16 +40,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
+@SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.JUnitTestsShouldIncludeAssert", "PMD.DetachedTestCase"})
+class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
-  public void setup() throws Exception {
+  void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new ConfigsDatabaseInstance(dslContext).getAndInitialize();
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-
+    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, flyway);
@@ -65,7 +65,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   @Test
-  public void test() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void test() throws JsonValidationException, IOException, ConfigNotFoundException {
     standardWorkspace();
     standardSourceDefinition();
     standardDestinationDefinition();
@@ -288,13 +288,12 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
-
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
       final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
           ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
       assertEquals(actorCatalog, retrievedActorCatalog);
-    } ;
+    }
     final List<ActorCatalog> actorCatalogs = configPersistence
         .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
     assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());

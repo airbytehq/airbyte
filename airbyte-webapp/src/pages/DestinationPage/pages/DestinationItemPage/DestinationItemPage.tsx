@@ -2,7 +2,8 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes } from "react-router-dom";
 
-import { DropDownRow, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import { DropDownRow, LoadingPage, PageTitle } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
@@ -16,6 +17,7 @@ import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
@@ -81,51 +83,51 @@ const DestinationItemPage: React.FC = () => {
   };
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />}
-      pageTitle={
-        <PageTitle
-          title={<Breadcrumbs data={breadcrumbsData} />}
-          withLine
-          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
-        />
-      }
-    >
+    <ConnectorDocumentationWrapper>
+      <HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />
+
+      <PageTitle
+        title={<Breadcrumbs data={breadcrumbsData} />}
+        middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
+      />
+
       <Suspense fallback={<LoadingPage />}>
-        <Routes>
-          <Route
-            path="/settings"
-            element={
-              <DestinationSettings
-                currentDestination={destination}
-                connectionsWithDestination={connectionsWithDestination}
-              />
-            }
-          />
-          <Route
-            index
-            element={
-              <>
-                <TableItemTitle
-                  type="source"
-                  dropDownData={sourcesDropDownData}
-                  onSelect={onSelect}
-                  entityName={destination.name}
-                  entity={destination.destinationName}
-                  entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
-                  releaseStage={destinationDefinition.releaseStage}
+        <ApiErrorBoundary>
+          <Routes>
+            <Route
+              path="/settings"
+              element={
+                <DestinationSettings
+                  currentDestination={destination}
+                  connectionsWithDestination={connectionsWithDestination}
                 />
-                {connectionsWithDestination.length ? (
-                  <DestinationConnectionTable connections={connectionsWithDestination} />
-                ) : (
-                  <Placeholder resource={ResourceTypes.Sources} />
-                )}
-              </>
-            }
-          />
-        </Routes>
+              }
+            />
+            <Route
+              index
+              element={
+                <>
+                  <TableItemTitle
+                    type="source"
+                    dropDownData={sourcesDropDownData}
+                    onSelect={onSelect}
+                    entityName={destination.name}
+                    entity={destination.destinationName}
+                    entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
+                    releaseStage={destinationDefinition.releaseStage}
+                  />
+                  {connectionsWithDestination.length ? (
+                    <DestinationConnectionTable connections={connectionsWithDestination} />
+                  ) : (
+                    <Placeholder resource={ResourceTypes.Sources} />
+                  )}
+                </>
+              }
+            />
+          </Routes>
+        </ApiErrorBoundary>
       </Suspense>
-    </MainPageWithScroll>
+    </ConnectorDocumentationWrapper>
   );
 };
 
