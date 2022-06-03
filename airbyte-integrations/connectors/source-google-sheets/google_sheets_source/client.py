@@ -11,8 +11,6 @@ from requests import codes as status_codes
 
 from .helpers import SCOPES, Helpers
 
-ERRORS_TO_RETRY_ON = {status_codes.TOO_MANY_REQUESTS, status_codes.SERVICE_UNAVAILABLE, status_codes.BAD_GATEWAY, status_codes.SERVER_ERROR}
-
 
 def give_up(error):
     code = error.resp.status
