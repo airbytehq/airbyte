@@ -26,8 +26,8 @@ Expand the relevant checklist and delete the others.
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
-    - [ ] `docs/SUMMARY.md`
     - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] New connector docs page added to the docs [sidebar](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js)
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
