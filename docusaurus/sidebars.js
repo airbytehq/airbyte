@@ -21,7 +21,6 @@ function getSourceConnectors() {
 function getDestinationConnectors() {
     return getFilenamesInDir("integrations/destinations/", destinationDocs, ["readme"]);
 }
-
 module.exports = {
     mySidebar: [
         {
@@ -225,7 +224,6 @@ module.exports = {
                 {
                     type: 'doc',
                     id: "integrations/README",
-                    label: "Overview"
                 },
                 {
                     type: 'category',
@@ -242,6 +240,7 @@ module.exports = {
                     id: "integrations/custom-connectors",
                 },
             ]
+
         },
         {
             type: 'category',
