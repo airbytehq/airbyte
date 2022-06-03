@@ -18,7 +18,7 @@ To set up Google Sheets as a source in Airbyte Cloud:
 4. For Name, enter a name for the Google Sheets connector. 
 5. Authenticate your Google account via OAuth or Service Account Key Authentication. 
     - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
-    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission.
+    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**. 
 
 ### For Airbyte OSS
@@ -36,27 +36,8 @@ To set up Google Sheets as a source in Airbyte OSS:
 4. For Name, enter a name for the Google Sheets connector. 
 5. Authenticate your Google account via OAuth or Service Account Key Authentication:
     - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
-    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission.
+    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.     
-    
---------------------
-    3̶.̶ 
-
-
-    T̶o̶ a̶u̶t̶h̶e̶n̶t̶i̶c̶a̶t̶e̶ y̶o̶u̶r̶ G̶o̶o̶g̶l̶e̶ a̶c̶c̶o̶u̶n̶t̶ v̶i̶a̶ S̶e̶r̶v̶i̶c̶e̶ A̶c̶c̶o̶u̶n̶t̶ K̶e̶y̶ A̶u̶t̶h̶e̶n̶t̶i̶c̶a̶t̶i̶o̶n̶:̶
-    1̶.̶ C̶r̶e̶a̶t̶e̶ a̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶ a̶n̶d̶ k̶e̶y̶ t̶o̶ a̶c̶c̶e̶s̶s̶ t̶h̶e̶ G̶o̶o̶g̶l̶e̶ S̶h̶e̶e̶t̶s̶ A̶P̶I̶s̶:̶ b̶y̶ f̶o̶l̶l̶o̶w̶i̶n̶g̶ t̶h̶e̶ i̶n̶s̶t̶r̶u̶c̶t̶i̶o̶n̶s̶ i̶n̶ [̶S̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶s̶,̶ w̶e̶b̶ a̶p̶p̶l̶i̶c̶a̶t̶i̶o̶n̶s̶,̶ a̶n̶d̶ n̶a̶t̶i̶v̶e̶ a̶p̶p̶l̶i̶c̶a̶t̶i̶o̶n̶s̶]̶(̶h̶t̶t̶p̶s̶:̶/̶/̶s̶u̶p̶p̶o̶r̶t̶.̶g̶o̶o̶g̶l̶e̶.̶c̶o̶m̶/̶g̶o̶o̶g̶l̶e̶a̶p̶i̶/̶a̶n̶s̶w̶e̶r̶/̶6̶1̶5̶8̶8̶4̶9̶?̶h̶l̶=̶e̶n̶&̶r̶e̶f̶_̶t̶o̶p̶i̶c̶=̶7̶0̶1̶3̶2̶7̶9̶#̶z̶)̶
-        1̶.̶ G̶o̶ t̶o̶ t̶h̶e̶ [̶A̶P̶I̶ C̶o̶n̶s̶o̶l̶e̶ C̶r̶e̶d̶e̶n̶t̶i̶a̶l̶s̶ p̶a̶g̶e̶]̶(̶h̶t̶t̶p̶s̶:̶/̶/̶c̶o̶n̶s̶o̶l̶e̶.̶d̶e̶v̶e̶l̶o̶p̶e̶r̶s̶.̶g̶o̶o̶g̶l̶e̶.̶c̶o̶m̶/̶a̶p̶i̶s̶/̶c̶r̶e̶d̶e̶n̶t̶i̶a̶l̶s̶)̶.̶
-        2̶.̶ S̶e̶l̶e̶c̶t̶ t̶h̶e̶ p̶r̶o̶j̶e̶c̶t̶ t̶h̶a̶t̶ y̶o̶u̶'̶r̶e̶ c̶r̶e̶a̶t̶i̶n̶g̶ c̶r̶e̶d̶e̶n̶t̶i̶a̶l̶s̶ f̶o̶r̶.̶
-        3̶.̶ T̶o̶ s̶e̶t̶ u̶p̶ a̶ n̶e̶w̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶,̶ c̶l̶i̶c̶k̶ *̶*̶C̶r̶e̶a̶t̶e̶ C̶r̶e̶d̶e̶n̶t̶i̶a̶l̶s̶*̶*̶ a̶n̶d̶ s̶e̶l̶e̶c̶t̶ *̶*̶S̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶*̶*̶.̶
-        4̶.̶ S̶e̶l̶e̶c̶t̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶ t̶o̶ u̶s̶e̶ f̶o̶r̶ t̶h̶e̶ k̶e̶y̶.̶
-        5̶.̶ G̶r̶a̶n̶t̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶ t̶h̶e̶ r̶o̶l̶e̶ o̶f̶ P̶r̶o̶j̶e̶c̶t̶ V̶i̶e̶w̶e̶r̶.̶
-        6̶.̶ D̶o̶w̶n̶l̶o̶a̶d̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶'̶s̶ p̶u̶b̶l̶i̶c̶/̶p̶r̶i̶v̶a̶t̶e̶ k̶e̶y̶ a̶s̶ a̶ J̶S̶O̶N̶ f̶i̶l̶e̶.̶
-    2̶.̶ G̶i̶v̶e̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶ a̶c̶c̶e̶s̶s̶ t̶o̶ t̶h̶e̶ s̶p̶r̶e̶a̶d̶s̶h̶e̶e̶t̶ y̶o̶u̶ w̶a̶n̶t̶ t̶o̶ s̶y̶n̶c̶.̶ I̶f̶ y̶o̶u̶r̶ s̶p̶r̶e̶a̶d̶s̶h̶e̶e̶t̶ i̶s̶ v̶i̶e̶w̶a̶b̶l̶e̶ b̶y̶ a̶n̶y̶o̶n̶e̶,̶ n̶o̶ f̶u̶r̶t̶h̶e̶r̶ a̶c̶t̶i̶o̶n̶ i̶s̶ r̶e̶q̶u̶i̶r̶e̶d̶.̶ I̶f̶ n̶o̶t̶,̶ t̶h̶e̶n̶ d̶o̶ t̶h̶e̶ f̶o̶l̶l̶o̶w̶i̶n̶g̶:̶
-        1̶.̶ G̶o̶ t̶o̶ t̶h̶e̶ G̶o̶o̶g̶l̶e̶ A̶P̶I̶ D̶a̶s̶h̶b̶o̶a̶r̶d̶.̶ I̶n̶ t̶h̶e̶ *̶*̶C̶r̶e̶d̶e̶n̶t̶i̶a̶l̶s̶*̶*̶ t̶a̶b̶,̶ c̶o̶p̶y̶ t̶h̶e̶ e̶m̶a̶i̶l̶ a̶d̶d̶r̶e̶s̶s̶ o̶f̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶ y̶o̶u̶ c̶r̶e̶a̶t̶e̶d̶ i̶n̶ S̶t̶e̶p̶ 2̶.̶ 
-        3̶.̶ G̶o̶ t̶o̶ t̶h̶e̶ G̶o̶o̶g̶l̶e̶ s̶p̶r̶e̶a̶d̶s̶h̶e̶e̶t̶ y̶o̶u̶ w̶a̶n̶t̶ t̶o̶ s̶y̶n̶c̶,̶ c̶l̶i̶c̶k̶ *̶*̶S̶h̶a̶r̶e̶*̶*̶,̶ a̶n̶d̶ s̶h̶a̶r̶e̶ t̶h̶e̶ s̶p̶r̶e̶a̶d̶s̶h̶e̶e̶t̶ w̶i̶t̶h̶ t̶h̶e̶ s̶e̶r̶v̶i̶c̶e̶ a̶c̶c̶o̶u̶n̶t̶.̶
-    3̶.̶ G̶o̶ t̶o̶ t̶h̶e̶ A̶i̶r̶b̶y̶t̶e̶ C̶l̶o̶u̶d̶ U̶I̶ a̶n̶d̶ e̶n̶t̶e̶r̶ t̶h̶e̶ S̶e̶r̶v̶i̶c̶e̶ A̶c̶c̶o̶u̶n̶t̶ J̶S̶O̶N̶ k̶e̶y̶.̶
-
---------------------
 
 ### Output schema
 
