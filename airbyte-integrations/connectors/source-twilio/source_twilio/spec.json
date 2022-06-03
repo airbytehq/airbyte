@@ -54,7 +54,7 @@
         "minimum": 50,
         "maximum": 1000,
         "default": 50,
-        "type": "string",
+        "type": "integer",
         "order": 5
       }
     }
