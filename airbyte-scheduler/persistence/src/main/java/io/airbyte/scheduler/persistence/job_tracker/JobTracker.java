@@ -215,7 +215,7 @@ public class JobTracker {
       // * Otherwise, do some basic conversions to value-ish data.
       // It would be a weird thing to declare const: null, but in that case we don't want to report null
       // anyway, so explicitly use hasNonNull.
-      return Jsons.flatten(config);
+      return Jsons.flatten(config, false);
     } else if (schema.has("oneOf")) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
       // and use that sub-schema to convert the config to a map

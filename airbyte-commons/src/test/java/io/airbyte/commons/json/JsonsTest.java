@@ -263,7 +263,7 @@ class JsonsTest {
       {"jkl", true},
       {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
-    assertEquals(Jsons.flatten(json), expected);
+    assertEquals(Jsons.flatten(json, false), expected);
   }
 
   @Test
@@ -275,7 +275,7 @@ class JsonsTest {
       {"jkl", true},
       {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
-    assertEquals(Jsons.flatten(json), expected);
+    assertEquals(Jsons.flatten(json, true), expected);
   }
 
   private static class ToClass {

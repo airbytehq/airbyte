@@ -221,24 +221,27 @@ public class Jsons {
 
   /**
    * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
+   * this is used for JobTracker where is arrays aren't flatten and only converted to strings
+   * and Redshift SUPER type now reuse the function and need to arrays be flatten in the
+   * correct format
    */
-  public static Map<String, Object> flatten(final JsonNode node) {
+  public static Map<String, Object> flatten(final JsonNode node, final Boolean applyFlattenToArray) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
       for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
-        mergeMaps(output, field, flatten(value));
+        mergeMaps(output, field, flatten(value, false));
       }
       return output;
-    } else if (node.isArray()) {
+    } else if (node.isArray() && applyFlattenToArray) {
       final Map<String, Object> output = new HashMap<>();
       final int arrayLen = node.size();
       for (int i = 0; i < arrayLen; i++) {
         final String field = String.format("[%d]", i);
         final JsonNode value = node.get(i);
-        mergeMaps(output, field, flatten(value));
+        mergeMaps(output, field, flatten(value, true));
       }
       return output;
     } else {
