@@ -21,8 +21,11 @@ import com.google.common.collect.Sets;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class JsonsTest {
@@ -250,6 +253,29 @@ class JsonsTest {
   void testGetEstimatedByteSize() {
     final JsonNode json = Jsons.deserialize("{\"string_key\":\"abc\",\"array_key\":[\"item1\", \"item2\"]}");
     assertEquals(Jsons.toBytes(json).length, Jsons.getEstimatedByteSize(json));
+  }
+  
+  @Test
+  void testFlatten__noArrays() {
+    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": true, \"pqr\": 1 }");
+    Map<String, Object> expected = Stream.of(new Object[][] {
+        { "abc.def", "ghi" },
+        { "jkl", true },
+        { "pqr", 1 },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+    assertEquals(Jsons.flatten(json), expected);
+  }
+
+  @Test
+  void testFlatten__withArrays() {
+    final JsonNode json = Jsons.deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
+    Map<String, Object> expected = Stream.of(new Object[][] {
+        { "abc.[0].def", "ghi" },
+        { "abc.[1].fed", "ihg" },
+        { "jkl", true },
+        { "pqr", 1 },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+    assertEquals(Jsons.flatten(json), expected);
   }
 
   private static class ToClass {
