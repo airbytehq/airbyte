@@ -1259,7 +1259,12 @@ where 1 = 1
 
                     hooks.append(f"drop view {stg_schema}.{scd_new_data_table_raw_name}")
                     hooks.append(f"drop view {stg_schema}.{stg_table}")
-                config["post_hook"] = "[" + ",".join(map(lambda hook: '"' + hook + '"', hooks)) + "]"
+
+                # Explicit function so that we can have type hints to satisfy the linter
+                def wrap_in_quotes(s: str) -> str:
+                    return '"' + s + '"'
+
+                config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
