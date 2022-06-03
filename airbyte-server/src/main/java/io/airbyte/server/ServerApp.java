@@ -226,7 +226,6 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
         httpClient,
-        featureFlags,
         eventRunner,
         configsFlyway,
         jobsFlyway);

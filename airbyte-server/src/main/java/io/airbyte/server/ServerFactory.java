@@ -5,7 +5,6 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -42,7 +41,6 @@ public interface ServerFactory {
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
                         HttpClient httpClient,
-                        FeatureFlags featureFlags,
                         EventRunner eventRunner,
                         Flyway configsFlyway,
                         Flyway jobsFlyway);
@@ -64,7 +62,6 @@ public interface ServerFactory {
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
                                  final HttpClient httpClient,
-                                 final FeatureFlags featureFlags,
                                  final EventRunner eventRunner,
                                  final Flyway configsFlyway,
                                  final Flyway jobsFlyway) {
@@ -86,7 +83,6 @@ public interface ServerFactory {
           airbyteVersion,
           workspaceRoot,
           httpClient,
-          featureFlags,
           eventRunner,
           configsFlyway,
           jobsFlyway);

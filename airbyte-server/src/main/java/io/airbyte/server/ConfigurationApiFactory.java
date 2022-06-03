@@ -5,7 +5,6 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -44,7 +43,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Path workspaceRoot;
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
-  private static FeatureFlags featureFlags;
   private static EventRunner eventRunner;
   private static Flyway configsFlyway;
   private static Flyway jobsFlyway;
@@ -66,7 +64,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot,
                                final HttpClient httpClient,
-                               final FeatureFlags featureFlags,
                                final EventRunner eventRunner,
                                final Flyway configsFlyway,
                                final Flyway jobsFlyway) {
@@ -86,7 +83,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.workspaceRoot = workspaceRoot;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
-    ConfigurationApiFactory.featureFlags = featureFlags;
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.configsFlyway = configsFlyway;
     ConfigurationApiFactory.jobsFlyway = jobsFlyway;
@@ -112,7 +108,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
         ConfigurationApiFactory.httpClient,
-        ConfigurationApiFactory.featureFlags,
         ConfigurationApiFactory.eventRunner,
         ConfigurationApiFactory.configsFlyway,
         ConfigurationApiFactory.jobsFlyway);
