@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import { FieldProps } from "formik";
 import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
@@ -75,8 +76,13 @@ interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
 const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
   const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
+  const catalogHeaderStyle = classnames({
+    [styles.catalogHeader]: mode !== "readonly",
+    [styles.readonlyCatalogHeader]: mode === "readonly",
+  });
+
   return (
-    <Header className={styles.catalogHeader}>
+    <Header className={catalogHeaderStyle}>
       {mode !== "readonly" && (
         <Cell className={styles.checkboxCell}>
           <CheckBox
@@ -132,27 +138,34 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
   );
 };
 
-const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = () => (
-  <Header className={styles.catalogSubheader}>
-    <SubtitleCell>
-      <FormattedMessage id="form.namespace" />
-    </SubtitleCell>
-    <SubtitleCell>
-      <FormattedMessage id="form.streamName" />
-    </SubtitleCell>
-    <SubtitleCell flex={1.5}>
-      <FormattedMessage id="form.sourceAndDestination" />
-    </SubtitleCell>
-    <ClearSubtitleCell />
-    <ClearSubtitleCell />
-    <SubtitleCell>
-      <FormattedMessage id="form.namespace" />
-    </SubtitleCell>
-    <SubtitleCell>
-      <FormattedMessage id="form.streamName" />
-    </SubtitleCell>
-  </Header>
-);
+const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
+  const catalogSubheaderStyle = classnames({
+    [styles.catalogSubheader]: mode !== "readonly",
+    [styles.readonlyCatalogSubheader]: mode === "readonly",
+  });
+
+  return (
+    <Header className={catalogSubheaderStyle}>
+      <SubtitleCell>
+        <FormattedMessage id="form.namespace" />
+      </SubtitleCell>
+      <SubtitleCell>
+        <FormattedMessage id="form.streamName" />
+      </SubtitleCell>
+      <SubtitleCell flex={1.5}>
+        <FormattedMessage id="form.sourceAndDestination" />
+      </SubtitleCell>
+      <ClearSubtitleCell />
+      <ClearSubtitleCell />
+      <SubtitleCell>
+        <FormattedMessage id="form.namespace" />
+      </SubtitleCell>
+      <SubtitleCell>
+        <FormattedMessage id="form.streamName" />
+      </SubtitleCell>
+    </Header>
+  );
+};
 
 const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,

@@ -130,7 +130,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasChildren = fields && fields.length > 0;
 
   return (
-    <div className={styles.catalogSectionContainer}>
+    <div className={styles.catalogSection}>
       <StreamHeader
         stream={streamNode}
         destNamespace={destNamespace}
