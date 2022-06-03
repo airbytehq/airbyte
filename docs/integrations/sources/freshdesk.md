@@ -53,6 +53,7 @@ Please read [How to find your API key](https://support.freshdesk.com/support/sol
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.1  | 2022-06-03 | [13332](https://github.com/airbytehq/airbyte/pull/13332)   | Add new streams      
 | 0.3.0  | 2022-05-30 | [12334](https://github.com/airbytehq/airbyte/pull/12334)   | Implement with latest CDK      
 | 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)   | Migrate to the CDK                                                             |
 | 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                      |
