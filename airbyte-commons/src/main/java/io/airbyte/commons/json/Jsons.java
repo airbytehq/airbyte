@@ -229,10 +229,10 @@ public class Jsons {
   }
 
   /**
-   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
-   * this is used for JobTracker where is arrays aren't flatten and only converted to strings
-   * and Redshift SUPER type now reuse the function and need to arrays be flatten in the
-   * correct format
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. When
+   * applyFlattenToArray is true, each element in the array will be one entry in the returned map.
+   * This behavior is used in the Redshift SUPER type. When it is false, the whole array will be one
+   * entry. This is used in the JobTracker.
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
   public static Map<String, Object> flatten(final JsonNode node, final Boolean applyFlattenToArray) {
