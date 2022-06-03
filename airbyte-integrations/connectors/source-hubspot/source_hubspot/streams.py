@@ -1411,14 +1411,14 @@ class EngagementsNotes(CRMSearchStream):
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["crm.objects.contacts.read", "deal", "company", "tickets"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
 
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
-    associations = ["crm.objects.contacts.read"]
+    associations = ["contacts"]
     primary_key = "id"
     scopes = set()
 
@@ -1437,7 +1437,7 @@ class Products(CRMObjectIncrementalStream):
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
-    associations = ["crm.objects.contacts.read", "deals", "companies"]
+    associations = ["contacts", "deals", "companies"]
     primary_key = "id"
     scopes = {"tickets"}
 
