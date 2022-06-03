@@ -1,6 +1,8 @@
 {
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
   "notifications.error.health": "Cannot reach server",
+  "notifications.error.somethingWentWrong": "Something went wrong",
+  "notifications.error.noMessage": "No error message",
 
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
@@ -50,6 +52,7 @@
   "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
+  "form.canceling": "Canceling",
   "form.submit": "Submit",
   "form.delete": "Delete",
   "form.change": "Change",
