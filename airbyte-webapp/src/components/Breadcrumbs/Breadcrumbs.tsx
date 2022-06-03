@@ -20,9 +20,9 @@ const BreadcrumbsItem = styled.div`
   }
 `;
 
-type IProps = {
+interface IProps {
   data: Array<{ name: string | React.ReactNode; onClick?: () => void }>;
-};
+}
 
 const Breadcrumbs: React.FC<IProps> = ({ data }) => {
   const lastIndex = data.length - 1;

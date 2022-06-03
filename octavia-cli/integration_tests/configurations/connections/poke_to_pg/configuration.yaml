@@ -354,8 +354,6 @@ configuration:
                   - integer
             type: object
           name: pokemon
-          namespace: null
-          source_defined_cursor: null
           source_defined_primary_key: []
           supported_sync_modes:
             - full_refresh

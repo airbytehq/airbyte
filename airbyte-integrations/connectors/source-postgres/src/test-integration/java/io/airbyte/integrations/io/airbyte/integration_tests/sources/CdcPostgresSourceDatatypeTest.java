@@ -533,6 +533,14 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsquery")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'fat & (rat | cat)'::tsquery", "'fat:ab & cat'::tsquery")
+            .addExpectedValues(null, "'fat' & ( 'rat' | 'cat' )", "'fat':AB & 'cat'")
+            .build());
   }
 
 }

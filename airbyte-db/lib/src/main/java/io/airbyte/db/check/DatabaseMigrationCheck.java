@@ -15,6 +15,11 @@ import org.slf4j.Logger;
 public interface DatabaseMigrationCheck {
 
   /**
+   * Represents an unavailable schema migration version that ensures a re-test.
+   */
+  String UNAVAILABLE_VERSION = "0";
+
+  /**
    * The number of times to check if the database has been migrated to the required schema version.
    * TODO replace with a default value in a value injection annotation
    */
@@ -37,17 +42,7 @@ public interface DatabaseMigrationCheck {
       if (flywayOptional.isPresent()) {
         final var flyway = flywayOptional.get();
 
-        /**
-         * The database may be available, but not yet migrated. If this is the case, the Flyway object will
-         * not be able to retrieve the current version of the schema. Therefore, wait for the migration to
-         * complete before moving on with the test.
-         */
-        while (flyway.info().current() == null) {
-          getLogger().info("Waiting for migration to complete...");
-          sleep(sleepTime);
-        }
-
-        var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+        var currDatabaseMigrationVersion = getCurrentVersion(flyway);
         getLogger().info("Current database migration version {}.", currDatabaseMigrationVersion);
         getLogger().info("Minimum Flyway version required {}.", getMinimumFlywayVersion());
 
@@ -55,8 +50,14 @@ public interface DatabaseMigrationCheck {
           if (System.currentTimeMillis() - startTime >= getTimeoutMs()) {
             throw new DatabaseCheckException("Timeout while waiting for database to fulfill minimum flyway migration version..");
           }
-          sleep(sleepTime);
-          currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
+
+          try {
+            Thread.sleep(sleepTime);
+          } catch (final InterruptedException e) {
+            throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+          }
+
+          currDatabaseMigrationVersion = getCurrentVersion(flyway);
         }
         getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
       } else {
@@ -68,16 +69,22 @@ public interface DatabaseMigrationCheck {
   }
 
   /**
-   * Sleep for the provided amount of time (in milliseconds).
+   * Retrieves the current version of the migration schema.
    *
-   * @param sleepTime The amount of time to sleep
-   * @throws DatabaseCheckException if unable to sleep for the required amount of time.
+   * @param flyway A {@link Flyway} that can be used to retrieve the current version.
+   * @return The current version of the migrated schema or {@link #UNAVAILABLE_VERSION} if the version
+   *         cannot be discovered.
    */
-  default void sleep(final long sleepTime) throws DatabaseCheckException {
-    try {
-      Thread.sleep(sleepTime);
-    } catch (final InterruptedException e) {
-      throw new DatabaseCheckException("Unable to wait for database to be migrated.", e);
+  default String getCurrentVersion(final Flyway flyway) {
+    /**
+     * The database may be available, but not yet migrated. If this is the case, the Flyway object will
+     * not be able to retrieve the current version of the schema. If that happens, return a fake version
+     * so that the check will fail and try again.
+     */
+    if (flyway.info().current() != null) {
+      return flyway.info().current().getVersion().getVersion();
+    } else {
+      return UNAVAILABLE_VERSION;
     }
   }
 

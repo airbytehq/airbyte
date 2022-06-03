@@ -33,12 +33,12 @@ const ErrorBlock = styled.div`
   left: -46px;
 `;
 
-type UpdateAllButtonProps = {
+interface UpdateAllButtonProps {
   onUpdate: () => void;
   isLoading: boolean;
   hasError: boolean;
   hasSuccess: boolean;
-};
+}
 
 const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading, hasError, hasSuccess }) => {
   return (

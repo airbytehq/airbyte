@@ -5,7 +5,7 @@
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -120,9 +120,9 @@
             "properties": {
               "replication_type": {
                 "type": "string",
-                "const": "Standard",
-                "enum": ["Standard"],
-                "default": "Standard",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
                 "order": 0
               }
             }
