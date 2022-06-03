@@ -16,14 +16,14 @@ const RowsContainer = styled.div`
   margin: 0 10px 5px 10px;
 `;
 
-type StreamFieldTableProps = {
+interface StreamFieldTableProps {
   syncSchemaFields: SyncSchemaField[];
   config: AirbyteStreamConfiguration | undefined;
   shouldDefinePk: boolean;
   shouldDefineCursor: boolean;
   onCursorSelect: (cursorPath: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
-};
+}
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
   const { config } = props;

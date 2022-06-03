@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 import { AttemptRead } from "core/request/AirbyteClient";
 
-type IProps = {
+interface IProps {
   attempts?: AttemptRead[];
-};
+}
 
 const ExpandedFailureContainer = styled.div`
   font-size: 12px;

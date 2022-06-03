@@ -3,11 +3,11 @@ import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 
-type IProps = {
+interface IProps {
   value: string;
   enabled?: boolean;
   img?: string;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;

@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-type IProps = {
+interface IProps {
   text: React.ReactNode;
   description?: React.ReactNode;
-};
+}
 
 const Content = styled.div`
   padding: 74px 0 111px;
