@@ -2466,7 +2466,7 @@ export const updateState = (
 ) => {
   return apiOverride<ConnectionState>(
     {
-      url: `/v1/state/set`,
+      url: `/v1/state/update`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: connectionUpdateStateBody,

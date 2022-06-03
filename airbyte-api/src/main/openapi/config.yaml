@@ -1402,7 +1402,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/state/set:
+  /v1/state/update:
     post:
       tags:
         - connection

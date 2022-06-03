@@ -323,25 +323,16 @@ public class SchedulerHandler {
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
+    final UUID connectionId = connectionIdRequestBody.getConnectionId();
+    return getStateFromConnectionUUID(connectionId);
   }
 
   public ConnectionState updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
+    final UUID connectionId = connectionUpdateStateBody.getConnectionId();
     final State state = new State();
     state.setState(connectionUpdateStateBody.getState());
-    configRepository.updateConnectionState(connectionUpdateStateBody.getConnectionId(), state);
-    final Optional<State> newState = configRepository.getConnectionState(connectionUpdateStateBody.getConnectionId());
-    final ConnectionState connectionState = new ConnectionState().connectionId(connectionUpdateStateBody.getConnectionId());
-    newState.ifPresent(s -> connectionState.state(s.getState()));
-    return connectionState;
+    configRepository.updateConnectionState(connectionId, state);
+    return getStateFromConnectionUUID(connectionId);
   }
 
   // todo (cgardens) - this method needs a test.
@@ -410,6 +401,16 @@ public class SchedulerHandler {
     final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());
 
     return jobConverter.getJobInfoRead(job);
+  }
+
+  private ConnectionState getStateFromConnectionUUID(final UUID connectionId) throws IOException {
+    final Optional<State> currentState = configRepository.getConnectionState(connectionId);
+    LOGGER.info("currentState server: {}", currentState);
+
+    final ConnectionState connectionState = new ConnectionState().connectionId(connectionId);
+
+    currentState.ifPresent(state -> connectionState.state(state.getState()));
+    return connectionState;
   }
 
 }

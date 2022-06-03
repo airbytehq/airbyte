@@ -19,10 +19,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -572,6 +574,17 @@ class SchedulerHandlerTest {
 
     final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
+  }
+
+  @Test
+  void testUpdateState() throws IOException {
+    final UUID connectionId = UUID.randomUUID();
+    final JsonNode json = Jsons.jsonNode(ImmutableMap.of("checkpoint", 1));
+    final State state = new State().withState(json);
+    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
+
+    final ConnectionState connectionState = schedulerHandler.updateState(new ConnectionUpdateStateBody().connectionId(connectionId).state(json));
+    assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
   }
 
   @Test
