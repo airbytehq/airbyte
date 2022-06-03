@@ -1649,7 +1649,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#ConnectionState">ConnectionState</a>
+      <a href="#ConnectionUpdateStateResponse">ConnectionUpdateStateResponse</a>
       
     </div>
 
@@ -1658,7 +1658,9 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "errorMessage" : "errorMessage",
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "successful" : true
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -1671,7 +1673,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#ConnectionState">ConnectionState</a>
+        <a href="#ConnectionUpdateStateResponse">ConnectionUpdateStateResponse</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -9859,6 +9861,7 @@ font-style: italic;
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
     <li><a href="#ConnectionUpdateStateBody"><code>ConnectionUpdateStateBody</code> - </a></li>
+    <li><a href="#ConnectionUpdateStateResponse"><code>ConnectionUpdateStateResponse</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
@@ -10281,6 +10284,16 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">state </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionUpdateStateResponse"><code>ConnectionUpdateStateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">state </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
+<div class="param">successful </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">errorMessage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

@@ -1420,7 +1420,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConnectionState"
+                $ref: "#/components/schemas/ConnectionUpdateStateResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -4020,6 +4020,21 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         state:
           $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionUpdateStateResponse:
+      type: object
+      required:
+        - connectionId
+        - successful
+        - state
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+        successful:
+          type: boolean
+        errorMessage:
+          type: string
     ConnectionStateObject:
       type: object
     ActorDefinitionResourceRequirements:

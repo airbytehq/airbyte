@@ -75,11 +75,16 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
   const saveState = async () => {
     setLoading(true);
     const stateObject = JSON.parse(stateString) as ConnectionState;
-    const newState = await updateState({ connectionId, state: stateObject });
-    if (newState?.state) {
-      setStateString(formatState(newState.state));
-      setLoading(false);
+    const response = await updateState({ connectionId, state: stateObject });
+    if (!response.successful) {
+      setValidation({ valid: false, message: response.errorMessage });
     }
+
+    if (response?.state) {
+      setStateString(formatState(response.state));
+    }
+
+    setLoading(false);
   };
 
   const onSaveButtonClick = useCallback(() => {

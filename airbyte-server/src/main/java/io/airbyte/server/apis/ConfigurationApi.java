@@ -17,6 +17,7 @@ import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
+import io.airbyte.api.model.generated.ConnectionUpdateStateResponse;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
@@ -729,7 +730,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public ConnectionState updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) {
+  public ConnectionUpdateStateResponse updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) {
     return execute(() -> schedulerHandler.updateState(connectionUpdateStateBody));
   }
 

@@ -25,6 +25,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
+import io.airbyte.api.model.generated.ConnectionUpdateStateResponse;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -583,8 +584,12 @@ class SchedulerHandlerTest {
     final State state = new State().withState(json);
     when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
 
-    final ConnectionState connectionState = schedulerHandler.updateState(new ConnectionUpdateStateBody().connectionId(connectionId).state(json));
-    assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
+    final ConnectionUpdateStateResponse connectionStateResponse =
+        schedulerHandler.updateState(new ConnectionUpdateStateBody().connectionId(connectionId).state(json));
+    assertEquals(connectionStateResponse.getState(), state.getState());
+    assertEquals(connectionStateResponse.getConnectionId(), connectionId);
+    assertEquals(connectionStateResponse.getSuccessful(), true);
+    assertEquals(connectionStateResponse.getErrorMessage(), null);
   }
 
   @Test

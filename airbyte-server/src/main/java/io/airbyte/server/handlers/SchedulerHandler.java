@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
+import io.airbyte.api.model.generated.ConnectionUpdateStateResponse;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -331,23 +332,31 @@ public class SchedulerHandler {
     return getStateFromConnectionUUID(connectionId);
   }
 
-  public ConnectionState updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
+  public ConnectionUpdateStateResponse updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
+    String errorMessage = null;
+    Boolean successful = false;
     final UUID connectionId = connectionUpdateStateBody.getConnectionId();
     final Set<ConfigType> configTypes = new HashSet();
     configTypes.add(ConfigType.SYNC);
     final List<Job> runningJobs = jobPersistence.listJobs(configTypes, connectionId.toString(), 2, 0)
         .stream().filter(j -> !j.isJobInTerminalState())
         .collect(Collectors.toList());
-    System.out.println(runningJobs);
 
-    // TODO: Ideally we would throw or return a message to the user here that the update was ignored because a sync was running
     if (runningJobs.size() == 0) {
       final State state = new State();
       state.setState(connectionUpdateStateBody.getState());
       configRepository.updateConnectionState(connectionId, state);
+      successful = true;
+    } else {
+      errorMessage = "Sync is running";
     }
 
-    return getStateFromConnectionUUID(connectionId);
+    final ConnectionUpdateStateResponse response = new ConnectionUpdateStateResponse();
+    response.setState(getStateFromConnectionUUID(connectionId).getState());
+    response.setConnectionId(connectionId);
+    response.setErrorMessage(errorMessage);
+    response.setSuccessful(successful);
+    return response;
   }
 
   // todo (cgardens) - this method needs a test.
