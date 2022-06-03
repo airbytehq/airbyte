@@ -20,13 +20,6 @@
         "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
         "default": ""
       },
-      "api_pagination_limit": {
-        "type": "integer",
-        "title": "Api Pagination Limit (0=No Limit)",
-        "description": "Limit up to how many pages will be queried in the API to force the writing of data",
-        "default": 0,
-        "minimum": 0
-      },
       "credentials": {
         "title": "Authorization Method",
         "type": "object",
