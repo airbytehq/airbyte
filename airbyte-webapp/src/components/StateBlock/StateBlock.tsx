@@ -97,6 +97,7 @@ const StateBlock: React.FC<IProps> = ({ connectionId }) => {
       },
       submitButtonDataId: "state",
     });
+    // eslint-disable-next-line
   }, [closeConfirmationModal, saveState, openConfirmationModal]);
 
   const loadStateMemoized = useCallback(() => {

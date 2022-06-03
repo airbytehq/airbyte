@@ -67,8 +67,12 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -329,9 +333,20 @@ public class SchedulerHandler {
 
   public ConnectionState updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
     final UUID connectionId = connectionUpdateStateBody.getConnectionId();
-    final State state = new State();
-    state.setState(connectionUpdateStateBody.getState());
-    configRepository.updateConnectionState(connectionId, state);
+    final Set<ConfigType> configTypes = new HashSet();
+    configTypes.add(ConfigType.SYNC);
+    final List<Job> runningJobs = jobPersistence.listJobs(configTypes, connectionId.toString(), 2, 0)
+        .stream().filter(j -> !j.isJobInTerminalState())
+        .collect(Collectors.toList());
+    System.out.println(runningJobs);
+
+    // TODO: Ideally we would throw or return a message to the user here that the update was ignored because a sync was running
+    if (runningJobs.size() == 0) {
+      final State state = new State();
+      state.setState(connectionUpdateStateBody.getState());
+      configRepository.updateConnectionState(connectionId, state);
+    }
+
     return getStateFromConnectionUUID(connectionId);
   }
 
