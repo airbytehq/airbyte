@@ -114,4 +114,5 @@ class JobsDatabaseMigrationCheckTest {
     final var check = new JobsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
+
 }
