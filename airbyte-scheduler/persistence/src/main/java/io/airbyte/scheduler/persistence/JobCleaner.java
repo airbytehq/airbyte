@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * application. This class is being kept around as it may be useful in the future when job sweeping
  * is added to the temporal scheduler. Go to the following permalink to see how this class was used
  * by the SchedulerApp before that was removed:
- * https://github.com/airbytehq/airbyte/blob/88390f24ea0490d979dc9a96623539279a2d0eb0/airbyte-scheduler/app/src/main/java/io/airbyte/scheduler/app/SchedulerApp.java#L270
+ * https://github.com/airbytehq/airbyte/blob/v0.39.8-alpha/airbyte-scheduler/app/src/main/java/io/airbyte/scheduler/app/SchedulerApp.java#L270
  */
 
 /**
