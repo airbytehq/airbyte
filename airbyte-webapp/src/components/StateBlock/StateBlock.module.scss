@@ -1,0 +1,17 @@
+@use "../../scss/colors";
+
+.stateBlock {
+  margin-top: 12px;
+  padding: 19px 20px 20px;
+  // display: flex;
+  align-items: top;
+  justify-content: space-between;
+}
+
+.descriptionText {
+  margin-left: 20px;
+  font-size: 11px;
+  line-height: 13px;
+  color: colors.$greyColor40;
+  white-space: pre-line;
+}

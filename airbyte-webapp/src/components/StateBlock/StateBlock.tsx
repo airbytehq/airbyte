@@ -1,33 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { H5 } from "components";
+import { H5, Card } from "components";
 import CodeEditor, { ValidatorFeedback } from "components/CodeEditor/CodeEditor";
-import ContentCard from "components/ContentCard";
 
 import { ConnectionState, ConnectionStateObject } from "core/request/AirbyteClient";
 import { useGetConnectionState, useUpdateConnectionState } from "hooks/services/useConnectionHook";
 
+import styles from "./StateBlock.module.scss";
+
 interface StateBlockProps {
   connectionId: string;
 }
-
-const StateBlockComponent = styled(ContentCard)`
-  margin-top: 12px;
-  padding: 19px 20px 20px;
-  // display: flex;
-  align-items: top;
-  justify-content: space-between;
-`;
-
-const Text = styled.div`
-  margin-left: 20px;
-  font-size: 11px;
-  line-height: 13px;
-  color: ${({ theme }) => theme.greyColor40};
-  white-space: pre-line;
-`;
 
 const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   const [stateString, setStateString] = useState<string>(`// ...`);
@@ -63,13 +47,13 @@ const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   }, [loadStateMemoized]);
 
   return (
-    <StateBlockComponent>
-      <Text>
+    <Card className={styles.stateBlock}>
+      <div className={styles.descriptionText}>
         <H5 bold>
           <FormattedMessage id={"tables.connectionState.title"} />
         </H5>
         <FormattedMessage id={"tables.connectionState.p1"} />. <FormattedMessage id={"tables.connectionState.p2"} />.
-      </Text>
+      </div>
       <CodeEditor
         code={stateString}
         setCode={setStateString}
@@ -81,7 +65,7 @@ const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
         modalTitleKey="tables.connectionState.confirmModalTitle"
         modalTextKey="tables.connectionState.confirmModalText"
       />
-    </StateBlockComponent>
+    </Card>
   );
 };
 

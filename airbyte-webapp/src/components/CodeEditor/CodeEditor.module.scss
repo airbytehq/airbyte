@@ -1,0 +1,9 @@
+@use "../../scss/colors";
+
+.errorText {
+  margin-left: 20px;
+  font-size: 11px;
+  line-height: 13px;
+  color: colors.$redColor;
+  white-space: pre-line;
+}

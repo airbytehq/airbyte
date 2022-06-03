@@ -1,7 +1,6 @@
 import { highlight, languages } from "prismjs/components/prism-core";
 import React, { useState, ReactElement } from "react";
 import Editor from "react-simple-code-editor";
-import styled from "styled-components";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism.css";
@@ -10,14 +9,9 @@ import { LoadingButton } from "components";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 
-const ErrorText = styled.div`
-  margin-left: 20px;
-  font-size: 11px;
-  line-height: 13px;
-  color: ${({ theme }) => theme.redColor};
-  white-space: pre-line;
-`;
+import styles from "./CodeEditor.module.scss";
 
+// note: these styles are in JSON for the editor to use
 const codeStyle = {
   fontFamily: '"Fira code", "Fira Mono", monospace',
   fontSize: 12,
@@ -98,7 +92,7 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
         disabled={loading}
         style={codeStyle}
       />
-      {validation.valid === false && <ErrorText>{validation.errorMessage || "Invalid"}</ErrorText>}
+      {validation.valid === false && <div className={styles.errorText}>{validation.errorMessage || "Invalid"}</div>}
       <div style={{ paddingLeft: 19 }}>
         <LoadingButton type="submit" onClick={onClick} isLoading={loading} disabled={!validation?.valid}>
           {saveButtonCTA || "Save"}
