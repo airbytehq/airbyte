@@ -1,22 +1,14 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useQueryErrorResetBoundary } from "react-query";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useLocation } from "react-use";
 import { LocationSensorState } from "react-use/lib/useLocation";
-import styled from "styled-components";
-
-import { Button } from "components/base/Button";
 
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
-
-const RetryContainer = styled.div`
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-`;
 
 interface ApiErrorBoundaryState {
   errorId?: string;
@@ -30,17 +22,18 @@ enum ErrorId {
   UnknownError = "unknown",
 }
 
-interface ApiErrorBoundaryProps {
-  hideHeader?: boolean;
-}
-
 interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
+  navigate: NavigateFunction;
+}
+
+interface ApiErrorBoundaryProps {
+  onError?: (errorId?: string) => void;
 }
 
 class ApiErrorBoundary extends React.Component<
-  ApiErrorBoundaryProps & ApiErrorBoundaryHookProps,
+  ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
   ApiErrorBoundaryState
 > {
   state: ApiErrorBoundaryState = {};
@@ -66,6 +59,9 @@ class ApiErrorBoundary extends React.Component<
 
     if (location !== prevProps.location) {
       this.setState({ errorId: undefined, didRetry: false });
+      this.props.onError?.(undefined);
+    } else {
+      this.props.onError?.(this.state.errorId);
     }
   }
 
@@ -74,7 +70,7 @@ class ApiErrorBoundary extends React.Component<
 
   render(): React.ReactNode {
     const { errorId, didRetry, message } = this.state;
-    const { onRetry, hideHeader, children } = this.props;
+    const { onRetry, navigate, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
@@ -82,39 +78,38 @@ class ApiErrorBoundary extends React.Component<
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
       return (
-        <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} hideHeader={hideHeader}>
-          {onRetry && (
-            <RetryContainer>
-              <Button
-                onClick={() => {
-                  this.setState({ didRetry: true, errorId: undefined });
-                  onRetry?.();
-                }}
-              >
-                <FormattedMessage id="errorView.retry" />
-              </Button>
-            </RetryContainer>
-          )}
-        </ErrorOccurredView>
+        <ErrorOccurredView
+          message={<FormattedMessage id="webapp.cannotReachServer" />}
+          ctaButtonText={<FormattedMessage id="errorView.retry" />}
+          onCtaButtonClick={() => {
+            this.setState({ didRetry: true, errorId: undefined });
+            onRetry?.();
+          }}
+        />
       );
     }
 
     return !errorId ? (
-      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView hideHeader={hideHeader} />}>
-        {children}
-      </ResourceNotFoundErrorBoundary>
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>{children}</ResourceNotFoundErrorBoundary>
     ) : (
-      <ErrorOccurredView message={<FormattedMessage id="errorView.unknownError" />} hideHeader={hideHeader} />
+      <ErrorOccurredView
+        message={<FormattedMessage id="errorView.unknownError" />}
+        ctaButtonText={<FormattedMessage id="ui.goBack" />}
+        onCtaButtonClick={() => {
+          navigate("..");
+        }}
+      />
     );
   }
 }
 
-const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, hideHeader }) => {
+const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <ApiErrorBoundary location={location} onRetry={reset} hideHeader={hideHeader}>
+    <ApiErrorBoundary {...props} location={location} navigate={navigate} onRetry={reset}>
       {children}
     </ApiErrorBoundary>
   );

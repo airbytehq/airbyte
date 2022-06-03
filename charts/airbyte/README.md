@@ -207,6 +207,7 @@ Helm charts for Airbyte.
 | `bootloader.podAnnotations`   | Add extra annotations to the bootloader pod                          | `{}`                 |
 | `bootloader.nodeSelector`     | Node labels for pod assignment                                       | `{}`                 |
 | `bootloader.tolerations`      | Tolerations for worker pod assignment.                               | `[]`                 |
+| `bootloader.affinity`         | Affinity and anti-affinity for bootloader pod assignment.            | `{}`                 |
 
 
 ### Temporal parameters
