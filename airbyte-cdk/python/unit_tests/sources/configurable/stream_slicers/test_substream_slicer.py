@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
@@ -47,7 +47,6 @@ def test():
     parent_id = "{{ parent_record['id'] }}"
     slicer = SubstreamSlicer(parent_stream, state, parent_id)
     stream_slices = [s for s in slicer.stream_slices(SyncMode.incremental, None)]
-    print(f"actual_slices:\n{stream_slices}")
     # FIXME: need to figure out how to convert the parent_id back to a number...
     assert stream_slices == [
         {"slice": "first", "parent_id": "0"},
