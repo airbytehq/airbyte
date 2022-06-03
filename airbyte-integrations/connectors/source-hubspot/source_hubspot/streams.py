@@ -1387,10 +1387,7 @@ class EngagementsCalls(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
-
-    @property
-    def scopes(self) -> Set[str]:
-        return {"crm.objects.contacts.read"}
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsEmails(CRMSearchStream):
