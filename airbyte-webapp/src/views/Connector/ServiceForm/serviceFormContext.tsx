@@ -8,7 +8,7 @@ import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { ServiceFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
-type Context = {
+interface Context {
   formType: "source" | "destination";
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   widgetsInfo: WidgetConfigMap;
@@ -23,7 +23,7 @@ type Context = {
   isEditMode?: boolean;
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
-};
+}
 
 const FormWidgetContext = React.createContext<Context | null>(null);
 

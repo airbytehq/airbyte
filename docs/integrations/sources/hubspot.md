@@ -133,6 +133,7 @@ HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.65  | 2022-06-03 | [13455](https://github.com/airbytehq/airbyte/pull/13455) | Discover only returns streams for which required scopes were granted                                                                           |
 | 0.1.64  | 2022-06-03 | [13218](https://github.com/airbytehq/airbyte/pull/13218) | Transform `contact_lists` data to comply with schema                                                                                           |
 | 0.1.63  | 2022-06-02 | [13320](https://github.com/airbytehq/airbyte/pull/13320) | Fix connector incremental state handling                                                                                                       |
 | 0.1.62  | 2022-06-01 | [13383](https://github.com/airbytehq/airbyte/pull/13383) | Add `line items` to `deals` stream                                                                                                             |

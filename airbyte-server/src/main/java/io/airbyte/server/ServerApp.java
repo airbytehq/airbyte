@@ -273,9 +273,10 @@ public class ServerApp implements ServerRunnable {
             ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+        final ConfigPersistence yamlSeedConfigPersistence =
+            new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
-        getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
-            configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
+        getServer(new ServerFactory.Api(), yamlSeedConfigPersistence, configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);

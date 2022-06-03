@@ -28,7 +28,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
-type FormikConnectionFormValues = {
+interface FormikConnectionFormValues {
   name?: string;
   schedule?: ConnectionSchedule | null;
   prefix: string;
@@ -37,7 +37,7 @@ type FormikConnectionFormValues = {
   namespaceFormat: string;
   transformations?: OperationRead[];
   normalization?: NormalizationType;
-};
+}
 
 type ConnectionFormValues = ValuesProps;
 
