@@ -701,7 +701,7 @@ bootloader:
   ##
   tolerations: []
 
-  ## @param bootloader.affinity [object] Affinity and anti-affinity for webapp pod assignment.
+  ## @param bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
   affinity: {}
