@@ -199,15 +199,17 @@ Helm charts for Airbyte.
 
 ### Bootloader Parameters
 
-| Name                          | Description                                                          | Value                |
-| ----------------------------- | -------------------------------------------------------------------- | -------------------- |
-| `bootloader.image.repository` | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
-| `bootloader.image.pullPolicy` | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
-| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.39.9-alpha`       |
-| `bootloader.podAnnotations`   | Add extra annotations to the bootloader pod                          | `{}`                 |
-| `bootloader.nodeSelector`     | Node labels for pod assignment                                       | `{}`                 |
-| `bootloader.tolerations`      | Tolerations for worker pod assignment.                               | `[]`                 |
-| `bootloader.affinity`         | Affinity and anti-affinity for bootloader pod assignment.            | `{}`                 |
+| Name                            | Description                                                          | Value                |
+| ------------------------------- | -------------------------------------------------------------------- | -------------------- |
+| `bootloader.image.repository`   | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
+| `bootloader.image.pullPolicy`   | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
+| `bootloader.image.tag`          | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.39.8-alpha`       |
+| `bootloader.podAnnotations`     | Add extra annotations to the bootloader pod                          | `{}`                 |
+| `bootloader.nodeSelector`       | Node labels for pod assignment                                       | `{}`                 |
+| `bootloader.resources.limits`   | The resources limits for the airbyte bootloader image                | `{}`                 |
+| `bootloader.resources.requests` | The requested resources for the airbyte bootloader image             | `{}`                 |
+| `bootloader.tolerations`        | Tolerations for worker pod assignment.                               | `[]`                 |
+| `bootloader.affinity`           | Affinity and anti-affinity for bootloader pod assignment.            | `{}`                 |
 
 
 ### Temporal parameters
@@ -235,6 +237,8 @@ Helm charts for Airbyte.
 | `temporal.readinessProbe.timeoutSeconds`      | Timeout seconds for readinessProbe                      | `1`                     |
 | `temporal.readinessProbe.failureThreshold`    | Failure threshold for readinessProbe                    | `3`                     |
 | `temporal.readinessProbe.successThreshold`    | Success threshold for readinessProbe                    | `1`                     |
+| `temporal.resources.limits`                   | The resources limits for temporal pod(s)                | `{}`                    |
+| `temporal.resources.requests`                 | The requested resources for temporal pod(s)             | `{}`                    |
 | `temporal.nodeSelector`                       | Node labels for temporal pod assignment                 | `{}`                    |
 | `temporal.tolerations`                        | Tolerations for temporal pod assignment.                | `[]`                    |
 | `temporal.affinity`                           | Affinity and anti-affinity for temporal pod assignment. | `{}`                    |

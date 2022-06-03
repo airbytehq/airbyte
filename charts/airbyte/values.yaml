@@ -701,6 +701,26 @@ bootloader:
   ##
   tolerations: []
 
+  ## Bootloader resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+  ## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+
   ## @param bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
@@ -828,6 +848,26 @@ temporal:
   ##    emptyDir: {}
   ##
   extraVolumes: []
+
+  ## Temporal resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param temporal.resources.limits [object] The resources limits for temporal pod(s)
+  ## @param temporal.resources.requests [object] The requested resources for temporal pod(s)
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
 
 ## @section Airbyte Database parameters
 
