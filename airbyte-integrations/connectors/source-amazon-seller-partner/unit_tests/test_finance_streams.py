@@ -138,8 +138,8 @@ def test_finance_stream_next_token(mocker, list_financial_event_groups_stream):
     assert expected == list_financial_event_groups_stream.next_page_token(response)
 
     mocker.patch.object(response, "json", return_value={"payload": {}})
-    if list_financial_event_groups_stream.next_page_token(response) is None:
-        assert True
+    if list_financial_event_groups_stream.next_page_token(response) is not None:
+        assert False
 
 
 def test_financial_event_groups_stream_request_params(list_financial_event_groups_stream):
