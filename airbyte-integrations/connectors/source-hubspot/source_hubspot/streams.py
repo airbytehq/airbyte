@@ -216,7 +216,7 @@ class Stream(HttpStream, ABC):
     def scopes(self) -> Set[str]:
         """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
 
-    def scope_is_granted(self, granted_scopes: Set[str]):
+    def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
         if not self.scopes:
             return True
         else:
