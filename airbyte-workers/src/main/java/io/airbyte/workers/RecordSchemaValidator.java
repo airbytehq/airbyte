@@ -58,7 +58,14 @@ public class RecordSchemaValidator {
 
       final Set<String> validationMessagesToDisplay = new HashSet<>();
       for (int i = 0; i < invalidFields.size(); i++) {
-        final String newMessage = String.format("Expected %s to be %s.", invalidFields.get(i), invalidRecordDataAndType.get(i)[1]);
+        String expectedType = "";
+        if (invalidRecordDataAndType.size() > i && invalidRecordDataAndType.get(i).length > 0) {
+          expectedType = invalidRecordDataAndType.get(i)[1];
+        }
+        String newMessage = String.format("%s is of an incorrect type.", invalidFields.get(i));
+        if (expectedType != "") {
+          newMessage = newMessage + " Expected it to be " + expectedType;
+        }
         validationMessagesToDisplay.add(newMessage);
       }
 
