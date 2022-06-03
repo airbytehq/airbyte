@@ -39,10 +39,10 @@
         "title": "Lookback",
         "description": "format in minutes. Any data between sync time and sync time minus lookback setting in minutes will be replicated.",
         "examples": [
-          "60"
+          60
         ],
         "default": 0,
-        "type": "string",
+        "type": "integer",
         "order": 4
       },
       "page_size": {
