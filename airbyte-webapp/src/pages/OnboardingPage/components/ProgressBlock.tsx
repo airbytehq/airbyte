@@ -57,10 +57,10 @@ const PaddedButton = styled(Button)`
   margin-left: 10px;
 `;
 
-type ProgressBlockProps = {
+interface ProgressBlockProps {
   connection: WebBackendConnectionRead;
   onSync: () => void;
-};
+}
 
 const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => {
   const showMessage = (status: JobStatus | undefined) => {

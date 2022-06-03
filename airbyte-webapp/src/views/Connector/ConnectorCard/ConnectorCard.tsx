@@ -13,12 +13,12 @@ import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connecto
 
 import { useTestConnector } from "./useTestConnector";
 
-export type ConnectorCardProvidedProps = {
+export interface ConnectorCardProvidedProps {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
-};
+}
 
 export const ConnectorCard: React.FC<
   {
