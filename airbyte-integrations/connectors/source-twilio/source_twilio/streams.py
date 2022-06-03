@@ -135,7 +135,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state or self.state
         if start_date:
-            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template)})
+            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=self._lookback)).strftime(self.time_filter_template)})
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
