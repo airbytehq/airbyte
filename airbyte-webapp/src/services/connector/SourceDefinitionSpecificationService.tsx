@@ -1,7 +1,6 @@
-import { QueryObserverResult, useQuery } from "react-query";
+import { useQuery } from "react-query";
 
 import { useConfig } from "config";
-import { SourceDefinitionSpecification } from "core/domain/connector";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -18,7 +17,6 @@ export const sourceDefinitionSpecificationKeys = {
 
 function useGetService(): SourceDefinitionSpecificationService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
@@ -27,16 +25,14 @@ function useGetService(): SourceDefinitionSpecificationService {
   );
 }
 
-export const useGetSourceDefinitionSpecification = (id: string): SourceDefinitionSpecification => {
+export const useGetSourceDefinitionSpecification = (id: string) => {
   const service = useGetService();
   const { workspaceId } = useCurrentWorkspace();
 
   return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
 
-export const useGetSourceDefinitionSpecificationAsync = (
-  id: string | null
-): QueryObserverResult<SourceDefinitionSpecification, Error> => {
+export const useGetSourceDefinitionSpecificationAsync = (id: string | null) => {
   const service = useGetService();
   const { workspaceId } = useCurrentWorkspace();
 

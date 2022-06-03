@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.11", "vcrpy==4.1.1", "backoff==1.10.0", "pendulum==2.1.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.13", "vcrpy==4.1.1", "backoff==1.10.0", "pendulum==2.1.2"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

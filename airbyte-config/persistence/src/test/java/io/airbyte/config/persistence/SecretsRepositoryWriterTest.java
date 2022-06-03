@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -52,6 +52,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+@SuppressWarnings({"PMD.AvoidThrowingRawExceptionTypes", "PMD.UnusedPrivateField"})
 class SecretsRepositoryWriterTest {
 
   private static final UUID UUID1 = UUID.randomUUID();
@@ -79,6 +80,9 @@ class SecretsRepositoryWriterTest {
   private static final StandardDestinationDefinition DEST_DEF = new StandardDestinationDefinition()
       .withDestinationDefinitionId(DESTINATION_WITH_FULL_CONFIG.getDestinationDefinitionId())
       .withSpec(SPEC);
+
+  private static final String PASSWORD_PROPERTY_NAME = "password";
+  private static final String PASSWORD_FIELD_NAME = "_secret";
 
   private ConfigRepository configRepository;
   private MemorySecretPersistence longLivedSecretPersistence;
@@ -187,17 +191,17 @@ class SecretsRepositoryWriterTest {
     // we can't easily get the pointer, so verify the secret has been stripped out and then make sure
     // the rest of the object meets expectations.
     final SourceConnection actualSource = (SourceConnection) actual.get(ConfigSchema.SOURCE_CONNECTION).get(0);
-    assertTrue(actualSource.getConfiguration().get("password").has("_secret"));
-    ((ObjectNode) actualSource.getConfiguration()).remove("password");
+    assertTrue(actualSource.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
+    ((ObjectNode) actualSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     final SourceConnection expectedSource = Jsons.clone(SOURCE_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedSource.getConfiguration()).remove("password");
+    ((ObjectNode) expectedSource.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     assertEquals(expectedSource, actualSource);
 
     final DestinationConnection actualDest = (DestinationConnection) actual.get(ConfigSchema.DESTINATION_CONNECTION).get(0);
-    assertTrue(actualDest.getConfiguration().get("password").has("_secret"));
-    ((ObjectNode) actualDest.getConfiguration()).remove("password");
+    assertTrue(actualDest.getConfiguration().get(PASSWORD_PROPERTY_NAME).has(PASSWORD_FIELD_NAME));
+    ((ObjectNode) actualDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     final DestinationConnection expectedDest = Jsons.clone(DESTINATION_WITH_FULL_CONFIG);
-    ((ObjectNode) expectedDest.getConfiguration()).remove("password");
+    ((ObjectNode) expectedDest.getConfiguration()).remove(PASSWORD_PROPERTY_NAME);
     assertEquals(expectedDest, actualDest);
   }
 
@@ -223,7 +227,7 @@ class SecretsRepositoryWriterTest {
   }
 
   @Test
-  public void testWriteWorkspaceServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWriteWorkspaceServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID workspaceId = UUID.randomUUID();
 
     final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
@@ -245,7 +249,7 @@ class SecretsRepositoryWriterTest {
 
     SecretCoordinate jsonSecretCoordinate = null;
     SecretCoordinate hmacSecretCoordinate = null;
-    for (Map.Entry<SecretCoordinate, String> entry : longLivedSecretPersistence.getMap().entrySet()) {
+    for (final Map.Entry<SecretCoordinate, String> entry : longLivedSecretPersistence.getMap().entrySet()) {
       if (entry.getKey().getFullCoordinate().contains("json")) {
         jsonSecretCoordinate = entry.getKey();
         jsonPayloadInPersistence = entry.getValue();
@@ -266,12 +270,12 @@ class SecretsRepositoryWriterTest {
     assertEquals(HMAC_SECRET_PAYLOAD_1.toString(), hmacPayloadInPersistence);
 
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(
-        Jsons.clone(workspaceServiceAccount.withJsonCredential(Jsons.jsonNode(Map.of("_secret", jsonSecretCoordinate.getFullCoordinate())))
-            .withHmacKey(Jsons.jsonNode(Map.of("_secret", hmacSecretCoordinate.getFullCoordinate())))));
+        Jsons.clone(workspaceServiceAccount.withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretCoordinate.getFullCoordinate())))
+            .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretCoordinate.getFullCoordinate())))));
   }
 
   @Test
-  public void testWriteSameStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWriteSameStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final SecretsRepositoryWriter secretsRepositoryWriter = spy(
@@ -293,8 +297,8 @@ class SecretsRepositoryWriterTest {
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
     final WorkspaceServiceAccount cloned = Jsons.clone(workspaceServiceAccount)
-        .withJsonCredential(Jsons.jsonNode(Map.of("_secret", jsonSecretCoordinate.getFullCoordinate())))
-        .withHmacKey(Jsons.jsonNode(Map.of("_secret", hmacSecretCoordinate.getFullCoordinate())));
+        .withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretCoordinate.getFullCoordinate())))
+        .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretCoordinate.getFullCoordinate())));
 
     doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
@@ -302,15 +306,15 @@ class SecretsRepositoryWriterTest {
     doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(hmacSecretCoordinate);
     secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
 
-    ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
-    ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
+    final ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
+    final ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
 
     verify(secretPersistence, times(2)).write(coordinates.capture(), payloads.capture());
-    List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
+    final List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
     assertEquals(2, actualCoordinates.size());
     assertThat(actualCoordinates, containsInAnyOrder(jsonSecretCoordinate, hmacSecretCoordinate));
 
-    List<String> actualPayload = payloads.getAllValues();
+    final List<String> actualPayload = payloads.getAllValues();
     assertEquals(2, actualPayload.size());
     assertThat(actualPayload, containsInAnyOrder(jsonSecretPayload, HMAC_SECRET_PAYLOAD_1.toString()));
 
@@ -320,7 +324,7 @@ class SecretsRepositoryWriterTest {
   }
 
   @Test
-  public void testWriteDifferentStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWriteDifferentStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final SecretsRepositoryWriter secretsRepositoryWriter =
@@ -345,8 +349,8 @@ class SecretsRepositoryWriterTest {
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
     final WorkspaceServiceAccount cloned = Jsons.clone(workspaceServiceAccount)
-        .withJsonCredential(Jsons.jsonNode(Map.of("_secret", jsonSecretOldCoordinate.getFullCoordinate())))
-        .withHmacKey(Jsons.jsonNode(Map.of("_secret", hmacSecretOldCoordinate.getFullCoordinate())));
+        .withJsonCredential(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, jsonSecretOldCoordinate.getFullCoordinate())))
+        .withHmacKey(Jsons.jsonNode(Map.of(PASSWORD_FIELD_NAME, hmacSecretOldCoordinate.getFullCoordinate())));
 
     doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
@@ -361,21 +365,21 @@ class SecretsRepositoryWriterTest {
     final SecretCoordinate hmacSecretNewCoordinate = new SecretCoordinate(
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);
 
-    ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
-    ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
+    final ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
+    final ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
 
     verify(secretPersistence, times(2)).write(coordinates.capture(), payloads.capture());
-    List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
+    final List<SecretCoordinate> actualCoordinates = coordinates.getAllValues();
     assertEquals(2, actualCoordinates.size());
     assertThat(actualCoordinates, containsInAnyOrder(jsonSecretNewCoordinate, hmacSecretNewCoordinate));
 
-    List<String> actualPayload = payloads.getAllValues();
+    final List<String> actualPayload = payloads.getAllValues();
     assertEquals(2, actualPayload.size());
     assertThat(actualPayload, containsInAnyOrder(jsonSecretNewPayload, HMAC_SECRET_PAYLOAD_2.toString()));
 
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(Jsons.clone(workspaceServiceAccount).withJsonCredential(Jsons.jsonNode(
-        Map.of("_secret", jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
-            Map.of("_secret", hmacSecretNewCoordinate.getFullCoordinate()))));
+        Map.of(PASSWORD_FIELD_NAME, jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
+            Map.of(PASSWORD_FIELD_NAME, hmacSecretNewCoordinate.getFullCoordinate()))));
   }
 
 }

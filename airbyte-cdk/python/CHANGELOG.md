@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.60
+- Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
+
+## 0.1.59
+- Add `Stream.get_error_display_message()` to retrieve user-friendly messages from exceptions encountered while reading streams.
+- Add default error error message retrieval logic for `HTTPStream`s following common API patterns.
+
 ## 0.1.58
 `TypeTransformer.default_convert` catch `TypeError`
 

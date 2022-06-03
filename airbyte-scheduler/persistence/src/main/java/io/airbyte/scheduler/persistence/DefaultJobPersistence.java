@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -167,8 +167,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void resetJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.PENDING, now,
-          new IllegalStateException(String.format("Attempt to reset a job that is in a terminal state. job id: %s", jobId)));
+      updateJobStatus(ctx, jobId, JobStatus.PENDING, now);
       return null;
     });
   }
@@ -177,7 +176,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void cancelJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.CANCELLED, now);
+      updateJobStatus(ctx, jobId, JobStatus.CANCELLED, now);
       return null;
     });
   }
@@ -186,29 +185,14 @@ public class DefaultJobPersistence implements JobPersistence {
   public void failJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.FAILED, now);
+      updateJobStatus(ctx, jobId, JobStatus.FAILED, now);
       return null;
     });
   }
 
-  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx,
-                                                   final long jobId,
-                                                   final JobStatus newStatus,
-                                                   final LocalDateTime now,
-                                                   final RuntimeException e) {
-    final Job job = getJob(ctx, jobId);
-    if (!job.isJobInTerminalState()) {
-      updateJobStatus(ctx, jobId, newStatus, now);
-    } else if (e != null) {
-      throw e;
-    }
-  }
-
-  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
-    updateJobStatusIfNotInTerminalState(ctx, jobId, newStatus, now, null);
-  }
-
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
+    final Job job = getJob(ctx, jobId);
+    job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
         Sqls.toSqlName(newStatus),
@@ -236,7 +220,7 @@ public class DefaultJobPersistence implements JobPersistence {
         throw new IllegalStateException(errMsg);
       }
 
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
+      updateJobStatus(ctx, jobId, JobStatus.RUNNING, now);
 
       // will fail if attempt number already exists for the job id.
       return ctx.fetch(
@@ -259,8 +243,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public void failAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
-      // do not overwrite terminal states.
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
+      updateJobStatus(ctx, jobId, JobStatus.INCOMPLETE, now);
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
@@ -277,7 +260,6 @@ public class DefaultJobPersistence implements JobPersistence {
   public void succeedAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
-      // override any other terminal statuses if we are now succeeded.
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
       ctx.execute(

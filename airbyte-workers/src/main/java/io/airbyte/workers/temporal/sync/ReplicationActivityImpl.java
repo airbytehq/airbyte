@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
@@ -20,7 +20,6 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
@@ -28,15 +27,16 @@ import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.general.DefaultReplicationWorker;
+import io.airbyte.workers.internal.AirbyteMessageTracker;
+import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.DefaultAirbyteDestination;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.EmptyAirbyteSource;
+import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;

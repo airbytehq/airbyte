@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -33,6 +33,8 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
@@ -44,8 +46,6 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -56,6 +56,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -290,9 +291,11 @@ public class JobCreationAndStatusUpdateActivityTest {
     public void setJobCancelled() throws IOException {
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
-      Mockito.verify(mJobPersistence).cancelJob(JOB_ID);
-      Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      Mockito.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      // attempt must be failed before job is cancelled, or else job state machine is not respected
+      final InOrder orderVerifier = Mockito.inOrder(mJobPersistence);
+      orderVerifier.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      orderVerifier.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      orderVerifier.verify(mJobPersistence).cancelJob(JOB_ID);
     }
 
     @Test

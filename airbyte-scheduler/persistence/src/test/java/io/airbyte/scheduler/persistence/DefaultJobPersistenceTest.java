@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
-import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
-import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -632,13 +632,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should do nothing to job already in terminal state")
-    void testCancelJobAlreadyTerminal() throws IOException {
+    @DisplayName("Should raise an exception if job is already succeeded")
+    void testCancelJobAlreadySuccessful() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      jobPersistence.cancelJob(jobId);
+      assertThrows(IllegalStateException.class, () -> jobPersistence.cancelJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -786,13 +786,13 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should ignore job already in terminal state")
-    void testFailJobAlreadyTerminal() throws IOException {
+    @DisplayName("Should raise an exception if job is already succeeded")
+    void testFailJobAlreadySucceeded() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       jobPersistence.succeedAttempt(jobId, attemptNumber);
 
-      jobPersistence.failJob(jobId);
+      assertThrows(IllegalStateException.class, () -> jobPersistence.failJob(jobId));
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.SUCCEEDED, updated.getStatus());
@@ -1492,8 +1492,11 @@ class DefaultJobPersistenceTest {
           jobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, Sets.newHashSet(ConfigType.SYNC), timeAfterFirstJob);
       assertEquals(1, timestampFilteredJobs.size());
       assertEquals(JobStatus.SUCCEEDED, timestampFilteredJobs.get(0).getStatus());
-      assertTrue(timeAfterFirstJob.getEpochSecond() <= timestampFilteredJobs.get(0).getCreatedAtInSecond());
-      assertTrue(timeAfterFirstJob.getEpochSecond() <= timestampFilteredJobs.get(0).getUpdatedAtInSecond());
+      // TODO: issues will be fixed in scope of https://github.com/airbytehq/airbyte/issues/13192
+      // assertTrue(timeAfterFirstJob.getEpochSecond() <=
+      // timestampFilteredJobs.get(0).getCreatedAtInSecond());
+      // assertTrue(timeAfterFirstJob.getEpochSecond() <=
+      // timestampFilteredJobs.get(0).getUpdatedAtInSecond());
 
       // Check to see if timestamp filtering is working by only looking up jobs with timestamp after
       // second job. Expecting no job status output

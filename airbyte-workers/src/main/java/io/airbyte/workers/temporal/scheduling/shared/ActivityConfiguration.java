@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.shared;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;

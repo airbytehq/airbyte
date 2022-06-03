@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -136,7 +136,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     return S3DestinationConfig.getS3DestinationConfig(loadingMethod);
   }
 
-  private static boolean isPurgeStagingData(final JsonNode config) {
+  public static boolean isPurgeStagingData(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
     if (!loadingMethod.has("purge_staging_data")) {
       return true;

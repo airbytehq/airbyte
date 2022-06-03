@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -10,30 +10,30 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import io.airbyte.api.model.AdvancedAuth;
-import io.airbyte.api.model.AuthSpecification;
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationSyncMode;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.SynchronousJobRead;
+import io.airbyte.api.model.generated.AdvancedAuth;
+import io.airbyte.api.model.generated.AuthSpecification;
+import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.DestinationCoreConfig;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.SourceCoreConfig;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;

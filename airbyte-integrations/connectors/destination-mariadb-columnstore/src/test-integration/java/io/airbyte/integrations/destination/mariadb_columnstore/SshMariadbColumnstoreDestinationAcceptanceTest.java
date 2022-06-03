@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -111,7 +111,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
         String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.MARIADB);
+            config.get("database").asText()),
+        SQLDialect.MARIADB);
     return new Database(dslContext);
   }
 

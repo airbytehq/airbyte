@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -22,11 +22,12 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"PMD.AvoidFileStream", "PMD.ShortVariable", "PMD.CloseResource", "PMD.AvoidInstantiatingObjectsInLoops"})
 public class GcsLogs implements CloudLogs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsLogs.class);
 
-  private static Storage GCS;
+  private static Storage gcs;
   private final Supplier<Storage> gcsClientFactory;
 
   public GcsLogs(final Supplier<Storage> gcsClientFactory) {
@@ -120,10 +121,10 @@ public class GcsLogs implements CloudLogs {
   }
 
   private Storage getOrCreateGcsClient() {
-    if (GCS == null) {
-      GCS = gcsClientFactory.get();
+    if (gcs == null) {
+      gcs = gcsClientFactory.get();
     }
-    return GCS;
+    return gcs;
   }
 
 }
