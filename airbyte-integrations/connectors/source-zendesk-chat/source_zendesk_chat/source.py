@@ -45,18 +45,10 @@ class SourceZendeskChat(AbstractSource):
         authenticator = ZendeskAuthentication(config).get_auth()
         return [
             Accounts(authenticator=authenticator),
-            AgentTimelines(
-                authenticator=authenticator,
-                start_date=config["start_date"], 
-                api_pagination_limit=config["api_pagination_limit"]
-            ),
+            AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
             Agents(authenticator=authenticator),
             Bans(authenticator=authenticator),
-            Chats(
-                authenticator=authenticator, 
-                start_date=config["start_date"], 
-                api_pagination_limit=config["api_pagination_limit"]
-            ),
+            Chats(authenticator=authenticator, start_date=config["start_date"]),
             Departments(authenticator=authenticator),
             Goals(authenticator=authenticator),
             Roles(authenticator=authenticator),
