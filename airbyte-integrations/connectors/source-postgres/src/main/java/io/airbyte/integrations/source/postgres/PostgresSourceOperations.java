@@ -10,10 +10,11 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -216,7 +217,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     final var data = resultSet.getObject(index);
-    node.put(columnName, new Gson().toJson(data));
+    try {
+      node.put(columnName, MoreMappers.initMapper().writeValueAsString(data));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Could not parse 'hstore' value:" + e);
+    }
   }
 
   /**

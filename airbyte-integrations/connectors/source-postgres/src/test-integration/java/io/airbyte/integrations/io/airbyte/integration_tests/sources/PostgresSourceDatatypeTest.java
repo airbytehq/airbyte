@@ -568,11 +568,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("hstore")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'\"paperback\" => \"243\",\n"
-                + "\t   \"publisher\" => \"postgresqltutorial.com\",\n"
-                + "\t   \"language\"  => \"English\",\n"
-                + "\t   \"ISBN-13\"   => \"978-1449370000\",\n"
-                + "\t\t \"weight\"    => \"11.2 ounces\"'", null)
+            .addInsertValues("""
+                '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                "language"  => "English","ISBN-13" => "978-1449370000",
+                "weight"    => "11.2 ounces"'
+                """, null)
             .addExpectedValues("{\"ISBN-13\":\"978-1449370000\",\"weight\":\"11.2 ounces\",\"paperback\":\"243\",\"publisher\":\"postgresqltutorial.com\",\"language\":\"English\"}", null)
             .build());
   }
