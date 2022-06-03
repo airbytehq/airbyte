@@ -22,6 +22,7 @@ Here's a list of our [connectors with their health status](integrations/README.m
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker-compose up
+```
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
