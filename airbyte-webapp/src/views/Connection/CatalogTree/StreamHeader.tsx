@@ -85,8 +85,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   const paths = primitiveFields.map((field) => field.path);
 
   const iconStyle = classnames(styles.icon, {
-    [styles.greenText]: isEnabled,
-    [styles.redText]: !isEnabled,
+    [styles.plus]: isEnabled,
+    [styles.minus]: !isEnabled,
   });
 
   const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {

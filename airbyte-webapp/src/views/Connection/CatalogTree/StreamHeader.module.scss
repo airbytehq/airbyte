@@ -1,17 +1,20 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables";
 @forward "./CatalogTree.module.scss";
 
-.greenText {
-  color: colors.$successColor;
-}
-
-.redText {
+.removedStream {
   color: colors.$dangerColor;
 }
 
 .icon {
   margin-right: 7px;
   margin-top: -1px;
+  &.plus {
+    color: colors.$successColor;
+  }
+  &.minus {
+    color: colors.$dangerColor;
+  }
 }
 
 .streamRowCheckboxCell {
@@ -23,6 +26,7 @@
 
 .streamHeaderContent {
   background: colors.$greyColor0;
+  transition: background-color variables.$transition;
   width: 100%;
   padding: 2px;
   padding-left: 10px;
