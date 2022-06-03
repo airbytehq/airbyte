@@ -229,7 +229,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler,
-        featureFlags,
         eventRunner,
         configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);

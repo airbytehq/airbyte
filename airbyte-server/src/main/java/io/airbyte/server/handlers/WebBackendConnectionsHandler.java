@@ -74,7 +74,6 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
-  private final FeatureFlags featureFlags;
   private final EventRunner eventRunner;
   private final ConfigRepository configRepository;
 

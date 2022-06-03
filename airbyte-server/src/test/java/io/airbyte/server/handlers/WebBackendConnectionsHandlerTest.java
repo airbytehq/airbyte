@@ -60,7 +60,6 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -104,7 +103,6 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
-  private FeatureFlags featureFlags;
   private EventRunner eventRunner;
   private ConnectionHelper connectionHelper;
   private ConfigRepository configRepository;
@@ -118,7 +116,6 @@ class WebBackendConnectionsHandlerTest {
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    featureFlags = mock(FeatureFlags.class);
     eventRunner = mock(EventRunner.class);
     connectionHelper = mock(ConnectionHelper.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
@@ -127,7 +124,6 @@ class WebBackendConnectionsHandlerTest {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler,
-        featureFlags,
         eventRunner,
         configRepository);
 
