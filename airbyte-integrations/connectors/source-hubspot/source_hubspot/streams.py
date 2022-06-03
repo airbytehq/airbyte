@@ -9,7 +9,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -210,6 +210,17 @@ class Stream(HttpStream, ABC):
     offset = 0
     primary_key = None
     filter_old_records: bool = True
+
+    @property
+    @abstractmethod
+    def scopes(self) -> Set[str]:
+        """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
+
+    def scope_is_granted(self, granted_scopes: Set[str]):
+        if not self.scopes:
+            return True
+        else:
+            return len(self.scopes.intersection(granted_scopes)) > 0
 
     @property
     def url_base(self) -> str:
@@ -951,6 +962,7 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
     primary_key = "id"
+    scopes = {"crm.lists.read"}
 
     def read_records(
         self,
@@ -976,6 +988,7 @@ class ContactLists(IncrementalStream):
     created_at_field = "createdAt"
     limit_field = "count"
     need_chunk = False
+    scopes = {"crm.lists.read"}
 
 
 class ContactsListMemberships(Stream):
@@ -995,6 +1008,7 @@ class ContactsListMemberships(Stream):
     page_filter = "vidOffset"
     page_field = "vid-offset"
     primary_key = "canonical-vid"
+    scopes = {"crm.objects.contacts.read"}
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1025,6 +1039,7 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
 
 
 class DealPipelines(Stream):
@@ -1037,6 +1052,7 @@ class DealPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "pipelineId"
+    scopes = {"contacts", "tickets"}
 
 
 class TicketPipelines(Stream):
@@ -1049,6 +1065,25 @@ class TicketPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {
+        "media_bridge.read",
+        "tickets",
+        "crm.schemas.custom.read",
+        "e-commerce",
+        "timeline",
+        "contacts",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.deals.write",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.line_items.read",
+        "crm.objects.companies.write",
+    }
 
 
 class EmailEvents(IncrementalStream):
@@ -1062,6 +1097,7 @@ class EmailEvents(IncrementalStream):
     updated_at_field = "created"
     created_at_field = "created"
     primary_key = "id"
+    scopes = {"content"}
 
 
 class Engagements(IncrementalStream):
@@ -1075,6 +1111,7 @@ class Engagements(IncrementalStream):
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"}
 
     @property
     def url(self):
@@ -1158,6 +1195,7 @@ class Forms(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"forms"}
 
 
 class FormSubmissions(Stream):
@@ -1169,6 +1207,7 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    scopes = {"forms"}
 
     def path(
         self,
@@ -1230,6 +1269,7 @@ class MarketingEmails(Stream):
     updated_at_field = "updated"
     created_at_field = "created"
     primary_key = "id"
+    scopes = {"content"}
 
 
 class Owners(Stream):
@@ -1241,6 +1281,7 @@ class Owners(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
 
 
 class PropertyHistory(IncrementalStream):
@@ -1258,6 +1299,7 @@ class PropertyHistory(IncrementalStream):
     page_field = "vid-offset"
     page_filter = "vidOffset"
     limit = 100
+    scopes = {"crm.objects.contacts.read"}
 
     def list(self, fields) -> Iterable:
         properties = self._api.get("/properties/v2/contact/properties")
@@ -1296,6 +1338,7 @@ class SubscriptionChanges(IncrementalStream):
     data_field = "timeline"
     more_key = "hasMore"
     updated_at_field = "timestamp"
+    scopes = {"content"}
 
 
 class Workflows(Stream):
@@ -1308,6 +1351,7 @@ class Workflows(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
     primary_key = "id"
+    scopes = {"automation"}
 
 
 class Companies(CRMSearchStream):
@@ -1315,6 +1359,7 @@ class Companies(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class Contacts(CRMSearchStream):
@@ -1322,6 +1367,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1330,12 +1376,17 @@ class EngagementsCalls(CRMSearchStream):
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
+    @property
+    def scopes(self) -> Set[str]:
+        return {"crm.objects.contacts.read"}
+
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "sales-email-read"}
 
 
 class EngagementsMeetings(CRMSearchStream):
@@ -1343,6 +1394,7 @@ class EngagementsMeetings(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsNotes(CRMSearchStream):
@@ -1350,38 +1402,45 @@ class EngagementsNotes(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["crm.objects.contacts.read", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
-    associations = ["contacts"]
+    associations = ["crm.objects.contacts.read"]
     primary_key = "id"
+    scopes = set()
 
 
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
+    scopes = {"e-commerce"}
 
 
 class Products(CRMObjectIncrementalStream):
     entity = "product"
     primary_key = "id"
+    scopes = {"e-commerce"}
 
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
-    associations = ["contacts", "deals", "companies"]
+    associations = ["crm.objects.contacts.read", "deals", "companies"]
     primary_key = "id"
+    scopes = {"tickets"}
 
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
     associations = ["deals"]
     primary_key = "id"
+    scopes = {"e-commerce"}

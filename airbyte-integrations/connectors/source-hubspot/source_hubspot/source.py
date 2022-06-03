@@ -6,7 +6,8 @@ import copy
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+import requests
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
@@ -80,6 +81,31 @@ class SourceHubspot(AbstractSource):
             error_msg = repr(error)
         return alive, error_msg
 
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        """Implements the Discover operation from the Airbyte Specification.
+        See https://docs.airbyte.io/architecture/airbyte-specification.
+        """
+        common_params = self.get_common_params(config=config)
+        credentials = common_params["credentials"]
+        authenticator = API(credentials=credentials).get_authenticator(credentials)
+        access_token = authenticator.get_access_token()
+        url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
+        try:
+            response = requests.get(url=url)
+            response.raise_for_status()
+            response_json = response.json()
+            granted_scopes = response_json["scopes"]
+            logger.info(f"The following scopes were granted: {granted_scopes}")
+        except Exception as e:
+            return False, repr(e)
+
+        streams = [stream.as_airbyte_stream() for stream in self.streams(config=config) if stream.scope_is_granted(granted_scopes)]
+        unavailable_streams = [
+            stream.as_airbyte_stream() for stream in self.streams(config=config) if not stream.scope_is_granted(granted_scopes)
+        ]
+        print(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+        return AirbyteCatalog(streams=streams)
+
     @staticmethod
     def check_scopes(response_json):
         granted_scopes = response_json["scopes"]
@@ -96,6 +122,7 @@ class SourceHubspot(AbstractSource):
     def get_common_params(self, config) -> Mapping[str, Any]:
         start_date = config.get("start_date")
         credentials = config["credentials"]
+        print(f"credentials: {credentials}")
         api = self.get_api(config=config)
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
