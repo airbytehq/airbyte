@@ -52,7 +52,6 @@ public class ConfigurationApiTest {
         new AirbyteVersion("0.1.0-alpha"),
         Path.of(""),
         mock(HttpClient.class),
-        mock(FeatureFlags.class),
         mock(EventRunner.class),
         mock(Flyway.class),
         mock(Flyway.class));
