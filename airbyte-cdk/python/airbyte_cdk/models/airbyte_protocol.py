@@ -166,11 +166,9 @@ class AirbyteStreamState(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    name: Optional[str] = Field(None, description="Stream name")
-    namespace: Optional[str] = Field(
-        None,
-        description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.")
-    state: Optional[AirbyteStateBlob] = None
+    name: str = Field(..., description="Stream name")
+    state: AirbyteStateBlob
+    namespace: Optional[str] = Field(None, description="Optional Source-defined namespace.")
 
 
 class AirbyteTraceMessage(BaseModel):
