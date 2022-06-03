@@ -1248,10 +1248,16 @@ where 1 = 1
                         f"delete from {stg_schema}.{stg_table} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {stg_schema}.{stg_table})",
                     )
                 else:
-                    # Note the different macro styles:
-                    # scd_new_data_table is a DBT ref() macro, so we wrap it in another {{ ... }} so that DBT will resolve it
-                    # stg_schema+stg_table are plain strings, so they need to be rendered as plain strings
-                    hooks.append(f"drop view {{{{ {scd_new_data_table} }}}}")
+                    # Note that we can't directly use scd_new_data_table (which is a dbt ref() macro)
+                    # because MSSQL returns an error ('DROP VIEW' does not allow specifying the database name as a prefix to the object name)
+
+                    scd_new_data_table_raw_name = self.tables_registry.get_file_name(
+                        schema, self.json_path, self.stream_name, "scd_new_data", truncate_name
+                    )
+                    if self.name_transformer.needs_quotes(scd_new_data_table_raw_name):
+                        scd_new_data_table_raw_name = jinja_call(self.name_transformer.apply_quote(scd_new_data_table_raw_name))
+
+                    hooks.append(f"drop view {stg_schema}.{scd_new_data_table_raw_name}")
                     hooks.append(f"drop view {stg_schema}.{stg_table}")
                 config["post_hook"] = "[" + ",".join(map(lambda hook: '"' + hook + '"', hooks)) + "]"
             else:
