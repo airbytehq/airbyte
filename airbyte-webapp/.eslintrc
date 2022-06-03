@@ -15,6 +15,7 @@
     }
   },
   "rules": {
+    "curly": "error",
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "import/order": [
