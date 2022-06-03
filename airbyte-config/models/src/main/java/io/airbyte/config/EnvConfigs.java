@@ -70,9 +70,6 @@ public class EnvConfigs implements Configs {
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
   public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
   private static final String CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED = "CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED";
-  private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
-  private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
-  private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   public static final String MAX_SPEC_WORKERS = "MAX_SPEC_WORKERS";
   public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
   public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
@@ -81,7 +78,6 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
   public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
-  private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
   public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
   public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
@@ -156,9 +152,6 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.77.0";
-  private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
-  private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
-  private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
@@ -789,21 +782,6 @@ public class EnvConfigs implements Configs {
       return new HashSet<>();
     }
     return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
-  }
-
-  // Scheduler
-  @Override
-  public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
-
-    return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
-  }
-
-  @Override
-  public String getSubmitterNumThreads() {
-    return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
   }
 
   @Override
