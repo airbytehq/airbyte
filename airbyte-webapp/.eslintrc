@@ -62,10 +62,10 @@
     "@typescript-eslint/consistent-indexed-object-style": ["warn", "record"],
     "@typescript-eslint/consistent-type-definitions": ["warn", "interface"],
     "@typescript-eslint/no-unused-vars": "warn",
-    // "react/function-component-definition": ["warn", {
-    //   "namedComponents": "arrow-function",
-    //   "unnamedComponents": "arrow-function"
-    // }],
+    "react/function-component-definition": ["warn", {
+      "namedComponents": "arrow-function",
+      "unnamedComponents": "arrow-function"
+    }],
     "react/self-closing-comp": "warn",
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",

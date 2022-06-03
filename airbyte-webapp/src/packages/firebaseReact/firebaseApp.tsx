@@ -20,7 +20,7 @@ interface FirebaseAppProviderProps {
   suspense?: boolean;
 }
 
-export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppProviderProps>): JSX.Element {
+export const FirebaseAppProvider = (props: React.PropsWithChildren<FirebaseAppProviderProps>): JSX.Element => {
   const { firebaseConfig, appName, suspense } = props;
 
   const firebaseApp: FirebaseApp = React.useMemo(() => {
@@ -55,7 +55,7 @@ export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppPr
       <SuspenseEnabledContext.Provider value={suspense ?? false} {...props} />
     </FirebaseAppContext.Provider>
   );
-}
+};
 
 export function useFirebaseApp(): FirebaseApp {
   const firebaseApp = React.useContext(FirebaseAppContext);

@@ -7,7 +7,7 @@ import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(null);
 
-export function FeatureService({ children }: { children: React.ReactNode }) {
+export const FeatureService = ({ children }: { children: React.ReactNode }) => {
   const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
   const { features: instanceWideFeatures } = useConfig();
 
@@ -38,7 +38,7 @@ export function FeatureService({ children }: { children: React.ReactNode }) {
   );
 
   return <featureServiceContext.Provider value={featureService}>{children}</featureServiceContext.Provider>;
-}
+};
 
 export const useFeatureService: () => FeatureServiceApi = () => {
   const featureService = useContext(featureServiceContext);
