@@ -1,4 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from source_dv_360.fields import sanitize
+
 
 def test_sanitize_with_pct():
     string = '% tesT string:'

@@ -1,5 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+from google.oauth2.credentials import Credentials
 from source_dv_360.source import SourceDV360
-from  google.oauth2.credentials import Credentials
 
 
 def test_streams_count(config):

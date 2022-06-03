@@ -1,18 +1,23 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 
-from abc import ABC
-from typing import Any, Iterable, Mapping, Optional, Tuple, MutableMapping
-from xmlrpc.client import Boolean
-from airbyte_cdk.sources.streams import Stream
-import json
-from typing import  Mapping, Any, List
-import pendulum
-from  google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-import io
+
 import csv
+import io
+import json
+from abc import ABC
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from xmlrpc.client import Boolean
+
+import pendulum
 import requests
-from .fields import API_REPORT_BUILDER_MAPPING, sanitize
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+from .fields import API_REPORT_BUILDER_MAPPING, sanitize
 
 # Mapping between the schema names and the report types in the report builder
 REPORT_TYPE_MAPPING = {

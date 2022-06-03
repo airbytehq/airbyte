@@ -1,33 +1,30 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from datetime import datetime
-from typing import Dict, Generator, Mapping, Any, List, Tuple, MutableMapping
+from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Tuple
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteStateMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
+    SyncMode,
     Type,
-    SyncMode
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from  google.oauth2.credentials import Credentials
-from .streams import (
-    DBMStream,
-    Standard, 
-    AudienceComposition,
-    Floodlight,
-    Reach,
-    UniqueReachAudience
-)
+
+from .streams import AudienceComposition, DBMStream, Floodlight, Reach, Standard, UniqueReachAudience
+
 
 class SourceDV360(AbstractSource):
 

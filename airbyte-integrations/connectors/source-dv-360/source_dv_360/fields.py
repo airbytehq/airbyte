@@ -1,5 +1,10 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 
 import re
+
 
 def sanitize(s):
   s = re.sub('[&]', 'and', s)

@@ -4,11 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Display & Video 360 Spec",
     "type": "object",
-    "required": [
-      "credentials",
-      "partner_id",
-      "start_date"
-    ],
+    "required": ["credentials", "partner_id", "start_date"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -67,10 +63,10 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 3
       },
-      "filters":{
-        "type":"array",
+      "filters": {
+        "type": "array",
         "description": "filters for the dimensions. each filter object had 2 keys: 'type' for the name of the dimension to be used as. and 'value' for the value of the filter",
-        "default":[],
+        "default": [],
         "order": 4
       }
     }

@@ -1,5 +1,11 @@
-from source_dv_360.streams import DBM
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import json
+
+from source_dv_360.streams import DBM
+
 
 def test_convert_fields():
     fields = ["app_url_id", "cm_placement_id", "pct_clicks_leading_to_conversions", "region_id", "date"]
