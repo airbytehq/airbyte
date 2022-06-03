@@ -33,19 +33,17 @@ This section should contain a table with the following format:
 At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Source to ensure high transfer speeds.
 
 ## Getting Started (Airbyte Cloud)
-
 To configure the connector you'll need to:
 
 * [Authorize your Google account via OAuth](#oauth)
 * [The ID of the spreadsheet you'd like to sync](#sheetlink)
 
 ### <a name="oauth"></a> Authorize your Google account via OAuth
-
 Click on the "Sign in with Google" button and authorize via your Google account.
 
 ### <a name="sheetlink"></a>Spreadsheet Link
-
-You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up. These two steps are highlighted in the screenshot below:
+You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
+These two steps are highlighted in the screenshot below:
 
 ![](../../.gitbook/assets/google_spreadsheet_url.png)
 
@@ -89,7 +87,8 @@ Once you've created the Service Account, you need to explicitly give it access t
 
 #### <a name="findsheetlink"></a>Spreadsheet Link
 
-Finally, you'll need the Link to the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up. These two steps are highlighted in the screenshot below:
+Finally, you'll need the Link to the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up. 
+These two steps are highlighted in the screenshot below:
 
 ![](../../.gitbook/assets/google_spreadsheet_url.png)
 
