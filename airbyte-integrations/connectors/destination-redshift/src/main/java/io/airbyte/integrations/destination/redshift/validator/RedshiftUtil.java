@@ -1,0 +1,29 @@
+package io.airbyte.integrations.destination.redshift.validator;
+
+import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+/**
+ * Helper class for Destination Redshift connector.
+ */
+public class RedshiftUtil {
+
+  private RedshiftUtil() {
+  }
+
+  public static JsonNode doesJsonNodeContainUploadingMethod(final JsonNode config) {
+    return config.has(UPLOADING_METHOD) ? config.get(UPLOADING_METHOD) : config;
+  }
+
+  public static boolean validateIfAllRequiredS3fieldsAreNullOrEmpty(final JsonNode jsonNode) {
+    return isNullOrEmpty(jsonNode.get("s3_bucket_name"))
+        && isNullOrEmpty(jsonNode.get("s3_bucket_region"))
+        && isNullOrEmpty(jsonNode.get("access_key_id"))
+        && isNullOrEmpty(jsonNode.get("secret_access_key"));
+  }
+
+  private static boolean isNullOrEmpty(final JsonNode jsonNode) {
+    return null == jsonNode || "".equals(jsonNode.asText());
+  }
+}
