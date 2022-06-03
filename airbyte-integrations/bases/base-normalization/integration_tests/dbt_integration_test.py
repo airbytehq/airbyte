@@ -177,46 +177,31 @@ class DbtIntegrationTest(object):
                 "-e",
                 "ACCEPT_EULA='Y'",
                 "-e",
-                f"MSSQL_USER='{config['username']}'",
+                f"SA_PASSWORD='{config['password']}'",
                 "-e",
-                f"MSSQL_SA_PASSWORD='{config['password']}'",
-                "-e",
-                "MSSQL_PID='Developer'",
+                "MSSQL_PID='Standard'",
                 "-p",
                 f"{config['port']}:1433",
                 "-d",
-                "mcr.microsoft.com/azure-sql-edge",
+                "mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04",
             ]
             # cmds & parameters
             cmd_start_container = " ".join(command_start_container)
             wait_sec = 30
             # run the docker container
             print("Executing: ", cmd_start_container)
-            # For some reason, this command doesn't work if we call it with command_start_container and remove the shell=True param
-            container_id = subprocess.run(cmd_start_container, shell=True, capture_output=True, text=True, check=True).stdout.strip()
+            subprocess.check_call(cmd_start_container, shell=True)
             # wait for service is available
             print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
             time.sleep(wait_sec)
-
-            # The arm64 version of azure-sql-edge doesn't include sqlcmd, so we have to run a separate mssql-tools container
-            # So first we need to find the IP of the SQL Server container
-            command_find_container_ip = [
-                "docker",
-                "inspect",
-                "-f",
-                "{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
-                container_id,
-            ]
-            container_ip = subprocess.run(command_find_container_ip, capture_output=True, text=True).stdout.strip()
-
-            # Run additional commands to prepare the table by starting a new mssql-tools container and connecting to that IP
+            # Run additional commands to prepare the table
             command_create_db = [
                 "docker",
-                "run",
-                "mcr.microsoft.com/mssql-tools",
+                "exec",
+                f"{self.container_prefix}_mssql",
                 "/opt/mssql-tools/bin/sqlcmd",
                 "-S",
-                container_ip,
+                config["host"],
                 "-U",
                 config["username"],
                 "-P",
