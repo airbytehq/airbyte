@@ -2,11 +2,11 @@
 
 ## Overview
 
-This destination syncs data to Databricks cluster. Each stream is written to its own [delta-table](https://delta.io/).
+This destination syncs data to the Databricks cluster. Each stream is written to its own [delta-table](https://delta.io/).
 
-This connector requires a JDBC driver to connect to Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
+This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connect third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync almost infinite number of streams with less than 500MB of memory.
+Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into an out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync an almost infinite number of streams with less than 500MB of memory.
 
 ## Sync Mode
 
