@@ -174,6 +174,7 @@ public class TemporalUtils {
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
         .setTaskQueue(jobType.name())
+        .setWorkflowTaskTimeout(Duration.ofSeconds(27)) // TODO parker - temporarily increasing this to a recognizable number to see if it changes error I'm seeing
         // todo (cgardens) we do not leverage Temporal retries.
         .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(1).build())
         .build();
