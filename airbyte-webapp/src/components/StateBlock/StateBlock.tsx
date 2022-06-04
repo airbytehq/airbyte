@@ -33,7 +33,9 @@ const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
     const stateObject = JSON.parse(stateString) as ConnectionState;
     const response = await updateState({ connectionId, state: stateObject });
     setLoading(false);
-    if (response.state) setStateString(formatState(response.state));
+    if (response.state) {
+      setStateString(formatState(response.state));
+    }
     return { valid: response.successful, errorMessage: response.errorMessage };
   };
 

@@ -52,7 +52,9 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
   const onValueChange = (newCode: string) => {
-    if (!validation.valid) setValidation({ valid: true });
+    if (!validation.valid) {
+      setValidation({ valid: true });
+    }
     setCode(newCode);
   };
 
@@ -71,13 +73,17 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
           submitButtonText: "form.saveChange",
           onSubmit: async () => {
             const updateResponse = await onSave(code);
-            if (updateResponse) setValidation(updateResponse);
+            if (updateResponse) {
+              setValidation(updateResponse);
+            }
             closeConfirmationModal();
           },
         });
       } else {
         const updateResponse = await onSave(code);
-        if (updateResponse) setValidation(updateResponse);
+        if (updateResponse) {
+          setValidation(updateResponse);
+        }
       }
     }
   };
