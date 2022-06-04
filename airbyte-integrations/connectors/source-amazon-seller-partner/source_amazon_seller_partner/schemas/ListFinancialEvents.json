@@ -280,7 +280,7 @@
         "type": "object",
         "properties": {
           "RetrochargeEventType": {
-          "type": "string"
+            "type": "string"
           },
           "AmazonOrderId": {
             "type": "string"
@@ -601,7 +601,7 @@
       "type": ["null", "array"],
       "items": {
         "type": "object",
-        "properties":  {
+        "properties": {
           "ImagingRequestBillingItemID": {
             "type": "string"
           },
@@ -799,7 +799,7 @@
       "type": ["null", "array"],
       "items": {
         "type": "object",
-        "properties":  {
+        "properties": {
           "PostedDate": {
             "type": "string",
             "format": "date-time"
@@ -820,7 +820,7 @@
       "type": ["null", "array"],
       "items": {
         "type": "object",
-        "properties":  {
+        "properties": {
           "PostedDate": {
             "type": "string",
             "format": "date-time"
