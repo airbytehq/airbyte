@@ -123,4 +123,4 @@ class HttpRequester(Requester):
     @property
     def use_cache(self) -> bool:
         # FIXME: this should be declarative
-        return False
+        return True
