@@ -59,7 +59,7 @@ jobs:
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   integration-test:
-    timeout-minutes: 240
+    timeout-minutes: 300
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     environment: more-secrets
@@ -114,7 +114,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
       - name: Test ${{ github.event.inputs.connector }}
-        timeout-minutes: 240
+        timeout-minutes: 300
         run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         id: test
