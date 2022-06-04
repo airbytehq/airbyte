@@ -114,6 +114,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
       - name: Test ${{ github.event.inputs.connector }}
+        timeout-minutes: 240
         run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         id: test
