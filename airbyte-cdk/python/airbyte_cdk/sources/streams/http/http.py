@@ -4,7 +4,6 @@
 
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
@@ -72,12 +71,23 @@ class HttpStream(Stream, ABC):
         We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
         """
 
-        try:
-            os.remove(self.cache_filename)
-        except FileNotFoundError:
-            pass
+        def jurassic_matcher(r1, r2):
+            print(r1.uri)
+            print(r2.uri)
+            equals = r1.uri == r2.uri
+            print(f"equals: {equals}")
+            assert equals
 
-        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
+        logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from vcrpy
+        vcr_log = logging.getLogger("vcr")
+        vcr_log.setLevel(logging.INFO)
+        #        try:
+        #            os.remove(self.cache_filename)
+        #        except FileNotFoundError:
+        #            pass
+        my_vcr = vcr.VCR()
+        my_vcr.register_matcher("jurassic", jurassic_matcher)
+        return my_vcr.use_cassette(self.cache_filename, serializer="yaml", match_on=["jurassic"])
 
     @property
     @abstractmethod
@@ -287,6 +297,7 @@ class HttpStream(Stream, ABC):
         AirbyteSentry.add_breadcrumb(message=f"Issue {request.url}", data=request_kwargs)
         with AirbyteSentry.start_transaction_span(op="_send", description=request.url):
             response: requests.Response = self._session.send(request, **request_kwargs)
+            print(f"got response: {response}")
 
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
@@ -417,11 +428,13 @@ class HttpStream(Stream, ABC):
                     # use context manager to handle and store cassette metadata
                     with self.cache_file as cass:
                         self.cassete = cass
+                        print(f"count: {self.cassete.play_count}")
                         # vcr tries to find records based on the request, if such records exist, return from cache file
                         # else make a request and save record in cache file
-                        response = self._send_request(request, request_kwargs)
-
+                        response = self._send(request, request_kwargs)
+                        print(f"countafter: {self.cassete.play_count}")
                 else:
+                    print("NO CASSETTE!")
                     response = self._send_request(request, request_kwargs)
                 yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 

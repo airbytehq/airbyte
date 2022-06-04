@@ -52,7 +52,7 @@ setup(
         "PyYAML~=5.4",
         "requests",
         "sentry-sdk~=1.5.1",
-        "vcrpy",
+        "vcrpy~=4.1.1",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "pyjq~=2.5.2",
