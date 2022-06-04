@@ -12,6 +12,7 @@ from requests.auth import AuthBase
 
 class HttpMethod(Enum):
     GET = "GET"
+    POST = "POST"
 
 
 class Requester(ABC):

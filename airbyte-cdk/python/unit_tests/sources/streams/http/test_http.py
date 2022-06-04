@@ -328,13 +328,13 @@ class TestRequestBody:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_body_for_all_methods(self, mocker, requests_mock):
-        """Stream must send a body for POST/PATCH/PUT methods only"""
+        """Stream must send a body for GET/POST/PATCH/PUT methods only"""
         stream = PostHttpStream()
         methods = {
             "POST": True,
             "PUT": True,
             "PATCH": True,
-            "GET": False,
+            "GET": True,
             "DELETE": False,
             "OPTIONS": False,
         }

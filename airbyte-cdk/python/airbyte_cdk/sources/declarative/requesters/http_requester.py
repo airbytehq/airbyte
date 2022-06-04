@@ -10,10 +10,10 @@ from airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_req
     InterpolatedRequestHeaderProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_headers.request_header_provider import RequestHeaderProvider
-from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
-    InterpolatedRequestParameterProvider,
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
 )
-from airbyte_cdk.sources.declarative.requesters.request_params.request_parameters_provider import RequestParameterProvider
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.types import Config
@@ -28,14 +28,16 @@ class HttpRequester(Requester):
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
         http_method: Union[str, HttpMethod],
-        request_parameters_provider: RequestParameterProvider = None,
+        request_options_provider: RequestOptionsProvider = None,
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
         retrier: Retrier,
         config: Config,
     ):
-        if request_parameters_provider is None:
-            request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_headers={})
+        if request_options_provider is None:
+            request_options_provider = InterpolatedRequestOptionsProvider(
+                config=config, request_parameters={}, request_body_data="", request_body_json={}
+            )
         if request_headers_provider is None:
             request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
         self._name = name
@@ -49,7 +51,7 @@ class HttpRequester(Requester):
         if type(http_method) == str:
             http_method = HttpMethod[http_method]
         self._method = http_method
-        self._request_parameters_provider = request_parameters_provider
+        self._request_options_provider = request_options_provider
         self._request_headers_provider = request_headers_provider
         self._retrier = retrier
         self._config = config
@@ -57,7 +59,7 @@ class HttpRequester(Requester):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return self._request_parameters_provider.request_params(stream_state, stream_slice, next_page_token)
+        return self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
 
     def get_authenticator(self):
         return self._authenticator
@@ -100,20 +102,17 @@ class HttpRequester(Requester):
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Union[Mapping, str]]:
-        # FIXME: this should be declarative
-        return dict()
+        return self._request_options_provider.request_body_data(stream_state, stream_slice, next_page_token)
 
     def request_body_json(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
-        # FIXME: this should be declarative
-        return dict()
+        return self._request_options_provider.request_body_json(stream_state, stream_slice, next_page_token)
 
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        # FIXME: this should be declarative
-        return dict()
+        return self._request_options_provider.request_kwargs(stream_state, stream_slice, next_page_token)
 
     @property
     def cache_filename(self) -> str:
