@@ -101,4 +101,18 @@ class ConfigsDatabaseMigrationCheckTest {
     Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
   }
 
+  @Test
+  void unavailableFlywayMigrationVersion() {
+    final var minimumVersion = "2.0.0";
+    final var migrationInfoService = mock(MigrationInfoService.class);
+    final var flyway = mock(Flyway.class);
+    final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
+
+    when(migrationInfoService.current()).thenReturn(null);
+    when(flyway.info()).thenReturn(migrationInfoService);
+
+    final var check = new ConfigsDatabaseMigrationCheck(databaseAvailabilityCheck, flyway, minimumVersion, CommonDatabaseCheckTest.TIMEOUT_MS);
+    Assertions.assertThrows(DatabaseCheckException.class, () -> check.check());
+  }
+
 }

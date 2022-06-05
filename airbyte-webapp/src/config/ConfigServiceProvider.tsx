@@ -6,9 +6,9 @@ import { LoadingPage } from "components";
 import { applyProviders } from "./configProviders";
 import { Config, ValueProvider } from "./types";
 
-export type ConfigContextData<T extends Config = Config> = {
+export interface ConfigContextData<T extends Config = Config> {
   config: T;
-};
+}
 
 export const ConfigContext = React.createContext<ConfigContextData | null>(null);
 

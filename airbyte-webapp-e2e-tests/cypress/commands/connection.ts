@@ -1,9 +1,13 @@
-Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
+import { submitButtonClick } from "./common";
+import { createTestDestination } from "./destination";
+import { createTestSource } from "./source";
+
+export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
-  cy.createTestSource(sourceName);
-  cy.createTestDestination(destinationName);
+  createTestSource(sourceName);
+  createTestDestination(destinationName);
   cy.wait(3000);
 
   cy.get("div[data-testid='select-source']").click();
@@ -17,7 +21,7 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
 
   cy.get("div[data-testid='namespaceDefinition']").click();
   cy.get("div[data-testid='namespaceDefinition-source']").click();
-  cy.submitButtonClick();
+  submitButtonClick();
 
   cy.wait("@createConnection");
-});
+};
