@@ -33,7 +33,7 @@ publishing {
             maven(MavenPublication) {
                 from components.java
                 // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
+                // e.g. the subproject :airbyte-scheduler:scheduler-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
             }
         }
 
@@ -81,7 +81,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:app')
     implementation project(':airbyte-scheduler:client')
-    implementation project(':airbyte-scheduler:models')
+    implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-workers')
 
