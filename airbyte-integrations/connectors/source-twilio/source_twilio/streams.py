@@ -5,7 +5,6 @@
 
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from distutils.command.config import config
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -25,11 +24,11 @@ class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-    
+
     def __init__(self, page_size: int, **kwargs):
         super().__init__(**kwargs)
         self._page_size = page_size
-    
+
     @property
     def data_field(self):
         return self.name
@@ -73,12 +72,13 @@ class TwilioStream(HttpStream, ABC):
 
         backoff_time = response.headers.get("Retry-After")
         if backoff_time is not None:
-          return float(backoff_time)
-          
-    
-    def request_params(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+            return float(backoff_time)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params["PageSize"] = self._page_size  
+        params["PageSize"] = self._page_size
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -96,16 +96,15 @@ class TwilioStream(HttpStream, ABC):
                 # is no need in transforming anything.
                 pass
         return original_value
-        
 
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
-    
-    def __init__(self, start_date: str = None, lookback_window: int, **kwargs):
+
+    def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = start_date  
+        self._start_date = start_date
         self._lookback_window = lookback_window
         self._cursor_value = None
 
@@ -115,24 +114,29 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         """
         return: date filter query parameter name
         """
-    
+
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return  {self.cursor_field: self._cursor_value}
+            return {self.cursor_field: self._cursor_value}
         else:
-            return  {self.cursor_field: self._start_date}
+            return {self.cursor_field: self._start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = max(value[self.cursor_field], self._cursor_value)
 
-
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self.start_date
         if start_date:
-            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=self._lookback_window)).strftime(self.time_filter_template)})
+            params.update(
+                {
+                    self.incremental_filter_field: (
+                        pendulum.parse(start_date, strict=False) - timedelta(minutes=self._lookback_window)
+                    ).strftime(self.time_filter_template)
+                }
+            )
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
