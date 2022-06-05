@@ -46,11 +46,11 @@ include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-docker'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
-include ':airbyte-db:lib' // reused by acceptance tests in connector base.
+include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-metrics:lib'
+include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
-include ':airbyte-protocol:models'
+include ':airbyte-protocol:protocol-models'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
 

@@ -7,7 +7,7 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-config:specs')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
     // todo (cgardens) - remove this dep. just needs temporal client.
