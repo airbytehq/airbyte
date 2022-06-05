@@ -12,7 +12,7 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:models')
 
     testImplementation libs.flyway.core
