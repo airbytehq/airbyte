@@ -1,8 +1,13 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+
 
 class OrbitStream(HttpStream, ABC):
     url_base = "https://app.orbit.love/api/v1/"
@@ -19,15 +24,17 @@ class OrbitStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
-    def parse_response(self,
-                       response: requests.Response,
-                       stream_state: Mapping[str, Any],
-                       stream_slice: Mapping[str, Any] = None,
-                       next_page_token: Mapping[str, Any] = None,
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        return [response.json()]
+        yield response.json()
 
-'''
+
+"""
 class OrbitStreamPaginated(OrbitStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.links["next"]["url"] != None:
@@ -47,26 +54,29 @@ class OrbitStreamPaginated(OrbitStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
-'''
+"""
+
 
 class Members(OrbitStream):
     # Docs: https://docs.orbit.love/reference/members-overview
 
-    primary_key = "id"
+    # TODO: Write a function to access "id" in the "data" array in the schema.
+    primary_key = ""
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"{self.workspace}/members"
 
+
 class Workspace(OrbitStream):
     # Docs: https://docs.orbit.love/reference/get_workspaces-workspace-slug
     # This stream is primarily used for connnection checking.
 
-    primary_key = "id"
+    # TODO: Write a function to access "id" in the "data" object in the schema.
+    primary_key = ""
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"workspaces/{self.workspace}"
-

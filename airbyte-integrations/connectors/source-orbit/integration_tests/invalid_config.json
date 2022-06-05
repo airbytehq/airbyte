@@ -1,3 +1,1 @@
-{
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
-}
+{ "api_token": "obw_token", "workspace": "airbyte" }

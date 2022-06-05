@@ -8,9 +8,10 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import Members, Workspace
+
 
 # Source
 class SourceOrbit(AbstractSource):
@@ -32,5 +33,4 @@ class SourceOrbit(AbstractSource):
             "workspace": config["workspace"],
         }
 
-        return [Members(**stream_args),
-                Workspace(**stream_args)]
+        return [Members(**stream_args), Workspace(**stream_args)]
