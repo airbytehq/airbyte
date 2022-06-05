@@ -82,7 +82,7 @@ dependencies {
     implementation project(':airbyte-scheduler:app')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-scheduler:scheduler-models')
-    implementation project(':airbyte-scheduler:persistence')
+    implementation project(':airbyte-scheduler:scheduler-persistence')
     implementation project(':airbyte-workers')
 
     testImplementation libs.postgresql
