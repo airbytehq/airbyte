@@ -13,7 +13,7 @@ dependencies {
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-scheduler:models')
+    implementation project(':airbyte-scheduler:scheduler-models')
 
     testImplementation libs.flyway.core
     testImplementation libs.testcontainers.postgresql
