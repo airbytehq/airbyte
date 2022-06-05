@@ -4,11 +4,9 @@
 
 
 from abc import ABC, abstractmethod
-from asyncio.log import logger
-from bdb import Breakpoint
-from datetime import datetime, timedelta
+from datetime import timedelta
 from distutils.command.config import config
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -17,7 +15,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from typing_extensions import Self
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
@@ -106,7 +103,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
     
-    def __init__(self, start_date: str = None, lookback: int = 0, **kwargs):
+    def __init__(self, start_date: str = None, lookback_window: int, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date  
         self._lookback_window = lookback_window
@@ -135,7 +132,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self.start_date
         if start_date:
-            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=self._lookback)).strftime(self.time_filter_template)})
+            params.update({self.incremental_filter_field: (pendulum.parse(start_date, strict=False)-timedelta(minutes=self._lookback_window)).strftime(self.time_filter_template)})
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -345,7 +342,6 @@ class Messages(TwilioNestedStream, IncrementalTwilioStream):
     parent_stream = Accounts
     incremental_filter_field = "DateSent>"
     cursor_field = "date_sent"
-    page_size = config
 
 
 class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
