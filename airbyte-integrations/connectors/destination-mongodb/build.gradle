@@ -12,7 +12,7 @@ application {
 dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation project(':airbyte-db:lib')
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
 
