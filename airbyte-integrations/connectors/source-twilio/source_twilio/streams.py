@@ -29,9 +29,9 @@ class TwilioStream(HttpStream, ABC):
     primary_key = "sid"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
     
-    def __init__(self, pagesize: int = 50, **kwargs):
+    def __init__(self, page_size: int, **kwargs):
         super().__init__(**kwargs)
-        self._page_size = pagesize
+        self._page_size = page_size
     
     @property
     def data_field(self):
