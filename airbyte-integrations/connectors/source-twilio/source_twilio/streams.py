@@ -140,12 +140,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            if self._cursor_value:
-                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
-                self._cursor_value = datetime.strftime(max(datetime.strptime(self._cursor_value, self.time_filter_template), datetime.strptime(record[self.cursor_field],self.time_filter_template)),self.time_filter_template)
-            else:
-                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
-                self._cursor_value = record[self.cursor_field] or self.state
+            self._cursor_value = pendulum.parse(record[self.cursor_field], strict=False)
             yield record
 
 
