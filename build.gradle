@@ -467,7 +467,7 @@ task('generate-docker') {
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')
     dependsOn(':airbyte-scheduler:app:assemble')
-    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-db:db-lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
     dependsOn(':airbyte-temporal:assemble')
 }

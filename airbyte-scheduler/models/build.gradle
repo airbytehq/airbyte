@@ -4,5 +4,5 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
 }
