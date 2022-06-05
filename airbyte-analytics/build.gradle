@@ -3,6 +3,6 @@ dependencies {
 
 
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-json-validation')
 }
