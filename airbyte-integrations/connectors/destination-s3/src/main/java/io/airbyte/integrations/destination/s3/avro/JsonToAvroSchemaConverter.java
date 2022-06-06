@@ -36,6 +36,8 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  */
 public class JsonToAvroSchemaConverter {
 
+  private static final String TYPE = "type";
+  private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Schema.Type.STRING));
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
@@ -60,9 +62,9 @@ public class JsonToAvroSchemaConverter {
       return Collections.singletonList(JsonSchemaType.COMBINED);
     }
 
-    final JsonNode typeProperty = fieldDefinition.get("type");
-    final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
-    final String airbyteTypePropertyStr = airbyteTypeProperty != null ? airbyteTypeProperty.asText() : null;
+    final JsonNode typeProperty = fieldDefinition.get(TYPE);
+    final JsonNode airbyteTypeProperty = fieldDefinition.get(AIRBYTE_TYPE);
+    final String airbyteType = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     if (typeProperty == null || typeProperty.isNull()) {
       LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
       return Collections.singletonList(JsonSchemaType.STRING);
@@ -75,7 +77,7 @@ public class JsonToAvroSchemaConverter {
     }
 
     if (typeProperty.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteTypePropertyStr));
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteType));
     }
 
     LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
