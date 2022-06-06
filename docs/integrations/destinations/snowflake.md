@@ -94,7 +94,7 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 ## Step 2: Set up a data loading method
 
-By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also store data externally using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage (GCS) bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
+By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
 
 Make sure the database and schema have the `USAGE` privilege.
 
@@ -103,13 +103,13 @@ Make sure the database and schema have the `USAGE` privilege.
 To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake.
 
 
-### Using a Google Cloud Storage (GCS) bucket
+### Using a Google Cloud Storage bucket
 
-To use a GCS bucket:
+To use a Google Cloud Storage bucket:
 
-1. Navigate to the Google Cloud Console and [create a new GCS bucket](https://cloud.google.com/storage/docs/creating-buckets) with read/write access for Airbyte to stage data to Snowflake.
+1. Navigate to the Google Cloud Console and [create a new bucket](https://cloud.google.com/storage/docs/creating-buckets) with read/write access for Airbyte to stage data to Snowflake.
 2. [Generate a JSON key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for your service account.
-3. Edit the following script to replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration and `YOURBUCKETNAME` with your GCS bucket name.
+3. Edit the following script to replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration and `YOURBUCKETNAME` with your bucket name.
     ```text
     create storage INTEGRATION gcs_airbyte_integration
       TYPE = EXTERNAL_STAGE
@@ -137,9 +137,7 @@ To use Azure Blob Storage, [create a storage account](https://docs.microsoft.com
 
 ## Step 3: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. You'll need the following information to configure the Snowflake destination:
-
-#### There are 2 way ways of oauth supported: login\pass and oauth2.
+Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using username/password or OAuth 2.0:
 
 ### Login and Password
 | Field | Description |
@@ -179,13 +177,13 @@ To use AWS S3 as the cloud storage, enter the information for the S3 bucket you 
 | Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false. |
 | Encryption | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
 
-To use GCS as the cloud storage, enter the information for the GCS bucket you created in Step 2:
+To use a Google Cloud Storage bucket, enter the information for the bucket you created in Step 2:
 
 | Field | Description |
 |---|---|
 | GCP Project ID | The name of the GCP project ID for your credentials. (Example: `my-project`)  |
-| GCP Bucket Name | The name of the staging GCS bucket. Airbyte will write files to this bucket and read them via statements on Snowflake. (Example: `airbyte-staging`)  |
-| Google Application Credentials | The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the [GCP docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for more information on how to generate a JSON key for your service account.  |
+| GCP Bucket Name | The name of the staging bucket. Airbyte will write files to this bucket and read them via statements on Snowflake. (Example: `airbyte-staging`)  |
+| Google Application Credentials | The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the [Google Cloud docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for more information on how to generate a JSON key for your service account.  |
 
 To use Azure Blob storage, enter the information for the storage you created in Step 2:
 

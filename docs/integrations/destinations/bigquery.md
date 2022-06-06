@@ -12,20 +12,27 @@ This page guides you through the process of setting up the BigQuery destination 
 - (Required for Airbyte Cloud; Optional for Airbyte OSS) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 ## Setup guide
-### Step 1: Set up <connector name>
 
-> Step by step guide for setting up the tool before you can use it in Airbyte (example: create a read-only user by using the following script, create an S3 bucket) 
-Feel free to include code snippets and links to videos
+### Step 1: Set up a data loading method
 
-#### For Airbyte Cloud:
+Although you can load data using BigQuery's [`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
 
-> Airbyte Cloud-specific steps (if any)
-    
-#### For Airbyte OSS:
-    
-> Airbyte Cloud-specific steps (if any)
+#### (Recommended) Using a Google Cloud Storage bucket
 
-### Step 2: Set up the <connector name> connector in Airbyte
+To use a Google Cloud Storage bucket:
+
+1. [Create a Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets) with the Protection Tools set to `none` or `Object versioning`. Make sure the bucket does not have a [retention policy](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy).
+2. [Create an HMAC key and access ID](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
+3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts).
+4. Make sure your Cloud Storage bucket is accessible from the machine running Airbyte. The easiest way to verify if Airbyte is able to connect to your bucket is via the check connection tool in the UI.
+
+**************** Continue editing from here
+
+#### Using BigQuery Standard method
+
+This uploads data directly from your source to BigQuery. While this is faster to setup initially, we strongly recommend that you do not use this option for anything other than a quick demo. It is more than 10x slower than the GCS uploading option and will fail for many datasets. Please be aware you may see some failures for big datasets and slow sources, e.g. if reading from source takes more than 10-12 hours. This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
+
+
 
 #### For Airbyte Cloud:
 
