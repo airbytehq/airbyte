@@ -32,6 +32,9 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       case GOOGLE_SECRET_MANAGER -> {
         return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
+      case VAULT -> {
+        return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix()));
+      }
       default -> {
         return Optional.empty();
       }
@@ -56,6 +59,9 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       }
       case GOOGLE_SECRET_MANAGER -> {
         return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
+      }
+      case VAULT -> {
+        return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix()));
       }
       default -> {
         return Optional.empty();
