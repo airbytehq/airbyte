@@ -16,3 +16,5 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

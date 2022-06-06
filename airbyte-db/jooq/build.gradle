@@ -88,3 +88,5 @@ tasks.named('generateJobsDatabaseJooq').configure {
     allInputsDeclared = true
     outputs.cacheIf { true }
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

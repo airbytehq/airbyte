@@ -14,3 +14,5 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.testcontainers.postgresql
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
