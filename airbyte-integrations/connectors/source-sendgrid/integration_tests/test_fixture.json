@@ -1,0 +1,8 @@
+{
+  "filter_headers": [
+    {
+      "name": "Authorization",
+      "value": "fakertoken"
+    }
+  ]
+}

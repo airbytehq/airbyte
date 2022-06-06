@@ -13,6 +13,7 @@ import vcr
 import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.vcr_helper import VcrHelper
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 
@@ -61,7 +62,7 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. If True, all records will be cached.
         """
-        return False
+        return True
 
     def request_cache(self) -> Cassette:
         """
@@ -80,13 +81,14 @@ class HttpStream(Stream, ABC):
         logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from vcrpy
         vcr_log = logging.getLogger("vcr")
         vcr_log.setLevel(logging.INFO)
-        #        try:
-        #            os.remove(self.cache_filename)
-        #        except FileNotFoundError:
-        #            pass
         my_vcr = vcr.VCR()
         my_vcr.register_matcher("jurassic", jurassic_matcher)
-        return my_vcr.use_cassette(self.cache_filename, serializer="yaml", match_on=["jurassic"])
+
+        vcr_helper = VcrHelper("./integration_tests/test_fixture.json")
+
+        return my_vcr.use_cassette(
+            self.cache_filename, serializer="yaml", match_on=["jurassic"], record_mode="new_episodes", **vcr_helper.get_filters()
+        )
 
     @property
     @abstractmethod
