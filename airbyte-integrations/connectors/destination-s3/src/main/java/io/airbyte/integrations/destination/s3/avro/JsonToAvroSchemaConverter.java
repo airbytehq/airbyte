@@ -215,9 +215,6 @@ public class JsonToAvroSchemaConverter {
     if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
-    if(fieldType == null) {
-      LOGGER.error("Hi i am with null field type");
-    }
 
     final Schema fieldSchema;
     switch (fieldType) {
