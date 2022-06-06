@@ -42,6 +42,10 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 dependsOn project.airbyteDocker
             }
 
+            if(project.hasProperty('buildDockerImage')) {
+                dependsOn project.buildDockerImage
+            }
+
             maxHeapSize = '3g'
 
             mustRunAfter project.test

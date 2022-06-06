@@ -23,6 +23,8 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
 
         project.task("buildDockerImage", type: DockerBuildImage) {
+            dependsOn project.copyGeneratedTar
+
             def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
             def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
@@ -47,5 +49,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
             buildArgs.put('JDK_IMAGE', openjdkImage)
             buildArgs.put('VERSION', "${project.rootProject.ext.version}")
         }
+
+        project.assemble.dependsOn project.buildDockerImage
     }
 }
