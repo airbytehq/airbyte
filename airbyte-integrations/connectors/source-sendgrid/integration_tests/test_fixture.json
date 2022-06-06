@@ -1,8 +1,14 @@
 {
   "filter_headers": [
     {
-      "name": "Authorization",
+      "name": "Authorzation",
       "value": "fakertoken"
+    }
+  ],
+  "replace_all": [
+    {
+      "original": "herebetherealtoken",
+      "replace_by": "TOKEN!"
     }
   ]
 }

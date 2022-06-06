@@ -78,16 +78,30 @@ class HttpStream(Stream, ABC):
             print(f"equals: {equals}")
             assert equals
 
+        vcr_helper = VcrHelper("./integration_tests/test_fixture.json")
+
         logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from vcrpy
         vcr_log = logging.getLogger("vcr")
         vcr_log.setLevel(logging.INFO)
         my_vcr = vcr.VCR()
         my_vcr.register_matcher("jurassic", jurassic_matcher)
+        my_vcr.register_serializer("secrets", vcr_helper)
 
-        vcr_helper = VcrHelper("./integration_tests/test_fixture.json")
+        auth_headers = self.authenticator.get_auth_header()
+        filters = vcr_helper.get_filters()
+        headers_to_filter = [f[0] for f in filters["filter_headers"]]
+        print(auth_headers)
+        print(f"filters: {filters}")
+        print(headers_to_filter)
+        missing_filters = set(auth_headers) - set(headers_to_filter)
+        if missing_filters:
+            print(f"Missing header filter: {missing_filters}")
 
         return my_vcr.use_cassette(
-            self.cache_filename, serializer="yaml", match_on=["jurassic"], record_mode="new_episodes", **vcr_helper.get_filters()
+            self.cache_filename,
+            serializer="secrets",
+            match_on=["jurassic"],
+            record_mode="new_episodes",
         )
 
     @property
