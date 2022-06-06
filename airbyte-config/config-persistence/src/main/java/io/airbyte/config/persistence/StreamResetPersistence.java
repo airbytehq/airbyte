@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Condition;
 import org.jooq.Record;
@@ -45,14 +44,16 @@ public class StreamResetPersistence {
         .fetch(getStreamResetRecordMapper())
         .stream()
         .flatMap(row -> Stream.of(new StreamKey().withName(row.streamName()).withNamespace(row.streamNamespace())))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public void deleteStreamResets(final UUID connectionId, final List<StreamKey> streamsToDelete) throws IOException {
     final Condition condition = noCondition();
     for (final StreamKey streamKey : streamsToDelete) {
-      condition.or(DSL.field(CONNECTION_ID_COL).eq(connectionId).and(DSL.field(STREAM_NAME_COL).eq(streamKey.getName()))
-          .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamKey.getNamespace())));
+      condition.or(
+          DSL.field(CONNECTION_ID_COL).eq(connectionId)
+              .and(DSL.field(STREAM_NAME_COL).eq(streamKey.getName()))
+              .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamKey.getNamespace())));
     }
 
     database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition).execute();
