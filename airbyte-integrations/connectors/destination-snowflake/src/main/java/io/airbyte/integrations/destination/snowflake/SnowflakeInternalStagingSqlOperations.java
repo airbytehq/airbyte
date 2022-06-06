@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -24,12 +24,12 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
-  private static final int UPLOAD_RETRY_LIMIT = 3;
+  public static final int UPLOAD_RETRY_LIMIT = 3;
 
   private static final String CREATE_STAGE_QUERY =
       "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
-  private static final String LIST_STAGE_QUERY = "LIST @%s/%s%s;";
+  private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
   private static final String COPY_QUERY = "COPY INTO %s.%s FROM '@%s/%s' "
       + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
   private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
@@ -98,7 +98,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     LOGGER.debug("Executing query: {}", query);
     database.execute(query);
     if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
-      LOGGER.error(String.format("Failed to upload data into stage, object @%s/%s not found", stagingPath, recordsData.getFilename()));
+      LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
+          (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
       throw new RuntimeException("Upload failed");
     }
   }
@@ -119,7 +120,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   protected String getListQuery(final String stageName, final String stagingPath, final String filename) {
-    return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename);
+    return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
   }
 
   @Override

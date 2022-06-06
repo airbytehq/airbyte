@@ -1,15 +1,16 @@
-import React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkFrontmatter from "remark-frontmatter";
-import styled from "styled-components";
 import type { PluggableList } from "react-markdown/lib/react-markdown";
 
-type Props = {
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
+import styled from "styled-components";
+
+interface Props {
   content?: string;
   className?: string;
   rehypePlugins?: PluggableList;
-};
+}
 
 const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
   return (

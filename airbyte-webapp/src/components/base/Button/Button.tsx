@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import { Theme } from "theme";
 
-import { IProps } from "./types";
+import { ButtonProps } from "./types";
 
-type IStyleProps = IProps & { theme: Theme };
+type IStyleProps = ButtonProps & { theme: Theme };
 
 const getBorderColor = (props: IStyleProps) => {
   if ((props.secondary && props.wasActive) || props.iconOnly) {
@@ -68,32 +68,49 @@ const getDisabledOpacity = (props: IStyleProps) => {
 };
 
 const getShadowOnHover = (props: IStyleProps) => {
-  if (
-    props.secondary ||
-    props.iconOnly ||
-    (props.wasActive && !props.clickable)
-  ) {
+  if (props.secondary || props.iconOnly || (props.wasActive && !props.clickable)) {
     return "none";
   }
 
   return "0 1px 3px rgba(53, 53, 66, .2), 0 1px 2px rgba(53, 53, 66, .12), 0 1px 1px rgba(53, 53, 66, .14)";
 };
 
-const Button = styled.button<IProps>`
+const getFontSize = (props: IStyleProps) => {
+  if (props.size === "xl") {
+    return 16;
+  }
+  if (props.iconOnly) {
+    return 14;
+  }
+  return 12;
+};
+
+const getPadding = (props: IStyleProps) => {
+  if (props.size === "xl") {
+    return ".8em 2.5em";
+  }
+  if (props.iconOnly) {
+    return "1.5px 3px";
+  }
+
+  return "5px 16px";
+};
+
+const Button = styled.button<ButtonProps>`
   width: ${(props) => (props.full ? "100%" : "auto")};
   display: ${(props) => (props.full ? "block" : "inline-block")};
   border: 1px solid ${(props) => getBorderColor(props)};
   outline: none;
   border-radius: 4px;
-  padding: ${(props) => (props.iconOnly ? "1.5px 3px" : "5px 16px 6px")};
-  font-weight: 500;
-  font-size: ${(props) => (props.iconOnly ? 14 : 12)}px;
-  line-height: 15px;
+  padding: ${(props) => getPadding(props)};
+  font-weight: ${(props) => (props.size === "xl" ? 600 : 500)};
+  font-size: ${(props) => getFontSize(props)}px;
+  /* TODO: should try to get rid of line-height altogether */
+  line-height: ${(props) => (props.size === "xl" ? "initial" : "15px")};
   text-align: center;
   letter-spacing: 0.03em;
   cursor: pointer;
-  pointer-events: ${(props) =>
-    props.wasActive && !props.clickable ? "none" : "all"};
+  pointer-events: ${(props) => (props.wasActive && !props.clickable ? "none" : "all")};
   color: ${(props) => getTextColor(props)};
   background: ${(props) => getBackgroundColor(props)};
   text-decoration: none;
@@ -109,10 +126,8 @@ const Button = styled.button<IProps>`
   &:hover {
     box-shadow: ${(props) => getShadowOnHover(props)};
     border-color: ${(props) =>
-      (props.secondary && props.theme.greyColor40) ||
-      (props.iconOnly && props.theme.greyColor20)};
-    color: ${(props) =>
-      (props.secondary || props.iconOnly) && props.theme.textColor};
+      (props.secondary && props.theme.greyColor40) || (props.iconOnly && props.theme.greyColor20)};
+    color: ${(props) => (props.secondary || props.iconOnly) && props.theme.textColor};
   }
 `;
 

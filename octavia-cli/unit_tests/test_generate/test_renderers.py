@@ -1,11 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import mock_open, patch
 
 import pytest
-from octavia_cli.generate import renderers
+import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
+from octavia_cli.generate import renderers, yaml_dumpers
 
 
 class TestFieldToRender:
@@ -80,12 +87,14 @@ class TestFieldToRender:
         field_to_render.required = False
         assert field_to_render._get_required_comment() == "OPTIONAL"
 
-    def test__get_type_comment(self):
+    @pytest.mark.parametrize(
+        "_type,expected_comment",
+        [("string", "string"), (["string", "null"], "string, null"), (None, None)],
+    )
+    def test__get_type_comment(self, _type, expected_comment):
         field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
-        field_to_render.type = "mytype"
-        assert field_to_render._get_type_comment() == "mytype"
-        field_to_render.type = None
-        assert field_to_render._get_type_comment() is None
+        field_to_render.type = _type
+        assert field_to_render._get_type_comment() == expected_comment
 
     def test__get_secret_comment(self):
         field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
@@ -266,9 +275,15 @@ class TestConnectionRenderer:
         assert connection_renderer.destination == mock_destination
 
     def test_catalog_to_yaml(self, mocker):
-        catalog = {"camelCase": "camelCase", "snake_case": "camelCase", "myArray": ["a", "b"]}
+        stream = AirbyteStream(
+            default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")]
+        )
+        config = AirbyteStreamConfiguration(
+            alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
+        )
+        catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
-        assert yaml_catalog == "camelCase: camelCase\nmyArray:\n  - a\n  - b\nsnake_case: camelCase\n"
+        assert yaml_catalog == yaml.dump(catalog.to_dict(), Dumper=yaml_dumpers.CatalogDumper, default_flow_style=False)
 
     def test_write_yaml(self, mocker, mock_source, mock_destination):
         mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")

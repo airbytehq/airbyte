@@ -4,7 +4,6 @@ set -e
 
 . tools/lib/lib.sh
 
-GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
 
 echo "*IMPORTANT: Only merge if the platform build is passing!*"

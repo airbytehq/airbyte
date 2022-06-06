@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -30,8 +30,6 @@ class FBMarketingStream(Stream, ABC):
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # number of records per page when response has pagination
-    page_size = 100
     # use batch API to retrieve details for each record in a stream
     use_batch = True
     # this flag will override `include_deleted` option for streams that does not support it
@@ -39,9 +37,10 @@ class FBMarketingStream(Stream, ABC):
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
 
-    def __init__(self, api: "API", include_deleted: bool = False, **kwargs):
+    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, **kwargs):
         super().__init__(**kwargs)
         self._api = api
+        self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
 
     @cached_property

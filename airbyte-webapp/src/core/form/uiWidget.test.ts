@@ -1,6 +1,7 @@
+import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
+
 import { FormBlock } from "./types";
 import { buildPathInitialState } from "./uiWidget";
-import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 
 const formItems: FormBlock[] = [
   {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -10,11 +10,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -24,14 +26,14 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
@@ -53,6 +55,26 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MySqlTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -96,27 +118,28 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createDatabase(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        db.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+        SQLDialect.MYSQL)) {
+      return new Database(dslContext).query(
+          ctx -> ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(this::getJsonFromRecord)
+              .collect(Collectors.toList()));
+    }
   }
 
   @Override
@@ -125,18 +148,6 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-    }
-    return result;
   }
 
   @Override
@@ -161,18 +172,18 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    try {
-      Databases.createDatabase(
-          "root",
-          "test",
-          String.format("jdbc:mysql://%s:%s/%s",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
-              ctx -> ctx
-                  .execute(query));
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        "root",
+        "test",
+        db.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()),
+        SQLDialect.MYSQL)) {
+      new Database(dslContext).query(
+          ctx -> ctx
+              .execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

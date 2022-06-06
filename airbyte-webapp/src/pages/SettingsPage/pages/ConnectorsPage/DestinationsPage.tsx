@@ -1,51 +1,39 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { DestinationResource } from "core/resources/Destination";
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import useConnector from "hooks/services/useConnector";
+import {
+  useDestinationDefinitionList,
+  useUpdateDestinationDefinition,
+} from "services/connector/DestinationDefinitionService";
+
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import ConnectorsView from "./components/ConnectorsView";
-import useWorkspace from "hooks/services/useWorkspace";
-import { DestinationDefinition } from "core/domain/connector";
 
 const DestinationsPage: React.FC = () => {
-  const { workspace } = useWorkspace();
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const { destinations } = useDestinationList();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const updateDestinationDefinition = useFetcher(
-    DestinationDefinitionResource.updateShape()
-  );
+  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
   const { hasNewDestinationVersion } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateDestinationDefinition(
-          {},
-          {
-            destinationDefinitionId: id,
-            dockerImageTag: version,
-          }
-        );
+        await updateDestinationDefinition({
+          destinationDefinitionId: id,
+          dockerImageTag: version,
+        });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -55,20 +43,15 @@ const DestinationsPage: React.FC = () => {
     [feedbackList, formatMessage, updateDestinationDefinition]
   );
 
-  const usedDestinationDefinitions = useMemo<DestinationDefinition[]>(() => {
-    const destinationDefinitionMap = new Map<string, DestinationDefinition>();
+  const usedDestinationDefinitions = useMemo<DestinationDefinitionRead[]>(() => {
+    const destinationDefinitionMap = new Map<string, DestinationDefinitionRead>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
-        (destinationDefinition) =>
-          destinationDefinition.destinationDefinitionId ===
-          destination.destinationDefinitionId
+        (destinationDefinition) => destinationDefinition.destinationDefinitionId === destination.destinationDefinitionId
       );
 
       if (destinationDefinition) {
-        destinationDefinitionMap.set(
-          destinationDefinition.destinationDefinitionId,
-          destinationDefinition
-        );
+        destinationDefinitionMap.set(destinationDefinition.destinationDefinitionId, destinationDefinition);
       }
     });
 

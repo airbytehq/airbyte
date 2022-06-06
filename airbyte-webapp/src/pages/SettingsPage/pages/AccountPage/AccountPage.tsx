@@ -1,14 +1,16 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
-import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+
 import HeadTitle from "components/HeadTitle";
-import AccountForm from "./components/AccountForm";
+
+import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
 import { Content, SettingsCard } from "../SettingsComponents";
+import AccountForm from "./components/AccountForm";
 
 const AccountPage: React.FC = () => {
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const {
     errorMessage,
     successMessage,
@@ -17,18 +19,22 @@ const AccountPage: React.FC = () => {
   } = useWorkspaceEditor();
 
   const onSubmit = async (data: { email: string }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({
+      ...workspace,
+      ...data,
+      news: !!workspace.news,
+      anonymousDataCollection: !!workspace.anonymousDataCollection,
+      securityUpdates: !!workspace.securityUpdates,
+    });
   };
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]} />
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
         <Content>
           <AccountForm
-            email={workspace.email}
+            email={workspace.email ?? ""}
             onSubmit={onSubmit}
             errorMessage={errorMessage}
             successMessage={successMessage}

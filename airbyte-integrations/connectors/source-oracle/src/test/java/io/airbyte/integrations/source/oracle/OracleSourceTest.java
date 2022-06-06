@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -12,7 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -24,10 +26,12 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,8 +49,8 @@ class OracleSourceTest {
           Field.of("IMAGE", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("ID", new BigDecimal("1.0"), "NAME", "user", "IMAGE", "last_summer.png".getBytes())));
+  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(createRecord(STREAM_NAME,
+      map("ID", new BigDecimal("1.0"), "NAME", "user", "IMAGE", "last_summer.png".getBytes(StandardCharsets.UTF_8))));
 
   private static OracleContainer ORACLE_DB;
 
@@ -69,22 +73,27 @@ class OracleSourceTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+            config.get("port").asInt(),
+            config.get("sid").asText()));
 
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
-      connection.createStatement()
-          .execute("INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
-    });
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.close();
+      database.execute(connection -> {
+        connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+        connection.createStatement().execute("CREATE TABLE TEST.id_and_name(id NUMERIC(4, 0), name VARCHAR(200), image BLOB)");
+        connection.createStatement()
+            .execute("INSERT INTO TEST.id_and_name(id, name, image) VALUES (1, 'user', utl_raw.cast_to_raw('last_summer.png'))");
+      });
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   private JsonNode getConfig(final OracleContainer oracleDb) {

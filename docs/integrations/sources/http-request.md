@@ -1,8 +1,10 @@
 # HTTP Request (Graveyarded)
 
-{% hint style="warning" %}
+:::caution
+
 This connector is graveyarded and will not be receiving any updates from the Airbyte team. Its functionalities have been replaced by the [Airbyte CDK](../../connector-development/cdk-python/README.md), which allows you to create source connectors for any HTTP API.
-{% endhint %}
+
+:::
 
 ## Overview
 
