@@ -55,7 +55,6 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.skip(reason="skip")
 @pytest.mark.parametrize(
     "test_resource_name",
     set(
