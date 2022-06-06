@@ -4,13 +4,11 @@
 
 package io.airbyte.config;
 
-import java.time.Instant;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
 public record StreamResetRecord(UUID connectionId,
                                 String streamName,
-                                @Nullable String streamNamespace,
-                                Instant updatedAt) {
+                                @Nullable String streamNamespace) {
 
 }

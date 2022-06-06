@@ -51,7 +51,7 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  void testCreateAndGetStreamResets() throws Exception {
+  void testCreateAndGetAndDeleteStreamResets() throws Exception {
     final List<StreamKey> streamResetList = new ArrayList<>();
     final StreamKey streamKey1 = new StreamKey().withName("stream_name_1").withNamespace("stream_namespace_1");
     final StreamKey streamKey2 = new StreamKey().withName("stream_name_2");
@@ -65,6 +65,11 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertTrue(
         result.stream().anyMatch(streamKey -> streamKey.getName().equals("stream_name_1") && streamKey.getNamespace().equals("stream_namespace_1")));
     assertTrue(result.stream().anyMatch(streamKey -> streamKey.getName().equals("stream_name_2") && streamKey.getNamespace() == null));
+
+    streamResetPersistence.deleteStreamResets(uuid, result);
+
+    final List<StreamKey> resultAfterDeleting = streamResetPersistence.getStreamResets(uuid);
+    assertEquals(0, resultAfterDeleting.size());
   }
 
 }

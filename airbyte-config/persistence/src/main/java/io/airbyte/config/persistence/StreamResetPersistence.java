@@ -11,37 +11,26 @@ import io.airbyte.config.StreamResetRecord;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import java.io.IOException;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Condition;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class StreamResetPersistence {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(StreamResetPersistence.class);
-
-  private static final String STREAM_RESET_TABLE = "stream_reset";
-  private static final String CONNECTION_ID_COL = "connection_id";
+  private static final String ID_COL = "id";
   private static final String STREAM_NAME_COL = "stream_name";
   private static final String STREAM_NAMESPACE_COL = "stream_namespace";
-  private static final Field<Object> DSL_FIELD_STREAM_NAME = DSL.field(STREAM_NAME_COL);
-  private static final Field<Object> DSL_FIELD_STREAM_NAMESPACE = DSL.field(STREAM_NAMESPACE_COL);
-  private static final Field<Object> DSL_FIELD_CONNECTION_ID = DSL.field(CONNECTION_ID_COL);
-  private static final Field<Object> DSL_FIELD_CREATED_AT = DSL.field("created_at");
-  private static final Field<Object> DSL_FIELD_UPDATED_AT = DSL.field("updated_at");
-  private static final Table<Record> DSL_TABLE_STREAM_RESET = DSL.table(STREAM_RESET_TABLE);
-
+  private static final String CONNECTION_ID_COL = "connection_id";
+  private static final String CREATED_AT_COL = "created_at";
   private static final String UPDATED_AT_COL = "updated_at";
+  private static final Table<Record> DSL_TABLE_STREAM_RESET = DSL.table("stream_reset");
 
   private final ExceptionWrappingDatabase database;
 
@@ -50,8 +39,6 @@ public class StreamResetPersistence {
   }
 
   public List<StreamKey> getStreamResets(final UUID connectionId) throws IOException {
-    LOGGER.info("getting stream resets with UUID:");
-    LOGGER.info(String.valueOf(connectionId));
     return database.query(ctx -> ctx.select(DSL.asterisk())
         .from(DSL_TABLE_STREAM_RESET))
         .where(DSL.field(CONNECTION_ID_COL).eq(connectionId))
@@ -68,21 +55,20 @@ public class StreamResetPersistence {
           .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamKey.getNamespace())));
     }
 
-    database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition);
+    database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition).execute();
   }
 
   public void createStreamResets(final UUID connectionId, final List<StreamKey> streamsToCreate) throws IOException {
-    LOGGER.info("creating stream resets with UUID:");
-    LOGGER.info(String.valueOf(connectionId));
     for (final StreamKey streamKey : streamsToCreate) {
       final OffsetDateTime timestamp = OffsetDateTime.now();
 
       database.query(ctx -> ctx.insertInto(DSL_TABLE_STREAM_RESET)
-          .set(DSL_FIELD_CONNECTION_ID, connectionId)
-          .set(DSL_FIELD_STREAM_NAME, streamKey.getName())
-          .set(DSL_FIELD_STREAM_NAMESPACE, streamKey.getNamespace())
-          .set(DSL_FIELD_CREATED_AT, timestamp)
-          .set(DSL_FIELD_UPDATED_AT, timestamp));
+          .set(DSL.field(ID_COL), UUID.randomUUID())
+          .set(DSL.field(CONNECTION_ID_COL), connectionId)
+          .set(DSL.field(STREAM_NAME_COL), streamKey.getName())
+          .set(DSL.field(STREAM_NAMESPACE_COL), streamKey.getNamespace())
+          .set(DSL.field(CREATED_AT_COL), timestamp)
+          .set(DSL.field(UPDATED_AT_COL), timestamp)).execute();
     }
   }
 
@@ -90,8 +76,7 @@ public class StreamResetPersistence {
     return record -> new StreamResetRecord(
         UUID.fromString(record.get(CONNECTION_ID_COL, String.class)),
         record.get(STREAM_NAME_COL, String.class),
-        record.get(STREAM_NAMESPACE_COL, String.class),
-        record.get(UPDATED_AT_COL, Instant.class));
+        record.get(STREAM_NAMESPACE_COL, String.class));
   }
 
 }
