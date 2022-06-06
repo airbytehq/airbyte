@@ -22,6 +22,7 @@ config = {"option": "OPTION"}
         ("test_value_depends_on_next_page_token", {"read_from_token": "{{ next_page_token['offset'] }}"}, {"read_from_token": "12345"}),
         ("test_value_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
         ("test_none_value", {"missing_param": "{{ fake_path['date'] }}"}, {}),
+        ("test_return_empty_dict_for_string_templates", "Should return empty dict {{ stream_state['date'] }}", {}),
         (
             "test_parameter_is_interpolated",
             {"{{ stream_state['date'] }} - {{stream_slice['start_date']}} - {{next_page_token['offset']}} - {{config['option']}}": "ABC"},

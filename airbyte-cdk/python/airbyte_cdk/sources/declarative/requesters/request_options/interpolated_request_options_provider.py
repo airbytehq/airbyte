@@ -5,9 +5,6 @@
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider import InterpolatedRequestInputProvider
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_body_data_provider import (
-    InterpolatedRequestBodyDataProvider,
-)
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 
 
@@ -24,13 +21,16 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_parameters)
-        self._body_data_interpolator = InterpolatedRequestBodyDataProvider(config=config, request_inputs=request_body_data)
+        self._body_data_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_body_data)
         self._body_json_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_body_json)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        if isinstance(interpolated_value, dict):
+            return interpolated_value
+        return {}
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
