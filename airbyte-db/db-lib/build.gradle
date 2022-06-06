@@ -81,3 +81,5 @@ task copyInitSql(type: Copy) {
 Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyInitSql)
 assemble.dependsOn(dockerBuildTask)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

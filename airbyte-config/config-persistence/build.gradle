@@ -21,3 +21,5 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     integrationTestJavaImplementation project(':airbyte-config:config-persistence')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -68,3 +68,5 @@ task copyGeneratedTar(type: Copy) {
 Task dockerBuildTask = getDockerBuildTask("scheduler", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
