@@ -882,11 +882,11 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
-  releaseStage: generally_available
+  releaseStage: beta
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
