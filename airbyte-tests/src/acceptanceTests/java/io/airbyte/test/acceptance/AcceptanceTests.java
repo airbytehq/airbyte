@@ -305,7 +305,7 @@ public class AcceptanceTests {
 
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
-    try {
+//    try {
       clearSourceDbData();
       clearDestinationDbData();
       if (!IS_GKE) {
@@ -327,7 +327,7 @@ public class AcceptanceTests {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-    } catch (Exception e) {}
+//    } catch (Exception e) {}
 
   }
 
