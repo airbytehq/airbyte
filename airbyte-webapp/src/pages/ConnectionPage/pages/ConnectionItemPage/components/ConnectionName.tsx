@@ -89,6 +89,7 @@ const StyledInput = styled(Input)`
   background-color: white;
   font-size: 24px;
   height: 50px;
+  text-align: center;
   div {
     border: none;
   }
