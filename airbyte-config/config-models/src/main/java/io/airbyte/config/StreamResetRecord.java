@@ -7,6 +7,9 @@ package io.airbyte.config;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
+/*
+ * A stream reset record is a reference to a stream that has a reset pending or running
+ */
 public record StreamResetRecord(UUID connectionId,
                                 String streamName,
                                 @Nullable String streamNamespace) {

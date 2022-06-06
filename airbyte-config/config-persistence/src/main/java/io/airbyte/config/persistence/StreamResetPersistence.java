@@ -37,6 +37,9 @@ public class StreamResetPersistence {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  /*
+   * Get a list of streamKeys for streams that have pending or running resets
+   */
   public List<StreamKey> getStreamResets(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx.select(DSL.asterisk())
         .from(DSL_TABLE_STREAM_RESET))
@@ -47,6 +50,10 @@ public class StreamResetPersistence {
         .toList();
   }
 
+  /*
+   * Delete stream resets for a given connection. This is called to delete stream reset records for
+   * resets that are successfully completed.
+   */
   public void deleteStreamResets(final UUID connectionId, final List<StreamKey> streamsToDelete) throws IOException {
     final Condition condition = noCondition();
     for (final StreamKey streamKey : streamsToDelete) {
@@ -59,6 +66,10 @@ public class StreamResetPersistence {
     database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition).execute();
   }
 
+  /*
+   * Create stream resets for a given connection. This is called to create stream reset records for
+   * resets that are going to be run.
+   */
   public void createStreamResets(final UUID connectionId, final List<StreamKey> streamsToCreate) throws IOException {
     for (final StreamKey streamKey : streamsToCreate) {
       final OffsetDateTime timestamp = OffsetDateTime.now();
