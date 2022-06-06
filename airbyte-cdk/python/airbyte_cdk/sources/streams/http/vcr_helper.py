@@ -28,13 +28,12 @@ class VcrHelper:
         return [(fh["name"], fh.get("value")) for fh in self.test_fixture[field]]
 
     def deserialize(self, cassette_string):
-        # cassette_string = cassette_string.replace("", "faketoken")
-        print(f"replace_all: {self.test_fixture['replace_all']}")
-        for replace in self.test_fixture["replace_all"]:
-            original = replace["original"]
-            replace_by = replace["replace_by"]
-            cassette_string = cassette_string.replace(original, replace_by)
         return yaml.load(cassette_string, Loader=Loader)
 
     def serialize(self, cassette_dict):
-        return yaml.dump(cassette_dict, Dumper=Dumper)
+        serialized = yaml.dump(cassette_dict, Dumper=Dumper)
+        for replace in self.test_fixture["replace_all"]:
+            original = replace["original"]
+            replace_by = replace["replace_by"]
+            serialized = serialized.replace(original, replace_by)
+        return serialized
