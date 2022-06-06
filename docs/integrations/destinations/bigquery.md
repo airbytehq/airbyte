@@ -1,5 +1,86 @@
 # BigQuery
 
+Setting up the BigQuery destination connector involves setting up setting up the data loading method (GigQuery Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector using the Airbyte UI.
+
+This page guides you through the process of setting up the BigQuery destination connector.
+
+## Prerequisites
+
+- [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
+- [BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to sync data to. 
+    Note: Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+- (Required for Airbyte Cloud; Optional for Airbyte OSS) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+
+## Setup guide
+### Step 1: Set up <connector name>
+
+> Step by step guide for setting up the tool before you can use it in Airbyte (example: create a read-only user by using the following script, create an S3 bucket) 
+Feel free to include code snippets and links to videos
+
+#### For Airbyte Cloud:
+
+> Airbyte Cloud-specific steps (if any)
+    
+#### For Airbyte OSS:
+    
+> Airbyte Cloud-specific steps (if any)
+
+### Step 2: Set up the <connector name> connector in Airbyte
+
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **<Sources/Destinations>**. In the top-right corner, click **+New source/destination**.
+3. On the Set up the <source/destination> page, enter the name for the <connector name> connector and select **<connector name>** from the <Source/Destination> type dropdown.
+4. <Fill in the rest of the steps>
+
+#### For Airbyte OSS:
+
+> Steps for OSS
+
+## Supported sync modes
+
+The <connector name> <source/destination> connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+> List supported sync modes
+
+
+## Supported Streams
+
+> List the name of supported streams with a link to their API endpoint docs
+
+## <Connector-specific features>
+    
+> List the connector-specific features (if any)
+
+## Performance considerations 
+    
+> Describe performance considerations (if any)
+
+## Data type map 
+    
+> Include the data type map (if applicable)
+
+## Tutorials 
+
+> Include links to tutorials (if applicable)
+    
+Now that you have set up the <connector name> <source/destination> connector, check out the following <connector name> tutorials:
+<Link to relevant recipes from: https://airbyte.com/tutorials>
+
+
+## Changelog
+
+> Include changelog if applicable
+
+
+
+
+-------------------------------------------------
+
+
+# BigQuery
+
 This page guides you through the process of setting up the BigQuery destination connector.
 
 ## Prerequisites
