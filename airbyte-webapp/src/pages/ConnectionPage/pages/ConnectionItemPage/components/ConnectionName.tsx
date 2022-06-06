@@ -1,6 +1,6 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import styled from "styled-components";
 
 import { Input } from "components";
@@ -114,12 +114,14 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
     }
   };
 
-  const onEscape = () => {
+  const onEscape: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    event.stopPropagation();
     setEditingState(false);
     setConnectionName(name);
   };
 
-  const onEnter = async () => {
+  const onEnter: React.KeyboardEventHandler<HTMLInputElement> = async (event) => {
+    event.stopPropagation();
     await updateConnectionAsync();
   };
 
