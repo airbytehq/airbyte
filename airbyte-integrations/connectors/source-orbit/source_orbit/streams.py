@@ -3,9 +3,11 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, cast
 
 import requests
+import urllib.parse
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -34,13 +36,20 @@ class OrbitStream(HttpStream, ABC):
         yield response.json()
 
 
-"""
 class OrbitStreamPaginated(OrbitStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.links["next"]["url"] != None:
-            return {"next_url": response.links["next"]["url"]}
-        else:
-            return None
+        decoded_response = response.json()
+        links = decoded_response.get("links")
+        if not links:
+            return
+
+        next = links.get("next")
+        if not next:
+            return
+
+        next_url = urllib.parse.urlparse(next)
+        next_params = list((cast(str, k), v) for (k, v) in urllib.parse.parse_qsl(next_url.query))
+        return next_params
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -52,12 +61,7 @@ class OrbitStreamPaginated(OrbitStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
-"""
-
-
-class Members(OrbitStream):
+class Members(OrbitStreamPaginated):
     # Docs: https://docs.orbit.love/reference/members-overview
 
     # TODO: Write a function to access "id" in the "data" array in the schema.
