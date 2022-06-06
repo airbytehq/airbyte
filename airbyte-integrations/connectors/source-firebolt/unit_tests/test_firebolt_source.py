@@ -102,7 +102,7 @@ def async_connection_cursor_mock():
     return connection, cursor
 
 
-@patch("source_firebolt.source.connect")
+@patch("source_firebolt.database.connect")
 def test_connection(mock_connection, config, config_no_engine, logger):
     establish_connection(config, logger)
     logger.reset_mock()
