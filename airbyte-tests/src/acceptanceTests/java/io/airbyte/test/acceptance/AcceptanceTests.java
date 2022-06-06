@@ -4,17 +4,14 @@
 
 package io.airbyte.test.acceptance;
 
-import static io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -25,26 +22,19 @@ import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AirbyteCatalog;
 import io.airbyte.api.client.model.generated.AirbyteStream;
-import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
-import io.airbyte.api.client.model.generated.AirbyteStreamConfiguration;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.AttemptStatus;
-import io.airbyte.api.client.model.generated.CheckConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
-import io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
-import io.airbyte.api.client.model.generated.DataType;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.client.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
-import io.airbyte.api.client.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
@@ -65,9 +55,7 @@ import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.SourceCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
-import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
-import io.airbyte.api.client.model.generated.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
@@ -81,13 +69,8 @@ import io.airbyte.db.Database;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -126,7 +109,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
@@ -242,10 +224,10 @@ public class AcceptanceTests {
     }
 
     apiClient = new AirbyteApiClient(
-            new ApiClient().setScheme("http")
-                    .setHost("localhost")
-                    .setPort(8001)
-                    .setBasePath("/api"));
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8001)
+            .setBasePath("/api"));
 
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
@@ -253,21 +235,27 @@ public class AcceptanceTests {
 
     // log which connectors are being used.
     final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
-            .getSourceDefinition(new SourceDefinitionIdRequestBody()
-                    .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
+        .getSourceDefinition(new SourceDefinitionIdRequestBody()
+            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
     final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
-            .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
-                    .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
+        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
+            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
 
+    if (!IS_GKE) {
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
+    }
   }
 
   @AfterAll
   public static void end() {
     if (!IS_GKE) {
       sourcePsql.stop();
+      destinationPsql.stop();
     }
+
     if (airbyteTestContainer != null) {
       airbyteTestContainer.stop();
     }
@@ -275,11 +263,6 @@ public class AcceptanceTests {
 
   @BeforeEach
   public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
-    if (!IS_GKE) {
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-      destinationPsql.start();
-    }
-
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
@@ -306,9 +289,6 @@ public class AcceptanceTests {
     try {
       clearSourceDbData();
       clearDestinationDbData();
-      if (!IS_GKE) {
-        destinationPsql.stop();
-      }
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -872,35 +852,6 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
   }
 
-  private WorkflowClient getWorkflowClient() {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
-    return WorkflowClient.newInstance(temporalService);
-  }
-
-  private WorkflowState getWorkflowState(final UUID connectionId) {
-    final WorkflowClient workflowCLient = getWorkflowClient();
-
-    // check if temporal workflow is reachable
-    final ConnectionManagerWorkflow connectionManagerWorkflow =
-        workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
-
-    return connectionManagerWorkflow.getState();
-  }
-
-  private void terminateTemporalWorkflow(final UUID connectionId) {
-    final WorkflowClient workflowCLient = getWorkflowClient();
-
-    // check if temporal workflow is reachable
-    getWorkflowState(connectionId);
-
-    // Terminate workflow
-    LOGGER.info("Terminating temporal workflow...");
-    workflowCLient.newUntypedWorkflowStub("connection_manager_" + connectionId).terminate("");
-
-    // remove connection to avoid exception during tear down
-    connectionIds.remove(connectionId);
-  }
-
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
@@ -1206,7 +1157,7 @@ public class AcceptanceTests {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1214,7 +1165,7 @@ public class AcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 
