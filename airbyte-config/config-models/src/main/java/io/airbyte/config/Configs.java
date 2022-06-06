@@ -449,18 +449,6 @@ public interface Configs {
    */
   Set<Integer> getTemporalWorkerPorts();
 
-  // Scheduler
-  /**
-   * Define how and how often the Scheduler sweeps its local disk for old configs. Multiple variables
-   * are involved here. Please see {@link WorkspaceRetentionConfig} for more info.
-   */
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  /**
-   * Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
-   */
-  String getSubmitterNumThreads();
-
   // Container Orchestrator
   /**
    * Define if Airbyte should use the container orchestrator. Internal-use only.
