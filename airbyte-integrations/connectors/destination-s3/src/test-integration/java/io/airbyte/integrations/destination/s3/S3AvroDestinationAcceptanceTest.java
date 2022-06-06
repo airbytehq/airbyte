@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -29,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.avro.Schema;
@@ -106,10 +108,12 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
 
       Set<Type> actualSchemaTypes = retrieveDataTypesFromSchema(streamName, schema);
-      List<Type> actualSchemaTypesWithoutNull = actualSchemaTypes.stream().filter(type -> !type.equals(Type.NULL)).toList();
+      Optional<Type> actualSchemaTypesWithoutNull = actualSchemaTypes.stream().filter(type -> !type.equals(Type.NULL)).findAny();
 
       List<Type> expectedTypeList = createSchemaTypesForStreamName(stream.getJsonSchema().get("properties").get("data"));
-      assertEquals(expectedTypeList, actualSchemaTypesWithoutNull);
+      assertEquals(1, expectedTypeList.size(), "Several non null data types are not supported for single stream");
+      assertTrue(actualSchemaTypesWithoutNull.isPresent());
+      assertEquals(expectedTypeList.get(0), actualSchemaTypesWithoutNull.get());
     }
   }
 
