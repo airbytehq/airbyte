@@ -49,9 +49,14 @@ See the [concepts docs](docs/concepts/) for a tour through what the API offers.
 
 ### First time setup
 
+1. Install dependencies
+
+* on MacOS: `brew install autoconf automake libtool`
+* on Ubuntu > 20.04: `sudo apt-get install autoconf`
+
 We assume `python` points to python &gt;=3.9.
 
-Setup a virtual env:
+2. Setup a virtual env:
 
 ```text
 python -m venv .venv
@@ -78,7 +83,7 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 ## Coming Soon
 
-* Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\) 
+* Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
 * Airbyte Java HTTP CDK
 * CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
 * CDK for other protocols
