@@ -12,6 +12,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
@@ -39,6 +40,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceOperations.class);
   private static final String TIMESTAMPTZ = "timestamptz";
   private static final String TIMETZ = "timetz";
+  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
@@ -218,7 +220,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       throws SQLException {
     final var data = resultSet.getObject(index);
     try {
-      node.put(columnName, MoreMappers.initMapper().writeValueAsString(data));
+      node.put(columnName, OBJECT_MAPPER.writeValueAsString(data));
     } catch (JsonProcessingException e) {
       throw new RuntimeException("Could not parse 'hstore' value:" + e);
     }

@@ -573,7 +573,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "language"  => "English","ISBN-13" => "978-1449370000",
                 "weight"    => "11.2 ounces"'
                 """, null)
-            .addExpectedValues("{\"ISBN-13\":\"978-1449370000\",\"weight\":\"11.2 ounces\",\"paperback\":\"243\",\"publisher\":\"postgresqltutorial.com\",\"language\":\"English\"}", null)
+            .addExpectedValues("""
+                {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
+                null)
             .build());
   }
 
