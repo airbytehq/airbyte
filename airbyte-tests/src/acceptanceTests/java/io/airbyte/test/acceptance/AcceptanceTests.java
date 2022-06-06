@@ -72,8 +72,6 @@ import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.SyncMode;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.resources.MoreResources;
@@ -611,13 +609,8 @@ public class AcceptanceTests {
 
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
-          Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
-    } else {
-      waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    }
+    waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
+        Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -1212,24 +1205,20 @@ public class AcceptanceTests {
     LOGGER.info("Calling delete connection a second time to test repeat call behavior...");
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    // test deletion of connection when temporal workflow is in a bad state, only when using new
-    // scheduler
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      LOGGER.info("Testing connection deletion when temporal is in a terminal state");
-      connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    // test deletion of connection when temporal workflow is in a bad state
+    LOGGER.info("Testing connection deletion when temporal is in a terminal state");
+    connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-      terminateTemporalWorkflow(connectionId);
+    terminateTemporalWorkflow(connectionId);
 
-      // we should still be able to delete the connection when the temporal workflow is in this state
-      apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    // we should still be able to delete the connection when the temporal workflow is in this state
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-      LOGGER.info("Waiting for connection to be deleted...");
-      Thread.sleep(500);
+    LOGGER.info("Waiting for connection to be deleted...");
+    Thread.sleep(500);
 
-      connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
-      assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
-    }
+    connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
+    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
   }
 
   @Test
@@ -1239,42 +1228,37 @@ public class AcceptanceTests {
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
-    // conditional.
     // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability
     // to query a workflow for its current
     // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This
     // test just ensures that the underlying workflow
     // is running after the update method is called.
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      final String connectionName = "test-connection";
-      final UUID sourceId = createPostgresSource().getSourceId();
-      final UUID destinationId = createDestination().getDestinationId();
-      final UUID operationId = createOperation().getOperationId();
-      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-      final SyncMode syncMode = SyncMode.INCREMENTAL;
-      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-      catalog.getStreams().forEach(s -> s.getConfig()
-          .syncMode(syncMode)
-          .cursorField(List.of(COLUMN_ID))
-          .destinationSyncMode(destinationSyncMode)
-          .primaryKey(List.of(List.of(COLUMN_NAME))));
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-      LOGGER.info("Testing connection update when temporal is in a terminal state");
-      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Testing connection update when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-      terminateTemporalWorkflow(connectionId);
+    terminateTemporalWorkflow(connectionId);
 
-      // we should still be able to update the connection when the temporal workflow is in this state
-      updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
+    // we should still be able to update the connection when the temporal workflow is in this state
+    updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
 
-      LOGGER.info("Waiting for workflow to be recreated...");
-      Thread.sleep(500);
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
 
-      final WorkflowState workflowState = getWorkflowState(connectionId);
-      assertTrue(workflowState.isRunning());
-    }
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
   }
 
   @Test
@@ -1284,55 +1268,50 @@ public class AcceptanceTests {
   public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
-    // conditional.
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      final String connectionName = "test-connection";
-      final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-      final SourceRead source = createSource(
-          "E2E Test Source -" + UUID.randomUUID(),
-          workspaceId,
-          sourceDefinition.getSourceDefinitionId(),
-          Jsons.jsonNode(ImmutableMap.builder()
-              .put("type", "INFINITE_FEED")
-              .put("max_records", 5000)
-              .put("message_interval", 100)
-              .build()));
-      final UUID sourceId = source.getSourceId();
-      final UUID destinationId = createDestination().getDestinationId();
-      final UUID operationId = createOperation().getOperationId();
-      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-      final SyncMode syncMode = SyncMode.INCREMENTAL;
-      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-      catalog.getStreams().forEach(s -> s.getConfig()
-          .syncMode(syncMode)
-          .cursorField(List.of(COLUMN_ID))
-          .destinationSyncMode(destinationSyncMode)
-          .primaryKey(List.of(List.of(COLUMN_NAME))));
+    final String connectionName = "test-connection";
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("max_records", 5000)
+            .put("message_interval", 100)
+            .build()));
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-      LOGGER.info("Testing manual sync when temporal is in a terminal state");
-      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Testing manual sync when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-      LOGGER.info("Starting first manual sync");
-      final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-      LOGGER.info("Terminating workflow during first sync");
-      terminateTemporalWorkflow(connectionId);
+    LOGGER.info("Starting first manual sync");
+    final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    LOGGER.info("Terminating workflow during first sync");
+    terminateTemporalWorkflow(connectionId);
 
-      LOGGER.info("Submitted another manual sync");
-      apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    LOGGER.info("Submitted another manual sync");
+    apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-      LOGGER.info("Waiting for workflow to be recreated...");
-      Thread.sleep(500);
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
 
-      final WorkflowState workflowState = getWorkflowState(connectionId);
-      assertTrue(workflowState.isRunning());
-      assertTrue(workflowState.isSkipScheduling());
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
+    assertTrue(workflowState.isSkipScheduling());
 
-      // verify that the first manual sync was marked as failed
-      final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
-      assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
-    }
+    // verify that the first manual sync was marked as failed
+    final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
+    assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
   }
 
   @Test
@@ -1342,37 +1321,32 @@ public class AcceptanceTests {
   public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
-    // conditional.
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      final String connectionName = "test-connection";
-      final UUID sourceId = createPostgresSource().getSourceId();
-      final UUID destinationId = createDestination().getDestinationId();
-      final UUID operationId = createOperation().getOperationId();
-      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-      final SyncMode syncMode = SyncMode.INCREMENTAL;
-      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-      catalog.getStreams().forEach(s -> s.getConfig()
-          .syncMode(syncMode)
-          .cursorField(List.of(COLUMN_ID))
-          .destinationSyncMode(destinationSyncMode)
-          .primaryKey(List.of(List.of(COLUMN_NAME))));
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-      LOGGER.info("Testing reset connection when temporal is in a terminal state");
-      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Testing reset connection when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-      terminateTemporalWorkflow(connectionId);
+    terminateTemporalWorkflow(connectionId);
 
-      apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-      LOGGER.info("Waiting for workflow to be recreated...");
-      Thread.sleep(500);
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
 
-      final WorkflowState workflowState = getWorkflowState(connectionId);
-      assertTrue(workflowState.isRunning());
-      assertTrue(workflowState.isResetConnection());
-    }
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
+    assertTrue(workflowState.isResetConnection());
   }
 
   private WorkflowClient getWorkflowClient() {
