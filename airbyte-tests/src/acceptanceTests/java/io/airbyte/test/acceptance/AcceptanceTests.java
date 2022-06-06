@@ -327,7 +327,9 @@ public class AcceptanceTests {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      LOGGER.error("Error tearing down test fixtures:", e);
+    }
   }
 
   @Test
