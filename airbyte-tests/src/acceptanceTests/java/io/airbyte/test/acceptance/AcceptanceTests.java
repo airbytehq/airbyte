@@ -159,7 +159,6 @@ import org.testcontainers.utility.MountableFile;
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
 public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
