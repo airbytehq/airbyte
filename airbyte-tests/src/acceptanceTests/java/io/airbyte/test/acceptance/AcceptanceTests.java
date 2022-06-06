@@ -303,28 +303,31 @@ public class AcceptanceTests {
 
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
-    clearSourceDbData();
-    clearDestinationDbData();
-    if (!IS_GKE) {
-      destinationPsql.stop();
-    }
+    try {
+      clearSourceDbData();
+      clearDestinationDbData();
+      if (!IS_GKE) {
+        destinationPsql.stop();
+      }
 
-    for (final UUID operationId : operationIds) {
-      deleteOperation(operationId);
-    }
+      for (final UUID operationId : operationIds) {
+        deleteOperation(operationId);
+      }
 
-    for (final UUID connectionId : connectionIds) {
-      disableConnection(connectionId);
-    }
+      for (final UUID connectionId : connectionIds) {
+        disableConnection(connectionId);
+      }
 
-    for (final UUID sourceId : sourceIds) {
-      deleteSource(sourceId);
-    }
+      for (final UUID sourceId : sourceIds) {
+        deleteSource(sourceId);
+      }
 
-    for (final UUID destinationId : destinationIds) {
-      deleteDestination(destinationId);
+      for (final UUID destinationId : destinationIds) {
+        deleteDestination(destinationId);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Error tearing down test fixtures:", e);
     }
-
   }
 
   @Test
@@ -439,6 +442,8 @@ public class AcceptanceTests {
 
   @RetryingTest(3)
   @Order(5)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
