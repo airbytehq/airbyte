@@ -132,12 +132,15 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
     if (connection.name !== connectionName) {
       setLoading(true);
       await updateConnection({
-        name: connectionName,
         connectionId: connection.connectionId,
-        namespaceDefinition: connection.namespaceDefinition,
         syncCatalog: connection.syncCatalog,
-        status: connection.status,
         prefix: connection.prefix,
+        schedule: connection.schedule || null,
+        namespaceDefinition: connection.namespaceDefinition,
+        namespaceFormat: connection.namespaceFormat,
+        operations: connection.operations,
+        status: connection.status,
+        name: connectionName,
       });
       setLoading(false);
     }
