@@ -45,6 +45,7 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
+@pytest.mark.skip(reason="skip")
 @pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
@@ -60,6 +61,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
     run_test(destination_type, column_count)
 
 
+@pytest.mark.skip(reason="skip")
 @pytest.mark.parametrize(
     "integration_type, column_count, expected_exception_message",
     [
@@ -79,10 +81,12 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
     run_test(destination_type, column_count, expected_exception_message)
 
 
+@pytest.mark.skip(reason="skip")
 def test_empty_streams(setup_test_path):
     run_test(DestinationType.POSTGRES, 0)
 
 
+@pytest.mark.skip(reason="skip")
 def test_stream_with_1_airbyte_column(setup_test_path):
     run_test(DestinationType.POSTGRES, 1)
 
