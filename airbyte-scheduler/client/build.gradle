@@ -3,16 +3,18 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:specs')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-scheduler:models')
-    implementation project(':airbyte-scheduler:persistence')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-scheduler:scheduler-models')
+    implementation project(':airbyte-scheduler:scheduler-persistence')
     // todo (cgardens) - remove this dep. just needs temporal client.
     implementation project(':airbyte-workers')
 
     implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
