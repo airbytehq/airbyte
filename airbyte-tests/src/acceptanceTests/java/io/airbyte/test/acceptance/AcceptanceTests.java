@@ -159,6 +159,7 @@ import org.testcontainers.utility.MountableFile;
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled
 public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
@@ -443,6 +444,8 @@ public class AcceptanceTests {
 
   @RetryingTest(3)
   @Order(5)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+          matches = "true")
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
