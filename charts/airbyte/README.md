@@ -66,39 +66,6 @@ Helm charts for Airbyte.
 | `webapp.extraVolumes`                       | Additional volumes for webapp pod(s).                            | `[]`             |
 
 
-### Scheduler Parameters
-
-| Name                                           | Description                                                         | Value               |
-| ---------------------------------------------- | ------------------------------------------------------------------- | ------------------- |
-| `scheduler.replicaCount`                       | Number of scheduler replicas                                        | `1`                 |
-| `scheduler.image.repository`                   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
-| `scheduler.image.pullPolicy`                   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`                          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.39.11-alpha`      |
-| `scheduler.podAnnotations`                     | Add extra annotations to the scheduler pod                          | `{}`                |
-| `scheduler.containerSecurityContext`           | Security context for the container                                  | `{}`                |
-| `scheduler.livenessProbe.enabled`              | Enable livenessProbe on the scheduler                               | `true`              |
-| `scheduler.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                             | `5`                 |
-| `scheduler.livenessProbe.periodSeconds`        | Period seconds for livenessProbe                                    | `30`                |
-| `scheduler.livenessProbe.timeoutSeconds`       | Timeout seconds for livenessProbe                                   | `1`                 |
-| `scheduler.livenessProbe.failureThreshold`     | Failure threshold for livenessProbe                                 | `3`                 |
-| `scheduler.livenessProbe.successThreshold`     | Success threshold for livenessProbe                                 | `1`                 |
-| `scheduler.readinessProbe.enabled`             | Enable readinessProbe on the scheduler                              | `true`              |
-| `scheduler.readinessProbe.initialDelaySeconds` | Initial delay seconds for readinessProbe                            | `5`                 |
-| `scheduler.readinessProbe.periodSeconds`       | Period seconds for readinessProbe                                   | `30`                |
-| `scheduler.readinessProbe.timeoutSeconds`      | Timeout seconds for readinessProbe                                  | `1`                 |
-| `scheduler.readinessProbe.failureThreshold`    | Failure threshold for readinessProbe                                | `3`                 |
-| `scheduler.readinessProbe.successThreshold`    | Success threshold for readinessProbe                                | `1`                 |
-| `scheduler.resources.limits`                   | The resources limits for the scheduler container                    | `{}`                |
-| `scheduler.resources.requests`                 | The requested resources for the scheduler container                 | `{}`                |
-| `scheduler.nodeSelector`                       | Node labels for pod assignment                                      | `{}`                |
-| `scheduler.tolerations`                        | Tolerations for scheduler pod assignment.                           | `[]`                |
-| `scheduler.affinity`                           | Affinity and anti-affinity for scheduler pod assignment.            | `{}`                |
-| `scheduler.log.level`                          | The log level to log at.                                            | `INFO`              |
-| `scheduler.extraEnv`                           | Additional env vars for scheduler pod(s).                           | `[]`                |
-| `scheduler.extraVolumeMounts`                  | Additional volumeMounts for scheduler container(s).                 | `[]`                |
-| `scheduler.extraVolumes`                       | Additional volumes for scheduler pod(s).                            | `[]`                |
-
-
 ### Pod Sweeper parameters
 
 | Name                                            | Description                                               | Value             |
