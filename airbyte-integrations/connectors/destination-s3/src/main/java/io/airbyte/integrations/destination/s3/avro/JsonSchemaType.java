@@ -61,7 +61,7 @@ public enum JsonSchemaType {
     }
 
     if (matchSchemaType.isEmpty()) {
-      return null;
+      throw new IllegalArgumentException("Unexpected json schema type: " + jsonSchemaType);
     } else if (matchSchemaType.size() > 1) {
       throw new RuntimeException(
           "Match with more than one json format! Matched formats : " + matchSchemaType + ", Inputs jsonSchemaFormat : " + jsonSchemaType
