@@ -12,7 +12,7 @@ projectDir=(
   "config/init"
   "bootloader"
   "metrics/reporter"
-  "db/lib"
+  "db/db-lib"
   "scheduler/app"
 )
 
