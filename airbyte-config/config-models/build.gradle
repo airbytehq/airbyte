@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons')
 }
 
@@ -52,3 +52,5 @@ task logClientsIntegrationTest(type: Test) {
         events "passed", "skipped", "failed"
     }
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
