@@ -99,11 +99,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: SUBMITTER_NUM_THREADS
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: SUBMITTER_NUM_THREADS
             - name: JOB_MAIN_CONTAINER_CPU_REQUEST
               valueFrom:
                 configMapKeyRef:
