@@ -89,14 +89,16 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
 
 def format_fetch_result(data: List[Any]) -> List[List[Any]]:
     """
-    Format data from a firebolt query to be compatible with Airbyte.
-    Convert Firebolt timestamp string to Airbyte.
+    Format data from a firebolt query to be compatible with Airbyte,
+    convert Firebolt timestamp string to Airbyte.
     Firebolt stores dates in YYYY-MM-DD HH:mm:SS format.
     Airbyte requires YYYY-MM-DDTHH:mm:SS.
 
-    :param fb_timestamp: timestamp string in YYYY-MM-DD HH:mm:SS format.
+    :param data: list of data items that may require conversion.
+        Example: [Decimal("22.1000921"), [2,3,4], datetime.datetime('2021-01-01 10:11:02')]
 
-    :return: Airbyte timestamp string in YYYY-MM-DDTHH:mm:SS format.
+    :return: List of the same data as passed that's been converted to compatible types.
+        https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types
     """
 
     for idx, item in enumerate(data):
@@ -111,12 +113,15 @@ def format_fetch_result(data: List[Any]) -> List[List[Any]]:
     return data
 
 
-def airbyte_message_from_data(raw_data: List[List], columns: List[str], table_name: str) -> Optional[AirbyteMessage]:
+def airbyte_message_from_data(raw_data: List[Any], columns: List[str], table_name: str) -> Optional[AirbyteMessage]:
     """
     Wrap data into an AirbyteMessage.
 
-    :param raw_data: Raw data row returned from a fetch query
+    :param raw_data: Raw data row returned from a fetch query. Each item in the list
+        represents a row of data.
+        Example: [10, "Oranges"]
     :param columns: List of column names
+        Example: ["Quantity", "Fruit"]
     :param table_name: Name of a table where data was fetched from
 
     :return: AirbyteMessage containing parsed data
