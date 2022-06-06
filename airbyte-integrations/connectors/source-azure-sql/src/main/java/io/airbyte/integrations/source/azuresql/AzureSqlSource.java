@@ -23,6 +23,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.source.azuresql.AzureSqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -53,8 +54,7 @@ public class AzureSqlSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureSqlSource.class);
 
   static private String URL_STRING = "jdbc:sqlserver://kimerinnserver.database.windows.net:1433;database=test;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-  static private String USER= "kimerinn@$kimerinnserver";
-  static private String PWD="";//set real password here
+  static private String USER= "kimerinn@kimerinnserver";
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
@@ -68,26 +68,27 @@ public class AzureSqlSource extends AbstractJdbcSource<JDBCType> implements Sour
     return new SshWrappedSource(new AzureSqlSource(), HOST_KEY, PORT_KEY);
   }
 
-  public static void main(String args[]) {
-    AzureSqlSource asql = new AzureSqlSource();
-    System.out.println("Done!");
-  }
-
   AzureSqlSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new AzureSQLSourceOperations());
-    LOGGER.info("Connecting to the azure db...");
-    Properties props = new java.util.Properties();
-    props.put("user", USER);
-    props.put("password", PWD);
-    props.put("url", URL_STRING);
-    Connection connection = DriverManager.getConnection(URL_STRING, props);
-    log.info("Database connection test: " + connection.getCatalog());
-    log.info("Create database schema");
-    Statement statement = connection.createStatement();
-    statement.execute("DROP TABLE IF EXISTS todo;");
-    statement.execute("CREATE TABLE todo (id INT PRIMARY KEY, description VARCHAR(255), details VARCHAR(4096), done BIT);");
-    log.info("Closing connection");
-    connection.close();
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new AzureSqlSourceOperations());
+//    LOGGER.info("Connecting to the azure db...");
+//    Properties props = new java.util.Properties();
+//    props.put("user", USER);
+//    props.put("password", PWD);
+//    props.put("url", URL_STRING);
+//
+//    try {
+//      Connection connection = DriverManager.getConnection(URL_STRING, props);
+//      LOGGER.info("Database connection test: " + connection.getCatalog());
+//      LOGGER.info("Create database schema");
+//      Statement statement = connection.createStatement();
+//      statement.execute("DROP TABLE IF EXISTS todo;");
+//      statement.execute("CREATE TABLE todo (id INT PRIMARY KEY, description VARCHAR(255), details VARCHAR(4096), done BIT);");
+//      LOGGER.info("Closing connection");
+//      connection.close();
+//    }
+//    catch (Exception e) {
+//      e.printStackTrace();
+//    }
   }
 
   @Override
@@ -192,283 +193,259 @@ public class AzureSqlSource extends AbstractJdbcSource<JDBCType> implements Sour
         .collect(toList());
   }
 
-//  @Override
-//  public JsonNode toDatabaseConfig(final JsonNode azureSqlConfig) {
-//    final List<String> additionalParameters = new ArrayList<>();
-//
-//    final StringBuilder jdbcUrl = new StringBuilder(
-//        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-//            azureSqlConfig.get("host").asText(),
-//            azureSqlConfig.get("port").asText(),
-//            azureSqlConfig.get("database").asText()));
-//
-//    if (azureSqlConfig.has("ssl_method")) {
-//      readSsl(azureSqlConfig, additionalParameters);
-//    }
-//
-//    if (!additionalParameters.isEmpty()) {
-//      jdbcUrl.append(String.join(";", additionalParameters));
-//    }
-//
-//    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-//        .put("username", azureSqlConfig.get("username").asText())
-//        .put("password", azureSqlConfig.get("password").asText())
-//        .put("jdbc_url", jdbcUrl.toString());
-//
-//    if (azureSqlConfig.has(JDBC_URL_PARAMS_KEY)) {
-//      configBuilder.put("connection_properties", azureSqlConfig.get(JDBC_URL_PARAMS_KEY));
-//    }
-//
-//    return Jsons.jsonNode(configBuilder.build());
-//  }
+  @Override
+  public JsonNode toDatabaseConfig(final JsonNode azureSqlConfig) {
+    final List<String> additionalParameters = new ArrayList<>();
 
-//  @Override
-//  public Set<String> getExcludedInternalNameSpaces() {
-//    return Set.of(
-//        "INFORMATION_SCHEMA",
-//        "sys",
-//        "spt_fallback_db",
-//        "spt_monitor",
-//        "spt_values",
-//        "spt_fallback_usg",
-//        "MSreplication_options",
-//        "spt_fallback_dev",
-//        "cdc"); // is this actually ok? what if the user wants cdc schema for some reason?
-//  }
+//    static private String URL_STRING = "jdbc:sqlserver://kimerinnserver.database.windows.net:1433;database=test;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+//    props.put("user", USER);
+//    props.put("password", PWD);
+//    props.put("url", URL_STRING);
+    final StringBuilder jdbcUrl = new StringBuilder(
+        String.format("jdbc:sqlserver://%s.database.windows.net:1433;database=%s;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;",
+            azureSqlConfig.get("sqlserver").asText(),
+            azureSqlConfig.get("database").asText()));
 
-//  @Override
-//  public AirbyteCatalog discover(final JsonNode config) throws Exception {
-//    final AirbyteCatalog catalog = super.discover(config);
-//
-//    if (MssqlCdcHelper.isCdc(config)) {
-//      final List<AirbyteStream> streams = catalog.getStreams().stream()
-//          .map(MssqlSource::removeIncrementalWithoutPk)
-//          .map(MssqlSource::setIncrementalToSourceDefined)
-//          .map(MssqlSource::addCdcMetadataColumns)
-//          .collect(toList());
-//
-//      catalog.setStreams(streams);
-//    }
-//
-//    return catalog;
-//  }
+    if (azureSqlConfig.has("ssl_method")) {
+      readSsl(azureSqlConfig, additionalParameters);
+    }
 
-//  @Override
-//  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
-//      throws Exception {
-//    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
-//        super.getCheckOperations(config));
-//
-//    if (MssqlCdcHelper.isCdc(config)) {
-//      checkOperations.add(database -> assertCdcEnabledInDb(config, database));
-//      checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
+    if (!additionalParameters.isEmpty()) {
+      jdbcUrl.append(String.join(";", additionalParameters));
+    }
+
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put("username", azureSqlConfig.get("username").asText())
+        .put("password", azureSqlConfig.get("password").asText())
+        .put("jdbc_url", jdbcUrl.toString());
+
+    if (azureSqlConfig.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", azureSqlConfig.get(JDBC_URL_PARAMS_KEY));
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  public Set<String> getExcludedInternalNameSpaces() {
+    return Set.of(
+        "INFORMATION_SCHEMA",
+        "sys",
+        "spt_fallback_db",
+        "spt_monitor",
+        "spt_values",
+        "spt_fallback_usg",
+        "MSreplication_options",
+        "spt_fallback_dev",
+        "cdc"); // is this actually ok? what if the user wants cdc schema for some reason?
+  }
+
+  @Override
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    final AirbyteCatalog catalog = super.discover(config);
+
+    if (AzureSqlCdcHelper.isCdc(config)) {
+      final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(AzureSqlSource::removeIncrementalWithoutPk)
+          .map(AzureSqlSource::setIncrementalToSourceDefined)
+          .map(AzureSqlSource::addCdcMetadataColumns)
+          .collect(toList());
+
+      catalog.setStreams(streams);
+    }
+
+    return catalog;
+  }
+
+  @Override
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
+        super.getCheckOperations(config));
+
+    if (AzureSqlCdcHelper.isCdc(config)) {
+      checkOperations.add(database -> assertCdcEnabledInDb(config, database));
+      checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
 //      checkOperations.add(database -> assertSqlServerAgentRunning(database));
-//      checkOperations.add(database -> assertSnapshotIsolationAllowed(config, database));
-//    }
-//
-//    return checkOperations;
-//  }
+      checkOperations.add(database -> assertSnapshotIsolationAllowed(config, database));
+    }
 
-//  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
-//      throws SQLException {
-//    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-//      final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
-//      final PreparedStatement ps = connection.prepareStatement(sql);
-//      ps.setString(1, config.get("database").asText());
-//      LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
-//          config.get("database").asText(), sql));
-//      return ps;
-//    }, sourceOperations::rowToJson);
-//
-//    if (queryResponse.size() < 1) {
-//      throw new RuntimeException(String.format(
-//          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-//          config.get("database").asText()));
-//    }
-//    if (!(queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
-//      throw new RuntimeException(String.format(
-//          "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
-//          config.get("database").asText()));
-//    }
-//  }
+    return checkOperations;
+  }
 
-//  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
-//      throws SQLException {
-//    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-//      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
-//      final PreparedStatement ps = connection.prepareStatement(sql);
-//      LOGGER.info(String.format(
-//          "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
-//          config.get("username").asText(), sql));
-//      return ps;
-//    }, sourceOperations::rowToJson);
-//
-//    // Ensure at least one available CDC table
-//    if (queryResponse.size() < 1) {
-//      throw new RuntimeException(
-//          "No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
-//    }
-//  }
+  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
+      final PreparedStatement ps = connection.prepareStatement(sql);
+      ps.setString(1, config.get("database").asText());
+      LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
+          config.get("database").asText(), sql));
+      return ps;
+    }, sourceOperations::rowToJson);
 
-//  // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
-//  protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
-//    try {
-//      final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-//        final String sql =
-//            "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
-//        final PreparedStatement ps = connection.prepareStatement(sql);
-//        LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
-//        return ps;
-//      }, sourceOperations::rowToJson);
-//
-//      if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
-//        throw new RuntimeException(String.format(
-//            "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
-//            queryResponse.get(0).get("status_desc").toString()));
-//      }
-//    } catch (final Exception e) {
-//      if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
-//        LOGGER.warn(String.format(
-//            "Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
-//            e.getMessage()));
-//      } else {
-//        throw e;
-//      }
-//    }
-//  }
+    if (queryResponse.size() < 1) {
+      throw new RuntimeException(String.format(
+          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+          config.get("database").asText()));
+    }
+    if (!(queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
+      throw new RuntimeException(String.format(
+          "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
+          config.get("database").asText()));
+    }
+  }
 
-//  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
-//      throws SQLException {
-//    if (MssqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
-//      return;
-//    }
+  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      final String sql = "SELECT * FROM cdc.change_tables";
+      final PreparedStatement ps = connection.prepareStatement(sql);
+      LOGGER.info(String.format(
+          "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
+          config.get("username").asText(), sql));
+      return ps;
+    }, sourceOperations::rowToJson);
 
-//    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-//      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-//      final PreparedStatement ps = connection.prepareStatement(sql);
-//      ps.setString(1, config.get("database").asText());
-//      LOGGER.info(String.format(
-//          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-//          config.get("database").asText(), sql));
-//      return ps;
-//    }, sourceOperations::rowToJson);
-//
-//    if (queryResponse.size() < 1) {
-//      throw new RuntimeException(String.format(
-//          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-//          config.get("database").asText()));
-//    }
-//    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-//      throw new RuntimeException(String.format(
-//          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-//              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-//          config.get("database").asText()));
-//    }
-//  }
+    // Ensure at least one available CDC table
+    if (queryResponse.size() < 1) {
+      throw new RuntimeException(
+          "No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
+    }
+  }
+
+
+  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    if (AzureSqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
+      return;
+    }
+
+    final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
+      final PreparedStatement ps = connection.prepareStatement(sql);
+      ps.setString(1, config.get("database").asText());
+      LOGGER.info(String.format(
+          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+          config.get("database").asText(), sql));
+      return ps;
+    }, sourceOperations::rowToJson);
+
+    if (queryResponse.size() < 1) {
+      throw new RuntimeException(String.format(
+          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+          config.get("database").asText()));
+    }
+    if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
+      throw new RuntimeException(String.format(
+          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
+          config.get("database").asText()));
+    }
+  }
 
 //  @Override
-//  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-//                                                                             final JdbcDatabase database,
-//                                                                             final ConfiguredAirbyteCatalog catalog,
-//                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-//                                                                             final StateManager stateManager,
-//                                                                             final Instant emittedAt) {
-//    final JsonNode sourceConfig = database.getSourceConfig();
-//    if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-//      LOGGER.info("using CDC: {}", true);
-//      final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
-//      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-//          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
-//          props, catalog, true);
-//      return handler.getIncrementalIterators(
-//          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-//          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
-//          emittedAt);
-//    } else {
-//      LOGGER.info("using CDC: {}", false);
-//      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
-//    }
-//  }
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+                                                                             final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    if (AzureSqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      LOGGER.info("using CDC: {}", true);
+      final Properties props = AzureSqlCdcHelper.getDebeziumProperties(sourceConfig);
+      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
+          AzureSqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
+          props, catalog, true);
+      return handler.getIncrementalIterators(
+          new AzureSqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new AzureSqlCdcStateHandler(stateManager), new AzureSqlCdcConnectorMetadataInjector(),
+          emittedAt);
+    } else {
+      LOGGER.info("using CDC: {}", false);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+    }
+  }
 
-//  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-//    final Optional<SyncMode> any = catalog.getStreams().stream()
-//        .map(ConfiguredAirbyteStream::getSyncMode)
-//        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-//    return any.isPresent();
-//  }
-
-  // Note: in place mutation.
-//  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
-//    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-//      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-//    }
-//
-//    return stream;
-//  }
+  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+    final Optional<SyncMode> any = catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getSyncMode)
+        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
+    return any.isPresent();
+  }
 
   // Note: in place mutation.
-//  private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
-//    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
-//      stream.setSourceDefinedCursor(true);
-//    }
-//
-//    return stream;
-//  }
+  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
+    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
+      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
+    }
+
+    return stream;
+  }
 
   // Note: in place mutation.
-//  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
-//
-//    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-//    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
-//
-//    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
-//    properties.set(CDC_LSN, stringType);
-//    properties.set(CDC_UPDATED_AT, stringType);
-//    properties.set(CDC_DELETED_AT, stringType);
-//
-//    return stream;
-//  }
+  private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setSourceDefinedCursor(true);
+    }
 
-//  private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
-//    final JsonNode config = sslMethod.get("ssl_method");
-//    switch (config.get("ssl_method").asText()) {
-//      case "unencrypted" -> additionalParameters.add("encrypt=false");
-//      case "encrypted_trust_server_certificate" -> {
-//        additionalParameters.add("encrypt=true");
-//        additionalParameters.add("trustServerCertificate=true");
-//      }
-//      case "encrypted_verify_certificate" -> {
-//        additionalParameters.add("encrypt=true");
-//
-//        // trust store location code found at https://stackoverflow.com/a/56570588
-//        final String trustStoreLocation = Optional
-//            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-//            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-//        final File trustStoreFile = new File(trustStoreLocation);
-//        if (!trustStoreFile.exists()) {
-//          throw new RuntimeException(
-//              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-//                  + trustStoreLocation + " does not exist.");
-//        }
-//        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-//        additionalParameters.add("trustStore=" + trustStoreLocation);
-//        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-//          additionalParameters
-//              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
-//        }
-//        if (config.has("hostNameInCertificate")) {
-//          additionalParameters
-//              .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
-//        }
-//      }
-//    }
-//  }
-//
-//  public static void main(final String[] args) throws Exception {
-//    final Source source = MssqlSource.sshWrappedSource();
-//    LOGGER.info("starting source: {}", MssqlSource.class);
-//    new IntegrationRunner(source).run(args);
-//    LOGGER.info("completed source: {}", MssqlSource.class);
-//  }
+    return stream;
+  }
 
+  // Note: in place mutation.
+  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
+
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+
+    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
+    properties.set(CDC_LSN, stringType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
+
+    return stream;
+  }
+
+  private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
+    final JsonNode config = sslMethod.get("ssl_method");
+    switch (config.get("ssl_method").asText()) {
+      case "unencrypted" -> additionalParameters.add("encrypt=false");
+      case "encrypted_trust_server_certificate" -> {
+        additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustServerCertificate=true");
+      }
+      case "encrypted_verify_certificate" -> {
+        additionalParameters.add("encrypt=true");
+
+        // trust store location code found at https://stackoverflow.com/a/56570588
+        final String trustStoreLocation = Optional
+            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+        final File trustStoreFile = new File(trustStoreLocation);
+        if (!trustStoreFile.exists()) {
+          throw new RuntimeException(
+              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+                  + trustStoreLocation + " does not exist.");
+        }
+        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+        additionalParameters.add("trustStore=" + trustStoreLocation);
+        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+          additionalParameters
+              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
+        }
+        if (config.has("hostNameInCertificate")) {
+          additionalParameters
+              .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+        }
+      }
+    }
+  }
+
+  public static void main(final String[] args) throws Exception {
+    final Source source = new AzureSqlSource();
+    LOGGER.info("starting source: {}", AzureSqlSource.class);
+    new IntegrationRunner(source).run(args);
+    LOGGER.info("completed source: {}", AzureSqlSource.class);
+  }
 }

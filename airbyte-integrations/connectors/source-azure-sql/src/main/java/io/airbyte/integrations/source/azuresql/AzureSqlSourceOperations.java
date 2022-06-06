@@ -23,13 +23,13 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureSQLSourceOperations extends JdbcSourceOperations {
+public class AzureSqlSourceOperations extends JdbcSourceOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AzureSQLSourceOperations.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureSqlSourceOperations.class);
 
   /**
-   * The method is used to set json value by type. Need to be overridden as MSSQL has some its own
-   * specific types (ex. Geometry, Geography, Hierarchyid, etc)
+   * The method is used to set json value by type. Need to be overridden as MSSQL has some its own specific types (ex. Geometry, Geography,
+   * Hierarchyid, etc)
    *
    * @throws SQLException
    */
@@ -37,8 +37,7 @@ public class AzureSQLSourceOperations extends JdbcSourceOperations {
   public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
-    final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet
-        .getMetaData();
+    final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
@@ -55,10 +54,10 @@ public class AzureSQLSourceOperations extends JdbcSourceOperations {
   }
 
   private void putValue(final JDBCType columnType,
-                        final ResultSet resultSet,
-                        final String columnName,
-                        final int colIndex,
-                        final ObjectNode json)
+      final ResultSet resultSet,
+      final String columnName,
+      final int colIndex,
+      final ObjectNode json)
       throws SQLException {
     switch (columnType) {
       case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -101,9 +100,9 @@ public class AzureSQLSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putBinary(final ObjectNode node,
-                           final String columnName,
-                           final ResultSet resultSet,
-                           final int index)
+      final String columnName,
+      final ResultSet resultSet,
+      final int index)
       throws SQLException {
     final byte[] bytes = resultSet.getBytes(index);
     final String value = new String(bytes, Charset.defaultCharset());
@@ -111,17 +110,17 @@ public class AzureSQLSourceOperations extends JdbcSourceOperations {
   }
 
   protected void putGeometry(final ObjectNode node,
-                             final String columnName,
-                             final ResultSet resultSet,
-                             final int index)
+      final String columnName,
+      final ResultSet resultSet,
+      final int index)
       throws SQLException {
     node.put(columnName, Geometry.deserialize(resultSet.getBytes(index)).toString());
   }
 
   protected void putGeography(final ObjectNode node,
-                              final String columnName,
-                              final ResultSet resultSet,
-                              final int index)
+      final String columnName,
+      final ResultSet resultSet,
+      final int index)
       throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
   }
