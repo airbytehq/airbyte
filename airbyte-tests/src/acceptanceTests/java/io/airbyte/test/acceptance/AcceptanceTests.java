@@ -306,7 +306,7 @@ public class AcceptanceTests {
 
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
-//    try {
+    try {
       clearSourceDbData();
       clearDestinationDbData();
       if (!IS_GKE) {
@@ -328,8 +328,7 @@ public class AcceptanceTests {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-//    } catch (Exception e) {}
-
+    } catch (Exception e) {}
   }
 
   @Test
@@ -445,7 +444,7 @@ public class AcceptanceTests {
   @RetryingTest(3)
   @Order(5)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-          matches = "true")
+                                 matches = "true")
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
