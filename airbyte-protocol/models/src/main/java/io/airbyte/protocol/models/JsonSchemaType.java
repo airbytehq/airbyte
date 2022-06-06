@@ -48,6 +48,7 @@ public class JsonSchemaType {
           .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
   public static final JsonSchemaType STRING_DATE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
       .withFormat(DATE).build();
+  public static final JsonSchemaType INTEGER_BIGINT = JsonSchemaType.builder(JsonSchemaPrimitive.INTEGER).withAirbyteType("big_int").build();
 
   private final Map<String, String> jsonSchemaTypeMap;
 

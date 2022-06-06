@@ -214,7 +214,16 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+//      case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case NUMBER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER -> {
+        if (fieldDefinition.has("airbyte_type")
+                && fieldDefinition.get("airbyte_type").asText().equals("big_int")){
+          LOGGER.error("Here we go");
+          return Schema.create(Schema.Type.LONG);
+        }
+        return Schema.create(fieldType.getAvroType());
+      }
       case STRING -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();
