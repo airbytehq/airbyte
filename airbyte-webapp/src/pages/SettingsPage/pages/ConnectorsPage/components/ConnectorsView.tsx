@@ -7,7 +7,9 @@ import Table from "components/Table";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
 import CreateConnector from "./CreateConnector";
@@ -16,7 +18,7 @@ import { Block, FormContentTitle, Title } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
 import VersionCell from "./VersionCell";
 
-type ConnectorsViewProps = {
+interface ConnectorsViewProps {
   type: "sources" | "destinations";
   isUpdateSuccess: boolean;
   hasNewConnectorVersion?: boolean;
@@ -27,7 +29,7 @@ type ConnectorsViewProps = {
   onUpdate: () => void;
   onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
   feedbackList: Record<string, string>;
-};
+}
 
 const defaultSorting = [{ id: "name" }];
 
@@ -45,6 +47,8 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const { hasFeature } = useFeatureService();
   const allowUpdateConnectors = hasFeature(FeatureItem.AllowUpdateConnectors);
+  const workspace = useCurrentWorkspace();
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions(connectorsDefinitions, workspace);
 
   const columns = React.useMemo(
     () => [
@@ -139,7 +143,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
           {renderHeaderControls("available")}
         </Title>
-        <Table columns={columns} data={connectorsDefinitions} sortBy={defaultSorting} />
+        <Table columns={columns} data={availableConnectorDefinitions} sortBy={defaultSorting} />
       </Block>
     </>
   );

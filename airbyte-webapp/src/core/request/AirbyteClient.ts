@@ -520,6 +520,7 @@ export interface AttemptFailureReason {
   failureOrigin?: AttemptFailureOrigin;
   failureType?: AttemptFailureType;
   externalMessage?: string;
+  internalMessage?: string;
   stacktrace?: string;
   /** True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known. */
   retryable?: boolean;

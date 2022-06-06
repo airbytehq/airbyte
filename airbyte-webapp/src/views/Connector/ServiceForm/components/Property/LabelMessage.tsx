@@ -5,11 +5,11 @@ import { TextWithHTML } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-type IProps = {
+interface IProps {
   property: FormBaseItem;
   error: string | undefined;
   touched: boolean;
-};
+}
 
 const LabelMessage: React.FC<IProps> = ({ property, error, touched }) => {
   const constructExamples = () => {

@@ -1,11 +1,11 @@
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
-type Values = {
+interface Values {
   connectorType: string;
   name: string;
   additionalInfo?: string;
   email?: string;
-};
+}
 
 const useRequestConnector = (): {
   requestConnector: (conn: Values) => void;
