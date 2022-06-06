@@ -13,6 +13,8 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
     """
     Convert from Firebolt type to Airbyte. If type is not defined in
     Firebolt then it will be set to string, as per Airbyte reccommendation.
+    More on Firebolt types can be found in docs:
+    https://docs.firebolt.io/general-reference/data-types.html
 
     :param fb_type: Firebolt type.
 
