@@ -426,7 +426,6 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
 
     large_stream = True
     first_read_override_key = "first_read_override"
-    use_cache = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -663,6 +662,8 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
+    use_cache = True
+
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
@@ -702,6 +703,8 @@ class PullRequestStats(PullRequestSubstream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
+
+    state_checkpoint_interval = 100
 
     @property
     def record_keys(self) -> List[str]:
