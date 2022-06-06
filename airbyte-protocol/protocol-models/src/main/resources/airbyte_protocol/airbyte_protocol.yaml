@@ -78,13 +78,30 @@ definitions:
         description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      isolated:
+        "$ref": "#/definitions/AirbyteIsolatedState"
+      non_isolated:
+        "$ref": "#/definitions/AirbyteNonIsolatedState"
+  AirbyteIsolatedState:
+    type: object
+    additionalProperties: true
+    properties:
       global:
         "$ref": "#/definitions/AirbyteStateBlob"
       streams:
         type: array
         items:
           "$ref": "#/definitions/AirbyteStreamState"
-
+  AirbyteNonIsolatedState:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
   AirbyteStateType:
     type: string
     description: >
