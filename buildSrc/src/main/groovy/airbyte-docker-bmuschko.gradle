@@ -1,0 +1,51 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+class AirbyteDockerBmuschkoPluginConfiguration {
+    String imageName
+}
+
+class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoPluginConfiguration)
+
+        project.task("copyGeneratedTar", type: Copy) {
+            dependsOn project.copyDocker
+            dependsOn project.distTar
+
+            // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
+            project.afterEvaluate {
+                from('build/distributions') {
+                    include "${extension.imageName}-*.tar"
+                }
+            }
+            into 'build/docker/bin'
+        }
+
+
+        project.task("buildDockerImage", type: DockerBuildImage) {
+            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
+
+            def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
+            def isArm64 = arch == "aarch64" || arch == "arm64"
+
+            def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+            def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+            def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
+            def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
+            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
+
+            inputDir = project.file("${project.projectDir}/build/docker")
+            platform = buildPlatform
+            // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
+            project.afterEvaluate {
+                images.add("airbyte/${extension.imageName}:${project.rootProject.ext.image_tag}")
+            }
+            buildArgs.put('JDK_VERSION', jdkVersion)
+            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+            buildArgs.put('ALPINE_IMAGE', alpineImage)
+            buildArgs.put('NGINX_IMAGE', nginxImage)
+            buildArgs.put('JDK_IMAGE', openjdkImage)
+            buildArgs.put('VERSION', "${project.rootProject.ext.version}")
+        }
+    }
+}
