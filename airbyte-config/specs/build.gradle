@@ -22,3 +22,5 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
 }
 
 project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
