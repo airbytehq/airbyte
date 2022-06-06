@@ -4,7 +4,7 @@
 
 import json
 from asyncio import gather, get_event_loop
-from typing import Dict, Generator, List
+from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -18,65 +18,11 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 from firebolt.async_db import Connection as AsyncConnection
-from firebolt.async_db import connect as async_connect
-from firebolt.db import Connection, connect
 
-from .utils import airbyte_message_from_data, convert_type, parse_config
+from .database import establish_async_connection, establish_connection, get_firebolt_tables
+from .utils import airbyte_message_from_data, convert_type
 
 SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
-
-
-def establish_connection(config: json, logger: AirbyteLogger) -> Connection:
-    """
-    Creates a connection to Firebolt database using the parameters provided.
-
-    :param config: Json object containing db credentials.
-    :param logger: AirbyteLogger instance to print logs.
-
-    :return: PEP-249 compliant database Connection object.
-    """
-    logger.debug("Connecting to Firebolt.")
-    connection = connect(**parse_config(config, logger))
-    logger.debug("Connection to Firebolt established.")
-    return connection
-
-
-async def establish_async_connection(config: json, logger: AirbyteLogger) -> AsyncConnection:
-    """
-    Creates an async connection to Firebolt database using the parameters provided.
-    This connection can be used for parallel operations.
-
-    :param config: Json object containing db credentials.
-    :param logger: AirbyteLogger instance to print logs.
-
-    :return: PEP-249 compliant database Connection object.
-    """
-    logger.debug("Connecting to Firebolt.")
-    connection = await async_connect(**parse_config(config, logger))
-    logger.debug("Connection to Firebolt established.")
-    return connection
-
-
-async def get_firebolt_tables(connection: AsyncConnection) -> List[str]:
-    """
-    Fetch a list of tables that are compatible with Airbyte.
-    Currently this includes Fact and Dimension tables
-
-    :param connection: Connection object connected to a database
-
-    :return: List of table names
-    """
-    query = """
-    SELECT
-        table_name
-    FROM
-        information_schema.tables
-    WHERE
-        "table_type" IN ('FACT', 'DIMENSION')
-    """
-    cursor = connection.cursor()
-    await cursor.execute(query)
-    return [table[0] for table in await cursor.fetchall()]
 
 
 async def get_table_stream(connection: AsyncConnection, table: str) -> AirbyteStream:
