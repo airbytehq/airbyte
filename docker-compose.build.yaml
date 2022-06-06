@@ -19,7 +19,7 @@ services:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db/lib
+      context: airbyte-db/db-lib
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   worker:

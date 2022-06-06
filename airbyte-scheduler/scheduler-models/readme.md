@@ -1,4 +1,4 @@
-# airbyte-scheduler:models
+# airbyte-scheduler:scheduler-models
 
 This module declares models that belong to the Scheduler.
 
