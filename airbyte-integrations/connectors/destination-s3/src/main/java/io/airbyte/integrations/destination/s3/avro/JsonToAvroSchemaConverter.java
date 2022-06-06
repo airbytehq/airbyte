@@ -61,6 +61,8 @@ public class JsonToAvroSchemaConverter {
     }
 
     final JsonNode typeProperty = fieldDefinition.get("type");
+    final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
+    final String airbyteTypePropertyStr = airbyteTypeProperty != null ? airbyteTypeProperty.asText() : null;
     if (typeProperty == null || typeProperty.isNull()) {
       LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
       return Collections.singletonList(JsonSchemaType.STRING);
@@ -73,7 +75,7 @@ public class JsonToAvroSchemaConverter {
     }
 
     if (typeProperty.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText()));
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteTypePropertyStr));
     }
 
     LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
@@ -211,10 +213,13 @@ public class JsonToAvroSchemaConverter {
     if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
+    if(fieldType == null) {
+      LOGGER.error("Hi i am with null field type");
+    }
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER, NUMBER, NUMBER_INT, NUMBER_LONG, NUMBER_FLOAT, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();
@@ -418,19 +423,18 @@ public class JsonToAvroSchemaConverter {
                         final boolean appendExtraProps,
                         final boolean addStringToLogicalTypes) {
     // Filter out null types, which will be added back in the end.
-    final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
-        .stream()
-        .flatMap(fieldType -> {
-          final Schema singleFieldSchema =
-              parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
-          if (singleFieldSchema.isUnion()) {
-            return singleFieldSchema.getTypes().stream();
-          } else {
-            return Stream.of(singleFieldSchema);
-          }
-        })
-        .distinct()
-        .collect(Collectors.toList());
+    List<JsonSchemaType> nonNullTypes = getNonNullTypes(fieldName, fieldDefinition);
+    Stream<Schema> stream = null;
+    for (JsonSchemaType fieldType : nonNullTypes) {
+      final Schema singleFieldSchema =
+          parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
+      if (singleFieldSchema.isUnion()) {
+        stream = singleFieldSchema.getTypes().stream();
+      } else {
+        stream = Stream.of(singleFieldSchema);
+      }
+    }
+    List<Schema> nonNullFieldTypes = new ArrayList<>(stream.toList());
 
     if (nonNullFieldTypes.isEmpty()) {
       return Schema.create(Schema.Type.NULL);
