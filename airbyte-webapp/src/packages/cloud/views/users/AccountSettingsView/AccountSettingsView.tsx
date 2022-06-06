@@ -17,7 +17,7 @@ const Header = styled.div`
 `;
 
 const AccountSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { logout } = useAuthService();
   const user = useCurrentUser();
 

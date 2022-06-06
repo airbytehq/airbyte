@@ -27,13 +27,12 @@ const FormNode: React.FC<FormNodeProps> = ({ sectionPath, formField, disabled })
     return <ArraySection path={sectionPath} formField={formField} disabled={disabled} />;
   } else if (formField.const !== undefined) {
     return null;
-  } else {
-    return (
-      <SectionContainer>
-        <PropertySection property={formField} path={sectionPath} disabled={disabled} />
-      </SectionContainer>
-    );
   }
+  return (
+    <SectionContainer>
+      <PropertySection property={formField} path={sectionPath} disabled={disabled} />
+    </SectionContainer>
+  );
 };
 
 interface FormSectionProps {

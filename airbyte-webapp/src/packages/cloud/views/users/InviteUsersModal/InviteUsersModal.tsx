@@ -52,7 +52,7 @@ const ROLE_OPTIONS = [
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
 }> = (props) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
   const { mutateAsync: invite } = inviteUserLogic;

@@ -60,7 +60,7 @@ interface WebHookFormProps {
 }
 
 const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {

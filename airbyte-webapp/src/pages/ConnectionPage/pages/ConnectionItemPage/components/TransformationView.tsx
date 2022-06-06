@@ -126,7 +126,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const workspace = useCurrentWorkspace();
   const { hasFeature } = useFeatureService();
 
-  const supportsNormalization = definition.supportsNormalization;
+  const { supportsNormalization } = definition;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
   const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";

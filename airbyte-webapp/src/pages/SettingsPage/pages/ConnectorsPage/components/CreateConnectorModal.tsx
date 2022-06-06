@@ -91,7 +91,7 @@ const validationSchema = yup.object().shape({
 
 const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
   const config = useConfig();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>

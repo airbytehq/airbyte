@@ -32,13 +32,12 @@ export const FirebaseAppProvider = (props: React.PropsWithChildren<FirebaseAppPr
     if (existingApp) {
       if (firebaseConfig && equal(existingApp.options, firebaseConfig)) {
         return existingApp;
-      } else {
-        throw new Error(
-          `Does not match the options already provided to the ${
-            appName || "default"
-          } firebase app instance, give this new instance a different appName.`
-        );
       }
+      throw new Error(
+        `Does not match the options already provided to the ${
+          appName || "default"
+        } firebase app instance, give this new instance a different appName.`
+      );
     } else {
       if (!firebaseConfig) {
         throw new Error("No firebaseConfig provided");

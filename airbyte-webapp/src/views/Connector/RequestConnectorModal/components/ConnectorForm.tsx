@@ -43,7 +43,7 @@ const requestConnectorValidationSchema = yup.object().shape({
 });
 
 const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, currentValues, hasFeedback }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const dropdownData = [
     { value: "source", label: <FormattedMessage id="connector.source" /> },
     {

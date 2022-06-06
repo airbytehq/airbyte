@@ -90,7 +90,7 @@ const SetDefaultName: React.FC = () => {
       });
       return () => clearTimeout(timeout);
     }
-    return;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
 
@@ -168,17 +168,15 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
           serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
         );
-      } else {
-        const serviceDefinitionId = service.destinationDefinitionId;
-        return (
-          isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-          serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
-        );
       }
+      const serviceDefinitionId = service.destinationDefinitionId;
+      return (
+        isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+        serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
+      );
     });
     setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
     setDocumentationPanelOpen(true);
-    return;
   }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
   const uiOverrides = useMemo(

@@ -63,7 +63,6 @@ export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
       return () => unregisterFeature(props.map((feature: Feature) => feature.id));
     }
 
-    return;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };

@@ -95,7 +95,6 @@ export const useAnalyticsRegisterValues = (props?: AnalyticsContext | null): voi
       return () => removeContextProps(Object.keys(props));
     }
 
-    return;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
