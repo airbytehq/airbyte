@@ -422,18 +422,19 @@ public class JsonToAvroSchemaConverter {
                         final boolean appendExtraProps,
                         final boolean addStringToLogicalTypes) {
     // Filter out null types, which will be added back in the end.
-    List<JsonSchemaType> nonNullTypes = getNonNullTypes(fieldName, fieldDefinition);
-    Stream<Schema> stream = null;
-    for (JsonSchemaType fieldType : nonNullTypes) {
-      final Schema singleFieldSchema =
-          parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
-      if (singleFieldSchema.isUnion()) {
-        stream = singleFieldSchema.getTypes().stream();
-      } else {
-        stream = Stream.of(singleFieldSchema);
-      }
-    }
-    List<Schema> nonNullFieldTypes = new ArrayList<>(stream.toList());
+    final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
+        .stream()
+        .flatMap(fieldType -> {
+          final Schema singleFieldSchema =
+              parseSingleType(fieldName, fieldNamespace, fieldType, fieldDefinition, appendExtraProps, addStringToLogicalTypes);
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        })
+        .distinct()
+        .collect(Collectors.toList());
 
     if (nonNullFieldTypes.isEmpty()) {
       return Schema.create(Schema.Type.NULL);
