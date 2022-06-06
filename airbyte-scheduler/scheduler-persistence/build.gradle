@@ -5,15 +5,15 @@ plugins {
 dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-commons-docker')
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-scheduler:models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-scheduler:scheduler-models')
 
     testImplementation libs.flyway.core
     testImplementation libs.testcontainers.postgresql
