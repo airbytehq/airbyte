@@ -89,11 +89,12 @@ export const useAnalyticsRegisterValues = (props?: AnalyticsContext | null): voi
   const { addContextProps, removeContextProps } = useAnalytics();
 
   useEffect(() => {
-    if (props) {
-      addContextProps(props);
-
-      return () => removeContextProps(Object.keys(props));
+    if (!props) {
+      return;
     }
+
+    addContextProps(props);
+    return () => removeContextProps(Object.keys(props));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);

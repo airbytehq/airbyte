@@ -82,14 +82,16 @@ const SetDefaultName: React.FC = () => {
   const { selectedService } = useServiceForm();
 
   useEffect(() => {
-    if (selectedService) {
-      const timeout = setTimeout(() => {
-        // We need to push this out one execution slot, so the form isn't still in its
-        // initialization status and won't react to this call but would just take the initialValues instead.
-        setFieldValue("name", selectedService.name);
-      });
-      return () => clearTimeout(timeout);
+    if (!selectedService) {
+      return;
     }
+
+    const timeout = setTimeout(() => {
+      // We need to push this out one execution slot, so the form isn't still in its
+      // initialization status and won't react to this call but would just take the initialValues instead.
+      setFieldValue("name", selectedService.name);
+    });
+    return () => clearTimeout(timeout);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
@@ -156,9 +158,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
-  useMemo(() => {
+  useEffect(() => {
     if (!selectedConnectorDefinitionSpecification) {
-      return undefined;
+      return;
     }
 
     const selectedServiceDefinition = availableServices.find((service) => {

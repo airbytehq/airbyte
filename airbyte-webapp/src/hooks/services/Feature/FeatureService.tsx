@@ -57,11 +57,13 @@ export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
   const { registerFeature, unregisterFeature } = useFeatureService();
 
   useDeepCompareEffect(() => {
-    if (props) {
-      registerFeature(props);
-
-      return () => unregisterFeature(props.map((feature: Feature) => feature.id));
+    if (!props) {
+      return;
     }
+
+    registerFeature(props);
+
+    return () => unregisterFeature(props.map((feature: Feature) => feature.id));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
