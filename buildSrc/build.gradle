@@ -4,10 +4,14 @@ plugins {
 
 repositories {
     jcenter()
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
 }
 
 dependencies {
     implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
+    implementation 'com.bmuschko:gradle-docker-plugin:7.4.0'
 }
 
 tasks.withType(Jar) {

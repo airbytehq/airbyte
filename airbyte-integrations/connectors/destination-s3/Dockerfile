@@ -4,7 +4,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-s3
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+COPY bin/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
