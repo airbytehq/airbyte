@@ -6,7 +6,17 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
 from pytest import fixture, mark
 from source_firebolt.source import (
     SUPPORTED_SYNC_MODES,
@@ -16,7 +26,7 @@ from source_firebolt.source import (
     get_firebolt_tables,
     get_table_stream,
 )
-from source_firebolt.utils import format_fetch_result
+from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])
@@ -141,6 +151,32 @@ def test_convert_type(type, nullable, result):
 )
 def test_format_fetch_result(data, expected):
     assert format_fetch_result(data) == expected
+
+
+@patch("source_firebolt.utils.datetime")
+def test_airbyte_message_from_data(mock_datetime):
+    mock_datetime.now.return_value.timestamp.return_value = 10
+    raw_data = [1, "a", [1, 2, 3]]
+    columns = ["Col1", "Col2", "Col3"]
+    table_name = "dummy"
+    expected = AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream="dummy",
+            data={"Col1": 1, "Col2": "a", "Col3": [1, 2, 3]},
+            emitted_at=10000,
+        ),
+    )
+    result = airbyte_message_from_data(raw_data, columns, table_name)
+    assert result == expected
+
+
+def test_airbyte_message_from_data_no_data():
+    raw_data = []
+    columns = ["Col1", "Col2"]
+    table_name = "dummy"
+    result = airbyte_message_from_data(raw_data, columns, table_name)
+    assert result is None
 
 
 @mark.asyncio
