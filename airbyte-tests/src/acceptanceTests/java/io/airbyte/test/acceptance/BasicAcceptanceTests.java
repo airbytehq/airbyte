@@ -20,7 +20,6 @@ import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.*;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
@@ -29,18 +28,13 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -72,10 +66,6 @@ public class BasicAcceptanceTests {
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
-  private static final Charset UTF8 = StandardCharsets.UTF_8;
-  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
-  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
-  private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
       System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
@@ -93,8 +83,7 @@ public class BasicAcceptanceTests {
 
   /**
    * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
-   * test containers are used. When we run these tests in GKE, we spawn a source and destination
-   * postgres database ane use them for testing.
+   * test containers are used.
    */
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
@@ -108,24 +97,13 @@ public class BasicAcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
-  private static KubernetesClient kubernetesClient = null;
-
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
-    if (IS_GKE && !IS_KUBE) {
-      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
-    }
-    if (!IS_GKE) {
-      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-          .withUsername(SOURCE_USERNAME)
-          .withPassword(SOURCE_PASSWORD);
-      sourcePsql.start();
-    }
-
-    if (IS_KUBE) {
-      kubernetesClient = new DefaultKubernetesClient();
-    }
+    sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+        .withUsername(SOURCE_USERNAME)
+        .withPassword(SOURCE_PASSWORD);
+    sourcePsql.start();
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
@@ -150,16 +128,15 @@ public class BasicAcceptanceTests {
 
   @AfterAll
   public static void end() {
-    if (!IS_GKE) {
-      sourcePsql.stop();
-    }
+    sourcePsql.stop();
+
     if (airbyteTestContainer != null) {
       airbyteTestContainer.stop();
     }
   }
 
   @BeforeEach
-  public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
+  public void setup() throws ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -179,10 +156,9 @@ public class BasicAcceptanceTests {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
-    if (!IS_GKE) {
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-      destinationPsql.start();
-    }
+
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
 
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
@@ -190,19 +166,7 @@ public class BasicAcceptanceTests {
     operationIds = Lists.newArrayList();
 
     // seed database.
-    if (IS_GKE) {
-      final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
-      final StringBuilder query = new StringBuilder();
-      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
-        if (line != null && !line.isEmpty()) {
-          query.append(line);
-        }
-      }
-      database.query(context -> context.execute(query.toString()));
-    } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-    }
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
@@ -210,9 +174,8 @@ public class BasicAcceptanceTests {
     try {
       clearSourceDbData();
       clearDestinationDbData();
-      if (!IS_GKE) {
-        destinationPsql.stop();
-      }
+
+      destinationPsql.stop();
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -828,16 +791,10 @@ public class BasicAcceptanceTests {
   }
 
   private Database getSourceDatabase() {
-    if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getSourceDatabase();
-    }
     return getDatabase(sourcePsql);
   }
 
   private Database getDestinationDatabase() {
-    if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getDestinationDatabase();
-    }
     return getDatabase(destinationPsql);
   }
 
@@ -1042,8 +999,7 @@ public class BasicAcceptanceTests {
                                final boolean withSchema,
                                final AcceptanceTests.Type connectorType) {
     try {
-      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+      final Map<Object, Object> dbConfig = localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -1054,15 +1010,7 @@ public class BasicAcceptanceTests {
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
-    if (IS_KUBE) {
-      if (IS_MINIKUBE) {
-        // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
-      } else {
-        // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
-      }
-    } else if (IS_MAC) {
+    if (IS_MAC) {
       dbConfig.put("host", "host.docker.internal");
     } else {
       dbConfig.put("host", "localhost");
