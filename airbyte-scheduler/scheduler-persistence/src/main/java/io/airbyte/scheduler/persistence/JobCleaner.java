@@ -2,13 +2,12 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.scheduler.app;
+package io.airbyte.scheduler.persistence;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.WorkspaceRetentionConfig;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,6 +25,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/**
+ * NOTE: This class is currently unused, as of the deletion of the old airbyte-scheduler
+ * application. This class is being kept around as it may be useful in the future when job sweeping
+ * is added to the temporal scheduler. Go to the following permalink to see how this class was used
+ * by the SchedulerApp before that was removed:
+ * https://github.com/airbytehq/airbyte/blob/v0.39.8-alpha/airbyte-scheduler/app/src/main/java/io/airbyte/scheduler/app/SchedulerApp.java#L270
+ */
 
 /**
  * The job cleaner is responsible for limiting the retention of files in the workspace root. It does

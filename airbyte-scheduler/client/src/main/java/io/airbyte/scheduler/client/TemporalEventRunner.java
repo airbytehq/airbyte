@@ -15,7 +15,7 @@ public class TemporalEventRunner implements EventRunner {
 
   private final TemporalClient temporalClient;
 
-  public void createNewSchedulerWorkflow(final UUID connectionId) {
+  public void createConnectionManagerWorkflow(final UUID connectionId) {
     temporalClient.submitConnectionUpdaterAsync(connectionId);
   }
 
