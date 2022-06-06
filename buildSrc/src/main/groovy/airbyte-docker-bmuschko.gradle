@@ -2,6 +2,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 class AirbyteDockerBmuschkoPluginConfiguration {
     String imageName
+    String taskName = 'buildDockerImage'
 }
 
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
@@ -21,35 +22,34 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
             into 'build/docker/bin'
         }
 
+        // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
+        project.afterEvaluate {
+            def buildDockerImageTask = project.task(extension.taskName, type: DockerBuildImage) {
+                dependsOn project.copyGeneratedTar
 
-        project.task("buildDockerImage", type: DockerBuildImage) {
-            dependsOn project.copyGeneratedTar
+                def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
-            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
+                def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
+                def isArm64 = arch == "aarch64" || arch == "arm64"
 
-            def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
-            def isArm64 = arch == "aarch64" || arch == "arm64"
+                def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+                def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+                def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
+                def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
+                def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
-            def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
-            def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-            def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
-            def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
-            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
-
-            inputDir = project.file("${project.projectDir}/build/docker")
-            platform = buildPlatform
-            // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
-            project.afterEvaluate {
+                inputDir = project.file("${project.projectDir}/build/docker")
+                platform = buildPlatform
                 images.add("airbyte/${extension.imageName}:${project.rootProject.ext.image_tag}")
+                buildArgs.put('JDK_VERSION', jdkVersion)
+                buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+                buildArgs.put('ALPINE_IMAGE', alpineImage)
+                buildArgs.put('NGINX_IMAGE', nginxImage)
+                buildArgs.put('JDK_IMAGE', openjdkImage)
+                buildArgs.put('VERSION', "${project.rootProject.ext.version}")
             }
-            buildArgs.put('JDK_VERSION', jdkVersion)
-            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
-            buildArgs.put('ALPINE_IMAGE', alpineImage)
-            buildArgs.put('NGINX_IMAGE', nginxImage)
-            buildArgs.put('JDK_IMAGE', openjdkImage)
-            buildArgs.put('VERSION', "${project.rootProject.ext.version}")
-        }
 
-        project.assemble.dependsOn project.buildDockerImage
+            project.assemble.dependsOn buildDockerImageTask
+        }
     }
 }
