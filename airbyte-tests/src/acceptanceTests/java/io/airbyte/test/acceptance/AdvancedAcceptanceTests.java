@@ -118,9 +118,9 @@ import org.testcontainers.utility.MountableFile;
  * The class test for advanced platform functionality that can be affected by the networking
  * difference between the Kube and Docker deployments i.e. distributed vs local processes.
  * <p>
- * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test} to allow
- * multiple tries for a test to pass. This is because these tests sometimes fail transiently, and we
- * haven't been able to fix that yet.
+ * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test}
+ * to allow multiple tries for a test to pass. This is because these tests sometimes fail
+ * transiently, and we haven't been able to fix that yet.
  * <p>
  * However, in general we should prefer using {@code @Test} instead and only resort to using
  * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
@@ -323,7 +323,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(3)
+  @Order(2)
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
@@ -387,7 +387,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(4)
+  @Order(3)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
@@ -411,7 +411,7 @@ public class AdvancedAcceptanceTests {
 
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @RetryingTest(3)
-  @Order(5)
+  @Order(4)
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
@@ -471,7 +471,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(6)
+  @Order(5)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
@@ -541,7 +541,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(7)
+  @Order(6)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
@@ -570,7 +570,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(8)
+  @Order(7)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
@@ -614,7 +614,7 @@ public class AdvancedAcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(9)
+  @Order(8)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
