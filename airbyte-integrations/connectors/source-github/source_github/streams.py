@@ -90,7 +90,7 @@ class GithubStream(HttpStream, ABC):
 
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
-    def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
         organisation = stream_slice.get("organization", "")
         repository = stream_slice.get("repository", "")
@@ -142,7 +142,7 @@ class GithubStream(HttpStream, ABC):
             self.logger.warn(error_msg)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = {"per_page": self.page_size}
