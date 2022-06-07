@@ -138,7 +138,7 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuLinkItem href={config.ui.updateLink} target="_blank">
+          <MenuLinkItem href={config.links.updateLink} target="_blank">
             <HelpIcon icon={faRocket} />
             <Text>
               <FormattedMessage id="sidebar.update" />
