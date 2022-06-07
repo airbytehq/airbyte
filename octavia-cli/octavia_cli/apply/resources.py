@@ -691,10 +691,6 @@ class Connection(BaseResource):
             for operation in comparable["operations"]:
                 for k in self.remote_operation_level_keys_to_filter_out:
                     operation.pop(k)
-                if "dbt" in operation["operator_configuration"] and operation["operator_configuration"]["dbt"] is None:
-                    operation["operator_configuration"].pop("dbt")
-                if "normalization" in operation["operator_configuration"] and operation["operator_configuration"]["normalization"] is None:
-                    operation["operator_configuration"].pop("normalization")
         if "operations" in comparable and len(comparable["operations"]) == 0:
             comparable.pop("operations")
         return comparable

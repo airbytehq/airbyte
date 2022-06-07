@@ -591,9 +591,7 @@ class TestConnection:
                 "connection_id": "baar",
                 "operation_ids": "foooo",
                 "foo": "bar",
-                "operations": [
-                    {"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"normalization": "foo", "dbt": None}}
-                ],
+                "operations": [{"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"normalization": "foo"}}],
             },
             {
                 "name": "foo",
@@ -602,9 +600,7 @@ class TestConnection:
                 "connection_id": "baar",
                 "operation_ids": "foooo",
                 "foo": "bar",
-                "operations": [
-                    {"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"normalization": None, "dbt": "foo"}}
-                ],
+                "operations": [{"workspace_id": "foo", "operation_id": "foo", "operator_configuration": {"dbt": "foo"}}],
             },
         ],
     )
