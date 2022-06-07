@@ -764,25 +764,25 @@ public class BasicAcceptanceTests {
     final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
-            "E2E Test Source -" + UUID.randomUUID(),
-            workspaceId,
-            sourceDefinition.getSourceDefinitionId(),
-            Jsons.jsonNode(ImmutableMap.builder()
-                    .put("type", "INFINITE_FEED")
-                    .put("max_records", 1000)
-                    .put("message_interval", 100)
-                    .build()));
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("max_records", 1000)
+            .put("message_interval", 100)
+            .build()));
 
     // Destination fails after processing 5 messages, so the job should fail after the graceful close
     // timeout of 1 minute
     final DestinationRead destination = createDestination(
-            "E2E Test Destination -" + UUID.randomUUID(),
-            workspaceId,
-            destinationDefinition.getDestinationDefinitionId(),
-            Jsons.jsonNode(ImmutableMap.builder()
-                    .put("type", "FAILING")
-                    .put("num_messages", 5)
-                    .build()));
+        "E2E Test Destination -" + UUID.randomUUID(),
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "FAILING")
+            .put("num_messages", 5)
+            .build()));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -790,11 +790,11 @@ public class BasicAcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
-                    .getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+            .getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
     final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
@@ -813,7 +813,6 @@ public class BasicAcceptanceTests {
       apiClient.getJobsApi().cancelJob(jobId);
     }
   }
-
 
   private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
