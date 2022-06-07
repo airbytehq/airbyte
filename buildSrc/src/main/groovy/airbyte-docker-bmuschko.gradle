@@ -43,8 +43,8 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                     'build/test-results',
                     // Python working files
                     '.venv',
-                    '*/.coverage',
-                    '*/.pytest_cache',
+                    '**/.coverage.*',
+                    '**/.pytest_cache',
                 ]
 
                 // If this is a Java project, then we can't run the Docker build until after the compiled tar exists
