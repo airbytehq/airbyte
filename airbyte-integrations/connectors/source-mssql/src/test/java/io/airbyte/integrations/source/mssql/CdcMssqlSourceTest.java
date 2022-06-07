@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -82,6 +82,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     source = new MssqlSource();
 
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -89,7 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
+        .put("replication", replicationConfig)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -268,6 +272,20 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertThrows(RuntimeException.class, () -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
   }
 
+  @Test
+  void testAssertSnapshotIsolationDisabled() {
+    final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_type", "CDC")
+        .put("data_to_sync", "New Changes Only")
+        // set snapshot_isolation level to "Read Committed" to disable snapshot
+        .put("snapshot_isolation", "Read Committed")
+        .build());
+    Jsons.replaceNestedValue(config, List.of("replication"), replicationConfig);
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+    switchSnapshotIsolation(false, dbName);
+    assertDoesNotThrow(() -> source.assertSnapshotIsolationAllowed(config, testJdbcDatabase));
+  }
+
   // Ensure the CDC check operations are included when CDC is enabled
   // todo: make this better by checking the returned checkOperations from source.getCheckOperations
   @Test
@@ -325,15 +343,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
         DataSourceFactory.create(config.get("username").asText(),
-        config.get("password").asText(),
-        DRIVER_CLASS,
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName)),
+            config.get("password").asText(),
+            DRIVER_CLASS,
+            String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                dbName)),
         new MssqlSourceOperations(),
-            AdaptiveStreamingQueryConfig::new
-    );
+        AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 

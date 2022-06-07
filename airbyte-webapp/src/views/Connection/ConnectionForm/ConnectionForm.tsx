@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
+import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -106,7 +106,9 @@ interface ConnectionFormProps {
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
-  connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);
+  connection:
+    | WebBackendConnectionRead
+    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 }
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -128,7 +130,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const formId = useUniqueFormId();
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const formatMessage = useIntl().formatMessage;
-  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+
+  const isEditMode: boolean = mode !== "create";
+  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
 
   const openResetDataModal = useCallback(() => {
@@ -197,9 +201,42 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
+          {!isEditMode && (
+            <StyledSection>
+              <Field name="name">
+                {({ field, meta }: FieldProps<string>) => (
+                  <FlexRow>
+                    <LeftFieldCol>
+                      <ConnectorLabel
+                        nextLine
+                        error={!!meta.error && meta.touched}
+                        label={formatMessage({
+                          id: "form.connectionName",
+                        })}
+                        message={formatMessage({
+                          id: "form.connectionName.message",
+                        })}
+                      />
+                    </LeftFieldCol>
+                    <RightFieldCol>
+                      <Input
+                        {...field}
+                        disabled={mode === "readonly"}
+                        error={!!meta.error}
+                        data-testid="connectionName"
+                        placeholder={formatMessage({
+                          id: "form.connectionName.placeholder",
+                        })}
+                      />
+                    </RightFieldCol>
+                  </FlexRow>
+                )}
+              </Field>
+            </StyledSection>
+          )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
-              {({ field, meta }: FieldProps<ScheduleProperties>) => (
+              {({ field, meta }: FieldProps<ConnectionSchedule>) => (
                 <FlexRow>
                   <LeftFieldCol>
                     <ConnectorLabel
@@ -232,7 +269,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
             </span>
-            {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
+            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
                   <FlexRow>

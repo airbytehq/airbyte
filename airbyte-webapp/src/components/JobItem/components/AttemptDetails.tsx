@@ -3,14 +3,15 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
-type IProps = {
+import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
+
+interface IProps {
   className?: string;
-  attempt: Attempt;
-  configType?: string;
-};
+  attempt: AttemptRead;
+  configType?: JobConfigType;
+}
 
 const Details = styled.div`
   font-size: 12px;
@@ -21,7 +22,7 @@ const FailureReasonDetails = styled.div`
   padding-bottom: 10px;
 `;
 
-const getFailureFromAttempt = (attempt: Attempt) => {
+const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
@@ -36,7 +37,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     );
   }
 
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes?: number) => {
     if (!bytes) {
       return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
     }
@@ -50,7 +51,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
   };
 
-  const getFailureOrigin = (attempt: Attempt) => {
+  const getFailureOrigin = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
     const failureOrigin = failure?.failureOrigin ?? formatMessage({ id: "errorView.unknown" });
 
@@ -59,7 +60,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     })}: ${failureOrigin}`;
   };
 
-  const getFailureMessage = (attempt: Attempt) => {
+  const getExternalFailureMessage = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
     const failureMessage = failure?.externalMessage ?? formatMessage({ id: "errorView.unknown" });
 
@@ -78,7 +79,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   return (
     <Details className={className}>
       <div>
-        <span>{formatBytes(attempt.bytesSynced)} | </span>
+        <span>{formatBytes(attempt?.bytesSynced)} | </span>
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
@@ -113,7 +114,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
             },
             {
               key: getFailureOrigin(attempt),
-              value: getFailureMessage(attempt),
+              value: getExternalFailureMessage(attempt),
             }
           )}
         </FailureReasonDetails>

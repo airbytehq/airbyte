@@ -35,7 +35,7 @@ def get_json_schema(self):
 
 ## Reading records from the data source
 
-The only method required to implement a `Stream` is `Stream.read_records`. Given some information about how the stream should be read, this method should output an iterable object containing records from the data source. We recommend using generators as they are very efficient with regards to memory requirements.
+If custom functionality is required for reading a stream, you may need to override `Stream.read_records`. Given some information about how the stream should be read, this method should output an iterable object containing records from the data source. We recommend using generators as they are very efficient with regards to memory requirements.
 
 ## Incremental Streams
 

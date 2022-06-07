@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.JDBC_URL;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.PASSWORD;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +22,6 @@ import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.s3.S3Destination;
@@ -38,11 +41,9 @@ import org.slf4j.LoggerFactory;
 public class RedshiftStagingS3Destination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
-  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
-  public RedshiftStagingS3Destination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
-    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  public RedshiftStagingS3Destination() {
+    super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
@@ -52,7 +53,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
-        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode);
+        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -72,7 +73,17 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         LOGGER.warn("Unable to close data source.", e);
       }
     }
+  }
 
+  @Override
+  public DataSource getDataSource(final JsonNode config) {
+    final var jdbcConfig = getJdbcConfig(config);
+    return DataSourceFactory.create(
+        jdbcConfig.get(USERNAME).asText(),
+        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        jdbcConfig.get(JDBC_URL).asText(),
+        SSL_JDBC_PARAMETERS);
   }
 
   @Override
@@ -99,7 +110,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
-        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode),
+        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,

@@ -2,13 +2,14 @@ import React from "react";
 import styled from "styled-components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { ScheduleProperties } from "core/domain/connection";
 import { equal } from "utils/objects";
 
-type IProps = {
-  value: ScheduleProperties;
+import { ConnectionSchedule } from "../../../core/request/AirbyteClient";
+
+interface IProps {
+  value: ConnectionSchedule;
   enabled?: boolean;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};

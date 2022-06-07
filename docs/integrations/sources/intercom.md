@@ -1,14 +1,36 @@
 # Intercom
 
-## Overview
+This page contains the setup guide and reference information for the intercom source connector.
 
-The Intercom source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Setup guide
+## Step 1: Set up the intercom connector in Airbyte
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+### For Airbyte Cloud:
 
-### Output schema
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the intercom connector and select **intercom** from the Source type dropdown.
+4. Click Authenticate your account to sign in with Intercom and authorize your account. 
+5. Fill in the `start date` field.
+6. You should be ready to sync data.
 
-Several output streams are available from this source:
+### For Airbyte OSS:
+
+1. Fill in the [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token). 
+2. Fill in the `start date` field.
+3. You should be ready to sync data.
+
+## Supported sync modes
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| SSL connection | Yes |
+| Namespaces | No |
+
+
+## Supported Streams
 
 * [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins) \(Full table\)
 * [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies) \(Incremental\)
@@ -23,44 +45,20 @@ Several output streams are available from this source:
 * [Tags](https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app) \(Full table\)
 * [Teams](https://developers.intercom.com/intercom-api-reference/reference#list-teams) \(Full table\)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-### Features
-
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
-
-### Performance considerations
+## Performance considerations
 
 The connector is restricted by normal Intercom [requests limitation](https://developers.intercom.com/intercom-api-reference/reference#rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting Started (Airbyte Cloud)
-
-### Setup guide
-
-How to configure the connector in the Airbyte UI:
-
-1. Click Authenticate your account to sign in with Intercom and authorize your account.
-2. Fill in the `start date` field.
-3. You should be ready to sync data.
-
-## Getting started (Airbyte OSS) 
-
-### Setup guide
-
-Please read [How to get your Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token).
 
 ## Changelog
 
-| Version | Date | Pull Request                                              | Subject |
-|:--------| :--- |:----------------------------------------------------------| :--- |
-| 0.1.18   | 2022-05-04 | [#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| Version | Date | Pull Request | Subject |
+|:--------| :--- | :--- | :--- |
+| 0.1.19  | 2022-05-25 | [13204](https://github.com/airbytehq/airbyte/pull/13204) | Fixed `conversation_parts` stream schema definition                       |
+| 0.1.18   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.17  | 2022-04-29 | [12374](https://github.com/airbytehq/airbyte/pull/12374)  | Fixed filtering of conversation_parts |
 | 0.1.16  | 2022-03-23 | [11206](https://github.com/airbytehq/airbyte/pull/11206)  | Added conversation_id field to conversation_part records |
 | 0.1.15  | 2022-03-22 | [11176](https://github.com/airbytehq/airbyte/pull/11176)  | Correct `check_connection` URL |
