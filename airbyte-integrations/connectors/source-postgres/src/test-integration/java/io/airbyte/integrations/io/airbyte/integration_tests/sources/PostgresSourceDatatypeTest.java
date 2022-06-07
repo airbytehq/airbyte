@@ -450,7 +450,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
               .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
-              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340", "13:00:00.000000")
+              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+                  "13:00:00.000000")
               .build());
     }
 
@@ -464,7 +465,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z", "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
               .build());
     }
 
@@ -569,11 +571,12 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("hstore")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("""
-                '"paperback" => "243","publisher" => "postgresqltutorial.com",
-                "language"  => "English","ISBN-13" => "978-1449370000",
-                "weight"    => "11.2 ounces"'
-                """, null)
-            .addExpectedValues("""
+                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                             "language"  => "English","ISBN-13" => "978-1449370000",
+                             "weight"    => "11.2 ounces"'
+                             """, null)
+            .addExpectedValues(
+                """
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
                 null)
             .build());

@@ -4,6 +4,9 @@
 
 package io.airbyte.db.jdbc;
 
+import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
+import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -28,9 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
-
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
