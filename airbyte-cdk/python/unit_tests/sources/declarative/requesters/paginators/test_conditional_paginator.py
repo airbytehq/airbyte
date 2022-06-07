@@ -20,11 +20,12 @@ from airbyte_cdk.sources.declarative.states.dict_state import DictState
         ("test_continue_pagination_from_response_headers", "{{ decoded_response['headers']['has_more'] }}", {"page": 2}, 2),
         ("test_continue_pagination_from_last_records", "{{ last_records[-1]['more_records'] == False }}", {"page": 2}, 2),
         ("test_continue_pagination_for_empty_dict_evaluates_false", "{{ decoded_response['characters'] }}", {"page": 2}, 2),
+        ("test_stop_pagination_if_fewer_records_than_page_size", "{{ len(last_records) < page_size }}", None, 1),
     ],
 )
 def test_interpolated_request_header(test_name, stop_condition_template, expected_next_page_token, expected_page):
     state = DictState()
-    state.update_state(page=1)
+    state.update_state(page=1, page_size=3)
     decoder = JsonDecoder()
     config = {"response_override": "stop_if_you_see_me"}
 

@@ -17,6 +17,7 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_local"] = datetime.datetime.now
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
+        self._environment.globals["len"] = lambda c: len(c)
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
