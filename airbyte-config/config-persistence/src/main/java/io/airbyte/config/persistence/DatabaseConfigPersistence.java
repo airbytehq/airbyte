@@ -1687,7 +1687,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
     return ctx.select(asterisk())
         .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.RELEASE_STAGE.isNull().or(ACTOR_DEFINITION.RELEASE_STAGE.ne(ReleaseStage.custom)))
+        .where(ACTOR_DEFINITION.RELEASE_STAGE.isNull()
+            .or(ACTOR_DEFINITION.RELEASE_STAGE.ne(ReleaseStage.custom).or(ACTOR_DEFINITION.CUSTOM))
+        )
         .fetch()
         .stream()
         .collect(Collectors.toMap(
