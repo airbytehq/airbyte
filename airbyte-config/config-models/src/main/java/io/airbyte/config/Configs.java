@@ -179,7 +179,8 @@ public interface Configs {
   boolean temporalCloudEnabled();
 
   /**
-   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use only.
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use
+   * only.
    */
   String getTemporalCloudHost();
 
