@@ -5,9 +5,9 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
-type IProps = {
+interface IProps {
   connectionId: string;
-};
+}
 
 const Content = styled.div`
   max-width: 647px;

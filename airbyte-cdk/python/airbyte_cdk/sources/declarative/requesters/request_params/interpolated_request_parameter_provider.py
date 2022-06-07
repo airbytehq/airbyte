@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Mapping, MutableMapping
@@ -9,7 +9,9 @@ from airbyte_cdk.sources.declarative.requesters.request_params.request_parameter
 
 
 class InterpolatedRequestParameterProvider(RequestParameterProvider):
-    def __init__(self, *, config, request_parameters):
+    def __init__(self, *, config, request_parameters=None):
+        if request_parameters is None:
+            request_parameters = {}
         self._interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_parameters)
 
     def request_params(

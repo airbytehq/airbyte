@@ -16,51 +16,50 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.AirbyteCatalog;
-import io.airbyte.api.model.AirbyteStreamAndConfiguration;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStatus;
-import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSchedule;
-import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.model.ConnectionSearch;
-import io.airbyte.api.model.ConnectionStatus;
-import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationSyncMode;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobStatus;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.NamespaceDefinitionType;
-import io.airbyte.api.model.OperationRead;
-import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationUpdate;
-import io.airbyte.api.model.ResourceRequirements;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SyncMode;
-import io.airbyte.api.model.SynchronousJobRead;
-import io.airbyte.api.model.WebBackendConnectionCreate;
-import io.airbyte.api.model.WebBackendConnectionRead;
-import io.airbyte.api.model.WebBackendConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.WebBackendConnectionSearch;
-import io.airbyte.api.model.WebBackendConnectionUpdate;
-import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
-import io.airbyte.api.model.WebBackendWorkspaceState;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStatus;
+import io.airbyte.api.model.generated.ConnectionCreate;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.ConnectionSchedule;
+import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.model.generated.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.ConnectionUpdate;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.JobStatus;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.NamespaceDefinitionType;
+import io.airbyte.api.model.generated.OperationRead;
+import io.airbyte.api.model.generated.OperationReadList;
+import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.SynchronousJobRead;
+import io.airbyte.api.model.generated.WebBackendConnectionCreate;
+import io.airbyte.api.model.generated.WebBackendConnectionRead;
+import io.airbyte.api.model.generated.WebBackendConnectionReadList;
+import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.generated.WebBackendConnectionSearch;
+import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.generated.WebBackendWorkspaceState;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -104,7 +103,6 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
-  private FeatureFlags featureFlags;
   private EventRunner eventRunner;
   private ConnectionHelper connectionHelper;
   private ConfigRepository configRepository;
@@ -118,7 +116,6 @@ class WebBackendConnectionsHandlerTest {
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    featureFlags = mock(FeatureFlags.class);
     eventRunner = mock(EventRunner.class);
     connectionHelper = mock(ConnectionHelper.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
@@ -127,7 +124,6 @@ class WebBackendConnectionsHandlerTest {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler,
-        featureFlags,
         eventRunner,
         configRepository);
 
@@ -471,7 +467,7 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionCreate!\nCongratulations, but you're not done yet...\n"
+        "If this test is failing, it means you added a field to ConnectionCreate!\nCongratulations, but you're not done yet..\n"
             + "\tYou should update WebBackendConnectionsHandler::toConnectionCreate\n"
             + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionCreate\n"
             + "Then you can add the field name here to make this test pass. Cheers!";
@@ -490,7 +486,7 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet...\n"
+        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet..\n"
             + "\tYou should update WebBackendConnectionsHandler::toConnectionUpdate\n"
             + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate\n"
             + "Then you can add the field name here to make this test pass. Cheers!";
@@ -590,43 +586,6 @@ class WebBackendConnectionsHandlerTest {
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));
-    when(connectionsHandler.updateConnection(any())).thenReturn(
-        new ConnectionRead()
-            .connectionId(expected.getConnectionId())
-            .sourceId(expected.getSourceId())
-            .destinationId(expected.getDestinationId())
-            .name(expected.getName())
-            .namespaceDefinition(expected.getNamespaceDefinition())
-            .namespaceFormat(expected.getNamespaceFormat())
-            .prefix(expected.getPrefix())
-            .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-            .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
-
-    final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
-
-    assertEquals(expectedWithNewSchema.getSyncCatalog(), connectionRead.getSyncCatalog());
-
-    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
-    verify(schedulerHandler, times(1)).resetConnection(connectionId);
-    verify(schedulerHandler, times(1)).syncConnection(connectionId);
-  }
-
-  @Test
-  void testUpdateConnectionWithUpdatedSchemaNewScheduler() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .connectionId(expected.getConnectionId())
-        .schedule(expected.getSchedule())
-        .status(expected.getStatus())
-        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
-        .withRefreshedCatalog(true);
-
-    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead().connectionId(expected.getConnectionId()));
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(expected.getConnectionId())
         .sourceId(expected.getSourceId())
@@ -640,7 +599,6 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule());
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
-    when(featureFlags.usesNewScheduler()).thenReturn(true);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 

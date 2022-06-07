@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -9,7 +9,7 @@ from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 
 
-class ConfigurableSource(AbstractSource):
+class DeclarativeSource(AbstractSource):
     """
     Base class for declarative Source. Concrete sources need to define the connection_checker to use
     """

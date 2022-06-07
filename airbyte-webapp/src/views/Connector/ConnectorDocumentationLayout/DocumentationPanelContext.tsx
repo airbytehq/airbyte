@@ -18,7 +18,6 @@ export const useDocumentationPanelState = () => {
 export const useCloseDocumentationPanelEffect = () => {
   const { setDocumentationPanelOpen } = useDocumentationPanelState();
   useEffect(() => {
-    console.log("I'm here");
     return setDocumentationPanelOpen(false);
   }, [setDocumentationPanelOpen]);
 };

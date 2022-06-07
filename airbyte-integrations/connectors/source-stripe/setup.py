@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,6 +10,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "stripe==2.56.0", "pendulum==1.2.0"]
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "requests-mock",
+    "requests_mock~=1.8",
 ]
 
 setup(
