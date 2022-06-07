@@ -68,16 +68,16 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
         project.standardSourceTestFile.dependsOn(':airbyte-integrations:bases:base-standard-source-test-file:airbyteDocker')
         project.standardSourceTestFile.dependsOn(project.build)
         if (project.hasProperty('airbyteDocker')) {
-            dependsOn project.airbyteDocker
-        }
-        if (project.hasProperty('buildDockerImage')) {
-            dependsOn project.buildDockerImage
+            project.standardSourceTestFile.dependsOn(project.airbyteDocker)
         }
         if (project.hasProperty('airbyteDockerTest')){
             project.standardSourceTestFile.dependsOn(project.airbyteDockerTest)
         }
+        if (project.hasProperty('buildDockerImage')) {
+            project.standardSourceTestFile.dependsOn(project.buildDockerImage)
+        }
         if (project.hasProperty('buildDockerImageTest')){
-            project.sourceAcceptanceTest.dependsOn(project.buildDockerImageTest)
+            project.standardSourceTestFile.dependsOn(project.buildDockerImageTest)
         }
 
         // make sure we create the integrationTest task once in case a java integration test was already initialized

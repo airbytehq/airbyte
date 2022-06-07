@@ -41,7 +41,6 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             if (project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
             }
-
             if (project.hasProperty('buildDockerImage')) {
                 dependsOn project.buildDockerImage
             }
