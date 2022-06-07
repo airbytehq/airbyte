@@ -10,8 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This estimator first uses the {@link InitialSizeEstimator} to calculate an initial fetch size by sampling the first N rows consecutively, and then
- * switches to {@link SamplingSizeEstimator} to periodically adjust the fetch size by sampling every M rows.
+ * This estimator first uses the {@link InitialSizeEstimator} to calculate an initial fetch size by
+ * sampling the first N rows consecutively, and then switches to {@link SamplingSizeEstimator} to
+ * periodically adjust the fetch size by sampling every M rows.
  */
 public class TwoStageSizeEstimator implements FetchSizeEstimator {
 
