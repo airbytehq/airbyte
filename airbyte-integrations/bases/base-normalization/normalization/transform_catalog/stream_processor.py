@@ -350,14 +350,40 @@ Ref unnested_child_stream {
     def extract_dbml_columns(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         result = "\t"
         for column_name in column_names:
-            column_name = column_name.replace('"', '_')
-            result += f"\"{column_name}\" "
-            if "type" in self.properties[column_name]:
-                result += self.properties[column_name]["type"]
+            # TODO: we don't know how to handle double quotes characters in column names in DBML yet
+            # so we replace them by underscore for the moment...
+            dbml_column_name = column_name.replace('"', '_')
+            result += f"\"{dbml_column_name}\" {self.extract_dbml_column_type(column_name)}"
             # TODO: add primary key tags
             # TODO: add cursor key tags
             result += "\n\t"
         return result
+
+    def extract_dbml_column_type(self, property_name: str) -> str:
+        definition = self.properties[property_name]
+        if "type" not in definition:
+            print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
+            return "unknown"
+        elif is_array(definition["type"]):
+            return "array"
+        elif is_object(definition["type"]):
+            return "object"
+        # Treat simple types from narrower to wider scope type: boolean < integer < number < string
+        elif is_boolean(definition["type"]):
+            return "boolean"
+        elif is_integer(definition["type"]):
+            return "integer"
+        elif is_number(definition["type"]):
+            return "number"
+        elif is_datetime(definition):
+            return "datetime"
+        elif is_date(definition):
+            return "date"
+        elif is_string(definition["type"]):
+            return "string"
+        else:
+            print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
+            return "unknown"
 
     def extract_dbml_indexes(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         return ""
