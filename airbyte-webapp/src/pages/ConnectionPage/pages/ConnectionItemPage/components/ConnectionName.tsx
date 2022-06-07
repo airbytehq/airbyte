@@ -1,6 +1,6 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import styled from "styled-components";
 
 import { Input } from "components";
@@ -9,7 +9,7 @@ import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
 
-interface Props {
+interface ConnectionNameProps {
   connection: WebBackendConnectionRead;
 }
 
@@ -97,23 +97,15 @@ const StyledInput = styled(Input)`
 
 const InputWithKeystroke = addEnterEscFuncForInput(StyledInput);
 
-const ConnectionName: React.FC<Props> = ({ connection }) => {
+const ConnectionName: FC<ConnectionNameProps> = ({ connection }) => {
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [connectionName, setConnectionName] = useState(connection.name);
+  const [connectionName, setConnectionName] = useState<string | undefined>(connection.name);
+  const [connectionNameBackup, setConnectionNameBackup] = useState(connectionName);
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
-  const setEditing = () => {
-    setEditingState(true);
-  };
-
-  const inputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
-    if (value) {
-      setConnectionName(event.currentTarget.value);
-    }
-  };
+  const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);
 
   const onEscape = () => {
     setEditingState(false);
@@ -129,17 +121,31 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   };
 
   const updateConnectionAsync = async () => {
-    // Update only when the name is changed
-    if (connection.name !== connectionName) {
+    if (connectionName === undefined || connection.name === connectionName.trim() || !connectionName.trim()) {
+      setConnectionName(connectionNameBackup);
+      setEditingState(false);
+      return;
+    }
+
+    const connectionNameTrimmed = connectionName.trim();
+    try {
       setLoading(true);
+
       await updateConnection({
-        name: connectionName,
+        name: connectionNameTrimmed,
         connectionId: connection.connectionId,
         namespaceDefinition: connection.namespaceDefinition,
         syncCatalog: connection.syncCatalog,
         status: connection.status,
         prefix: connection.prefix,
       });
+
+      setConnectionName(connectionNameTrimmed);
+      setConnectionNameBackup(connectionNameTrimmed);
+    } catch (e) {
+      console.error(e.message);
+      setConnectionName(connectionNameBackup);
+    } finally {
       setLoading(false);
     }
 
@@ -149,7 +155,7 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   return (
     <MainContainer>
       {!editingState && (
-        <NameContainer onClick={setEditing}>
+        <NameContainer onClick={() => setEditingState(true)}>
           <Name>
             <H2>{name}</H2>
           </Name>
@@ -158,11 +164,10 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
       )}
       {editingState && (
         <EditingContainer>
-          <InputContainer>
+          <InputContainer onBlur={onBlur}>
             <InputWithKeystroke
               value={connectionName}
               onChange={inputChange}
-              onBlur={onBlur}
               onEscape={onEscape}
               onEnter={onEnter}
               disabled={loading}
