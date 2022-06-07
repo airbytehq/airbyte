@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.types import Record
 from jello import lib as jello_lib
 
 
-class JqExtractor(HttpExtractor):
+class JelloExtractor(HttpExtractor):
     default_transform = "."
 
     def __init__(self, transform: str, decoder: Decoder, config, kwargs=None):
