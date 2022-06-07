@@ -40,6 +40,7 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.resourceRequirements(query.getResourceRequirements());
     fromSearch.syncCatalog(query.getSyncCatalog());
     fromSearch.operationIds(query.getOperationIds());
+    fromSearch.sourceCatalogId(query.getSourceCatalogId());
 
     return fromSearch;
   }

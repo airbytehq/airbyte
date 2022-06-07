@@ -99,7 +99,8 @@ public class ConnectionHelpers {
   public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
                                                               final UUID sourceId,
                                                               final UUID destinationId,
-                                                              final List<UUID> operationIds) {
+                                                              final List<UUID> operationIds,
+                                                              final UUID sourceCatalogId) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -117,7 +118,8 @@ public class ConnectionHelpers {
             .cpuRequest(TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
+        .sourceCatalogId(sourceCatalogId);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -125,7 +127,8 @@ public class ConnectionHelpers {
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
-        standardSync.getOperationIds());
+        standardSync.getOperationIds(),
+        standardSync.getSourceCatalogId());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -147,7 +150,8 @@ public class ConnectionHelpers {
         .operationIds(standardSync.getOperationIds())
         .name(standardSync.getName())
         .namespaceFormat(standardSync.getNamespaceFormat())
-        .prefix(standardSync.getPrefix());
+        .prefix(standardSync.getPrefix())
+        .sourceCatalogId(standardSync.getSourceCatalogId());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
