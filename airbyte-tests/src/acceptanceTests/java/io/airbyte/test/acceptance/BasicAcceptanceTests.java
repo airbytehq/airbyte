@@ -289,6 +289,7 @@ public class BasicAcceptanceTests {
         checkConnectionRead.getMessage());
   }
 
+  @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -348,6 +349,7 @@ public class BasicAcceptanceTests {
     assertEquals(name, createdConnection.getName());
   }
 
+  @Test
   @Order(7)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
