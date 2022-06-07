@@ -190,7 +190,9 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         self._last_response = response
-        records = self._extractor.extract_records(response)
+        records = self._extractor.extract_records(
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
         self._last_records = records
         return records
 
