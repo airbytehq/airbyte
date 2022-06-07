@@ -122,11 +122,7 @@ def transform_date_range(
     return record
 
 
-def transform_targeting_criteria(
-    record: Dict,
-    dict_key: str = "targetingCriteria",
-) -> Mapping[str, Any]:
-
+def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteria") -> Mapping[str, Any]:
     """
     :: EXAMPLE `targetingCriteria` input structure:
         {
@@ -258,11 +254,7 @@ def transform_targeting_criteria(
     return record
 
 
-def transform_variables(
-    record: Dict,
-    dict_key: str = "variables",
-) -> Mapping[str, Any]:
-
+def transform_variables(record: Dict, dict_key: str = "variables") -> Mapping[str, Any]:
     """
     :: EXAMPLE `variables` input:
     {
@@ -301,21 +293,20 @@ def transform_variables(
         record["variables"].pop("data")
     return record
 
-def transform_key_names(
-    record: Dict,
-    dict_keys: list = [],
-) -> Mapping[str, Any]:
+
+def transform_col_names(record: Dict, dict_keys: list = []) -> Mapping[str, Any]:
     """
-    Rename records keys mentioned in `dict_keys` to avoid normalization issues for certain destinations.
-    Example: 
-        The `pivot` is the reserved keyword for REDSHIFT, we should avoid using it in this case.
+    Rename records keys (columns) indicated in `dict_keys` to avoid normalization issues for certain destinations.
+    Example:
+        The `pivot` or `PIVOT` is the reserved keyword for DESTINATION REDSHIFT, we should avoid using it in this case.
         https://github.com/airbytehq/airbyte/issues/13018
     """
     for key in dict_keys:
         if key in record:
-            record[f"_{key}"] = record[key] # crreate new key from original
-            record.pop(key) # remove the original key
+            record[f"_{key}"] = record[key]  # create new key from original
+            record.pop(key)  # remove the original key
     return record
+
 
 def transform_data(records: List) -> Iterable[Mapping]:
     """
@@ -323,7 +314,7 @@ def transform_data(records: List) -> Iterable[Mapping]:
     to be properly normalised in the destination.
     """
     for record in records:
-        
+
         if "changeAuditStamps" in record:
             record = transform_change_audit_stamps(record)
 
@@ -335,10 +326,10 @@ def transform_data(records: List) -> Iterable[Mapping]:
 
         if "variables" in record:
             record = transform_variables(record)
-        
+
         # replace `pivot` with `_pivot`, to allow redshift normalization,
         # since `pivot` is a reserved keyword for Redshift.
         # on behalf of https://github.com/airbytehq/airbyte/issues/13018
-        record = transform_key_names(record, ['pivot'])
+        record = transform_col_names(record, ["pivot"])
 
         yield record
