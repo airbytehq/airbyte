@@ -1,9 +1,5 @@
-import { highlight, languages } from "prismjs/components/prism-core";
+import Editor from "@monaco-editor/react";
 import React, { useState, ReactElement } from "react";
-import Editor from "react-simple-code-editor";
-import "prismjs/components/prism-clike";
-import "prismjs/components/prism-javascript";
-import "prismjs/themes/prism.css";
 
 import { LoadingButton } from "components";
 
@@ -11,17 +7,10 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 
 import styles from "./CodeEditor.module.scss";
 
-// note: these styles are in JSON for the editor to use
-const codeStyle = {
-  fontFamily: '"Fira code", "Fira Mono", monospace',
-  fontSize: 12,
-  marginTop: "5px",
-  marginLeft: "10px",
-  marginBottom: "5px",
-};
-
 interface AirbyteCodeEditorProps {
+  height?: string;
   code: string;
+  language?: string;
   setCode: (newCode: string) => void;
   loading?: boolean;
   saveButtonCTA?: ReactElement | string;
@@ -40,6 +29,8 @@ export interface ValidatorFeedback {
 const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
   code,
   loading,
+  height,
+  language,
   setCode,
   onSave,
   validate,
@@ -51,7 +42,11 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
   const [validation, setValidation] = useState<ValidatorFeedback>({ valid: true });
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
-  const onValueChange = (newCode: string) => {
+  const onValueChange = (newCode: string | undefined) => {
+    if (!newCode) {
+      return;
+    }
+
     if (!validation.valid) {
       setValidation({ valid: true });
     }
@@ -70,7 +65,7 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
         openConfirmationModal({
           text: modalTextKey ?? "",
           title: modalTitleKey ?? "",
-          submitButtonText: "form.saveChange",
+          submitButtonText: "form.saveChanges",
           onSubmit: async () => {
             const updateResponse = await onSave(code);
             if (updateResponse) {
@@ -90,16 +85,21 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
 
   return (
     <>
+      <div style={{ paddingTop: 10 }} />
       <Editor
+        height={height ?? "200px"}
+        language={language ?? "json"}
         value={code}
-        onValueChange={onValueChange}
-        highlight={(code) => highlight(code, languages.js)}
-        padding={10}
-        disabled={loading}
-        style={codeStyle}
+        onChange={onValueChange}
+        options={{
+          matchBrackets: "always",
+          minimap: {
+            enabled: false,
+          },
+        }}
       />
       {validation.valid === false && <div className={styles.errorText}>{validation.errorMessage || "Invalid"}</div>}
-      <div style={{ paddingLeft: 19 }}>
+      <div style={{ paddingLeft: 19, paddingTop: 10 }}>
         <LoadingButton type="submit" onClick={onClick} isLoading={loading} disabled={!validation?.valid}>
           {saveButtonCTA || "Save"}
         </LoadingButton>

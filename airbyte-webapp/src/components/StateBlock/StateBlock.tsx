@@ -54,7 +54,11 @@ const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
         <H5 bold>
           <FormattedMessage id={"tables.connectionState.title"} />
         </H5>
-        <FormattedMessage id={"tables.connectionState.p1"} />. <FormattedMessage id={"tables.connectionState.p2"} />.
+        <FormattedMessage id={"tables.connectionState.p1"} />.<br />
+        <strong>
+          <FormattedMessage id={"tables.connectionState.confirmModalText"} />
+        </strong>
+        .
       </div>
       <CodeEditor
         code={stateString}
