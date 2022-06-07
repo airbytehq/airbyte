@@ -26,7 +26,7 @@ dependencies {
     implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').buildDockerImage.outputs)
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
