@@ -1063,5 +1063,5 @@
   dockerRepository: airbyte/source-sftp
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
-  sourceType: api
+  sourceType: file
   releaseStage: alpha
