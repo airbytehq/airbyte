@@ -1,5 +1,6 @@
 *
 !Dockerfile
+!*.Dockerfile
 !entrypoint.sh
 !build/sshtunneling.sh
 !setup.py

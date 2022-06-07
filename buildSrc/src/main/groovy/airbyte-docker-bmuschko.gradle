@@ -2,8 +2,19 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 class AirbyteDockerBmuschkoConfiguration {
     Map<String, String> dockerfileToImageName
+    Collection<Task> additionalDependencies
 }
 
+/**
+ * Creates 'buildDockerImage*' tasks based on dockerfileToImageName. If dockerfileToImageName does not contain an entry for 'Dockerfile',
+ * this plugin will assume that there should be a ['Dockerfile': project.name] entry. This entry will be mapped to the buildDockerImage task;
+ * all others will be mapped to buildDockerImage-<dockerfileName>.
+ *
+ * Also creates a buildDockerImage-all task, which simply executes all of the buildDockerImage tasks (including the default 'Dockerfile' entry).
+ *
+ * These tasks depend on project.assemble, and register themselves as dependencies of project.build. If other tasks need to run before buildDockerImage,
+ * you can list them in additionalDependencies.
+ */
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoConfiguration)
@@ -18,6 +29,8 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 dockerfileToImageName['Dockerfile'] = project.name
             }
 
+            def allTask = project.task('buildDockerImage-all')
+
             dockerfileToImageName.each(entry -> {
                 def dockerfileName = entry.getKey()
                 def imageName = entry.getValue()
@@ -29,16 +42,23 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                     taskName += "-${dockerfileName}"
                 }
 
-                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName)
+                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName, extension.additionalDependencies)
+
+                allTask.dependsOn buildDockerImageTask
             })
+
+            // This probably isn't actually necessary, but keeping it for compatibility with the old airbyte-docker plugin
+            project.build.dependsOn allTask
         }
     }
 
-    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName, Collection<Task> additionalDependencies) {
         if (project.file(dockerfileName).exists()) {
             def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
                 // If this is a Java project, then we can't run the Docker build until after the compiled tar exists
                 dependsOn project.assemble
+
+                additionalDependencies.each(task -> dependsOn(task))
 
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
@@ -63,9 +83,6 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
                 dockerFile = project.file("${dockerfileName}")
             }
-
-            // This probably isn't actually necessary, but keeping it for compatibility with the old airbyte-docker plugin
-            project.build.dependsOn buildDockerImageTask
 
             return buildDockerImageTask
         } else {
