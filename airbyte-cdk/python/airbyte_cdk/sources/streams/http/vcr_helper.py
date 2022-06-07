@@ -43,9 +43,5 @@ class VcrHelper:
 
     def serialize(self, cassette_dict):
         serialized = yaml.dump(cassette_dict, Dumper=Dumper)
-        # for replace in self.test_fixture["replace_all"]:
-        #     original = replace["original"]
-        #     replace_by = replace["replace_by"]
-        #     serialized = serialized.replace(original, replace_by)
         serialized = filter_secrets(serialized)
         return serialized
