@@ -100,12 +100,18 @@ definitions:
     type: object
     description: "per stream state data"
     additionalProperties: false
+    required:
+      - name
+      - state
     properties:
       name:
         description: "Stream name"
         type: string
       state:
         "$ref": "#/definitions/AirbyteStateBlob"
+      namespace:
+        description: Optional Source-defined namespace.
+        type: string
 
   AirbyteStateBlob:
     type: object

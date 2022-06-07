@@ -505,7 +505,7 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
     catalog_file = base_dir / resources_dir / "destination_catalog.json"
     messages_file1 = base_dir / resources_dir / "messages1.txt"
     messages_file2 = base_dir / resources_dir / "messages2.txt"
-    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql"
+    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql.j2"
 
     shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
     shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
