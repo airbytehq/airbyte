@@ -2,5 +2,8 @@
     "username": "xxx",
     "password": "xxx",
     "database": "non_existing_database_name",
-    "engine": "database_name_Analytics"
+    "engine": "database_name_Analytics",
+    "loading_method": {
+        "method": "SQL"
+    }
 }
