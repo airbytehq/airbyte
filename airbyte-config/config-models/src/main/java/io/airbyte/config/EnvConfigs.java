@@ -164,6 +164,7 @@ public class EnvConfigs implements Configs {
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      DEPLOYMENT_MODE, (instance) -> instance.getDeploymentMode().name(),
       WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
 
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
