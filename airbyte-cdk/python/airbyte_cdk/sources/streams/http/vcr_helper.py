@@ -22,7 +22,7 @@ class VcrHelper:
             with open(path_to_test_fixture, "r") as f:
                 self.test_fixture = json.loads(f.read())
         else:
-            self.test_fixture = {"filter_headers": {}}
+            self.test_fixture = {"filter_headers": [{"name": "Authorization", "value": "<AUTHORIZATION_TOKEN_XXXX>"}]}
 
     def get_vcr(self):
         my_vcr = vcr.VCR()
