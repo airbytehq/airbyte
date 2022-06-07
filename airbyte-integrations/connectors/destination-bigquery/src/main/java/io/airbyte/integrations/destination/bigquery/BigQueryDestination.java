@@ -142,8 +142,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final StringBuilder message = new StringBuilder("Cannot access the GCS bucket.");
       if (!missingPermissions.isEmpty()) {
         message.append(" The following permissions are missing on the service account: ")
-            .append(String.join(", ", missingPermissions));
+            .append(String.join(", ", missingPermissions))
+            .append(".");
       }
+      message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
+
       LOGGER.error(message.toString(), e);
 
       return new AirbyteConnectionStatus()
