@@ -1,6 +1,8 @@
 @import "./colors";
 @import "./variables";
 
+// SPACING
+
 @mixin generate-spacing($name, $prefix, $property, $value) {
   .#{$prefix}-#{$name} {
     #{$property}: $value;
@@ -24,6 +26,8 @@
   @include generate-spacing($name, "p", "padding", $value);
 }
 
+// ROUNDED CORNERS
+
 @each $name, $value in $rounded-map {
   .rounded-#{$name} {
     border-radius: $value;
@@ -38,6 +42,8 @@
   }
 }
 
+// SHADOWS
+
 @each $name, $value in $shadow-map {
   .shadow-#{$name} {
     box-shadow: $value;
@@ -48,6 +54,8 @@
     }
   }
 }
+
+// TEXT
 
 .bold {
   font-weight: 700;
@@ -64,6 +72,52 @@
 .text-right {
   text-align: right;
 }
+
+// ALIGNMENT
+
+.align-middle {
+  vertical-align: middle;
+}
+
+// FLEX
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-start {
+  justify-content: flex-end;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+// SIZE
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+// COLORS
 
 @mixin generate-color-classes($color-map) {
   @each $name, $color in $color-map {
