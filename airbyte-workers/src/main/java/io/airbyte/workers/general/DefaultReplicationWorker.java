@@ -359,11 +359,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
+          final String[] dockerImageInfo = dockerImage.split(":");
+          final String dockerRepo = dockerImageInfo[0];
+          final String dockerVersion = dockerImageInfo.length > 1 ? dockerImageInfo[1] : "";
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
             final String[] validationErrorMetadata = {
-              "docker_repo:" + dockerImage.split(":")[0],
-              "docker_version:" + dockerImage.split(":")[1],
+              "docker_repo:" + dockerRepo,
+              "docker_version:" + dockerVersion,
               "stream:" + stream
             };
             DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
