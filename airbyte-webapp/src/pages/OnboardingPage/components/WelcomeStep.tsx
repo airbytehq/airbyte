@@ -10,10 +10,10 @@ import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 import VideoItem from "./VideoItem";
 
-type WelcomeStepProps = {
+interface WelcomeStepProps {
   onNextStep: () => void;
   userName?: string;
-};
+}
 
 const Videos = styled.div`
   width: 100%;

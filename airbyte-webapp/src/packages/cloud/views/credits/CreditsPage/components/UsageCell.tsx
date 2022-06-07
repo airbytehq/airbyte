@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-type ConnectionCellProps = {
+interface ConnectionCellProps {
   percent: number;
-};
+}
 
 const Bar = styled.div`
   height: 10px;

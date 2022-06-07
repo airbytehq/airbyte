@@ -133,11 +133,6 @@ spec:
               name: airbyte-env
               key: JOB_KUBE_TOLERATIONS
         {{- end }}
-        - name: SUBMITTER_NUM_THREADS
-          valueFrom:
-            configMapKeyRef:
-              name: {{ include "common.names.fullname" . }}-env
-              key: SUBMITTER_NUM_THREADS
         - name: JOB_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
