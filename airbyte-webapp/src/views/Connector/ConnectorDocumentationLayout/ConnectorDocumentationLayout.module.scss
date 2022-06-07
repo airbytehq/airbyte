@@ -1,3 +1,6 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
 .leftPanelStyle {
   min-width: 200px;
   position: relative;
@@ -16,6 +19,10 @@
   text-align: center;
   vertical-align: middle;
   padding: 400px 30px 30px 30px;
+}
+
+.container > *:last-child {
+  padding-bottom: variables.$defaultBottomMargin;
 }
 
 .noScroll {
@@ -44,4 +51,16 @@
 .rotatedHeader {
   transform: rotate(-90deg);
   white-space: nowrap;
+}
+
+.panelGrabber {
+  height: 100vh;
+  padding: 6px;
+  display: flex;
+}
+
+.grabberHandleIcon {
+  margin: auto;
+  height: 25px;
+  color: colors.$greyColor20;
 }
