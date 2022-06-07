@@ -8,6 +8,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
+from enum import Enum
 
 import requests
 import vcr
@@ -25,6 +26,18 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
 
 logging.getLogger("vcr").setLevel(logging.ERROR)
+
+
+class CassetteMode(Enum):
+    RECORD = "RECORD"
+    REPLAY = "REPLAY"
+    DISABLED = "DISABLED"
+
+
+def get_cassette_mode() -> CassetteMode:
+    mode = CassetteMode(os.getenv("CASSETTE_MODE", "DISABLED"))
+    print(f"Got cassette setting: {mode}")
+    return mode
 
 
 class HttpStream(Stream, ABC):
@@ -55,14 +68,25 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Return the name of cache file
         """
-        return f"{self.name}.yml"
+
+        base_path = "./"
+        if get_cassette_mode() != CassetteMode.DISABLED:
+            base_path = os.getenv("CASSETTE_PATH", "cassettes")
+
+        # TODO does it still make sense to name cassettes from stream name when using it for tests?
+        return os.path.join(base_path, f"{self.name}.yml")
 
     @property
     def use_cache(self):
         """
         Override if needed. If True, all records will be cached.
         """
-        return False
+
+        # TODO move this out of use_cache so if it's overridden, it still works
+        use_cassette = get_cassette_mode() != CassetteMode.DISABLED
+        print(f"USING VCR? {use_cassette}")
+        return use_cassette
+        # return False
 
     def request_cache(self) -> Cassette:
         """
@@ -71,12 +95,20 @@ class HttpStream(Stream, ABC):
         We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
         """
 
-        try:
-            os.remove(self.cache_filename)
-        except FileNotFoundError:
-            pass
+        cassette_mode = get_cassette_mode()
+        if cassette_mode == CassetteMode.DISABLED:
+            try:
+                os.remove(self.cache_filename)
+            except FileNotFoundError:
+                pass
 
-        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
+        record_modes = {
+            CassetteMode.RECORD: "all",
+            CassetteMode.REPLAY: "none",
+            CassetteMode.DISABLED: "once"
+        }
+
+        return vcr.use_cassette(self.cache_filename, record_mode=record_modes[cassette_mode], serializer="yaml")
 
     @property
     @abstractmethod
