@@ -50,6 +50,7 @@ class GoogleSheetsSource(Source):
 
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
+        logger.info(f"Trying to read first row of sheet {spreadsheet_id}")
         try:
             # Attempt to get first row of sheet
             client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1")
@@ -62,15 +63,19 @@ class GoogleSheetsSource(Source):
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Error: {reason}"
             )
+        logger.info(f"Success reading first row of sheet {spreadsheet_id}")
 
         # Check for duplicate headers
+        logger.info(f"Checking for duplicate headers in {spreadsheet_id}")
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
 
         grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
 
         duplicate_headers_in_sheet = {}
+        logger.info(f"Found the following sheets in {spreadsheet_id}: {grid_sheets}")
         for sheet_name in grid_sheets:
             try:
+                logger.info(f"Trying to read for row of sheet {sheet_name} in {spreadsheet_id}")
                 header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
                 if duplicate_headers:
