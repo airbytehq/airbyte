@@ -159,7 +159,7 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 
 ### Increasing job parallelism
 
-The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, the `SUBMITTER_NUM_THREADS` \(set in the `.env` file for your Kustimization overlay\) provides a global limit on the number of simultaneous jobs that can run across all worker pods.
+The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, jobs are picked up and executed by airbyte-worker pods, so increasing the number of workers will allow more jobs to be processed in parallel.
 
 The number of worker pods can be changed by increasing the number of replicas for the `airbyte-worker` deployment. An example of a Kustomization patch that increases this number can be seen in `airbyte/kube/overlays/dev-integration-test/kustomization.yaml` and `airbyte/kube/overlays/dev-integration-test/parallelize-worker.yaml`. The number of simultaneous jobs on a specific worker pod is also limited by the number of ports exposed by the worker deployment and set by `TEMPORAL_WORKER_PORTS` in your `.env` file. Without additional ports used to communicate to connector pods, jobs will start to run but will hang until ports become available.
 
@@ -218,10 +218,6 @@ Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/mast
 ### View API Server Logs
 
 `kubectl logs deployments/airbyte-server` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
-
-### View Scheduler or Job Logs
-
-`kubectl logs deployments/airbyte-scheduler` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
 
 ### Connector Container Logs
 

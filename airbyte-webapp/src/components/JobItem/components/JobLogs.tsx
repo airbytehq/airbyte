@@ -13,10 +13,10 @@ import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
 import Tabs, { TabsData } from "./Tabs";
 
-type JobLogsProps = {
+interface JobLogsProps {
   jobIsFailed?: boolean;
   job: SynchronousJobReadWithStatus | JobsWithJobs;
-};
+}
 
 const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;

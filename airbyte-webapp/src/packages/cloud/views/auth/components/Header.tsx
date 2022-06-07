@@ -40,9 +40,9 @@ const TextBlock = styled.div`
   display: inline-block;
 `;
 
-type HeaderProps = {
+interface HeaderProps {
   toLogin?: boolean;
-};
+}
 
 const Header: React.FC<HeaderProps> = ({ toLogin }) => {
   const { ui } = useConfig();

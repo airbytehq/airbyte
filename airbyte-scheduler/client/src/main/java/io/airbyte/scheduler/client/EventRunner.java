@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface EventRunner {
 
-  void createNewSchedulerWorkflow(final UUID connectionId);
+  void createConnectionManagerWorkflow(final UUID connectionId);
 
   ManualOperationResult startNewManualSync(final UUID connectionId);
 
