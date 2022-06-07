@@ -50,11 +50,11 @@ public class MetricClientFactory {
     if (metricClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
-    initializeDatadogMetricClient(metricEmittingApp);
+    initializeDatadogStatsDMetricClient(metricEmittingApp);
   }
 
-  private static DogStatsDMetricClient initializeDatadogMetricClient(
-                                                                     MetricEmittingApp metricEmittingApp) {
+  private static DogStatsDMetricClient initializeDatadogStatsDMetricClient(
+                                                                           MetricEmittingApp metricEmittingApp) {
     DogStatsDMetricClient client = new DogStatsDMetricClient();
     final Configs configs = new EnvConfigs();
 
