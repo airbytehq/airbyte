@@ -275,6 +275,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.21  | 2022-06-07 | [13549](https://github.com/airbytehq/airbyte/pull/13549) | Fixed truncated precision if the value of microseconds or seconds is 0 |
 | 0.4.20  | 2022-06-02 | [13367](https://github.com/airbytehq/airbyte/pull/13367) | Added convertion hstore to json format |
 | 0.4.19  | 2022-05-25 | [13166](https://github.com/airbytehq/airbyte/pull/13166) | Added timezone awareness and handle BC dates |
 | 0.4.18  | 2022-05-25 | [13083](https://github.com/airbytehq/airbyte/pull/13083) | Add support for tsquey type |
