@@ -28,6 +28,9 @@ def config(request: Any) -> Dict[str, str]:
         "username": "my_username",
         "password": "my_password",
         "engine": request.param,
+        "loading_method": {
+            "method": "SQL",
+        },
     }
     return args
 
@@ -39,10 +42,13 @@ def config_external_table() -> Dict[str, str]:
         "username": "my_username",
         "password": "my_password",
         "engine": "my_engine",
-        "s3_bucket": "my_bucket",
-        "s3_region": "us-east-1",
-        "aws_key_id": "aws_key",
-        "aws_key_secret": "aws_secret",
+        "loading_method": {
+            "method": "S3",
+            "s3_bucket": "my_bucket",
+            "s3_region": "us-east-1",
+            "aws_key_id": "aws_key",
+            "aws_key_secret": "aws_secret",
+        },
     }
     return args
 

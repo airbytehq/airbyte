@@ -80,10 +80,14 @@ class DestinationFirebolt(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
 
         with establish_connection(config) as connection:
-            if config.get("s3_bucket"):
+            if config["loading_method"]["method"] == "S3":
                 logger.info("Using the S3 writing strategy")
                 writer = FireboltS3Writer(
-                    connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"]
+                    connection,
+                    config["loading_method"]["s3_bucket"],
+                    config["loading_method"]["aws_key_id"],
+                    config["loading_method"]["aws_key_secret"],
+                    config["loading_method"]["s3_region"],
                 )
             else:
                 logger.info("Using the SQL writing strategy")
@@ -123,19 +127,19 @@ class DestinationFirebolt(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            s3_bucket = config.get("s3_bucket")
-            aws_key_id = config.get("aws_key_id")
-            aws_key_secret = config.get("aws_key_secret")
-            s3_credentials = [s3_bucket, aws_key_id, aws_key_secret]
-            if any(s3_credentials) and not all(s3_credentials):
-                raise Exception("If using External Table strategy please provide S3 bucket name, AWS Key and AWS Secret")
             with establish_connection(config, logger) as connection:
                 # We can only verify correctness of connection parameters on execution
                 with connection.cursor() as cursor:
                     cursor.execute("SELECT 1")
                 # Test access to the bucket
-                if any(s3_credentials):
-                    FireboltS3Writer(connection, config["s3_bucket"], config["aws_key_id"], config["aws_key_secret"], config["s3_region"])
+                if config["loading_method"]["method"] == "S3":
+                    FireboltS3Writer(
+                        connection,
+                        config["loading_method"]["s3_bucket"],
+                        config["loading_method"]["aws_key_id"],
+                        config["loading_method"]["aws_key_secret"],
+                        config["loading_method"]["s3_region"],
+                    )
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
