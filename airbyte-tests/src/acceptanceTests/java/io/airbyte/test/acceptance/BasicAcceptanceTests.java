@@ -831,7 +831,7 @@ public class BasicAcceptanceTests {
   }
 
   private WorkflowClient getWorkflowClient() {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalAirbyteService("localhost:7233");
+    final WorkflowServiceStubs temporalService = TemporalUtils.createAirbyteTemporalServiceAndConfigureNamespace("localhost:7233");
     return WorkflowClient.newInstance(temporalService);
   }
 

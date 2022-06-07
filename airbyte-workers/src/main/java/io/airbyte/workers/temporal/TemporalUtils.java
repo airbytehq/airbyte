@@ -66,8 +66,10 @@ public class TemporalUtils {
     return createTemporalService(configs.temporalCloudEnabled());
   }
 
-  // TODO consider consolidating this into above method after the Temporal Cloud migration is complete.
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
+  // TODO consider consolidating this into above method after the Temporal Cloud migration is
+  // complete.
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
+  // client at the same time.
   public static WorkflowServiceStubs createTemporalService(final boolean isCloud) {
     if (isCloud) {
       log.info("createTemporalService chose Cloud...");
@@ -92,7 +94,12 @@ public class TemporalUtils {
       }
     }
     log.info("createTemporalService chose Airbyte...");
-    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", configs.getTemporalHost(), DEFAULT_NAMESPACE);
+    return createAirbyteTemporalServiceAndConfigureNamespace(configs.getTemporalHost());
+  }
+
+  @VisibleForTesting
+  public static WorkflowServiceStubs createAirbyteTemporalServiceAndConfigureNamespace(final String temporalHost) {
+    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", temporalHost, DEFAULT_NAMESPACE);
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
         .setTarget(configs.getTemporalHost())
         .build();
@@ -147,7 +154,8 @@ public class TemporalUtils {
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
         .setTaskQueue(jobType.name())
-        .setWorkflowTaskTimeout(Duration.ofSeconds(27)) // TODO parker - temporarily increasing this to a recognizable number to see if it changes error I'm seeing
+        .setWorkflowTaskTimeout(Duration.ofSeconds(27)) // TODO parker - temporarily increasing this to a recognizable number to see if it changes
+        // error I'm seeing
         // todo (cgardens) we do not leverage Temporal retries.
         .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(1).build())
         .build();

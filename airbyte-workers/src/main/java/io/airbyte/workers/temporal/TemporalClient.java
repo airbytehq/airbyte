@@ -92,7 +92,8 @@ public class TemporalClient {
   }
 
   // TODO consider making this private after the Temporal Cloud migration.
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
+  // client at the same time.
   public static TemporalClient cloud(final Configs configs) {
     final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalService(true);
     return new TemporalClient(
@@ -106,7 +107,8 @@ public class TemporalClient {
   }
 
   // TODO consider making this private after the Temporal Cloud migration
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
+  // client at the same time.
   public static TemporalClient airbyte(final Configs configs) {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(false);
     return new TemporalClient(WorkflowClient.newInstance(temporalService), configs.getWorkspaceRoot(), temporalService);
@@ -264,8 +266,9 @@ public class TemporalClient {
   }
 
   /**
-   * Refreshes the cache of running workflows, and returns their names. Currently called by the Temporal Cloud migrator to generate a list of
-   * workflows that should be migrated. After the Temporal Migration is complete, this could be removed, though it may be handy for a future use
+   * Refreshes the cache of running workflows, and returns their names. Currently called by the
+   * Temporal Cloud migrator to generate a list of workflows that should be migrated. After the
+   * Temporal Migration is complete, this could be removed, though it may be handy for a future use
    * case.
    */
   public Set<String> getAllRunningWorkflows() {
