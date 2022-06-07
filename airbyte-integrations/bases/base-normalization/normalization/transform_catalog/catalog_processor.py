@@ -177,6 +177,10 @@ class CatalogProcessor:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
                     output_sql_file(os.path.join(self.output_directory, file), substream.sql_outputs[file])
+                # TODO: write substream to DBML
+                print("************ start-nested-DBML ***********")
+                print(substream.stream_dbml)
+                print("************ end-nested-DBML ***********")
 
     def write_yaml_sources_file(self, schema_to_source_tables: Dict[str, Set[str]]):
         """

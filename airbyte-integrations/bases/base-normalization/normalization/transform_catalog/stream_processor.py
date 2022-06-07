@@ -320,14 +320,7 @@ class StreamProcessor(object):
         template = Template(
             """
 Table {{ schema_name }}.{{ table_name }} {
-{{ columns }}   
-}
-"""
-        )
-        ref_template = Template(
-            """
-Ref unnested_child_stream {
-   {{ schema_name }}.{{ parent_table_name }}.{{ parent_hash_id }} < {{ schema_name }}.{{ table_name }}.{{ hash_id }}
+{{ columns }}
 }
 """
         )
@@ -338,13 +331,23 @@ Ref unnested_child_stream {
             indexes=self.extract_dbml_indexes(column_names),
         )
         if self.parent:
-            parent_table_name = self.parent.tables_registry.get_table_name(schema, self.parent.json_path, self.parent.stream_name, "", truncate_name)
+            parent_table_name = self.parent.tables_registry.get_table_name(
+                schema, self.parent.json_path, self.parent.stream_name, "", truncate_name
+            )
+            ref_template = Template(
+                """
+Ref unnested_child_stream {
+   {{ schema_name }}.{{ parent_table_name }}.{{ parent_hash_id }} {{ relation_type}} {{ schema_name }}.{{ table_name }}.{{ hash_id }}
+}
+"""
+            )
             self.stream_dbml += ref_template.render(
                 schema_name=schema,
                 table_name=table_name,
                 hash_id=self.parent.hash_id(False),
                 parent_table_name=parent_table_name,
                 parent_hash_id=self.parent_hash_id(),
+                relation_type="<",  # TODO: find the correct relation type
             )
 
     def extract_dbml_columns(self, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -352,11 +355,12 @@ Ref unnested_child_stream {
         for column_name in column_names:
             # TODO: we don't know how to handle double quotes characters in column names in DBML yet
             # so we replace them by underscore for the moment...
-            dbml_column_name = column_name.replace('"', '_')
-            result += f"\"{dbml_column_name}\" {self.extract_dbml_column_type(column_name)}"
+            dbml_column_name = column_name.replace('"', "_")
+            result += f'"{dbml_column_name}" {self.extract_dbml_column_type(column_name)}'
             # TODO: add primary key tags
             # TODO: add cursor key tags
             result += "\n\t"
+        # TODO: add internal airbyte columns
         return result
 
     def extract_dbml_column_type(self, property_name: str) -> str:
@@ -386,6 +390,7 @@ Ref unnested_child_stream {
             return "unknown"
 
     def extract_dbml_indexes(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        # TODO: nice to have: add index (partition, cluster keys) infos
         return ""
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
