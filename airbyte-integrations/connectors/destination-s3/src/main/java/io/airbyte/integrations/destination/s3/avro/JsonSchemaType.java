@@ -17,9 +17,9 @@ import org.apache.avro.Schema.Type;
 public enum JsonSchemaType {
 
   STRING("string", true, null, Schema.Type.STRING),
-  NUMBER_INT("number", true, "integer", Type.INT),
-  NUMBER_LONG("number", true, "big_integer", Type.LONG),
-  NUMBER_FLOAT("number", true, "float", Type.FLOAT),
+  NUMBER_INT("number", true, "integer", Schema.Type.INT),
+  NUMBER_LONG("number", true, "big_integer", Schema.Type.LONG),
+  NUMBER_FLOAT("number", true, "float", Schema.Type.FLOAT),
   NUMBER("number", true, null, Schema.Type.DOUBLE),
   INTEGER("integer", true, null, Schema.Type.INT),
   BOOLEAN("boolean", true, null, Schema.Type.BOOLEAN),
