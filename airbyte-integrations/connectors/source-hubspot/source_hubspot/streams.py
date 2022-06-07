@@ -384,7 +384,7 @@ class Stream(HttpStream, ABC):
         except requests.exceptions.HTTPError as e:
             raise e
 
-    def parse_response_error_message(self, response):
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
         body = response.json()
         if body.get("category") == "MISSING_SCOPES":
             if "errors" in body:
