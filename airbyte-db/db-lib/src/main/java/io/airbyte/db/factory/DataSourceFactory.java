@@ -18,9 +18,6 @@ import javax.sql.DataSource;
  */
 public class DataSourceFactory {
 
-  // the default 30000 milliseconds is not enough for acceptance test
-  public static final long HIKARI_CONNECTION_TIMEOUT_MS = 60000L;
-
   /**
    * Constructs a new {@link DataSource} using the provided configuration.
    *
@@ -174,10 +171,12 @@ public class DataSourceFactory {
     private String driverClassName;
     private String host;
     private String jdbcUrl;
-    private Integer maximumPoolSize = 5;
-    private Integer minimumPoolSize = 0;
+    private int maximumPoolSize = 10;
+    private int minimumPoolSize = 0;
+    // the default 30000 millisecond is sometimes not enough for the acceptance test
+    private long connectionTimeoutMs = 60000;
     private String password;
-    private Integer port = 5432;
+    private int port = 5432;
     private String username;
 
     private DataSourceBuilder() {}
@@ -223,6 +222,13 @@ public class DataSourceFactory {
       return this;
     }
 
+    public DataSourceBuilder withConnectionTimeoutMs(final Long connectionTimeoutMs) {
+      if (connectionTimeoutMs != null) {
+        this.connectionTimeoutMs = connectionTimeoutMs;
+      }
+      return this;
+    }
+
     public DataSourceBuilder withPassword(final String password) {
       this.password = password;
       return this;
@@ -251,9 +257,9 @@ public class DataSourceFactory {
       config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
+      config.setConnectionTimeout(connectionTimeoutMs);
       config.setPassword(password);
       config.setUsername(username);
-      config.setConnectionTimeout(HIKARI_CONNECTION_TIMEOUT_MS);
 
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container
