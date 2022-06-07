@@ -18,6 +18,9 @@ import javax.sql.DataSource;
  */
 public class DataSourceFactory {
 
+  // the default 30000 milliseconds is not enough for acceptance test
+  public static final long HIKARI_CONNECTION_TIMEOUT_MS = 60000L;
+
   /**
    * Constructs a new {@link DataSource} using the provided configuration.
    *
@@ -250,6 +253,7 @@ public class DataSourceFactory {
       config.setMinimumIdle(minimumPoolSize);
       config.setPassword(password);
       config.setUsername(username);
+      config.setConnectionTimeout(HIKARI_CONNECTION_TIMEOUT_MS);
 
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container
