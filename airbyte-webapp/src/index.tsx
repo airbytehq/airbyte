@@ -5,6 +5,7 @@ import ReactDOM from "react-dom";
 
 import "react-reflex/styles.css";
 import { isCloudApp } from "utils/app";
+import "scss/global.scss";
 
 import "./globals";
 

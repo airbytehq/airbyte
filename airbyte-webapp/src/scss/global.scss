@@ -1,0 +1,37 @@
+@import "./colors";
+
+@mixin generate-color-classes($color-map) {
+  @each $name, $color in $color-map {
+    .#{$name} {
+      color: $color;
+    }
+    .bg-#{$name} {
+      background-color: $color;
+    }
+    .border-#{$name} {
+      border-color: $color;
+    }
+  }
+}
+
+@each $color-map in $color-maps {
+  @include generate-color-classes($color-map);
+}
+
+$rounded-sm: 2px;
+$rounded: 4px;
+$rounded-md: 6px;
+$rounded-lg: 8px;
+$rounded-xl: 12px;
+$rounded-full: 9999px;
+
+$border-0: 0;
+$border-1: 1px;
+$border-2: 2px;
+
+// ON buttons
+$shadow: 0px 3px 4px -2px rgba(26, 25, 77, 0.21);
+// Card normal
+$shadow-2: 0px 2px 4px rgba(26, 25, 77, 0.12);
+// Card hover
+$shadow-lg: 0px 4px 8px rgba(26, 25, 77, 0.12), 0px 27px 12px -17px rgba(26, 25, 77, 0.2);
