@@ -1426,7 +1426,7 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
     primary_key = "id"
-    scopes = set()
+    scopes = {"crm.objects.feedback_submissions.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):
