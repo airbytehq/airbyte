@@ -22,7 +22,7 @@ decoder:
 extractor:
   class_name: "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor"
   decoder: "*ref(decoder)"
-  transform: ".result[]"
+  transform: "_['result']"
 
 primary_key: id
 
