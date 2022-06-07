@@ -26,7 +26,8 @@ dependencies {
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation libs.testcontainers.postgresql
+//    testImplementation libs.testcontainers.postgresql
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.15.3'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
