@@ -35,6 +35,8 @@ import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -64,28 +66,35 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  public static TemporalClient production(final Configs configs) {
+  public static TemporalClient get(final Configs configs) {
     if (configs.temporalCloudEnabled()) {
-      log.info("TemporalClient.production chose Cloud...");
+      log.info("TemporalClient.get chose Cloud...");
       return TemporalClient.cloud(configs);
     }
-    log.info("TemporalClient.production chose Airbyte...");
+    log.info("TemporalClient.get chose Airbyte...");
     return TemporalClient.airbyte(configs);
   }
 
-  public static WorkerFactory productionWorkerFactory(final Configs configs) {
-    if (configs.temporalCloudEnabled()) {
-      log.info("TemporalClient.productionWorkerFactory chose Cloud...");
-      return WorkerFactory.newInstance(cloudWorkflowClient(TemporalUtils.createTemporalCloudService(), configs));
-    }
-    log.info("TemporalClient.productionWorkerFactory chose Airbyte...");
-    return WorkerFactory.newInstance(airbyteWorkflowClient(TemporalUtils.createTemporalAirbyteService()));
+  public static WorkerFactory getWorkerFactory(final Configs configs) {
+    return WorkerFactory.newInstance(getWorkflowClient(configs));
   }
 
-  // TODO consider making this private after the Temporal Cloud migration
+  public static String getNamespace(final Configs configs) {
+    return configs.temporalCloudEnabled() ? configs.getTemporalCloudNamespace() : TemporalUtils.DEFAULT_NAMESPACE;
+  }
+
+  public static WorkflowClient getWorkflowClient(final Configs configs) {
+    return WorkflowClient.newInstance(
+        TemporalUtils.createTemporalService(),
+        WorkflowClientOptions.newBuilder()
+            .setNamespace(getNamespace(configs))
+            .build());
+  }
+
+  // TODO consider making this private after the Temporal Cloud migration.
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
   public static TemporalClient cloud(final Configs configs) {
-    log.info("Using Temporal Cloud with:\nhost: {}\nnamespace: {}", configs.getTemporalCloudHost(), configs.getTemporalCloudNamespace());
-    final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalCloudService();
+    final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalService(true);
     return new TemporalClient(
         WorkflowClient.newInstance(
             temporalCloudService,
@@ -97,23 +106,10 @@ public class TemporalClient {
   }
 
   // TODO consider making this private after the Temporal Cloud migration
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
   public static TemporalClient airbyte(final Configs configs) {
-    final String temporalHost = configs.getTemporalHost();
-    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", temporalHost, TemporalUtils.DEFAULT_NAMESPACE);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalAirbyteService(temporalHost);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(false);
     return new TemporalClient(WorkflowClient.newInstance(temporalService), configs.getWorkspaceRoot(), temporalService);
-  }
-
-  private static WorkflowClient cloudWorkflowClient(final WorkflowServiceStubs temporalService, final Configs configs) {
-    return WorkflowClient.newInstance(
-        temporalService,
-        WorkflowClientOptions.newBuilder()
-            .setNamespace(configs.getTemporalCloudNamespace())
-            .build());
-  }
-
-  private static WorkflowClient airbyteWorkflowClient(final WorkflowServiceStubs temporalService) {
-    return WorkflowClient.newInstance(temporalService);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
@@ -267,15 +263,24 @@ public class TemporalClient {
     } while (token != null && token.size() > 0);
   }
 
+  /**
+   * Refreshes the cache of running workflows, and returns their names. Currently called by the Temporal Cloud migrator to generate a list of
+   * workflows that should be migrated. After the Temporal Migration is complete, this could be removed, though it may be handy for a future use
+   * case.
+   */
   public Set<String> getAllRunningWorkflows() {
+    final var startTime = Instant.now();
     refreshRunningWorkflow();
+    final var endTime = Instant.now();
+    log.info("getAllRunningWorkflows took {} milliseconds", Duration.between(startTime, endTime).toMillis());
     return workflowNames;
   }
 
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-    log.info("PARKER: called startConnectionManagerNoSignal, got this: {} with getState: {}", connectionManagerWorkflow, connectionManagerWorkflow.getState());
+    log.info("PARKER: called startConnectionManagerNoSignal, got this: {} with getState: {}", connectionManagerWorkflow,
+        connectionManagerWorkflow.getState());
     try {
       log.info("PARKER: about to create while loop");
       CompletableFuture.supplyAsync(() -> {

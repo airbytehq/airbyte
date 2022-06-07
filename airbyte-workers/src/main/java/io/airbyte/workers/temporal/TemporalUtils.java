@@ -62,61 +62,39 @@ public class TemporalUtils {
       .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
 
-  public static WorkflowServiceStubs createTemporalProductionService() {
-    if (configs.temporalCloudEnabled()) {
-      log.info("createTemporalProductionService chose Cloud...");
-      return createTemporalCloudService();
+  public static WorkflowServiceStubs createTemporalService() {
+    return createTemporalService(configs.temporalCloudEnabled());
+  }
+
+  // TODO consider consolidating this into above method after the Temporal Cloud migration is complete.
+  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal client at the same time.
+  public static WorkflowServiceStubs createTemporalService(final boolean isCloud) {
+    if (isCloud) {
+      log.info("createTemporalService chose Cloud...");
+      log.info("Using Temporal Cloud with:\nhost: {}\nnamespace: {}", configs.getTemporalCloudHost(), configs.getTemporalCloudNamespace());
+      try {
+        final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
+        final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
+
+        final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
+            .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
+            .setTarget(configs.getTemporalCloudHost())
+            .build();
+
+        return getTemporalClientWhenConnected(
+            WAIT_INTERVAL,
+            MAX_TIME_TO_CONNECT,
+            WAIT_TIME_AFTER_CONNECT,
+            () -> WorkflowServiceStubs.newInstance(options),
+            configs.getTemporalCloudNamespace());
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
     }
-    log.info("createTemporalProductionService chose Airbyte...");
-    final WorkflowServiceStubs temporalService = createTemporalAirbyteService();
-    configureTemporalAirbyteNamespace(temporalService);
-    return temporalService;
-  }
-
-  // TODO consider making this private after the Temporal Cloud migration
-  public static WorkflowServiceStubs createTemporalCloudService() {
-    return createTemporalCloudService(
-        configs.getTemporalCloudClientCert(),
-        configs.getTemporalCloudClientKey(),
-        configs.getTemporalCloudHost(),
-        configs.getTemporalCloudNamespace());
-  }
-
-  private static WorkflowServiceStubs createTemporalCloudService(
-                                                                 final String temporalCloudClientCert,
-                                                                 final String temporalCloudClientKey,
-                                                                 final String temporalHost,
-                                                                 final String temporalNamespace) {
-    try {
-      final InputStream clientCert = new ByteArrayInputStream(temporalCloudClientCert.getBytes(StandardCharsets.UTF_8));
-      final InputStream clientKey = new ByteArrayInputStream(temporalCloudClientKey.getBytes(StandardCharsets.UTF_8));
-
-      final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-          .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
-          .setTarget(temporalHost)
-          .build();
-
-      return getTemporalClientWhenConnected(
-          WAIT_INTERVAL,
-          MAX_TIME_TO_CONNECT,
-          WAIT_TIME_AFTER_CONNECT,
-          () -> WorkflowServiceStubs.newInstance(options),
-          temporalNamespace);
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  // TODO consider making this private after the Temporal Cloud migration
-  public static WorkflowServiceStubs createTemporalAirbyteService() {
-    return createTemporalAirbyteService(configs.getTemporalHost());
-  }
-
-  // Public so that AcceptanceTests can call this with localhost input
-  @VisibleForTesting
-  public static WorkflowServiceStubs createTemporalAirbyteService(final String temporalHost) {
+    log.info("createTemporalService chose Airbyte...");
+    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", configs.getTemporalHost(), DEFAULT_NAMESPACE);
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-        .setTarget(temporalHost)
+        .setTarget(configs.getTemporalHost())
         .build();
 
     final WorkflowServiceStubs temporalService = getTemporalClientWhenConnected(
@@ -127,12 +105,7 @@ public class TemporalUtils {
         DEFAULT_NAMESPACE);
 
     configureTemporalAirbyteNamespace(temporalService);
-
     return temporalService;
-  }
-
-  public static String getProductionNamespace() {
-    return configs.temporalCloudEnabled() ? configs.getTemporalCloudNamespace() : TemporalUtils.DEFAULT_NAMESPACE;
   }
 
   private static void configureTemporalAirbyteNamespace(final WorkflowServiceStubs temporalService) {
