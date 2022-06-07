@@ -75,6 +75,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       ...connectionAsUpdate,
       ...values,
       connectionId,
+      // Use the name and status from the initial connection because these can be updating while refreshing the schema.
+      name: initialConnection.name,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
     });
