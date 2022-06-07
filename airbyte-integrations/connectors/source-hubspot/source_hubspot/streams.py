@@ -382,15 +382,16 @@ class Stream(HttpStream, ABC):
                 # Always return an empty generator just in case no records were ever yielded
                 yield from []
         except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 403:
-                error = e.response.json()["errors"][0]
-                missing_scopes = error.get("context", {}).get("requiredScopes")
-                raise RuntimeError(
-                    f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
-                )
-            else:
-                raise e
+            raise e
+
+    def parse_response_error_message(self, response):
+        print("parsing response error message")
+        body = response.json()
+        if body["category"] == "MISSING_SCOPES":
+            error = body["errors"][0]
+            missing_scopes = error.get("context", {}).get("requiredScopes")
+            return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+        return super().parse_response_error_message(response)
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
