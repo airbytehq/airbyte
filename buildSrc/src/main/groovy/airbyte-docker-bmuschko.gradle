@@ -1,21 +1,11 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
-class AirbyteDockerBmuschkoPluginConfiguration {
-    String imageName
-    String taskName = 'buildDockerImage'
-}
-
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
-        def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoPluginConfiguration)
+        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile')
+        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test')
 
-        // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
-        project.afterEvaluate {
-            def buildDockerImageTask = createTask(project, extension.taskName, extension.imageName, "Dockerfile")
-            createTask(project, "${extension.taskName}Test", extension.imageName, "Dockerfile.test")
-
-            project.assemble.dependsOn buildDockerImageTask
-        }
+        project.assemble.dependsOn buildDockerImageTask
     }
 
     static def createTask(Project project, String taskName, String imageName, String dockerfileName) {

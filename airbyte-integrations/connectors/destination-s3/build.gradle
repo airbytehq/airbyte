@@ -42,7 +42,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-s3')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:s3-destination-base-integration-test')
 }
-
-airbyteDockerBmuschko {
-    imageName 'destination-s3'
-}
