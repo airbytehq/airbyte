@@ -115,24 +115,20 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * We order tests such that earlier tests test more basic behavior that is relied upon in later
- * tests. e.g. We test that we can create a destination before we test whether we can sync data to
- * it.
+ * The class test for advanced platform functionality that can be affected by the networking
+ * difference between the Kube and Docker deployments i.e. distributed vs local processes.
  * <p>
- * Many of the tests here are disabled for Kubernetes. This is because they are already run as part
- * of the Docker acceptance tests and there is little value re-running on Kubernetes, especially
- * operations take much longer due to Kubernetes pod spin up times. We run a subset to sanity check
- * basic Airbyte Kubernetes Sync features.
- * <p>
- * Some tests here use the {@link RetryingTest} annotation instead of the more common {@link Test}
- * to allow multiple tries for a test to pass. This is because these tests sometimes fail
- * transiently, and we haven't been able to fix that yet.
+ * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test} to allow
+ * multiple tries for a test to pass. This is because these tests sometimes fail transiently, and we
+ * haven't been able to fix that yet.
  * <p>
  * However, in general we should prefer using {@code @Test} instead and only resort to using
  * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
  * to using {@code @Test} if possible.
  * <p>
- * For this class we currently use {@code @RetryingTest} for all tests that can run on k8s.
+ * We order tests such that earlier tests test more basic behavior that is relied upon in later
+ * tests. e.g. We test that we can create a destination before we test whether we can sync data to
+ * it.
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -761,23 +757,6 @@ public class AdvancedAcceptanceTests {
       assertTrue(destinationRecords.contains(sourceStreamRecord),
           String.format("destination does not contain record:\n %s \n destination contains:\n %s\n",
               sourceStreamRecord, destinationRecords));
-    }
-  }
-
-  private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
-    final Database destination = getDestinationDatabase();
-    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
-    final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
-
-    assertEquals(sourceRecords.size(), destinationRecords.size(),
-        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
-
-    for (final JsonNode sourceStreamRecord : sourceRecords) {
-      assertTrue(
-          destinationRecords.stream()
-              .anyMatch(r -> r.get(COLUMN_NAME).asText().equals(sourceStreamRecord.get(COLUMN_NAME).asText())
-                  && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
-          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
   }
 
