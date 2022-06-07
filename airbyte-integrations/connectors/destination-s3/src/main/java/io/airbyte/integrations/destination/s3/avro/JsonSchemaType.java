@@ -9,7 +9,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
 
 /**
  * Mapping of JsonSchema types to Avro types.
