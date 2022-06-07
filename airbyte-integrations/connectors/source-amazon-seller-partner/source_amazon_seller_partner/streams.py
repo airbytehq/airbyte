@@ -30,6 +30,7 @@ from source_amazon_seller_partner.auth import AWSSignature
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
+FINANCES_API_VERSION = "v0"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -738,3 +739,84 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
+
+
+class FinanceStream(AmazonSPStream, ABC):
+    next_page_token_field = "NextToken"
+    page_size_field = "MaxResultsPerPage"
+    page_size = 100
+    default_backoff_time = 60
+    primary_key = None
+
+    @property
+    @abstractmethod
+    def replication_start_date_field(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def replication_end_date_field(self) -> str:
+        pass
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return dict(next_page_token)
+
+        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
+
+        # for finance APIs, end date-time must be no later than two minutes before the request was submitted
+        end_date = pendulum.now("utc").subtract(minutes=2, seconds=10).strftime(DATE_TIME_FORMAT)
+        if self._replication_end_date:
+            end_date = self._replication_end_date
+
+        params[self.replication_end_date_field] = end_date
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+
+
+class ListFinancialEventGroups(FinanceStream):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialeventgroups
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/finances-api-model/financesV0.json
+    """
+
+    name = "ListFinancialEventGroups"
+    replication_start_date_field = "FinancialEventGroupStartedAfter"
+    replication_end_date_field = "FinancialEventGroupStartedBefore"
+
+    def path(self, **kwargs) -> str:
+        return f"finances/{FINANCES_API_VERSION}/financialEventGroups"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield from response.json().get(self.data_field, {}).get("FinancialEventGroupList", [])
+
+
+class ListFinancialEvents(FinanceStream):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialevents
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/finances-api-model/financesV0.json
+    """
+
+    name = "ListFinancialEvents"
+    replication_start_date_field = "PostedAfter"
+    replication_end_date_field = "PostedBefore"
+
+    def path(self, **kwargs) -> str:
+        return f"finances/{FINANCES_API_VERSION}/financialEvents"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield from [response.json().get(self.data_field, {}).get("FinancialEvents", {})]
