@@ -35,6 +35,7 @@ from normalization.transform_catalog.utils import (
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
 # let's use a lower value to be safely away from the limit...
 MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
+AIRBYTE_GENERATED_COLUMN_TAG = "Airbyte generated column"
 
 
 class PartitionScheme(Enum):
@@ -352,15 +353,30 @@ Ref unnested_child_stream {
 
     def extract_dbml_columns(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         result = "\t"
+        primary_keys = self.list_primary_keys(column_names)
+        cursor_field = self.get_cursor_field_property_name(column_names)
         for column_name in column_names:
+            column_settings = []
             # TODO: we don't know how to handle double quotes characters in column names in DBML yet
             # so we replace them by underscore for the moment...
             dbml_column_name = column_name.replace('"', "_")
             result += f'"{dbml_column_name}" {self.extract_dbml_column_type(column_name)}'
-            # TODO: add primary key tags
-            # TODO: add cursor key tags
+            if column_name in primary_keys:
+                column_settings.append(" primary key")
+            if column_name == cursor_field:
+                column_settings.append("note: 'cursor'")
+            if len(column_settings) > 0:
+                result += f" [{','.join(column_settings)}]"
             result += "\n\t"
-        # TODO: add internal airbyte columns
+        result += (
+            f"{self.airbyte_emitted_at} datetime [note: '{AIRBYTE_GENERATED_COLUMN_TAG}']\n\t"
+            + f"{self.airbyte_normalized_at} datetime [note: '{AIRBYTE_GENERATED_COLUMN_TAG}']\n\t"
+            + f"{self.hash_id()} string [primary key, note: 'hash_id {AIRBYTE_GENERATED_COLUMN_TAG}']"
+        )
+        if self.parent:
+            result += f"\n\t{self.parent_hash_id()} string [note: 'parent_hash_id {AIRBYTE_GENERATED_COLUMN_TAG}']"
+        if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
+            result += f"\n\t{self.airbyte_unique_key} string [note: 'id {AIRBYTE_GENERATED_COLUMN_TAG}']"
         return result
 
     def extract_dbml_column_type(self, property_name: str) -> str:
