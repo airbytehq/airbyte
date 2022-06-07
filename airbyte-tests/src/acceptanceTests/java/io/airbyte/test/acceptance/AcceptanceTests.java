@@ -188,7 +188,7 @@ public class AcceptanceTests {
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     if (IS_GKE && !IS_KUBE) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
@@ -197,6 +197,21 @@ public class AcceptanceTests {
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
+    }
+
+    if (IS_GKE) {
+      // seed database.
+      final Database database = getSourceDatabase();
+      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final StringBuilder query = new StringBuilder();
+      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+        if (line != null && !line.isEmpty()) {
+          query.append(line);
+        }
+      }
+      database.query(context -> context.execute(query.toString()));
+    } else {
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
     }
 
     if (IS_KUBE) {
@@ -246,6 +261,7 @@ public class AcceptanceTests {
       destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
       destinationPsql.start();
     }
+
   }
 
   @AfterAll
@@ -261,30 +277,15 @@ public class AcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
+  public void setup() {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
-
-    // seed database.
-    if (IS_GKE) {
-      final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
-      final StringBuilder query = new StringBuilder();
-      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
-        if (line != null && !line.isEmpty()) {
-          query.append(line);
-        }
-      }
-      database.query(context -> context.execute(query.toString()));
-    } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-    }
   }
 
   @AfterEach
-  public void tearDown() throws ApiException, SQLException {
+  public void tearDown() {
     try {
       clearSourceDbData();
       clearDestinationDbData();
@@ -644,7 +645,7 @@ public class AcceptanceTests {
   @RetryingTest(3)
   @Order(19)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-          matches = "true")
+                                matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -675,7 +676,7 @@ public class AcceptanceTests {
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-          matches = "true")
+                                matches = "true")
   public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -719,7 +720,7 @@ public class AcceptanceTests {
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-          matches = "true")
+                                matches = "true")
   public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -795,11 +796,15 @@ public class AcceptanceTests {
     }
   }
 
-  private Database getSourceDatabase() {
+  private static Database getSourceDatabase() {
     if (IS_KUBE && IS_GKE) {
       return GKEPostgresConfig.getSourceDatabase();
     }
     return getDatabase(sourcePsql);
+  }
+
+  private static Database getDatabase(final PostgreSQLContainer db) {
+    return new Database(DatabaseConnectionHelper.createDslContext(db, SQLDialect.POSTGRES));
   }
 
   private Database getDestinationDatabase() {
@@ -807,10 +812,6 @@ public class AcceptanceTests {
       return GKEPostgresConfig.getDestinationDatabase();
     }
     return getDatabase(destinationPsql);
-  }
-
-  private Database getDatabase(final PostgreSQLContainer db) {
-    return new Database(DatabaseConnectionHelper.createDslContext(db, SQLDialect.POSTGRES));
   }
 
   private Set<SchemaTableNamePair> listAllTables(final Database database) throws SQLException {

@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -88,10 +87,9 @@ public class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
   private static AirbyteTestContainer airbyteTestContainer;
+  private static AirbyteApiClient apiClient;
+  private static UUID workspaceId;
 
-  private AirbyteApiClient apiClient;
-
-  private UUID workspaceId;
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
@@ -99,11 +97,12 @@ public class BasicAcceptanceTests {
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException {
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
@@ -124,19 +123,6 @@ public class BasicAcceptanceTests {
       LOGGER.info("Using external deployment of airbyte.");
     }
 
-  }
-
-  @AfterAll
-  public static void end() {
-    sourcePsql.stop();
-
-    if (airbyteTestContainer != null) {
-      airbyteTestContainer.stop();
-    }
-  }
-
-  @BeforeEach
-  public void setup() throws ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -159,23 +145,31 @@ public class BasicAcceptanceTests {
 
     destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
     destinationPsql.start();
+  }
 
+  @AfterAll
+  public static void end() {
+    sourcePsql.stop();
+    destinationPsql.stop();
+
+    if (airbyteTestContainer != null) {
+      airbyteTestContainer.stop();
+    }
+  }
+
+  @BeforeEach
+  public void setup() {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
-
-    // seed database.
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
   }
 
   @AfterEach
-  public void tearDown() throws ApiException, SQLException {
+  public void tearDown() {
     try {
       clearSourceDbData();
       clearDestinationDbData();
-
-      destinationPsql.stop();
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -406,10 +400,8 @@ public class BasicAcceptanceTests {
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
-    // todo: wait for two attempts in the UI
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
     // syncs in progress
-    // sleep(Duration.ofMinutes(4).toMillis());
     List<io.airbyte.api.client.model.generated.JobWithAttemptsRead> jobs = new ArrayList<>();
     while (jobs.size() < 2) {
       var a = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
@@ -511,7 +503,7 @@ public class BasicAcceptanceTests {
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(9)
   public void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
@@ -591,7 +583,6 @@ public class BasicAcceptanceTests {
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
-  @RetryingTest(3)
   @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
@@ -649,7 +640,7 @@ public class BasicAcceptanceTests {
     }
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(22)
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
@@ -1069,21 +1060,18 @@ public class BasicAcceptanceTests {
   }
 
   private JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, AcceptanceTests.Type.SOURCE);
+    return getDbConfig(sourcePsql, false, false);
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, AcceptanceTests.Type.DESTINATION);
+    return getDbConfig(destinationPsql, false, true);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, AcceptanceTests.Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true);
   }
 
-  private JsonNode getDbConfig(final PostgreSQLContainer psql,
-                               final boolean hiddenPassword,
-                               final boolean withSchema,
-                               final AcceptanceTests.Type connectorType) {
+  private JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
     try {
       final Map<Object, Object> dbConfig = localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
@@ -1092,8 +1080,7 @@ public class BasicAcceptanceTests {
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
-      throws UnknownHostException {
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
     if (IS_MAC) {
@@ -1167,7 +1154,7 @@ public class BasicAcceptanceTests {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1175,7 +1162,7 @@ public class BasicAcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1244,19 +1231,6 @@ public class BasicAcceptanceTests {
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     }
     return job;
-  }
-
-  @SuppressWarnings("BusyWait")
-  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
-      throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    int count = 0;
-    while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
-      LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
-      sleep(1000);
-    }
-    return connectionState;
   }
 
   public enum Type {
