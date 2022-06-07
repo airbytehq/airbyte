@@ -402,14 +402,23 @@ public class BasicAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
+    var conn = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
     // todo: wait for two attempts in the UI
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
     // syncs in progress
-    sleep(Duration.ofMinutes(4).toMillis());
+    // sleep(Duration.ofMinutes(4).toMillis());
+    List<io.airbyte.api.client.model.generated.JobWithAttemptsRead> jobs = new ArrayList<>();
+    while (jobs.size() < 2) {
+      var a = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
+          .configId(conn.getConnectionId().toString());
+      var resp = apiClient.getJobsApi().listJobsFor(a);
+      jobs = resp.getJobs();
+      sleep(Duration.ofSeconds(30).toMillis());
+    }
+
     assertSourceAndDestinationDbInSync(false);
   }
 
@@ -522,15 +531,15 @@ public class BasicAcceptanceTests {
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
     catalog.getStreams().forEach(s -> s.getConfig()
-            .syncMode(syncMode)
-            .cursorField(List.of(COLUMN_ID))
-            .destinationSyncMode(destinationSyncMode));
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning testIncrementalSync() sync 1");
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -550,7 +559,7 @@ public class BasicAcceptanceTests {
 
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
-            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
     LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
@@ -561,17 +570,17 @@ public class BasicAcceptanceTests {
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
-            Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+        Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
-            STREAM_NAME));
+        STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
     LOGGER.info("Starting testIncrementalSync() sync 3");
     final JobInfoRead connectionSyncRead3 =
-            apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
