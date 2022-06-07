@@ -616,7 +616,6 @@ def test_stream_comments():
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:04Z"}}
 
     records = read_incremental(stream, stream_state)
-
     assert records == [
         {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:06Z"},
         {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:08Z"},
