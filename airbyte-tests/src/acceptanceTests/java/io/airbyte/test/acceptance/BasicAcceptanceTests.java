@@ -287,7 +287,6 @@ public class BasicAcceptanceTests {
         checkConnectionRead.getMessage());
   }
 
-  @RetryingTest(3)
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -347,8 +346,7 @@ public class BasicAcceptanceTests {
     assertEquals(name, createdConnection.getName());
   }
 
-  @RetryingTest(3)
-  @Order(8)
+  @Order(7)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
 
@@ -383,7 +381,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(10)
+  @Order(8)
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -415,7 +413,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(11)
+  @Order(9)
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
@@ -437,7 +435,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(12)
+  @Order(10)
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
@@ -460,7 +458,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(13)
+  @Order(11)
   public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -504,7 +502,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(9)
+  @Order(12)
   public void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
@@ -580,68 +578,8 @@ public class BasicAcceptanceTests {
 
   }
 
-  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
-  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
-  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
-  @Order(17)
-  @Disabled
-  public void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
-
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 1000)
-            .put("message_interval", 100)
-            .build()));
-
-    // Destination fails after processing 5 messages, so the job should fail after the graceful close
-    // timeout of 1 minute
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "FAILING")
-            .put("num_messages", 5)
-            .build()));
-
-    final String connectionName = "test-connection";
-    final UUID sourceId = source.getSourceId();
-    final UUID destinationId = destination.getDestinationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
-            .getConnectionId();
-
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    // wait to get out of pending.
-    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
-
-    // wait for job for max of 3 minutes, by which time the job attempt should have failed
-    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
-
-    final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
-    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
-    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
-
-    // assert that the job attempt failed, and cancel the job regardless of status to prevent retries
-    try {
-      assertEquals(AttemptStatus.FAILED, attemptInfoRead.getAttempt().getStatus());
-    } finally {
-      apiClient.getJobsApi().cancelJob(jobId);
-    }
-  }
-
   @Test
-  @Order(22)
+  @Order(13)
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -697,7 +635,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(23)
+  @Order(14)
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -735,7 +673,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(24)
+  @Order(15)
   public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -786,7 +724,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(25)
+  @Order(16)
   public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
@@ -817,6 +755,66 @@ public class BasicAcceptanceTests {
     assertTrue(workflowState.isRunning());
     assertTrue(workflowState.isResetConnection());
   }
+
+  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
+  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
+  @Disabled
+  public void testFailureTimeout() throws Exception {
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
+
+    final SourceRead source = createSource(
+            "E2E Test Source -" + UUID.randomUUID(),
+            workspaceId,
+            sourceDefinition.getSourceDefinitionId(),
+            Jsons.jsonNode(ImmutableMap.builder()
+                    .put("type", "INFINITE_FEED")
+                    .put("max_records", 1000)
+                    .put("message_interval", 100)
+                    .build()));
+
+    // Destination fails after processing 5 messages, so the job should fail after the graceful close
+    // timeout of 1 minute
+    final DestinationRead destination = createDestination(
+            "E2E Test Destination -" + UUID.randomUUID(),
+            workspaceId,
+            destinationDefinition.getDestinationDefinitionId(),
+            Jsons.jsonNode(ImmutableMap.builder()
+                    .put("type", "FAILING")
+                    .put("num_messages", 5)
+                    .build()));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = destination.getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final UUID connectionId =
+            createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+                    .getConnectionId();
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of pending.
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+
+    // wait for job for max of 3 minutes, by which time the job attempt should have failed
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+
+    final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
+    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
+    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
+
+    // assert that the job attempt failed, and cancel the job regardless of status to prevent retries
+    try {
+      assertEquals(AttemptStatus.FAILED, attemptInfoRead.getAttempt().getStatus());
+    } finally {
+      apiClient.getJobsApi().cancelJob(jobId);
+    }
+  }
+
 
   private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
