@@ -643,6 +643,8 @@ public class AcceptanceTests {
 
   @RetryingTest(3)
   @Order(19)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+          matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -672,6 +674,8 @@ public class AcceptanceTests {
   @Order(20)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+          matches = "true")
   public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -714,6 +718,8 @@ public class AcceptanceTests {
   @Order(21)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+          matches = "true")
   public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
