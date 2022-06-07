@@ -101,7 +101,6 @@ public class BasicAcceptanceTests {
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
@@ -158,6 +157,8 @@ public class BasicAcceptanceTests {
 
   @BeforeEach
   public void setup() {
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
@@ -1150,7 +1151,7 @@ public class BasicAcceptanceTests {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 

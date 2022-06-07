@@ -197,21 +197,6 @@ public class AdvancedAcceptanceTests {
       sourcePsql.start();
     }
 
-    if (IS_GKE) {
-      // seed database.
-      final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
-      final StringBuilder query = new StringBuilder();
-      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
-        if (line != null && !line.isEmpty()) {
-          query.append(line);
-        }
-      }
-      database.query(context -> context.execute(query.toString()));
-    } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-    }
-
     if (IS_KUBE) {
       kubernetesClient = new DefaultKubernetesClient();
     }
@@ -275,11 +260,26 @@ public class AdvancedAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws URISyntaxException, IOException, SQLException {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
+
+    if (IS_GKE) {
+      // seed database.
+      final Database database = getSourceDatabase();
+      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final StringBuilder query = new StringBuilder();
+      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+        if (line != null && !line.isEmpty()) {
+          query.append(line);
+        }
+      }
+      database.query(context -> context.execute(query.toString()));
+    } else {
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+    }
   }
 
   @AfterEach
@@ -1018,7 +1018,7 @@ public class AdvancedAcceptanceTests {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("TRUNCATE TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
