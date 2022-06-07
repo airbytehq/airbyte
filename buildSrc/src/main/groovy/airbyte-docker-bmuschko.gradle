@@ -1,11 +1,37 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+class AirbyteDockerBmuschkoConfiguration {
+    Map<String, String> dockerfileToImageName
+}
+
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
-        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile')
-        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test')
+        def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoConfiguration)
 
-        project.build.dependsOn buildDockerImageTask
+        // These configurations aren't available until after Gradle fully evaluates the project, so we need to wait until that happens.
+        project.afterEvaluate {
+            def dockerfileToImageName = extension.dockerfileToImageName
+            // For convenience: if the image name is not specified for 'Dockerfile', we default to using the project name (e.g. 'destination-s3')
+            if (!dockerfileToImageName) {
+                dockerfileToImageName = ['Dockerfile': project.name]
+            } else if (!dockerfileToImageName.containsKey('Dockerfile')) {
+                dockerfileToImageName['Dockerfile'] = project.name
+            }
+
+            dockerfileToImageName.each(entry -> {
+                def dockerfileName = entry.getKey()
+                def imageName = entry.getValue()
+
+                // For the Dockerfile task, we want to use the name buildDockerImage rather than buildDockerImage-Dockerfile
+                // (again, this is just for convenience)
+                def taskName = 'buildDockerImage'
+                if (!'Dockerfile'.equals(dockerfileName)) {
+                    taskName += "-${dockerfileName}"
+                }
+
+                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName)
+            })
+        }
     }
 
     static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
@@ -37,6 +63,9 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
                 dockerFile = project.file("${dockerfileName}")
             }
+
+            // This probably isn't actually necessary, but keeping it for compatibility with the old airbyte-docker plugin
+            project.build.dependsOn buildDockerImageTask
 
             return buildDockerImageTask
         } else {
