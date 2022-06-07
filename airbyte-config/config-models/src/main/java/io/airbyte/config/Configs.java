@@ -171,31 +171,30 @@ public interface Configs {
    */
   boolean runDatabaseMigrationOnStartup();
 
-  // Temporal Cloud
+  // Temporal Cloud - Internal-Use Only
 
   /**
-   * Define if Temporal Cloud should be used
+   * Define if Temporal Cloud should be used. Internal-use only.
    */
   boolean temporalCloudEnabled();
 
   /**
-   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use only.
    */
   String getTemporalCloudHost();
 
   /**
-   * Temporal Cloud namespace
-   *
+   * Temporal Cloud namespace. Internal-use only.
    */
   String getTemporalCloudNamespace();
 
   /**
-   * Temporal Cloud client cert for SSL
+   * Temporal Cloud client cert for SSL. Internal-use only.
    */
   String getTemporalCloudClientCert();
 
   /**
-   * Temporal Cloud client key for SSL
+   * Temporal Cloud client key for SSL. Internal-use only.
    */
   String getTemporalCloudClientKey();
 
