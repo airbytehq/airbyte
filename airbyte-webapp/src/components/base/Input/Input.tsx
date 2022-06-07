@@ -102,7 +102,7 @@ const Input: React.FC<InputProps> = (props) => {
   }, [inputRef, defaultFocus]);
 
   return (
-    <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
+    <InputContainer className={focused ? "input-container--focused" : undefined}>
       <InputComponent
         {...props}
         ref={inputRef}
