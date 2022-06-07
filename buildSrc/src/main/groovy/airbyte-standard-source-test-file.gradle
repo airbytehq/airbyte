@@ -73,12 +73,6 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
         if (project.hasProperty('airbyteDockerTest')){
             project.standardSourceTestFile.dependsOn(project.airbyteDockerTest)
         }
-        if (project.hasProperty('buildDockerImage')) {
-            project.standardSourceTestFile.dependsOn(project.buildDockerImage)
-        }
-        if (project.hasProperty('buildDockerImageTest')){
-            project.standardSourceTestFile.dependsOn(project.buildDockerImageTest)
-        }
 
         // make sure we create the integrationTest task once in case a java integration test was already initialized
         if (!project.tasks.findByName('integrationTest')) {
@@ -87,5 +81,13 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
 
         project.integrationTest.dependsOn(project.standardSourceTestFile)
     }
+
+    // These tasks are added in an afterEvaluate block, so they don't actually exist when this plugin is applied
+    // Instead, we add a listener for when those tasks are added.
+    project.getTasks().whenTaskAdded(task -> {
+        if (task.getName().startsWith('buildDockerImage')) {
+            project.standardSourceTestFile.dependsOn(task)
+        }
+    })
 }
 
