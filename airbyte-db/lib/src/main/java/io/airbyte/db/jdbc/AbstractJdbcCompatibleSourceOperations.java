@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
 
+import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
+import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
+
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
@@ -256,13 +259,13 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimeWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     OffsetTime timetz = getDateTimeObject(resultSet, index, OffsetTime.class);
-    node.put(columnName, timetz.toString());
+    node.put(columnName, timetz.format(TIMETZ_FORMATTER));
   }
 
   protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     OffsetDateTime timestamptz = getDateTimeObject(resultSet, index, OffsetDateTime.class);
     LocalDate localDate = timestamptz.toLocalDate();
-    node.put(columnName, resolveEra(localDate, timestamptz.toString()));
+    node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
   }
 
   protected String resolveEra(LocalDate date, String value) {

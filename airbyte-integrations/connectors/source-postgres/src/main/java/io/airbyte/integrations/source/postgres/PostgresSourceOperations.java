@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
+import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -130,14 +132,14 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @Override
   protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
-    node.put(columnName, time.toString());
+    node.put(columnName, time.format(TIME_FORMATTER));
   }
 
   @Override
   protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
     LocalDate date = timestamp.toLocalDate();
-    node.put(columnName, resolveEra(date, timestamp.toString()));
+    node.put(columnName, resolveEra(date, timestamp.format(TIMESTAMP_FORMATTER)));
   }
 
   @Override
