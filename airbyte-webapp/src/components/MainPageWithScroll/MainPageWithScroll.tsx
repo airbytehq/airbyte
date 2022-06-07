@@ -22,12 +22,12 @@ const Page = styled.div`
  * @param headTitle the title shown in the browser toolbar
  * @param pageTitle the title shown on the page
  */
-type IProps = {
+interface IProps {
   error?: React.ReactNode;
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
-};
+}
 
 const MainPageWithScroll: React.FC<IProps> = ({ error, headTitle, pageTitle, children }) => {
   return (

@@ -10,9 +10,9 @@ import useRouter from "hooks/useRouter";
 
 import { useSourceDefinitionList } from "../../../../../services/connector/SourceDefinitionService";
 
-type SourcesTableProps = {
+interface SourcesTableProps {
   sources: SourceRead[];
-};
+}
 
 const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   const { push } = useRouter();
