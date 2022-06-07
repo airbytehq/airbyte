@@ -2,31 +2,40 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
-        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile')
-        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test')
 
-        project.assemble.dependsOn buildDockerImageTask
-    }
-
-    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
-        if (project.file(dockerfileName).exists()) {
-            def copyDockerfileTask = project.task("copyDockerBmuschko", type: Sync) {
-                from "${project.projectDir}/${dockerfileName}"
-                into "build/docker/"
+        def copyDockerfileTask = project.task("copyDockerBmuschko", type: Sync) {
+            from(project.projectDir) {
+                include 'Dockerfile*'
             }
+            into "build/docker/"
+        }
 
-            def copyGeneratedTarTask = project.task("copyGeneratedTar", type: Copy) {
+        // If this is a Java project, then we need to copy the compiled files into the Docker input directory
+        def copyGeneratedTarTask = null
+        if (project.hasProperty('distTar')) {
+            copyGeneratedTarTask = project.task("copyGeneratedTar", type: Copy) {
                 dependsOn copyDockerfileTask
                 dependsOn project.distTar
 
                 from('build/distributions') {
-                    include "${imageName}-*.tar"
+                    include "${project.name}-*.tar"
                 }
                 into 'build/docker/bin'
             }
+        }
 
+        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile', copyGeneratedTarTask)
+        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test', copyGeneratedTarTask)
+
+        project.assemble.dependsOn buildDockerImageTask
+    }
+
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName, Task copyGeneratedTarTask) {
+        if (project.file(dockerfileName).exists()) {
             def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
-                dependsOn copyGeneratedTarTask
+                if (copyGeneratedTarTask) {
+                    dependsOn copyGeneratedTarTask
+                }
 
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
