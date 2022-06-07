@@ -27,7 +27,6 @@ class ConditionalPaginator:
         should_stop = self._stop_condition_template.eval(
             self._config, decoded_response=decoded_response, headers=headers, last_records=last_records, **self._state._context
         )
-        print(f"should_stop: {should_stop}")
 
         if should_stop:
             return None
