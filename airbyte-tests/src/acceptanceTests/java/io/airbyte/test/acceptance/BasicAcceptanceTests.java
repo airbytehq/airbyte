@@ -159,6 +159,9 @@ public class BasicAcceptanceTests {
   public void setup() {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
 
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
+
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
@@ -169,7 +172,6 @@ public class BasicAcceptanceTests {
   public void tearDown() {
     try {
       clearSourceDbData();
-      clearDestinationDbData();
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -1152,14 +1154,6 @@ public class BasicAcceptanceTests {
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
-    }
-  }
-
-  private void clearDestinationDbData() throws SQLException {
-    final Database database = getDestinationDatabase();
-    final Set<SchemaTableNamePair> pairs = listAllTables(database);
-    for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 
