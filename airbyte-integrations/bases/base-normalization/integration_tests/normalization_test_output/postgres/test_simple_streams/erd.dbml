@@ -1,0 +1,94 @@
+
+Table test_normalization.exchange_rate {
+	"id" integer
+	"currency" string
+	"date" date
+	"timestamp_col" datetime
+	"HKD@spéçiäl & characters" number
+	"HKD_special___characters" string
+	"NZD" number
+	"USD" number
+	"column`_'with__quotes" string
+	
+}
+Table test_normalization.dedup_exchange_rate {
+	"id" integer
+	"currency" string
+	"date" date
+	"timestamp_col" datetime
+	"HKD@spéçiäl & characters" number
+	"HKD_special___characters" string
+	"NZD" number
+	"USD" number
+	
+}
+Table test_normalization.renamed_dedup_cdc_excluded {
+	"id" integer
+	"_ab_cdc_updated_at" number
+	
+}
+Table test_normalization.dedup_cdc_excluded {
+	"id" integer
+	"name" string
+	"_ab_cdc_lsn" number
+	"_ab_cdc_updated_at" number
+	"_ab_cdc_deleted_at" number
+	
+}
+Table test_normalization.pos_dedup_cdcx {
+	"id" integer
+	"name" string
+	"_ab_cdc_lsn" number
+	"_ab_cdc_updated_at" number
+	"_ab_cdc_deleted_at" number
+	"_ab_cdc_log_pos" number
+	
+}
+Table test_normalization.1_prefix_startwith_number {
+	"id" integer
+	"date" date
+	"text" string
+	
+}
+Table test_normalization.multiple_column_names_conflicts {
+	"id" integer
+	"User Id" string
+	"user_id" number
+	"User id" number
+	"user id" number
+	"User@Id" string
+	"UserId" number
+	
+}
+
+Table test_normalization.exchange_rate {
+	"id" number
+	"currency" string
+	"new_column" number
+	"date" date
+	"timestamp_col" datetime
+	"HKD@spéçiäl & characters" number
+	"NZD" number
+	"USD" number
+	"column`_'with__quotes" string
+	
+}
+Table test_normalization.dedup_exchange_rate {
+	"id" number
+	"currency" string
+	"new_column" number
+	"date" date
+	"timestamp_col" datetime
+	"HKD@spéçiäl & characters" number
+	"NZD" number
+	"USD" integer
+	
+}
+Table test_normalization.renamed_dedup_cdc_excluded {
+	"id" integer
+	"name" string
+	"_ab_cdc_lsn" number
+	"_ab_cdc_updated_at" number
+	"_ab_cdc_deleted_at" number
+	
+}

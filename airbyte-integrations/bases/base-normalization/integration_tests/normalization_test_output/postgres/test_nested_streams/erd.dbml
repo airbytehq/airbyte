@@ -1,0 +1,101 @@
+
+Table test_normalization.nested_stream_with_c__lting_into_long_names {
+	"id" string
+	"date" string
+	"partition" object
+	
+}
+Table test_normalization.non_nested_stream_wi__lting_into_long_names {
+	"id" string
+	"date" string
+	
+}
+Table test_normalization.some_stream_that_was_empty {
+	"id" string
+	"date" string
+	
+}
+Table test_normalization_namespace.simple_stream_with_n__lting_into_long_names {
+	"id" string
+	"date" string
+	
+}
+Table test_normalization.conflict_stream_name {
+	"id" string
+	"conflict_stream_name" object
+	
+}
+Table test_normalization.conflict_stream_scalar {
+	"id" string
+	"conflict_stream_scalar" integer
+	
+}
+Table test_normalization.conflict_stream_array {
+	"id" string
+	"conflict_stream_array" array
+	
+}
+Table test_normalization.unnest_alias {
+	"id" integer
+	"children" array
+	
+}
+Table test_normalization.nested_stream_with_c___long_names_partition {
+	"double_array_data" array
+	"DATA" array
+	
+}
+Ref unnested_child_stream {
+   test_normalization.nested_stream_with_c__lting_into_long_names._airbyte_nested_stre__nto_long_names_hashid < test_normalization.nested_stream_with_c___long_names_partition._airbyte_nested_stre__nto_long_names_hashid
+}
+Table test_normalization.conflict_stream_name_conflict_stream_name {
+	"conflict_stream_name" object
+	
+}
+Ref unnested_child_stream {
+   test_normalization.conflict_stream_name._airbyte_conflict_stream_name_hashid < test_normalization.conflict_stream_name_conflict_stream_name._airbyte_conflict_stream_name_hashid
+}
+Table test_normalization.unnest_alias_children {
+	"ab_id" integer
+	"owner" object
+	
+}
+Ref unnested_child_stream {
+   test_normalization.unnest_alias._airbyte_unnest_alias_hashid < test_normalization.unnest_alias_children._airbyte_unnest_alias_hashid
+}
+Table test_normalization.nested_stream_with_c__ion_double_array_data {
+	"id" string
+	
+}
+Ref unnested_child_stream {
+   test_normalization.nested_stream_with_c___long_names_partition._airbyte_partition_hashid < test_normalization.nested_stream_with_c__ion_double_array_data._airbyte_partition_hashid
+}
+Table test_normalization.nested_stream_with_c___names_partition_data {
+	"currency" string
+	
+}
+Ref unnested_child_stream {
+   test_normalization.nested_stream_with_c___long_names_partition._airbyte_partition_hashid < test_normalization.nested_stream_with_c___names_partition_data._airbyte_partition_hashid
+}
+Table test_normalization.conflict_stream_name___conflict_stream_name {
+	"groups" string
+	
+}
+Ref unnested_child_stream {
+   test_normalization.conflict_stream_name_conflict_stream_name._airbyte_conflict_stream_name_2_hashid < test_normalization.conflict_stream_name___conflict_stream_name._airbyte_conflict_stream_name_2_hashid
+}
+Table test_normalization.unnest_alias_children_owner {
+	"owner_id" integer
+	"column`_'with__quotes" array
+	
+}
+Ref unnested_child_stream {
+   test_normalization.unnest_alias_children._airbyte_children_hashid < test_normalization.unnest_alias_children_owner._airbyte_children_hashid
+}
+Table test_normalization.unnest_alias_childre__column___with__quotes {
+	"currency" string
+	
+}
+Ref unnested_child_stream {
+   test_normalization.unnest_alias_children_owner._airbyte_owner_hashid < test_normalization.unnest_alias_childre__column___with__quotes._airbyte_owner_hashid
+}

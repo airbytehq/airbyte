@@ -28,15 +28,17 @@ class CatalogProcessor:
     This is relying on a StreamProcessor to handle the conversion of a stream to a table one at a time.
     """
 
-    def __init__(self, output_directory: str, destination_type: DestinationType):
+    def __init__(self, profile_config_dir: str, output_directory: str, destination_type: DestinationType):
         """
         @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
         @param destination_type is the destination type of warehouse
         """
+        self.profile_config_dir: str = profile_config_dir
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.models_to_source: Dict[str, str] = {}
+        self.dbml: list = []
 
     def process(self, catalog_file: str, json_column_name: str, default_schema: str):
         """
@@ -67,7 +69,7 @@ class CatalogProcessor:
                 f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
                 f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
             )
-        # TODO: open file to write DBML file
+
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = self.destination_type == DestinationType.MYSQL
@@ -81,12 +83,24 @@ class CatalogProcessor:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
                 output_sql_file(os.path.join(self.output_directory, file), stream_processor.sql_outputs[file])
-            # TODO: write stream to DBML
-            print("************ start-DBML ***********")
-            print(stream_processor.stream_dbml)
-            print("************ end-DBML ***********")
+
+            self.dbml += stream_processor.stream_dbml
+
         self.write_yaml_sources_file(schema_to_source_tables)
         self.process_substreams(substreams, tables_registry)
+        self.write_erd_file(self.dbml)
+
+    def write_erd_file(self, stream_dbml):
+
+        file = os.path.join(self.profile_config_dir, "erd.dbml")
+        output_dir = os.path.dirname(file)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        with open(file, "w") as f:
+            for line in stream_dbml:
+                f.write(line)
+            f.write("\n")
 
     @staticmethod
     def build_stream_processor(
@@ -177,10 +191,7 @@ class CatalogProcessor:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
                     output_sql_file(os.path.join(self.output_directory, file), substream.sql_outputs[file])
-                # TODO: write substream to DBML
-                print("************ start-nested-DBML ***********")
-                print(substream.stream_dbml)
-                print("************ end-nested-DBML ***********")
+                self.dbml += substream.stream_dbml
 
     def write_yaml_sources_file(self, schema_to_source_tables: Dict[str, Set[str]]):
         """
