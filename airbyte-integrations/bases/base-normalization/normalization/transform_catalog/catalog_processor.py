@@ -28,7 +28,7 @@ class CatalogProcessor:
     This is relying on a StreamProcessor to handle the conversion of a stream to a table one at a time.
     """
 
-    def __init__(self, profile_config_dir: str, output_directory: str, destination_type: DestinationType):
+    def __init__(self, output_directory: str, destination_type: DestinationType):
         """
         @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
         @param destination_type is the destination type of warehouse
