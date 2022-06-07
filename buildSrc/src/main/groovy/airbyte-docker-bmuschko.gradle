@@ -9,23 +9,34 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoPluginConfiguration)
 
-        project.task("copyGeneratedTar", type: Copy) {
-            dependsOn project.copyDocker
-            dependsOn project.distTar
-
-            // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
-            project.afterEvaluate {
-                from('build/distributions') {
-                    include "${extension.imageName}-*.tar"
-                }
-            }
-            into 'build/docker/bin'
-        }
-
         // The extension.imageName value isn't available until after configurations are evaluated. See https://stackoverflow.com/a/23962365
         project.afterEvaluate {
-            def buildDockerImageTask = project.task(extension.taskName, type: DockerBuildImage) {
-                dependsOn project.copyGeneratedTar
+            def buildDockerImageTask = createTask(project, extension.taskName, extension.imageName, "Dockerfile")
+            createTask(project, "${extension.taskName}Test", extension.imageName, "Dockerfile.test")
+
+            project.assemble.dependsOn buildDockerImageTask
+        }
+    }
+
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
+        if (project.file(dockerfileName).exists()) {
+            def copyDockerfileTask = project.task("copyDockerBmuschko", type: Sync) {
+                from "${project.projectDir}/${dockerfileName}"
+                into "build/docker/"
+            }
+
+            def copyGeneratedTarTask = project.task("copyGeneratedTar", type: Copy) {
+                dependsOn copyDockerfileTask
+                dependsOn project.distTar
+
+                from('build/distributions') {
+                    include "${imageName}-*.tar"
+                }
+                into 'build/docker/bin'
+            }
+
+            def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
+                dependsOn copyGeneratedTarTask
 
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
@@ -40,16 +51,22 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
                 inputDir = project.file("${project.projectDir}/build/docker")
                 platform = buildPlatform
-                images.add("airbyte/${extension.imageName}:${project.rootProject.ext.image_tag}")
+                images.add("airbyte/${imageName}:${project.rootProject.ext.image_tag}")
                 buildArgs.put('JDK_VERSION', jdkVersion)
                 buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
                 buildArgs.put('ALPINE_IMAGE', alpineImage)
                 buildArgs.put('NGINX_IMAGE', nginxImage)
                 buildArgs.put('JDK_IMAGE', openjdkImage)
                 buildArgs.put('VERSION', "${project.rootProject.ext.version}")
+
+                dockerFile = project.file("build/docker/${dockerfileName}")
             }
 
-            project.assemble.dependsOn buildDockerImageTask
+            return buildDockerImageTask
+        } else {
+            project.task(taskName) {
+                logger.info "Skipping ${taskName} because ${dockerfileName} does not exist."
+            }
         }
     }
 }
