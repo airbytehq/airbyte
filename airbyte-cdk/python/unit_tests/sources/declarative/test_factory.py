@@ -53,7 +53,7 @@ def test_full_config():
 decoder:
   class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 extractor:
-  class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
   decoder: "*ref(decoder)"
 metadata_paginator:
   class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
