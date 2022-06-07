@@ -45,7 +45,7 @@ class GithubStream(HttpStream, ABC):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for repository in self.repositories:
             yield {"repository": repository}
 
@@ -259,7 +259,7 @@ class SemiIncrementalMixin:
             elif self.is_sorted_descending and cursor_value < start_point:
                 break
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         self._starting_point_cache.clear()
         yield from super().stream_slices(**kwargs)
 
@@ -333,7 +333,7 @@ class Organizations(GithubStream):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:
             yield {"organization": organization}
 
