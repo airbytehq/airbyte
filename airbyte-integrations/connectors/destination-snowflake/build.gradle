@@ -51,5 +51,5 @@ dependencies {
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').'buildDockerImage-redshift.Dockerfile'.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').'buildDockerImage-snowflake.Dockerfile'.outputs)
 }
