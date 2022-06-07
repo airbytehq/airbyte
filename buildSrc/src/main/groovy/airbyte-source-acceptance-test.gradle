@@ -36,19 +36,21 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
         if (project.hasProperty('airbyteDockerTest')){
             project.sourceAcceptanceTest.dependsOn(project.airbyteDockerTest)
         }
-        if (project.hasProperty('buildDockerImage')) {
-            project.sourceAcceptanceTest.dependsOn(project.buildDockerImage)
-        }
-        if (project.hasProperty('buildDockerImageTest')){
-            project.sourceAcceptanceTest.dependsOn(project.buildDockerImageTest)
-        }
-
         // make sure we create the integrationTest task once
         if (!project.tasks.findByName('integrationTest')) {
             project.task('integrationTest')
         }
 
         project.integrationTest.dependsOn(project.sourceAcceptanceTest)
+
+        // These tasks are added in an afterEvaluate block, so they don't actually exist when this plugin is applied
+        // Instead, we add a listener for when those tasks are added.
+        project.getTasks().whenTaskAdded(task -> {
+            logger.info('edgao adding task {}', task.getName())
+            if (task.getName().startsWith('buildDockerImage')) {
+                project.sourceAcceptanceTest.dependsOn(task)
+            }
+        })
     }
 }
 
