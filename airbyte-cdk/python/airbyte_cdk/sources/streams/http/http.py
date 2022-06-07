@@ -111,6 +111,7 @@ class HttpStream(Stream, ABC):
             record_mode=record_modes[cassette_mode],
             serializer="no_secrets",
             **vcr_helper.get_filters(self.authenticator.get_auth_header().keys()),
+            decode_compressed_response=True,
         )
 
     @property
