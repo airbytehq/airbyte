@@ -502,6 +502,83 @@ public class BasicAcceptanceTests {
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
+  @RetryingTest(3)
+  @Order(9)
+  public void testIncrementalSync() throws Exception {
+    LOGGER.info("Starting testIncrementalSync()");
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+
+    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
+    // instead of assertFalse to avoid NPE from unboxed.
+    assertNull(stream.getSourceDefinedCursor());
+    assertTrue(stream.getDefaultCursorField().isEmpty());
+    assertTrue(stream.getSourceDefinedPrimaryKey().isEmpty());
+
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    catalog.getStreams().forEach(s -> s.getConfig()
+            .syncMode(syncMode)
+            .cursorField(List.of(COLUMN_ID))
+            .destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+            createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Beginning testIncrementalSync() sync 1");
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    assertSourceAndDestinationDbInSync(false);
+
+    // add new records and run again.
+    final Database source = getSourceDatabase();
+    // get contents of source before mutating records.
+    final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    // add a new record
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // full refreshing, this record will appear in the output and cause the test to fail. if we are,
+    // correctly, doing incremental, we will not find this value in the destination.
+    source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+
+    LOGGER.info("Starting testIncrementalSync() sync 2");
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
+
+    // reset back to no data.
+
+    LOGGER.info("Starting testIncrementalSync() reset");
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
+            Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+
+    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+            STREAM_NAME));
+
+    // sync one more time. verify it is the equivalent of a full refresh.
+    LOGGER.info("Starting testIncrementalSync() sync 3");
+    final JobInfoRead connectionSyncRead3 =
+            apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
+    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    assertSourceAndDestinationDbInSync(false);
+
+  }
+
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
