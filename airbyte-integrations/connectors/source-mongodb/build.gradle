@@ -1,7 +1,7 @@
 plugins {
     // Makes building the docker image a dependency of Gradle's "build" command. This way you could run your entire build inside a docker image
     // via ./gradlew :airbyte-integrations:connectors:source-mongodb:build
-    id 'airbyte-docker'
+    id 'airbyte-docker-bmuschko'
     id 'airbyte-standard-source-test-file'
 }
 
@@ -37,3 +37,6 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
 }
 
+airbyteDockerBmuschko {
+    dockerfileToImageName = ['Dockerfile.test': 'mongodb-integration-test-seed']
+}
