@@ -51,6 +51,17 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+/**
+ * This class tests for api functionality and basic sync functionality.
+ * <p>
+ * Due to the number of tests here, this set runs only on the docker deployment for speed. The tests
+ * here are disabled for Kubernetes as operations take much longer due to Kubernetes pod spin up
+ * times and there is little value in re-running these tests since this part of the system does not
+ * vary between deployments.
+ * <p>
+ * We order tests such that earlier tests test more basic behavior relied upon in later tests. e.g.
+ * We test that we can create a destination before we test whether we can sync data to it.
+ */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
 public class BasicAcceptanceTests {
@@ -80,8 +91,8 @@ public class BasicAcceptanceTests {
   private static final String SOURCE_PASSWORD = "hunter2";
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
-   * test containers are used.
+   * When the acceptance tests are run against a local instance of docker-compose these test
+   * containers are used.
    */
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
