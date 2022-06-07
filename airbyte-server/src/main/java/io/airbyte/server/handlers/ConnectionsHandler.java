@@ -4,10 +4,14 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.ConnectionCreate;
@@ -63,30 +67,34 @@ public class ConnectionsHandler {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
   private final EventRunner eventRunner;
+  private final Publisher publisher;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final EventRunner eventRunner) {
+                     final EventRunner eventRunner,
+                     final Publisher publisher) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
     this.eventRunner = eventRunner;
+    this.publisher = publisher;
   }
 
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final EventRunner eventRunner) {
+                            final EventRunner eventRunner,
+                            final Publisher publisher) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        eventRunner);
-
+        eventRunner,
+        publisher);
   }
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
@@ -153,7 +161,25 @@ public class ConnectionsHandler {
       throw e;
     }
 
+    putToSub(connectionCreate.toString());
+
     return buildConnectionRead(connectionId);
+  }
+
+  // nice to have logger output here, as opposed to publishing in ConfigurationApi.java
+  private void putToSub(final String message) {
+    try {
+      final ByteString data = ByteString.copyFromUtf8(message);
+      final PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
+
+      // Once published, returns a server-assigned message id (unique within the topic)
+      final ApiFuture<String> messageIdFuture = publisher.publish(pubsubMessage);
+      final String messageId = messageIdFuture.get();
+      LOGGER.info("Published message ID: " + messageId);
+      publisher.publishAllOutstanding();
+    } catch (final Exception e) {
+      LOGGER.error("PubSub failed", e);
+    }
   }
 
   private void trackNewConnection(final StandardSync standardSync) {

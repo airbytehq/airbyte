@@ -4,6 +4,10 @@
 
 package io.airbyte.server.apis;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.pubsub.v1.Publisher;
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckOperationRead;
@@ -159,6 +163,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
+  private final Publisher publisher;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -177,10 +182,12 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final HttpClient httpClient,
                           final EventRunner eventRunner,
                           final Flyway configsFlyway,
-                          final Flyway jobsFlyway) {
+                          final Flyway jobsFlyway,
+                          final Publisher publisher) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
+    this.publisher = publisher;
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
@@ -200,7 +207,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        publisher);
     sourceHandler = new SourceHandler(
         configRepository,
         secretsRepositoryReader,
@@ -650,6 +658,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    pubToSub("List Connections for Workspace: " + workspaceIdRequestBody.getWorkspaceId());
     return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
@@ -670,6 +679,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+    pubToSub("Delete Connection: " + connectionIdRequestBody.getConnectionId());
     execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
@@ -867,6 +877,20 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
     T call() throws ConfigNotFoundException, IOException, JsonValidationException;
 
+  }
+
+  private void pubToSub(final String message) {
+    try {
+      final ByteString data = ByteString.copyFromUtf8(message);
+      final PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
+
+      // Once published, returns a server-assigned message id (unique within the topic)
+      final ApiFuture<String> messageIdFuture = publisher.publish(pubsubMessage);
+      final String messageId = messageIdFuture.get();
+      // LOGGER.info("Published message ID: " + messageId);
+    } catch (final Exception e) {
+
+    }
   }
 
 }

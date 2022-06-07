@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.cloud.pubsub.v1.Publisher;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -53,7 +54,8 @@ public class ConfigurationApiTest {
         mock(HttpClient.class),
         mock(EventRunner.class),
         mock(Flyway.class),
-        mock(Flyway.class));
+        mock(Flyway.class),
+        mock(Publisher.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 

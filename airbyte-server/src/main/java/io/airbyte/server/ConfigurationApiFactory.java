@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.cloud.pubsub.v1.Publisher;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -46,6 +47,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static EventRunner eventRunner;
   private static Flyway configsFlyway;
   private static Flyway jobsFlyway;
+  private static Publisher publisher;
 
   public static void setValues(
                                final ConfigRepository configRepository,
@@ -66,7 +68,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final HttpClient httpClient,
                                final EventRunner eventRunner,
                                final Flyway configsFlyway,
-                               final Flyway jobsFlyway) {
+                               final Flyway jobsFlyway,
+                               final Publisher publisher) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -86,6 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.configsFlyway = configsFlyway;
     ConfigurationApiFactory.jobsFlyway = jobsFlyway;
+    ConfigurationApiFactory.publisher = publisher;
   }
 
   @Override
@@ -110,7 +114,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.httpClient,
         ConfigurationApiFactory.eventRunner,
         ConfigurationApiFactory.configsFlyway,
-        ConfigurationApiFactory.jobsFlyway);
+        ConfigurationApiFactory.jobsFlyway,
+        ConfigurationApiFactory.publisher);
   }
 
   @Override

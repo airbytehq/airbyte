@@ -4,7 +4,12 @@
 
 package io.airbyte.server;
 
+import com.amazonaws.util.StringInputStream;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.pubsub.v1.TopicName;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -209,6 +214,26 @@ public class ServerApp implements ServerRunnable {
     // "major" version bump as it will no longer be needed.
     migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
 
+    // hackdayz
+    Publisher publisher = null;
+    try {
+      final GoogleCredentials credentials = GoogleCredentials.fromStream(
+          // key can be retrieved form
+          // https://console.cloud.google.com/iam-admin/serviceaccounts/details/118180997045040256619/keys?project=dataline-integration-testing
+          new StringInputStream("todo: fill in your service account json key here"));
+
+      final TopicName topicName = TopicName.of("dataline-integration-testing", "hack-day-test");
+
+      // Set the channel and credentials provider when creating a `Publisher`.
+      // Similarly for Subscriber
+      publisher =
+          Publisher.newBuilder(topicName)
+              .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+              .build();
+    } catch (final Exception e) {
+      LOGGER.error("PubSub publisher initializaion failed", e);
+    }
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -228,7 +253,8 @@ public class ServerApp implements ServerRunnable {
         httpClient,
         eventRunner,
         configsFlyway,
-        jobsFlyway);
+        jobsFlyway,
+        publisher);
   }
 
   @VisibleForTesting
