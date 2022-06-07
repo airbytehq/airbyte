@@ -23,7 +23,6 @@ class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
 
     primary_key = "id"
-    use_cache = True
 
     # Detect streams with high API load
     large_stream = False
@@ -373,6 +372,8 @@ class Teams(Organizations):
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
     """
 
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/teams"
 
@@ -428,6 +429,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
+    use_cache = True
     large_stream = True
     first_read_override_key = "first_read_override"
 
@@ -474,6 +476,8 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
+
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/comments"
@@ -526,6 +530,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
+    use_cache = True
     stream_base_params = {
         "state": "all",
     }
@@ -558,6 +563,7 @@ class Comments(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
+    use_cache = True
     large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -642,6 +648,7 @@ class Issues(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
+    use_cache = True
     large_stream = True
 
     stream_base_params = {
@@ -656,6 +663,7 @@ class ReviewComments(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
+    use_cache = True
     large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -666,7 +674,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
-    use_cache = False
 
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -791,7 +798,6 @@ class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
     copy_parent_key = "comment_id"
-    use_cache = False
     cursor_field = "created_at"
 
     def __init__(self, start_date: str = "", **kwargs):
@@ -903,6 +909,7 @@ class ProjectColumns(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
     """
 
+    use_cache = True
     cursor_field = "updated_at"
 
     def __init__(self, parent: HttpStream, start_date: str, **kwargs):
@@ -1078,6 +1085,7 @@ class TeamMembers(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
     """
 
+    use_cache = True
     primary_key = ["id", "team_slug"]
 
     def __init__(self, parent: Teams, **kwargs):
