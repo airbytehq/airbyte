@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
+import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
@@ -68,14 +69,14 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
     const initialSyncSchema = connection?.syncCatalog;
+    const connectionAsUpdate = connection ? toWebBackendConnectionUpdate(connection) : undefined;
 
     await updateConnection({
+      ...connectionAsUpdate,
       ...values,
       connectionId,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
-      sourceCatalogId: connection?.catalogId,
-      name: connection?.name,
     });
 
     setSaved(true);
