@@ -73,7 +73,8 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
                 inputDir = project.file("${project.projectDir}")
                 platform = buildPlatform
-                images.add("airbyte/${imageName}:${project.rootProject.ext.image_tag}")
+                // This task always tags as dev. `/publish` handles extracting the version label from the dockerfile and tagging the image appropriately.
+                images.add("airbyte/${imageName}:dev")
                 buildArgs.put('JDK_VERSION', jdkVersion)
                 buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
                 buildArgs.put('ALPINE_IMAGE', alpineImage)
