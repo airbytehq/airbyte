@@ -46,11 +46,10 @@ describe("<Input />", () => {
 
   test("should trigger onChange once", async () => {
     const onChange = jest.fn();
-    const { getByTestId, debug } = await render(<Input onChange={onChange} />);
+    const { getByTestId } = await render(<Input onChange={onChange} />);
     const inputEl = getByTestId("input");
 
     fireEvent.change(inputEl, { target: { value: "one more test" } });
     expect(onChange).toHaveBeenCalledTimes(1);
-    debug();
   });
 });
