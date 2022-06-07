@@ -6,15 +6,15 @@
 import logging
 import os
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
-from enum import Enum
 
 import requests
-import vcr
 import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.vcr_helper import VcrHelper
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 
@@ -102,13 +102,9 @@ class HttpStream(Stream, ABC):
             except FileNotFoundError:
                 pass
 
-        record_modes = {
-            CassetteMode.RECORD: "all",
-            CassetteMode.REPLAY: "none",
-            CassetteMode.DISABLED: "once"
-        }
+        record_modes = {CassetteMode.RECORD: "all", CassetteMode.REPLAY: "none", CassetteMode.DISABLED: "once"}
 
-        return vcr.use_cassette(self.cache_filename, record_mode=record_modes[cassette_mode], serializer="yaml")
+        return VcrHelper().get_vcr().use_cassette(self.cache_filename, record_mode=record_modes[cassette_mode], serializer="no_secrets")
 
     @property
     @abstractmethod
