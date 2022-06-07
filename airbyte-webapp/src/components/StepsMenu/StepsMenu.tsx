@@ -3,20 +3,20 @@ import styled from "styled-components";
 
 import Step from "./components/Step";
 
-export type StepMenuItem = {
+export interface StepMenuItem {
   id: string;
   name: string | React.ReactNode;
   status?: string;
   isPartialSuccess?: boolean;
   onSelect?: () => void;
-};
+}
 
-type IProps = {
+interface IProps {
   lightMode?: boolean;
   data: StepMenuItem[];
   activeStep?: string;
   onSelect?: (id: string) => void;
-};
+}
 
 const Content = styled.div`
   display: flex;

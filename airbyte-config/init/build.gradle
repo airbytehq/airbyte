@@ -1,13 +1,13 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
 
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
 }
@@ -22,3 +22,5 @@ task copyScripts(type: Copy) {
 Task dockerBuildTask = getDockerBuildTask("init", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -31,10 +31,10 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-type JobItemProps = {
+interface JobItemProps {
   shortInfo?: boolean;
   job: SynchronousJobReadWithStatus | JobsWithJobs;
-};
+}
 
 const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
   return getJobStatus(job) !== "failed";

@@ -12,9 +12,12 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -39,6 +42,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceOperations.class);
   private static final String TIMESTAMPTZ = "timestamptz";
   private static final String TIMETZ = "timetz";
+  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
@@ -100,6 +104,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case "bytea" -> putString(json, columnName, resultSet, colIndex);
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -211,6 +216,16 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+  }
+
+  private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
+    final var data = resultSet.getObject(index);
+    try {
+      node.put(columnName, OBJECT_MAPPER.writeValueAsString(data));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Could not parse 'hstore' value:" + e);
+    }
   }
 
   /**
