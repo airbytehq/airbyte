@@ -29,11 +29,16 @@ class VcrHelper:
         my_vcr.register_serializer("no_secrets", self)
         return my_vcr
 
-    def get_filter_headers(self):
-        return self._get_filters("filter_headers")
+    def get_filters(self, auth_header_keys):
+        all_filters = {field: self._get_filters(field) for field in self.test_fixture}
 
-    def get_filters(self):
-        return {field: self._get_filters(field) for field in ["filter_headers"]}
+        header_filters = all_filters["filter_headers"]
+        headers_to_filter = [h[0] for h in header_filters]
+        missing_filters = set(auth_header_keys) - set(headers_to_filter)
+
+        for f in missing_filters:
+            header_filters.append((f, "X#X#X"))
+        return all_filters
 
     def _get_filters(self, field):
         return [(fh["name"], fh.get("value")) for fh in self.test_fixture[field]]

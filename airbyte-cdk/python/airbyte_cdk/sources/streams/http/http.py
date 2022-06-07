@@ -103,8 +103,15 @@ class HttpStream(Stream, ABC):
                 pass
 
         record_modes = {CassetteMode.RECORD: "all", CassetteMode.REPLAY: "none", CassetteMode.DISABLED: "once"}
+        vcr_helper = VcrHelper()
+        actual_vcr = vcr_helper.get_vcr()
 
-        return VcrHelper().get_vcr().use_cassette(self.cache_filename, record_mode=record_modes[cassette_mode], serializer="no_secrets")
+        return actual_vcr.use_cassette(
+            self.cache_filename,
+            record_mode=record_modes[cassette_mode],
+            serializer="no_secrets",
+            **vcr_helper.get_filters(self.authenticator.get_auth_header().keys()),
+        )
 
     @property
     @abstractmethod
