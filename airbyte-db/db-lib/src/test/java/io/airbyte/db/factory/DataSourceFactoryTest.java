@@ -32,7 +32,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test
@@ -46,7 +46,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl, connectionProperties);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test
@@ -61,7 +61,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     final DataSource dataSource = DataSourceFactory.create(username, password, host, port, database, driverClassName);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test
@@ -77,7 +77,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     final DataSource dataSource = DataSourceFactory.create(username, password, host, port, database, driverClassName, connectionProperties);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test
@@ -105,7 +105,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
     final DataSource dataSource = DataSourceFactory.createPostgres(username, password, host, port, database);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test
