@@ -48,3 +48,22 @@ def test_connection_lifecycle(source, destination, connection):
     assert 'changed from "active" to "inactive"' in connection.get_diff_with_remote_resource()
     connection.update()
     assert not connection.get_diff_with_remote_resource()
+
+
+def test_connection_lifecycle_with_normalization(source, destination, connection_with_normalization):
+    assert source.was_created
+    assert destination.was_created
+    assert not connection_with_normalization.was_created
+    connection_with_normalization.create()
+    connection_with_normalization.state = connection_with_normalization._get_state_from_file(
+        connection_with_normalization.configuration_path
+    )
+    assert connection_with_normalization.was_created
+    assert connection_with_normalization.remote_resource["operations"][0]["operation_id"] is not None
+    assert connection_with_normalization.remote_resource["operations"][0]["operator_configuration"]["normalization"]["option"] == "basic"
+    assert not connection_with_normalization.get_diff_with_remote_resource()
+    connection_with_normalization.raw_configuration["configuration"]["status"] = "inactive"
+    connection_with_normalization.configuration = connection_with_normalization._deserialize_raw_configuration()
+    assert 'changed from "active" to "inactive"' in connection_with_normalization.get_diff_with_remote_resource()
+    connection_with_normalization.update()
+    assert not connection_with_normalization.get_diff_with_remote_resource()

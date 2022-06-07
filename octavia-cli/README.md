@@ -281,10 +281,10 @@ $ octavia generate destination 25c5221d-dce2-4163-ade9-739ef790f503 my_db
 Generate a YAML configuration for a connection.
 The YAML file will be stored at `./connections/<connection_name>/configuration.yaml`.
 
-| **Option**      | **Required** | **Description**                                                                            |
-|-----------------|--------------|--------------------------------------------------------------------------------------------|
-| `--source`      | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
-| `--destination` | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
+| **Option**        | **Required** | **Description**                                                                            |
+|-------------------|--------------|--------------------------------------------------------------------------------------------|
+| `--source`        | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
+| `--destination`   | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
 
 | **Argument**      | **Description**                                          |
 |-------------------|----------------------------------------------------------|
@@ -364,6 +364,7 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 | Version | Date       | Description                         | PR                                                       |
 |---------|------------|-------------------------------------|----------------------------------------------------------|
+| 0.38.5  | 2022-05-12 | Enable normalization on connection  | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
 | 0.36.11 | 2022-05-05 | Use snake case in connection fields | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
 | 0.36.2  | 2022-04-15 | Improve telemetry                   | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
 | 0.35.68 | 2022-04-12 | Add telemetry                       | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
