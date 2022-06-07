@@ -197,6 +197,7 @@ class SemiIncrementalMixin:
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
+        self._starting_point_cache = {}
 
     @property
     def __slice_key(self):
@@ -228,13 +229,18 @@ class SemiIncrementalMixin:
         current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             slice_value = stream_slice[self.__slice_key]
             stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
         return self._start_date
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if self.__slice_key not in self._starting_point_cache:
+            self._starting_point_cache[self.__slice_key] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[self.__slice_key]
 
     def read_records(
         self,
