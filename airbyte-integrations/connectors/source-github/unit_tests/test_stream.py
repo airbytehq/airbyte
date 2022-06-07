@@ -258,7 +258,6 @@ def test_stream_pull_requests_incremental_read():
     assert [r["id"] for r in records] == [2, 3, 4]
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
 
-    stream._starting_point_cache = {}
     records = read_incremental(stream, stream_state)
     assert [r["id"] for r in records] == [6, 5]
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:12Z"}}
@@ -616,7 +615,6 @@ def test_stream_comments():
     assert records == [{"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"}]
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:04Z"}}
 
-    stream._starting_point_cache = {}
     records = read_incremental(stream, stream_state)
 
     assert records == [
@@ -755,7 +753,6 @@ def test_stream_reviews_incremental_read():
         json=[{"id": 1003, "body": "commit1"}],
     )
 
-    stream.parent._starting_point_cache = {}
     records = read_incremental(stream, stream_state)
 
     assert records == [

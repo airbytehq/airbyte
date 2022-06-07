@@ -259,6 +259,10 @@ class SemiIncrementalMixin:
             elif self.is_sorted_descending and cursor_value < start_point:
                 break
 
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        self._starting_point_cache.clear()
+        yield from super().stream_slices(**kwargs)
+
 
 class IncrementalMixin(SemiIncrementalMixin):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
