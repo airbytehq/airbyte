@@ -2,40 +2,17 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
+        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile')
+        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test')
 
-        def copyDockerfileTask = project.task("copyDockerBmuschko", type: Sync) {
-            from(project.projectDir) {
-                include 'Dockerfile*'
-            }
-            into "build/docker/"
-        }
-
-        // If this is a Java project, then we need to copy the compiled files into the Docker input directory
-        def copyGeneratedTarTask = null
-        if (project.hasProperty('distTar')) {
-            copyGeneratedTarTask = project.task("copyGeneratedTar", type: Copy) {
-                dependsOn copyDockerfileTask
-                dependsOn project.distTar
-
-                from('build/distributions') {
-                    include "${project.name}-*.tar"
-                }
-                into 'build/docker/bin'
-            }
-        }
-
-        def buildDockerImageTask = createTask(project, 'buildDockerImage', project.name, 'Dockerfile', copyGeneratedTarTask)
-        createTask(project, 'buildDockerImageTest', project.name, 'Dockerfile.test', copyGeneratedTarTask)
-
-        project.assemble.dependsOn buildDockerImageTask
+        project.build.dependsOn buildDockerImageTask
     }
 
-    static def createTask(Project project, String taskName, String imageName, String dockerfileName, Task copyGeneratedTarTask) {
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
         if (project.file(dockerfileName).exists()) {
             def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
-                if (copyGeneratedTarTask) {
-                    dependsOn copyGeneratedTarTask
-                }
+                // If this is a Java project, then we can't run the Docker build until after the compiled tar exists
+                dependsOn project.assemble
 
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
@@ -48,7 +25,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
                 def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
-                inputDir = project.file("${project.projectDir}/build/docker")
+                inputDir = project.file("${project.projectDir}")
                 platform = buildPlatform
                 images.add("airbyte/${imageName}:${project.rootProject.ext.image_tag}")
                 buildArgs.put('JDK_VERSION', jdkVersion)
@@ -58,7 +35,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 buildArgs.put('JDK_IMAGE', openjdkImage)
                 buildArgs.put('VERSION', "${project.rootProject.ext.version}")
 
-                dockerFile = project.file("build/docker/${dockerfileName}")
+                dockerFile = project.file("${dockerfileName}")
             }
 
             return buildDockerImageTask
