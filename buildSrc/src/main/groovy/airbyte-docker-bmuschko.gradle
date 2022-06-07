@@ -21,6 +21,34 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
 
         // These configurations aren't available until after Gradle fully evaluates the project, so we need to wait until that happens.
         project.afterEvaluate {
+            // Create a task to copy all our files into build/docker.
+            // Ideally, we'd just use the project dir as the input path, but the docker plugin isn't intended to be used that way,
+            // and it causes a lot of problems for detecting whether the task is up to date.
+            def copyFilesTask = project.task('setupDockerBuild', type: Sync) {
+                from '.'
+                into 'build/docker'
+
+                excludes = [
+                    // Exclude the directory we're trying to set up
+                    'build/docker',
+                    // misc docker working files (i.e. '*-imageId.txt')
+                    'build/.docker',
+                    // Java test files
+                    'build/classes/java/integrationTestJava',
+                    'build/classes/java/test',
+                    'build/jacoco',
+                    'build/test-results',
+                    // Python working files
+                    '.venv',
+                    '*/.coverage',
+                    '*/.pytest_cache',
+                ]
+
+                // If this is a Java project, then we can't run the Docker build until after the compiled tar exists
+                dependsOn project.assemble
+                extension.additionalDependencies.each(task -> dependsOn(task))
+            }
+
             def dockerfileToImageName = extension.dockerfileToImageName
             // For convenience: if the image name is not specified for 'Dockerfile', we default to using the project name (e.g. 'destination-s3')
             if (!dockerfileToImageName) {
@@ -29,8 +57,10 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 dockerfileToImageName['Dockerfile'] = project.name
             }
 
+            // Create a noop task to aggregate all the individual Dockerfile builds together
             def allTask = project.task('buildDockerImage-all')
 
+            // Create the individual build tasks
             dockerfileToImageName.each(entry -> {
                 def dockerfileName = entry.getKey()
                 def imageName = entry.getValue()
@@ -42,8 +72,9 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                     taskName += "-${dockerfileName}"
                 }
 
-                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName, extension.additionalDependencies)
+                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName)
 
+                buildDockerImageTask.dependsOn copyFilesTask
                 allTask.dependsOn buildDockerImageTask
             })
 
@@ -52,14 +83,9 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
         }
     }
 
-    static def createTask(Project project, String taskName, String imageName, String dockerfileName, Collection<Task> additionalDependencies) {
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
         if (project.file(dockerfileName).exists()) {
             def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
-                // If this is a Java project, then we can't run the Docker build until after the compiled tar exists
-                dependsOn project.assemble
-
-                additionalDependencies.each(task -> dependsOn(task))
-
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
                 def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
@@ -71,7 +97,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
                 def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
-                inputDir = project.file("${project.projectDir}")
+                inputDir = project.file("${project.projectDir}/build/docker")
                 platform = buildPlatform
                 // This task always tags as dev. `/publish` handles extracting the version label from the dockerfile and tagging the image appropriately.
                 images.add("airbyte/${imageName}:dev")
@@ -82,7 +108,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 buildArgs.put('JDK_IMAGE', openjdkImage)
                 buildArgs.put('VERSION', "${project.rootProject.ext.version}")
 
-                dockerFile = project.file("${dockerfileName}")
+                dockerFile = project.file("build/docker/${dockerfileName}")
             }
 
             return buildDockerImageTask
