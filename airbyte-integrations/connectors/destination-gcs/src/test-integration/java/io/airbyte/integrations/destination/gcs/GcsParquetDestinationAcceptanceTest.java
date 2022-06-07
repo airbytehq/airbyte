@@ -13,20 +13,25 @@ import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
 
-public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
+public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
   protected GcsParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
@@ -76,6 +81,32 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected Set<Type> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final Set<Type> dataTypes = new HashSet<>();
+
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
+      final var path = new org.apache.hadoop.fs.Path(uri);
+      final Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
+
+      try (final ParquetReader<Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
+          .withConf(hadoopConfig)
+          .build()) {
+        GenericData.Record record;
+        while ((record = parquetReader.read()) != null) {
+          Set<Type> actualDataTypes = getTypes(record);
+          dataTypes.addAll(actualDataTypes);
+        }
+      }
+    }
+
+    return dataTypes;
   }
 
 }
