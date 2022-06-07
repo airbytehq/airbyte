@@ -63,7 +63,7 @@ final public class VaultSecretPersistence implements SecretPersistence {
   /**
    * This creates a vault client using a vault agent which uses AWS IAM for auth.
    */
-  public static Vault getVaultClient(String address) throws VaultException {
+  public static Vault getVaultClient(final String address) throws VaultException {
     final var config = new VaultConfig()
         .address(address)
         .engineVersion(2)
@@ -71,11 +71,10 @@ final public class VaultSecretPersistence implements SecretPersistence {
     return new Vault(config);
   }
 
-
   /**
    * Vault client for testing
    */
-  public static Vault getVaultClient(String address, String token) throws VaultException {
+  public static Vault getVaultClient(final String address, final String token) throws VaultException {
     final var config = new VaultConfig()
         .address(address)
         .token(token)
