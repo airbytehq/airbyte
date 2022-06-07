@@ -386,10 +386,13 @@ class Stream(HttpStream, ABC):
 
     def parse_response_error_message(self, response):
         body = response.json()
-        if body["category"] == "MISSING_SCOPES":
-            error = body["errors"][0]
-            missing_scopes = error.get("context", {}).get("requiredScopes")
-            return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+        if body.get("category") == "MISSING_SCOPES":
+            if "errors" in body:
+                errors = body["errors"]
+                if len(errors) > 0:
+                    error = errors[0]
+                    missing_scopes = error.get("context", {}).get("requiredScopes")
+                    return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
         return super().parse_response_error_message(response)
 
     @staticmethod
