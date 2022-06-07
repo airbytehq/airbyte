@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Union
+from typing import List
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -24,7 +24,7 @@ class JqExtractor(HttpExtractor):
         self._kwargs = kwargs
         self._decoder = decoder
 
-    def extract_records(self, response: requests.Response) -> Union[List[Record], Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self._decoder.decode(response)
         script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
         print(f"body: {response_body}")
