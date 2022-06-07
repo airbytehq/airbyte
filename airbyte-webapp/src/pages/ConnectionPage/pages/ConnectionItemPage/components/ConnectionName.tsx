@@ -1,6 +1,6 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEvent, FC, useState } from "react";
+import React, { ChangeEvent, FC, useState } from "react";
 import styled from "styled-components";
 
 import { Input } from "components";
@@ -97,7 +97,7 @@ const StyledInput = styled(Input)`
 
 const InputWithKeystroke = addEnterEscFuncForInput(StyledInput);
 
-const ConnectionName: FC<ConnectionNameProps> = ({ connection }) => {
+const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -107,12 +107,14 @@ const ConnectionName: FC<ConnectionNameProps> = ({ connection }) => {
 
   const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);
 
-  const onEscape = () => {
+  const onEscape: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    event.stopPropagation();
     setEditingState(false);
     setConnectionName(name);
   };
 
-  const onEnter = async () => {
+  const onEnter: React.KeyboardEventHandler<HTMLInputElement> = async (event) => {
+    event.stopPropagation();
     await updateConnectionAsync();
   };
 
@@ -132,12 +134,15 @@ const ConnectionName: FC<ConnectionNameProps> = ({ connection }) => {
       setLoading(true);
 
       await updateConnection({
-        name: connectionNameTrimmed,
         connectionId: connection.connectionId,
-        namespaceDefinition: connection.namespaceDefinition,
         syncCatalog: connection.syncCatalog,
-        status: connection.status,
         prefix: connection.prefix,
+        schedule: connection.schedule || null,
+        namespaceDefinition: connection.namespaceDefinition,
+        namespaceFormat: connection.namespaceFormat,
+        operations: connection.operations,
+        status: connection.status,
+        name: connectionNameTrimmed,
       });
 
       setConnectionName(connectionNameTrimmed);

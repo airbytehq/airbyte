@@ -2,9 +2,7 @@ import * as React from "react";
 
 export default function addEnterEscFuncForInput(WrapperComponent: React.FC) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (props: any) => {
-    const { onEscape, onEnter, ...restProps } = props;
-
+  return ({ onEscape, onEnter, onKeyDown: onKeyDownProp, ...props }: any) => {
     const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
       // Escape Key Event
       if (event.key === "Escape" && onEscape) {
@@ -16,11 +14,9 @@ export default function addEnterEscFuncForInput(WrapperComponent: React.FC) {
         onEnter(event);
       }
 
-      if (props.onKeyDown) {
-        props.onKeyDown(event);
-      }
+      onKeyDownProp?.(event);
     };
 
-    return <WrapperComponent {...restProps} onKeyDown={onKeyDown} />;
+    return <WrapperComponent {...props} onKeyDown={onKeyDown} />;
   };
 }
