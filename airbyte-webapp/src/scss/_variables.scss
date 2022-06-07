@@ -1,2 +1,53 @@
+@import "./colors";
+
 $transition: 0.3s;
 $defaultBottomMargin: 150px;
+
+$rounded-sm: 2px;
+$rounded: 4px;
+$rounded-md: 6px; // Where is this used? -> Buttons!
+$rounded-lg: 8px; // Commonly used
+// There's also 10px?
+$rounded-xl: 12px;
+$rounded-full: 9999px;
+
+$rounded-map: (
+  "sm": $rounded-sm,
+  "md": $rounded-md,
+  "lg": $rounded-lg,
+  "xl": $rounded-xl,
+  "full": $rounded-full,
+);
+
+$border-0: 0;
+$border-1: 1px;
+$border-2: 2px;
+
+$spacing-0: 0; // 3px?
+$spacing-1: 5px; // Also 8.5?
+$spacing-2: 10px;
+$spacing-3: 15px; // Or 14px or 16px?
+$spacing-4: 20px;
+
+$spacing-map: (
+  "0": $spacing-0,
+  "1": $spacing-1,
+  "2": $spacing-2,
+  "3": $spacing-3,
+  "4": $spacing-4,
+  "auto": auto
+);
+
+// ON buttons
+$shadow-1: 0px 3px 4px -2px rgba($dark-blue, 0.21);
+// Card normal "box/default"
+$shadow-2: 0px 2px 4px rgba($dark-blue, 0.12);
+// Card hover
+$shadow-3: 0px 4px 8px rgba($dark-blue, 0.12), 0px 27px 12px -17px rgba(26, 25, 77, 0.2);
+
+
+$shadow-map: (
+  "1": $shadow-1,
+  "2": $shadow-2,
+  "3": $shadow-3
+)
