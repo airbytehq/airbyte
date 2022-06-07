@@ -13,7 +13,7 @@ decoder = JsonDecoder()
 
 
 def test():
-    transform = ".data[]"
+    transform = "_.data"
     extractor = JqExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]
@@ -25,7 +25,7 @@ def test():
 
 
 def test_field_in_config():
-    transform = ".{{ config['field'] }}[]"
+    transform = "_.{{ config['field'] }}"
     extractor = JqExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]
@@ -37,7 +37,7 @@ def test_field_in_config():
 
 
 def test_field_in_kwargs():
-    transform = ".{{ kwargs['data_field'] }}[]"
+    transform = "_.{{ kwargs['data_field'] }}"
     kwargs = {"data_field": "records"}
     extractor = JqExtractor(transform, decoder, config, kwargs=kwargs)
 
@@ -56,7 +56,7 @@ def create_response(body):
 
 
 def test_default():
-    transform = ".{{kwargs['field']}}[]"
+    transform = "_{{kwargs['field']}}"
     extractor = JqExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]

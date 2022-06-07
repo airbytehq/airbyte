@@ -2,14 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
+from typing import Any, List, Mapping, Union
 
-import pyjq
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Record
+from jello import lib as jello_lib
 
 
 class JqExtractor(HttpExtractor):
@@ -24,7 +24,8 @@ class JqExtractor(HttpExtractor):
         self._kwargs = kwargs
         self._decoder = decoder
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> Union[List[Record], Mapping[str, Any]]:
         response_body = self._decoder.decode(response)
         script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
-        return pyjq.all(script, response_body)
+        print(f"body: {response_body}")
+        return jello_lib.pyquery(response_body, script)
