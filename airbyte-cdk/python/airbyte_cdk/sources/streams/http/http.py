@@ -102,7 +102,7 @@ class HttpStream(Stream, ABC):
             except FileNotFoundError:
                 pass
 
-        record_modes = {CassetteMode.RECORD: "all", CassetteMode.REPLAY: "none", CassetteMode.DISABLED: "once"}
+        record_modes = {CassetteMode.RECORD: "all", CassetteMode.REPLAY: "none", CassetteMode.DISABLED: "new_episodes"}
         vcr_helper = VcrHelper()
         actual_vcr = vcr_helper.get_vcr()
 
