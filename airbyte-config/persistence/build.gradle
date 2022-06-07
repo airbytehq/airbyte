@@ -20,5 +20,6 @@ dependencies {
     testImplementation libs.testcontainers.postgresql
     testImplementation libs.flyway.core
     testImplementation project(':airbyte-test-utils')
+    testImplementation "org.testcontainers:vault:1.17.2"
     integrationTestJavaImplementation project(':airbyte-config:persistence')
 }

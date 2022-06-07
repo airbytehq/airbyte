@@ -24,15 +24,22 @@ final public class VaultSecretPersistence implements SecretPersistence {
     this.pathPrefix = prefix;
   }
 
+  /**
+   * Constructor for testing
+   */
+  public VaultSecretPersistence(final String address, final String prefix, final String token) {
+    this.vault = Exceptions.toRuntime(() -> getVaultClient(address, token));
+    this.pathPrefix = prefix;
+  }
+
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     try {
       final var response = vault.logical().read(pathPrefix + coordinate.getFullCoordinate());
-      log.info(pathPrefix);
       final var restResponse = response.getRestResponse();
       final var responseCode = restResponse.getStatus();
       if (responseCode != 200) {
-        log.error("failed on read", response);
+        log.error("failed on read. Response code: " + responseCode);
         return Optional.empty();
       }
       final var data = response.getData();
@@ -59,6 +66,19 @@ final public class VaultSecretPersistence implements SecretPersistence {
   public static Vault getVaultClient(String address) throws VaultException {
     final var config = new VaultConfig()
         .address(address)
+        .engineVersion(2)
+        .build();
+    return new Vault(config);
+  }
+
+
+  /**
+   * Vault client for testing
+   */
+  public static Vault getVaultClient(String address, String token) throws VaultException {
+    final var config = new VaultConfig()
+        .address(address)
+        .token(token)
         .engineVersion(2)
         .build();
     return new Vault(config);
