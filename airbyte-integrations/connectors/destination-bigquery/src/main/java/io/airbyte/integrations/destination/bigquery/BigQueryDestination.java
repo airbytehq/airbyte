@@ -92,11 +92,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
-        // this is not currently possible because using the Storage class to check perms requires
-        // a service account key, and the GCS destination does not accept a Service Account Key,
-        // only an HMAC key
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkStorageIamPermissions(config);
+        final AirbyteConnectionStatus airbyteConnectionStatus = checkGcsPermission(config);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -114,7 +110,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  public AirbyteConnectionStatus checkStorageIamPermissions(final JsonNode config) {
+  /**
+   * This method does two checks: 1) permissions related to the bucket, and 2) the ability to create
+   * and delete an actual file. The latter is important because even if the service account may have
+   * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
+   */
+  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
 
@@ -131,18 +132,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .filter(i -> !i.getValue())
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
           .toList();
-
       if (!missingPermissions.isEmpty()) {
         LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
-        // if user or service account has a conditional binding for processing handling in the GCS bucket,
-        // testIamPermissions will not work properly, so we use the standard check method of GCS destination
-        final GcsDestination gcsDestination = new GcsDestination();
-        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
-        return gcsDestination.check(gcsJsonNodeConfig);
-
       }
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
+      final GcsDestination gcsDestination = new GcsDestination();
+      final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+      return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {
       LOGGER.error("Cannot access the GCS bucket", e);
 
