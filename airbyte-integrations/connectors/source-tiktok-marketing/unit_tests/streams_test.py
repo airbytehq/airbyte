@@ -123,12 +123,12 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 36),
-        (AdGroupsReports, 33),
-        (AdvertisersReports, 11),
-        (CampaignsReports, 10),
-        (AdvertisersAudienceReports, 6),
-        (AdsAudienceReports, 30),
+        (AdsReports, 54),
+        (AdGroupsReports, 51),
+        (AdvertisersReports, 29),
+        (CampaignsReports, 28),
+        (AdvertisersAudienceReports, 24),
+        (AdsAudienceReports, 48),
     ],
 )
 def test_basic_reports_get_metrics_day(stream, metrics_number):
@@ -140,11 +140,11 @@ def test_basic_reports_get_metrics_day(stream, metrics_number):
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 36),
-        (AdGroupsReports, 33),
-        (AdvertisersReports, 9),
-        (CampaignsReports, 10),
-        (AdvertisersAudienceReports, 6),
+        (AdsReports, 54),
+        (AdGroupsReports, 51),
+        (AdvertisersReports, 27),
+        (CampaignsReports, 28),
+        (AdvertisersAudienceReports, 24),
     ],
 )
 def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
@@ -204,12 +204,17 @@ def test_request_params():
     stream_slice = {"advertiser_id": 1, "start_date": "2020", "end_date": "2021"}
     config = {**{"report_granularity": ReportGranularity.DAY}, **CONFIG}
     params = AdvertisersAudienceReports(**config).request_params(stream_slice=stream_slice)
+    print('params', params.get('metrics'))
     assert params == {
         "advertiser_id": 1,
         "data_level": "AUCTION_ADVERTISER",
         "dimensions": '["advertiser_id", "stat_time_day", "gender", "age"]',
         "end_date": "2021",
-        "metrics": '["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]',
+        "metrics": '["spend", "cpc", "cpm", "impressions", "clicks", "ctr", '
+                    '"video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", '
+                    '"average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", '
+                    '"video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", '
+                    '"clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]',
         "page_size": 1000,
         "report_type": "AUDIENCE",
         "service_type": "AUCTION",
