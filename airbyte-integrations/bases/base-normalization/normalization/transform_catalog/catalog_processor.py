@@ -67,6 +67,7 @@ class CatalogProcessor:
                 f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
                 f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
             )
+        # TODO: open file to write DBML file
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = self.destination_type == DestinationType.MYSQL
@@ -80,6 +81,10 @@ class CatalogProcessor:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
                 output_sql_file(os.path.join(self.output_directory, file), stream_processor.sql_outputs[file])
+            # TODO: write stream to DBML
+            print("************ start-DBML ***********")
+            print(stream_processor.stream_dbml)
+            print("************ end-DBML ***********")
         self.write_yaml_sources_file(schema_to_source_tables)
         self.process_substreams(substreams, tables_registry)
 

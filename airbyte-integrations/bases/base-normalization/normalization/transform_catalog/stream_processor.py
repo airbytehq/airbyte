@@ -125,6 +125,7 @@ class StreamProcessor(object):
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
         self.models_to_source: Dict[str, str] = {}
+        self.stream_dbml: str = ""
 
     @staticmethod
     def create_from_parent(
@@ -248,6 +249,7 @@ class StreamProcessor(object):
             print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
             return []
 
+        self.set_stream_dbml(column_names)
         from_table = str(self.from_table)
         # Transformation Pipeline for this stream
         from_table = self.add_to_outputs(
@@ -309,6 +311,56 @@ class StreamProcessor(object):
                 partition_by=PartitionScheme.UNIQUE_KEY,
             )
         return self.find_children_streams(from_table, column_names)
+
+    def set_stream_dbml(self, column_names: Dict[str, Tuple[str, str]]):
+        schema = self.get_schema(False)
+        # MySQL table names need to be manually truncated, because it does not do it automatically
+        truncate_name = self.destination_type == DestinationType.MYSQL
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, "", truncate_name)
+        template = Template(
+            """
+Table {{ schema_name }}.{{ table_name }} {
+{{ columns }}   
+}
+"""
+        )
+        ref_template = Template(
+            """
+Ref unnested_child_stream {
+   {{ schema_name }}.{{ parent_table_name }}.{{ parent_hash_id }} < {{ schema_name }}.{{ table_name }}.{{ hash_id }}
+}
+"""
+        )
+        self.stream_dbml = template.render(
+            schema_name=schema,
+            table_name=table_name,
+            columns=self.extract_dbml_columns(column_names),
+            indexes=self.extract_dbml_indexes(column_names),
+        )
+        if self.parent:
+            parent_table_name = self.parent.tables_registry.get_table_name(schema, self.parent.json_path, self.parent.stream_name, "", truncate_name)
+            self.stream_dbml += ref_template.render(
+                schema_name=schema,
+                table_name=table_name,
+                hash_id=self.parent.hash_id(False),
+                parent_table_name=parent_table_name,
+                parent_hash_id=self.parent_hash_id(),
+            )
+
+    def extract_dbml_columns(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        result = "\t"
+        for column_name in column_names:
+            column_name = column_name.replace('"', '_')
+            result += f"\"{column_name}\" "
+            if "type" in self.properties[column_name]:
+                result += self.properties[column_name]["type"]
+            # TODO: add primary key tags
+            # TODO: add cursor key tags
+            result += "\n\t"
+        return result
+
+    def extract_dbml_indexes(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        return ""
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
         """
