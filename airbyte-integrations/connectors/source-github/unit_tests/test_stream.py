@@ -598,7 +598,7 @@ def test_stream_comments():
         api_url,
         json=data[2:4],
         headers={
-            "Link": '<https://api.github.com/repositories/283046497/issues/comments?per_page=2&since=2022-05-01T00%3A00%3A00Z&page=2>; rel="next"'
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
         },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z"}, strict_match=False)],
     )
