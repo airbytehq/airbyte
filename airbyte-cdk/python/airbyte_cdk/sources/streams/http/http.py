@@ -35,6 +35,8 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
+    test_fixture = None
+
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
@@ -72,31 +74,16 @@ class HttpStream(Stream, ABC):
         """
 
         def jurassic_matcher(r1, r2):
-            print(r1.uri)
-            print(r2.uri)
             equals = r1.uri == r2.uri
-            print(f"equals: {equals}")
             assert equals
-
-        vcr_helper = VcrHelper("./integration_tests/test_fixture.json")
 
         logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from vcrpy
         vcr_log = logging.getLogger("vcr")
         vcr_log.setLevel(logging.INFO)
+        vcr_helper = VcrHelper(self.test_fixture)
         my_vcr = vcr.VCR()
         my_vcr.register_matcher("jurassic", jurassic_matcher)
         my_vcr.register_serializer("secrets", vcr_helper)
-
-        auth_headers = self.authenticator.get_auth_header()
-        filters = vcr_helper.get_filters()
-        headers_to_filter = [f[0] for f in filters["filter_headers"]]
-        print(auth_headers)
-        print(f"filters: {filters}")
-        print(headers_to_filter)
-        missing_filters = set(auth_headers) - set(headers_to_filter)
-        if missing_filters:
-            print(f"Missing header filter: {missing_filters}")
-
         return my_vcr.use_cassette(
             self.cache_filename,
             serializer="secrets",

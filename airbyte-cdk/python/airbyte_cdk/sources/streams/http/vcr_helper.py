@@ -4,6 +4,7 @@
 import json
 
 import yaml
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 # Use the libYAML versions if possible
 try:
@@ -14,9 +15,12 @@ except ImportError:
 
 
 class VcrHelper:
-    def __init__(self, path_to_test_fixture):
-        with open(path_to_test_fixture, "r") as f:
-            self.test_fixture = json.loads(f.read())
+    def __init__(self, path_to_test_fixture=None):
+        if path_to_test_fixture is not None:
+            with open(path_to_test_fixture, "r") as f:
+                self.test_fixture = json.loads(f.read())
+        else:
+            self.test_fixture = {"filter_headers": {}}
 
     def get_filter_headers(self):
         return self._get_filters("filter_headers")
@@ -36,4 +40,5 @@ class VcrHelper:
             original = replace["original"]
             replace_by = replace["replace_by"]
             serialized = serialized.replace(original, replace_by)
+        serialized = filter_secrets(serialized)
         return serialized

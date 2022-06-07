@@ -135,6 +135,7 @@ class Scopes(SendgridStream):
 
 class Lists(SendgridStreamMetadataPagination):
     data_field = "result"
+    test_fixture = "integration_tests/test_fixture.json"
 
     @staticmethod
     def initial_path() -> str:
