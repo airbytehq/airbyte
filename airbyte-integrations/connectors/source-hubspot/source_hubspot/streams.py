@@ -383,8 +383,13 @@ class Stream(HttpStream, ABC):
                 yield from []
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
+            response: requests.Response = e.response
             if status_code == 403:
-                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
+                error = response.json()["errors"][0]
+                missing_scopes = error.get("context", {}).get("requiredScopes")
+                raise RuntimeError(
+                    f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+                )
             else:
                 raise e
 
