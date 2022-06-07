@@ -45,6 +45,7 @@ setup(
     install_requires=[
         "backoff",
         "dpath~=2.0.1",
+        "freezegun~=1.2.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",

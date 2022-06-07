@@ -5,10 +5,12 @@
 
 import argparse
 import importlib
+import json
 import logging
 import os.path
 import sys
 import tempfile
+from freezegun import freeze_time
 from typing import Any, Dict, Iterable, List
 
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -126,6 +128,27 @@ class AirbyteEntrypoint(object):
 def launch(source: Source, args: List[str]):
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
+
+    # TODO this is not the right place for this
+    cassette_mode = os.getenv("CASSETTE_MODE", "DISABLED")
+    freeze_dir = os.getenv("CASSETTE_PATH", "./cassettes")
+    freeze_path = os.path.join(freeze_dir, "freeze.json")
+
+    try:
+        if cassette_mode == "RECORD" and not os.path.exists(freeze_path):  # cassette_mode == "RECORD":
+            freezer = freeze_time().start()
+            frozen_datetime = freezer.time_to_freeze.isoformat()
+            os.makedirs(freeze_dir)
+            with open(freeze_path, "w+") as f:
+                f.write(json.dumps({"frozen_datetime": frozen_datetime}))
+        elif cassette_mode != "DISABLED":
+            with open(freeze_path, "r") as f:
+                freeze_settings = json.loads(f.read())
+                time_to_freeze = freeze_settings.get("frozen_datetime")
+                freeze_time(time_to_freeze).start()
+    except FileExistsError:
+        pass
+
     for message in source_entrypoint.run(parsed_args):
         print(message)
 
