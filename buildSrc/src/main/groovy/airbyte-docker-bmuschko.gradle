@@ -19,7 +19,10 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoConfiguration)
 
-        // These configurations aren't available until after Gradle fully evaluates the project, so we need to wait until that happens.
+        // Create a noop task to aggregate all the individual Dockerfile builds together
+        def allTask = project.task('buildDockerImage-all')
+
+        // AirbyteDockerBmuschkoConfiguration's values aren't available until after Gradle fully evaluates the project, so we need to wait until that happens.
         project.afterEvaluate {
             // Create a task to copy all our files into build/docker.
             // Ideally, we'd just use the project dir as the input path, but the docker plugin isn't intended to be used that way,
@@ -56,9 +59,6 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
             } else if (!dockerfileToImageName.containsKey('Dockerfile')) {
                 dockerfileToImageName['Dockerfile'] = project.name
             }
-
-            // Create a noop task to aggregate all the individual Dockerfile builds together
-            def allTask = project.task('buildDockerImage-all')
 
             // Create the individual build tasks
             dockerfileToImageName.each(entry -> {

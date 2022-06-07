@@ -39,19 +39,14 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
             if(project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
             }
+            if (project.hasProperty('buildDockerImage-all')) {
+                dependsOn project.'buildDockerImage-all'
+            }
 
             maxHeapSize = '3g'
 
             mustRunAfter project.test
         }
-
-        // These tasks are added in an afterEvaluate block, so they don't actually exist when this plugin is applied
-        // Instead, we add a listener for when those tasks are added.
-        project.getTasks().whenTaskAdded(task -> {
-            if (task.getName().startsWith('buildDockerImage')) {
-                project.performanceTestJava.dependsOn(task)
-            }
-        })
 
         // make sure we create the performanceTest task once in case a standard source test was already initialized
         if(!project.hasProperty('performanceTest')) {
