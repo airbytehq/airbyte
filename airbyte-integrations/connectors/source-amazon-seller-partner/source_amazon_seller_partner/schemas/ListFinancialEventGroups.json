@@ -24,6 +24,17 @@
         }
       }
     },
+    "ConvertedTotal": {
+      "type": ["null", "object"],
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "CurrencyAmount": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
     "FundTransferDate": {
       "type": ["null", "string"]
     },
