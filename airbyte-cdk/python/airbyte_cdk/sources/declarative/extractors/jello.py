@@ -27,5 +27,4 @@ class JelloExtractor(HttpExtractor):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self._decoder.decode(response)
         script = self._interpolator.eval(self._transform, self._config, default=self.default_transform, **{"kwargs": self._kwargs})
-        print(f"body: {response_body}")
         return jello_lib.pyquery(response_body, script)
