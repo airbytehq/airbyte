@@ -46,7 +46,6 @@ import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
-import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -56,7 +55,7 @@ import org.testcontainers.utility.MountableFile;
                                matches = "true")
 public class BasicAcceptanceTests {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.

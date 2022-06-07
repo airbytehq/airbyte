@@ -22,7 +22,6 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AirbyteCatalog;
 import io.airbyte.api.client.model.generated.AirbyteStream;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
-import io.airbyte.api.client.model.generated.AttemptStatus;
 import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
@@ -102,7 +101,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -138,9 +136,9 @@ import org.testcontainers.utility.MountableFile;
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AcceptanceTests {
+public class AdvancedAcceptanceTests {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.
@@ -311,7 +309,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(7)
+  @Order(1)
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -329,7 +327,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(8)
+  @Order(2)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
 
@@ -364,7 +362,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(14)
+  @Order(3)
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
@@ -428,7 +426,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(15)
+  @Order(4)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
@@ -452,7 +450,7 @@ public class AcceptanceTests {
 
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @RetryingTest(3)
-  @Order(16)
+  @Order(5)
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
@@ -511,69 +509,8 @@ public class AcceptanceTests {
     }
   }
 
-  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
-  // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
-  // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
   @RetryingTest(3)
-  @Order(17)
-  @Disabled
-  public void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
-
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 1000)
-            .put("message_interval", 100)
-            .build()));
-
-    // Destination fails after processing 5 messages, so the job should fail after the graceful close
-    // timeout of 1 minute
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "FAILING")
-            .put("num_messages", 5)
-            .build()));
-
-    final String connectionName = "test-connection";
-    final UUID sourceId = source.getSourceId();
-    final UUID destinationId = destination.getDestinationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
-            .getConnectionId();
-
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    // wait to get out of pending.
-    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
-
-    // wait for job for max of 3 minutes, by which time the job attempt should have failed
-    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
-
-    final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
-    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
-    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
-
-    // assert that the job attempt failed, and cancel the job regardless of status to prevent retries
-    try {
-      assertEquals(AttemptStatus.FAILED, attemptInfoRead.getAttempt().getStatus());
-    } finally {
-      apiClient.getJobsApi().cancelJob(jobId);
-    }
-  }
-
-  @RetryingTest(3)
-  @Order(18)
+  @Order(6)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
@@ -643,7 +580,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(19)
+  @Order(7)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
@@ -672,7 +609,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(20)
+  @Order(8)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
@@ -716,7 +653,7 @@ public class AcceptanceTests {
   }
 
   @RetryingTest(3)
-  @Order(21)
+  @Order(9)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
