@@ -385,7 +385,6 @@ class Stream(HttpStream, ABC):
             raise e
 
     def parse_response_error_message(self, response):
-        print("parsing response error message")
         body = response.json()
         if body["category"] == "MISSING_SCOPES":
             error = body["errors"][0]
