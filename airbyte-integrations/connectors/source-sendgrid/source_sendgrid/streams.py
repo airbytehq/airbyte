@@ -5,17 +5,12 @@
 import datetime
 import urllib
 from abc import ABC, abstractmethod
-from asyncio import streams
-from asyncio.log import logger
-from cgi import parse_multipart
-from distutils.command.config import config
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from pytest import param
 
 
 class SendgridStream(HttpStream, ABC):
@@ -62,7 +57,9 @@ class SendgridStream(HttpStream, ABC):
 class SendgridStreamOffsetPagination(SendgridStream):
     offset = 0
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
         params["limit"] = self.limit
         if next_page_token:
@@ -78,9 +75,10 @@ class SendgridStreamOffsetPagination(SendgridStream):
         self.offset += self.limit
         return {"offset": self.offset}
 
+
 class SendgridSubStream(HttpSubStream):
     returns_list = False
-    filter_field = 'id'
+    filter_field = "id"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
@@ -90,17 +88,15 @@ class SendgridSubStream(HttpSubStream):
         Rate Limits Docs: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits"""
 
         rate_limit_reset = response.headers.get("X-RateLimit-Reset")
-        rate_limit_limit = response.headers.get("X-RateLimit-Limit")
-        rate_limit_remaining = response.headers.get("X-RateLimit-Remaining")
+        # rate_limit_limit = response.headers.get("X-RateLimit-Limit")
+        # rate_limit_remaining = response.headers.get("X-RateLimit-Remaining")
 
         backoff_time = float(rate_limit_reset)
 
         if backoff_time is not None:
             return backoff_time
 
-
-    def stream_slices(
-        self, sync_mode: SyncMode) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, sync_mode: SyncMode) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_records = self.parent.read_records(sync_mode=sync_mode)
         # iterate over all parent records with current stream_slice
         for record in parent_records:
@@ -111,7 +107,7 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "created"
     end_time = pendulum.now().int_timestamp
 
-    def __init__(self, start_time: int, end_time: int , **kwargs):
+    def __init__(self, start_time: int, end_time: int, **kwargs):
         super().__init__(**kwargs)
         self._start_time = start_time
         self._end_time = end_time
@@ -126,7 +122,9 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
         if stream_state.get(self.cursor_field):
             params.update({"start_time": stream_state[self.cursor_field], "end_time": self.end_time})
@@ -136,6 +134,7 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
             else:
                 params.update({"start_time": self._start_time, "end_time": pendulum.now().int_timestamp})
         return params
+
 
 class SendgridStreamMetadataPagination(SendgridStream):
     def request_params(
@@ -230,7 +229,9 @@ class SingleSends(SendgridStreamMetadataPagination):
 class Templates(SendgridStreamMetadataPagination):
     data_field = "result"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
         params["generations"] = "legacy,dynamic"
         return params
@@ -239,10 +240,12 @@ class Templates(SendgridStreamMetadataPagination):
     def initial_path() -> str:
         return "templates"
 
+
 class Messages(SendgridStream, SendgridStreamIncrementalMixin):
     """
     https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages
     """
+
     data_field = "messages"
     cursor_field = "last_event_time"
     limit = 1000
@@ -251,42 +254,49 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
     def use_cache(self) -> bool:
         return True
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
         params = super().request_params(stream_state, stream_slice, next_page_token, **kwargs)
         if type(params["start_time"]) == int:
             date_start = datetime.datetime.fromtimestamp(int(params["start_time"])).strftime(time_filter_template)
         else:
             date_start = params["start_time"]
-        date_end = datetime.datetime.fromtimestamp(int(params["end_time"])).strftime(time_filter_template)    
+        date_end = datetime.datetime.fromtimestamp(int(params["end_time"])).strftime(time_filter_template)
         queryapi = f'last_event_time BETWEEN TIMESTAMP "{date_start}" AND TIMESTAMP "{date_end}"'
-        params['query'] = urllib.parse.quote(queryapi)
-        params['limit'] = self.limit
-        payload_str = "&".join("%s=%s" % (k,v) for k,v in params.items() if k not in ['start_time', 'end_time'])
+        params["query"] = urllib.parse.quote(queryapi)
+        params["limit"] = self.limit
+        payload_str = "&".join("%s=%s" % (k, v) for k, v in params.items() if k not in ["start_time", "end_time"])
         return payload_str
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "messages"
 
+
 class MessagesDetails(SendgridSubStream, SendgridStream, SendgridStreamIncrementalMixin):
     """
     https://docs.sendgrid.com/api-reference/e-mail-activity/filter-messages-by-message-id
     """
+
     limit = 1000
-    filter_field = 'msg_id'
+    filter_field = "msg_id"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f'messages/{stream_slice["id"]}'
+
 
 class TemplateDetails(SendgridSubStream, SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     """
     https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-a-single-transactional-template
     """
+
     limit = 1000
-    #filter_field = 'template_id'
+    # filter_field = 'template_id'
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f'templates/{stream_slice["id"]}'
+
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     primary_key = "email"

@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from asyncio import streams
+
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
@@ -33,7 +33,6 @@ from .streams import (
 
 
 class SourceSendgrid(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(config["apikey"])
@@ -58,7 +57,7 @@ class SourceSendgrid(AbstractSource):
             templates,
             messages,
             MessagesDetails(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"], parent=messages),
-            TemplateDetails(authenticator=authenticator,start_time=config["start_time"], end_time=config["end_time"], parent=templates),
+            TemplateDetails(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"], parent=templates),
             GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
