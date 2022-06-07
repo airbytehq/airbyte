@@ -38,7 +38,7 @@ public class StreamResetPersistence {
   }
 
   /*
-   * Get a list of streamDescriptors for streams that have pending or running resets
+   * Get a list of StreamDescriptors for streams that have pending or running resets
    */
   public List<StreamDescriptor> getStreamResets(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx.select(DSL.asterisk())
