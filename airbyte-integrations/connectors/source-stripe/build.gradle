@@ -1,6 +1,6 @@
 plugins {
     id 'airbyte-python'
-    id 'airbyte-docker'
+    id 'airbyte-docker-bmuschko'
     id 'airbyte-source-acceptance-test'
 }
 
