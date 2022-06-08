@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -66,7 +67,8 @@ public class StateManagerFactory {
    * @param config The connector configuration.
    * @return {@code true} if the connector utilizes CDC or {@code false} otherwise.
    */
-  private static boolean isCdc(final JsonNode config) {
+  @VisibleForTesting
+  protected static boolean isCdc(final JsonNode config) {
     return config.hasNonNull("replication_method")
         && config.get("replication_method").hasNonNull("replication_slot")
         && config.get("replication_method").hasNonNull("publication");
