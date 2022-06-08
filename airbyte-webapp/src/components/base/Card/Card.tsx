@@ -5,7 +5,7 @@ interface CardProps {
 }
 
 export const Card = classy("div", ({ full }: CardProps) => [
-  "bg-white rounded-lg shadow-2",
+  "bg-white rounded-4 shadow-2",
   {
     "w-full": full,
   },
