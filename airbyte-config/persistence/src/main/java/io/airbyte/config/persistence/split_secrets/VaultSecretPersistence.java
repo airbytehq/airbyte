@@ -27,7 +27,7 @@ final public class VaultSecretPersistence implements SecretPersistence {
   /**
    * Constructor for testing
    */
-  public VaultSecretPersistence(final String address, final String prefix, final String token) {
+  protected VaultSecretPersistence(final String address, final String prefix, final String token) {
     this.vault = Exceptions.toRuntime(() -> getVaultClient(address, token));
     this.pathPrefix = prefix;
   }
@@ -61,9 +61,9 @@ final public class VaultSecretPersistence implements SecretPersistence {
   }
 
   /**
-   * This creates a vault client using a vault agent which uses AWS IAM for auth.
+   * This creates a vault client using a vault agent which uses AWS IAM for auth using engine version 2.
    */
-  public static Vault getVaultClient(final String address) throws VaultException {
+  private static Vault getVaultClient(final String address) throws VaultException {
     final var config = new VaultConfig()
         .address(address)
         .engineVersion(2)
@@ -74,7 +74,7 @@ final public class VaultSecretPersistence implements SecretPersistence {
   /**
    * Vault client for testing
    */
-  public static Vault getVaultClient(final String address, final String token) throws VaultException {
+  private static Vault getVaultClient(final String address, final String token) throws VaultException {
     final var config = new VaultConfig()
         .address(address)
         .token(token)
