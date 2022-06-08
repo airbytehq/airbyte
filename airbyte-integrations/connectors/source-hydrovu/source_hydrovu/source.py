@@ -84,6 +84,66 @@ class HydroVuStream(HttpStream, ABC):
         yield {}
 
 
+class FriendlyNames(HydroVuStream):
+    """
+    Gets friendly names parameters and units from HydroVu API
+    """
+
+    # Required
+    primary_key = "id"
+    
+    def __init__(self, *args, **kw):
+        super(FriendlyNames, self).__init__(*args, **kw)
+
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        End of URL path to locations list from API
+        """
+        return "sispec/friendlynames"
+    
+
+    def request_headers(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        The X-ISI-Start-Page is a header that is required if accessing any page beyond the fist
+        page from the given path to the locations list. If accessing the first page, then the
+        header can be empty.
+        """
+
+        # If there is a next_page_token from the previous page of the list of locations,
+        # then set the X-ISI-Start-Page header.
+        if next_page_token:
+            return {"X-ISI-Start-Page": next_page_token}
+            
+        else:
+            return {}
+
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        If there is a next page listed in the response header, then the string for that 
+        page will be parsed.
+        """
+
+        try:
+            r = response.headers['X-ISI-Next-Page']
+            return r
+
+        except:
+            pass
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parses the response of friendly names. 
+        """
+
+        yield response.json()
+
+
 class Locations(HydroVuStream):
     """
     Gets list of locations from HydroVu API
@@ -94,6 +154,7 @@ class Locations(HydroVuStream):
     
     def __init__(self, *args, **kw):
         super(Locations, self).__init__(*args, **kw)
+
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -442,4 +503,4 @@ class SourceHydrovu(AbstractSource):
                                      ""
                                      )
 
-        return [Locations(authenticator=auth), Readings(auth, authenticator=auth)]
+        return [FriendlyNames(authenticator=auth), Locations(authenticator=auth), Readings(auth, authenticator=auth)]
