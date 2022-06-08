@@ -110,6 +110,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
+      - name: test node
+        run: |
+          node --version
+          npm --version
       - name: Install Pyenv and Tox
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user

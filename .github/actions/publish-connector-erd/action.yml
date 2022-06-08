@@ -12,7 +12,7 @@ runs:
   steps:
     - name: Install dbdocs
       shell: bash
-      run: sudo npm install -g dbdocs
+      run: npm install -g dbdocs
     - name: Check dbdocs
       shell: bash
       run: dbdocs
