@@ -26,11 +26,13 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -402,6 +404,25 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     properties.set(CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+  // state.
+  @Override
+  protected AirbyteStateMessage serializeState(final JsonNode stateJson) {
+    if (stateJson == null) {
+      // TODO What should the default/empty state be -- per stream or global?
+      return new AirbyteStateMessage()
+          .withStateType(AirbyteStateType.PER_STREAM)
+          .withStreams(List.of());
+    } else {
+      try {
+        return Jsons.object(stateJson, AirbyteStateMessage.class);
+      } catch (final IllegalArgumentException e) {
+        LOGGER.warn("Defaulting to legacy state object...");
+        return new AirbyteStateMessage().withData(stateJson);
+      }
+    }
   }
 
   public static void main(final String[] args) throws Exception {

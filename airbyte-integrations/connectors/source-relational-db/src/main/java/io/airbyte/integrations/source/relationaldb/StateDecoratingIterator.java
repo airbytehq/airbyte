@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -40,7 +41,6 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.maxCursor = initialCursor;
-    stateManager.setIsCdc(false);
   }
 
   @Override
