@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.adaptive;
 
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -79,6 +83,7 @@ public class AdaptiveSourceRunner {
       new IntegrationRunner(source).run(args);
       LOGGER.info("Completed source: {}", source.getClass().getName());
     }
+
   }
 
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.adaptive;
 
 import io.airbyte.integrations.base.Destination;
@@ -79,6 +83,7 @@ public class AdaptiveDestinationRunner {
       new IntegrationRunner(destination).run(args);
       LOGGER.info("Completed destination: {}", destination.getClass().getName());
     }
+
   }
 
 }
