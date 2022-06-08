@@ -59,7 +59,7 @@ This connector outputs the following incremental streams:
    Please, consider this behaviour when using those 20 incremental streams because it may affect you API call limits.
 
 3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
-**The "Start Date" configuration option does not apply to the streams below, because the Github API does not include dates which can be used for filtering:**
+**The "Start date" configuration option does not apply to the streams below, because the Github API does not include dates which can be used for filtering:**
 
 * `assignees`
 * `branches`
@@ -94,7 +94,7 @@ The Github connector should not run into Github API limitations under normal usa
 * **Authentication** - Select from 2 authentication methods:
     * **Authenticate via GitHub (OAuth)** - Only available in Airbyte Cloud. Authenticate by clicking the "Authenticate your account" button;
     * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
-* **Start Date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
+* **Start date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
 * **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`;
 * **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`);
 * **Page size for large streams (Optional)** - The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
