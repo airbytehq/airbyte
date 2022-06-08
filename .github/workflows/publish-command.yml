@@ -208,7 +208,7 @@ jobs:
         id: publish-erd
         uses: ./.github/actions/publish-connector-erd
         with:
-          connector: ${{ env.IMAGE_NAME }}
+          connector_directory_name: $(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)
       - name: Bump version in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
