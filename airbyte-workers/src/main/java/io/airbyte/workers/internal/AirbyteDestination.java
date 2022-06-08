@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -49,7 +49,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    *
    * @throws Exception - throws if there is any failure when flushing.
    */
-  void notifyEndOfStream() throws Exception;
+  void notifyEndOfInput() throws Exception;
 
   /**
    * Means no more data will be emitted by the Destination. This may be because all data has already

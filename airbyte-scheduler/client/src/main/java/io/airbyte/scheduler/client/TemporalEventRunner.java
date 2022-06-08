@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.client;
@@ -15,7 +15,7 @@ public class TemporalEventRunner implements EventRunner {
 
   private final TemporalClient temporalClient;
 
-  public void createNewSchedulerWorkflow(final UUID connectionId) {
+  public void createConnectionManagerWorkflow(final UUID connectionId) {
     temporalClient.submitConnectionUpdaterAsync(connectionId);
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -28,21 +28,16 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.DatabaseInstance;
-import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.TemporalEventRunner;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
@@ -55,10 +50,7 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -67,7 +59,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import lombok.val;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -137,73 +128,60 @@ public class ServerApp implements ServerRunnable {
   }
 
   private static void assertDatabasesReady(final Configs configs,
-                                           final DatabaseInstance configsDatabaseInstance,
-                                           final DataSource configsDataSource,
-                                           final DatabaseInstance jobsDatabaseInstance,
-                                           final DataSource jobsDataSource)
-      throws InterruptedException {
+                                           final DSLContext configsDslContext,
+                                           final Flyway configsFlyway,
+                                           final DSLContext jobsDslContext,
+                                           final Flyway jobsFlyway)
+      throws DatabaseCheckException {
     LOGGER.info("Checking configs database flyway migration version..");
-    MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, ServerApp.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    val configsMigrator = new ConfigsDatabaseMigrator(configsDatabaseInstance.getInitialized(), configsFlyway);
-    MinimumFlywayMigrationVersionCheck.assertMigrations(configsMigrator, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getConfigsDatabaseInitializationTimeoutMs());
+    DatabaseCheckFactory
+        .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
+            configs.getConfigsDatabaseInitializationTimeoutMs())
+        .check();
 
     LOGGER.info("Checking jobs database flyway migration version..");
-    MinimumFlywayMigrationVersionCheck.assertDatabase(jobsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    val jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), jobsFlyway);
-    MinimumFlywayMigrationVersionCheck.assertMigrations(jobsMigrator, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getJobsDatabaseInitializationTimeoutMs());
-
+    DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
+        configs.getJobsDatabaseInitializationTimeoutMs()).check();
   }
 
   public static ServerRunnable getServer(final ServerFactory apiFactory,
                                          final ConfigPersistence seed,
                                          final Configs configs,
                                          final DSLContext configsDslContext,
-                                         final DataSource configsDataSource,
+                                         final Flyway configsFlyway,
                                          final DSLContext jobsDslContext,
-                                         final DataSource jobsDataSource)
+                                         final Flyway jobsFlyway)
       throws Exception {
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Checking databases..");
-    final DatabaseInstance configsDatabaseInstance =
-        new ConfigsDatabaseInstance(configsDslContext);
-    final DatabaseInstance jobsDatabaseInstance =
-        new JobsDatabaseInstance(jobsDslContext);
-    assertDatabasesReady(configs, configsDatabaseInstance, configsDataSource, jobsDatabaseInstance, jobsDataSource);
+    assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
-    final Database configDatabase = configsDatabaseInstance.getInitialized();
+    final Database configsDatabase = new Database(configsDslContext);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configsDatabase, jsonSecretsProcessor);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configsDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
         new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
-    final Database jobDatabase = jobsDatabaseInstance.getInitialized();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final Database jobsDatabase = new Database(jobsDslContext);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobsDatabase);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -215,24 +193,13 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
-    final SchedulerJobClient schedulerJobClient =
-        new DefaultSchedulerJobClient(
-            configs.connectorSpecificResourceDefaultsEnabled(),
-            jobPersistence,
-            new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(
         TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
-
-    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, DbMigrationHandler.class.getSimpleName(),
-        ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
     // It is important that the migration to the temporal scheduler is performed before the server
     // accepts any requests.
@@ -245,25 +212,20 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
-        schedulerJobClient,
         syncSchedulerClient,
-        temporalService,
         configRepository,
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
         seed,
-        configDatabase,
-        jobDatabase,
+        configsDatabase,
+        jobsDatabase,
         trackingClient,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        workerConfigs,
-        configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
         httpClient,
-        featureFlags,
         eventRunner,
         configsFlyway,
         jobsFlyway);
@@ -307,8 +269,14 @@ public class ServerApp implements ServerRunnable {
         // Ensure that the database resources are closed on application shutdown
         CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-        getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
-            configs, configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
+        final Flyway configsFlyway = FlywayFactory.create(configsDataSource, DbMigrationHandler.class.getSimpleName(),
+            ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+            JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+        final ConfigPersistence yamlSeedConfigPersistence =
+            new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+
+        getServer(new ServerFactory.Api(), yamlSeedConfigPersistence, configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);

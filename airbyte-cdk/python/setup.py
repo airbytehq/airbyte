@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.59",
+    version="0.1.60",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -54,6 +54,8 @@ setup(
         "sentry-sdk~=1.5.1",
         "vcrpy",
         "Deprecated~=1.2",
+        "Jinja2~=3.1.2",
+        "pyjq~=2.5.2",
     ],
     python_requires=">=3.9",
     extras_require={

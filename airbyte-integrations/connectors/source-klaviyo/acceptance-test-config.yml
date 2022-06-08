@@ -13,6 +13,7 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
+      empty_streams: ['flows']
   incremental:
     - config_path: "secrets/config.json"
       future_state_path: "integration_tests/abnormal_state.json"

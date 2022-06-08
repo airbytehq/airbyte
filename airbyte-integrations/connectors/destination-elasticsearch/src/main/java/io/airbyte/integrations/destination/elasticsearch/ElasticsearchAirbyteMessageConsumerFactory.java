@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.elasticsearch;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 32; // 32mib
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final AtomicLong recordsWritten = new AtomicLong(0);

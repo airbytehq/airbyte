@@ -43,7 +43,7 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 To set up a destination:
 
 1. On the Airbyte Cloud dashboard, click **Destinations** in the left navigation bar. 
-2. In the top right corner, click **+ new destination**.
+2. In the top right corner, click **+ New destination**.
 3. On the Set up the destination page, enter a name for your destination.
 4. From the Destination type dropdown, select the destination you want to set up.
 5. The fields relevant to your destination are displayed. 

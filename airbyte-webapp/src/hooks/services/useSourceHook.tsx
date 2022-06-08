@@ -24,14 +24,17 @@ export const sourcesKeys = {
   detail: (sourceId: string) => [...sourcesKeys.all, "details", sourceId] as const,
 };
 
-type ValuesProps = {
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
   frequency?: string;
-};
+}
 
-type ConnectorProps = { name: string; sourceDefinitionId: string };
+interface ConnectorProps {
+  name: string;
+  sourceDefinitionId: string;
+}
 
 function useSourceService() {
   const { apiUrl } = useConfig();
@@ -39,7 +42,9 @@ function useSourceService() {
   return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type SourceList = { sources: SourceRead[] };
+interface SourceList {
+  sources: SourceRead[];
+}
 
 const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();

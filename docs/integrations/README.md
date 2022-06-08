@@ -15,10 +15,10 @@ For more information about the grading system, see [Product Release Stages](http
 ## Sources
 
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
-| :------------------------------------------------------------------------------------------ | :------------------- | :------------------ |
+|:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
-| [Amazon Ads](sources/amazon-ads.md)                                                         | Alpha                | No                  |
+| [Amazon Ads](sources/amazon-ads.md)                                                         | Beta                 | Yes                 |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md)                                   | Alpha                | No                  |
 | [Amazon SQS](sources/amazon-sqs.md)                                                         | Alpha                | Yes                 |
 | [Amplitude](sources/amplitude.md)                                                           | Beta                 | Yes                 |
@@ -41,7 +41,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Close.com](sources/close-com.md)                                                           | Alpha                | Yes                 |
 | [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
 | [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
-| [Confluence](sources/confulence.md)                                                         | Alpha                | No                  |
+| [Confluence](sources/confluence.md)                                                         | Alpha                | No                  |
 | [Customer.io](sources/customer-io.md)                                                       | Alpha                | No                  |
 | [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
 | [Delighted](sources/delighted.md)                                                           | Alpha                | Yes                 |
@@ -63,7 +63,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Ads](sources/google-ads.md)                                                         | Beta                 | Yes                 |
 | [Google Analytics v4](sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
-| [Google Search Console](sources/google-search-console.md)                                   | Alpha                | Yes                 |
+| [Google Search Console](sources/google-search-console.md)                                   | Beta                 | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Alpha                | Yes                 |
@@ -72,7 +72,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Beta                 | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Beta                 | Yes                 |
-| [Intercom](sources/intercom.md)                                                             | Beta                 | Yes                 |
+| [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
 | [Iterable](sources/iterable.md)                                                             | Alpha                | Yes                 |
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
@@ -80,7 +80,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Klaviyo](sources/klaviyo.md)                                                               | Alpha                | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
-| [Lever](sources/level-hiring.md)                                                            | Alpha                | No                  |
+| [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Beta                 | Yes                 |
 | [Linnworks](sources/linnworks.md)                                                           | Alpha                | Yes                 |
 | [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
@@ -164,11 +164,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
 | [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
+| [SFTP](sources/sftp.md)                                                                     | Alpha                | No                  |
 
 ## Destinations
 
 | Connector                                                  | Product Release Stage| Available in Cloud? |
-| :--------------------------------------------------------- | :------------------- | :------------------ |
+|:-----------------------------------------------------------| :------------------- | :------------------ |
 | [Amazon SQS](destinations/amazon-sqs.md)                   | Alpha                | Yes                 |
 | [Amazon Datalake](destinations/aws-datalake.md)            | Alpha                | No                  |
 | [AzureBlobStorage](destinations/azureblobstorage.md)       | Alpha                | Yes                 |
@@ -177,7 +178,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Chargify (Keen)](destinations/chargify.md)                | Alpha                | Yes                 |
 | [ClickHouse](destinations/clickhouse.md)                   | Alpha                | Yes                 |
 | [Databricks](destinations/databricks.md)                   | Alpha                | Yes                 |
-| [DynamoDB](sources/dynamodb.md)                            | Alpha                | Yes                 |
+| [DynamoDB](destinations/dynamodb.md)                       | Alpha                | Yes                 |
 | [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | Yes                 |
 | [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
@@ -198,10 +199,10 @@ For more information about the grading system, see [Product Release Stages](http
 | [Postgres](destinations/postgres.md)                       | Alpha                | Yes                 |
 | [Pulsar](destinations/pulsar.md)                           | Alpha                | Yes                 |
 | [RabbitMQ](destinations/rabbitmq.md)                       | Alpha                | Yes                 |
-| [Redis](sources/redis.md)                                  | Alpha                | Yes                 |
+| [Redis](destinations/redis.md)                             | Alpha                | Yes                 |
 | [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
 | [Rockset](destinations/rockset.md)                         | Alpha                | Yes                 |
-| [S3](destinations/s3.md)                                   | Beta                 | Yes                 |
+| [S3](destinations/s3.md)                                   | Generally Available  | Yes                 |
 | [Scylla](destinations/scylla.md)                           | Alpha                | Yes                 |
 | [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
 | [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |

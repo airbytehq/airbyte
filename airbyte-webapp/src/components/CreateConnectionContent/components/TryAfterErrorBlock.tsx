@@ -16,11 +16,11 @@ const AgainButton = styled(Button)`
   min-width: 239px;
 `;
 
-type TryAfterErrorBlockProps = {
+interface TryAfterErrorBlockProps {
   message?: React.ReactNode;
   onClick: () => void;
   additionControl?: React.ReactNode;
-};
+}
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
   <Block>
