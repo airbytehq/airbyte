@@ -44,13 +44,13 @@ public class StateManagerFactory {
         LOGGER.info("CDC state manager selected to manage state object with type {}.", state.getClass().getName());
         // TODO create proper CDC state manager
         return null;
-      } else if (airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
+      } else if (airbyteStateMessage.getStateType() == AirbyteStateType.PER_STREAM) {
+        LOGGER.info("Per stream state manager selected to manage state object with type {}.", state.getClass().getName());
+        return new PerStreamStateManager(airbyteStateMessage, catalog);
+      } else {
         LOGGER.info("Global state manager selected to manage state object with type {}.", state.getClass().getName());
         // TODO create proper Global state manager
         return null;
-      } else {
-        LOGGER.info("Per stream state manager selected to manage state object with type {}.", state.getClass().getName());
-        return new PerStreamStateManager(airbyteStateMessage, catalog);
       }
     } else if (state instanceof DbState dbState) {
       LOGGER.info("Legacy state manager selected to manage state object with type {}.", state.getClass().getName());
