@@ -117,6 +117,7 @@ import org.testcontainers.utility.MountableFile;
 /**
  * The class test for advanced platform functionality that can be affected by the networking
  * difference between the Kube and Docker deployments i.e. distributed vs local processes.
+ * All tests in this class should pass when ran on either type of deployment.
  * <p>
  * Tests use the {@link RetryingTest} annotation instead of the more common {@link Test}
  * to allow multiple tries for a test to pass. This is because these tests sometimes fail
