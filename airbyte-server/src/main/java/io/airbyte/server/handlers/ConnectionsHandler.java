@@ -161,13 +161,24 @@ public class ConnectionsHandler {
       throw e;
     }
 
-    putToSub(connectionCreate.toString());
+    final String message = String.format("""
+        {
+        "type": "CreateConnection",
+        "name": "%s",
+        "sourceId": "%s",
+        "destinationId": "%s",
+        "schedule": "%s"
+        }
+        """,connectionCreate.getName(), connectionCreate.getSourceId(), connectionCreate.getDestinationId(), connectionCreate.getSchedule());
+
+    pubToSub(message);
 
     return buildConnectionRead(connectionId);
   }
 
+
   // nice to have logger output here, as opposed to publishing in ConfigurationApi.java
-  private void putToSub(final String message) {
+  private void pubToSub(final String message) {
     try {
       final ByteString data = ByteString.copyFromUtf8(message);
       final PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();

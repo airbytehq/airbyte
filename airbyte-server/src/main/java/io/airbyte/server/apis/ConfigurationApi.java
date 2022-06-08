@@ -438,6 +438,19 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
+    final String message = String.format("""
+        {
+        "type": "CreateSource",
+        "name": "%s",
+        "workspaceId": "%s",
+        "config": "%s"
+        }
+        """,
+        sourceCreate.getName(),
+        sourceCreate.getWorkspaceId(),
+        sourceCreate.getConnectionConfiguration());
+
+    pubToSub(message);
     return execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
@@ -598,6 +611,19 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
+    final String message = String.format("""
+        {
+        "type": "CreateDestination",
+        "name": "%s",
+        "workspaceId": "%s",
+        "config": "%s"
+        }
+        """,
+        destinationCreate.getName(),
+        destinationCreate.getWorkspaceId(),
+        destinationCreate.getConnectionConfiguration());
+
+    pubToSub(message);
     return execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
@@ -658,7 +684,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    pubToSub("List Connections for Workspace: " + workspaceIdRequestBody.getWorkspaceId());
+    final String message = String.format("""
+        {
+        "type": "ListConnections",
+        "workspaceId": "%s"
+        }
+        """, workspaceIdRequestBody.getWorkspaceId());
+    pubToSub(message);
     return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
