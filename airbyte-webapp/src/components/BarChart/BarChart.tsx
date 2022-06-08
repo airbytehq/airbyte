@@ -24,6 +24,7 @@ interface BarChartProps {
 const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel }) => {
   const chartLinesColor = theme.greyColor20;
   const chartTicksColor = theme.lightTextColor;
+  const chartHoverFill = theme.greyColor20;
 
   const width = useMemo(
     () => Math.min(Math.max([...data].sort((a, b) => b.value - a.value)[0].value.toFixed(0).length * 10, 80), 130),
@@ -62,7 +63,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
         >
           <Label value={yLabel} fontSize={11} fill={chartTicksColor} fontWeight={600} position="top" offset={10} />
         </YAxis>
-        <Tooltip />
+        <Tooltip cursor={{ fill: chartHoverFill }} />
         {legendLabels.map((barName, key) => (
           <Bar key={barName} dataKey={barName} fill={barChartColors[key]} />
         ))}

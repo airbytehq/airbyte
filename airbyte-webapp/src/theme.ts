@@ -61,6 +61,6 @@ export const theme = {
   italicFont: scss.italicFont,
 };
 
-export const barChartColors = ["#E8E8ED", "#AFAFC1"];
+export const barChartColors = ["#AFAFC1", "#E8E8ED"];
 
 export type Theme = typeof theme;
