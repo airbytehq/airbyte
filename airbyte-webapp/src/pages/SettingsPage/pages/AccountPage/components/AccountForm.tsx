@@ -60,6 +60,7 @@ const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessa
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={accountValidationSchema}
+      enableReinitialize
       onSubmit={onSubmit}
     >
       {({ isSubmitting, dirty, values }) => (
