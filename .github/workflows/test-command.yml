@@ -95,3 +95,4 @@ jobs:
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+          GCP_SONAR_SA_KEY: ${{ secrets.GCP_SONAR_SA_KEY }}

