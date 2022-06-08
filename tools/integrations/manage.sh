@@ -312,17 +312,6 @@ cmd_publish() {
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
 
-    # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
-    local tmp_spec_file; tmp_spec_file=$(mktemp)
-    docker run --rm "$versioned_image" spec | \
-      # 1. filter out any lines that are not valid json.
-      jq -R "fromjson? | ." | \
-      # 2. grab any json that has a spec in it.
-      # 3. if there are more than one, take the first one.
-      # 4. if there are none, throw an error.
-      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
-      > "$tmp_spec_file"
-
     # use service account key file is provided.
     if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
       echo "Using provided service account key"
@@ -331,7 +320,7 @@ cmd_publish() {
       echo "Using environment gcloud"
     fi
 
-    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+    publish_spec_files "$image_name" "$image_version"
   else
     echo "Publishing without writing to spec cache."
   fi
@@ -343,22 +332,45 @@ cmd_publish_external() {
   local image_version=$1; shift || error "Missing target (image version) $USAGE"
 
   echo "image $image_name:$image_version"
-
   echo "Publishing and writing to spec cache."
-  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
-  local tmp_spec_file; tmp_spec_file=$(mktemp)
-  docker run --rm "$image_name:$image_version" spec | \
-    # 1. filter out any lines that are not valid json.
-    jq -R "fromjson? | ." | \
-    # 2. grab any json that has a spec in it.
-    # 3. if there are more than one, take the first one.
-    # 4. if there are none, throw an error.
-    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
-    > "$tmp_spec_file"
-
   echo "Using environment gcloud"
 
-  gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+  publish_spec_files "$image_name" "$image_version"
+}
+
+generate_spec_file() {
+  local image_name=$1; shift || error "Missing target (image name)"
+  local image_version=$1; shift || error "Missing target (image version)"
+  local tmp_spec_file=$1; shift || error "Missing target (temp spec file name)"
+  local deployment_mode=$1; shift || error "Missing target (deployment mode)"
+
+  docker run --env DEPLOYMENT_MODE="$deployment_mode" --rm "$image_name:$image_version" spec | \
+      # 1. filter out any lines that are not valid json.
+      jq -R "fromjson? | ." | \
+      # 2. grab any json that has a spec in it.
+      # 3. if there are more than one, take the first one.
+      # 4. if there are none, throw an error.
+      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+      > "$tmp_spec_file"
+}
+
+publish_spec_files() {
+  local image_name=$1; shift || error "Missing target (image name)"
+  local image_version=$1; shift || error "Missing target (image version)"
+
+  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+  local tmp_default_spec_file; tmp_default_spec_file=$(mktemp)
+  local tmp_cloud_spec_file; tmp_cloud_spec_file=$(mktemp)
+
+  # generate oss and cloud spec files
+  generate_spec_file "$image_name" "$image_version" "$tmp_default_spec_file" "OSS"
+  generate_spec_file "$image_name" "$image_version" "$tmp_cloud_spec_file" "CLOUD"
+
+  gsutil cp "$tmp_default_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+  # upload cloud spec only if it is different from oss
+  if cmp --silent -- "$tmp_default_spec_file" "$tmp_cloud_spec_file"; then
+    gsutil cp "$tmp_cloud_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.cloud.json"
+  fi
 }
 
 main() {
