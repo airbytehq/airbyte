@@ -176,6 +176,11 @@
     timestamp without time zone
 {% endmacro %}
 
+{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
+{%- macro mysql__type_timestamp_without_timezone() -%}
+    char
+{%- endmacro -%}
+
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -187,6 +192,11 @@
     time without time zone
 {% endmacro %}
 
+{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
+{%- macro mysql__type_time_without_timezone() -%}
+    char
+{%- endmacro -%}
+
 
 {# time with time zone  -------------------------------------------------     #}
 
@@ -197,6 +207,11 @@
 {% macro default__type_time_with_timezone() %}
     time with time zone
 {% endmacro %}
+
+{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
+{%- macro mysql__type_time_with_timezone() -%}
+    char
+{%- endmacro -%}
 
 
 {# date  -------------------------------------------------     #}
