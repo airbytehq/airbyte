@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -112,16 +113,7 @@ public class PerStreamStateManagerTest {
     final StateManager stateManager = new PerStreamStateManager(new AirbyteStateMessage(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
-        // .withData(Jsons.jsonNode(new DbState().withStreams(List
-        // .of(
-        // new
-        // DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
-        // .withCursor("a"),
-        // new
-        // DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2)),
-        // new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
-        // .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
-        // .withCdc(false)))
+        .withStateType(AirbyteStateType.PER_STREAM)
         .withStreams(List.of(
             new AirbyteStreamState()
                 .withName(STREAM_NAME1)
@@ -154,17 +146,7 @@ public class PerStreamStateManagerTest {
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
-        // .withData(Jsons.jsonNode(new DbState().withStreams(List
-        // .of(
-        // new
-        // DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
-        // .withCursor("a"),
-        // new
-        // DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2))
-        // .withCursor("b"),
-        // new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
-        // .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
-        // .withCdc(false)))
+        .withStateType(AirbyteStateType.PER_STREAM)
         .withStreams(List.of(
             new AirbyteStreamState()
                 .withName(STREAM_NAME1)
@@ -212,6 +194,7 @@ public class PerStreamStateManagerTest {
     final StateManager stateManager = new PerStreamStateManager(new AirbyteStateMessage(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
+        .withStateType(AirbyteStateType.PER_STREAM)
         .withStreams(
             List.of(
                 new AirbyteStreamState()
