@@ -11,6 +11,29 @@ additionalProperties: false
 properties:
   dockerImage:
     type: string
+  # default spec field
   spec:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  # array of spec variants
+  specs:
+    type: array
+    items:
+      type: object
+      required:
+        - spec_type
+        - spec
+      properties:
+        spec_type:
+          type: string
+          title: Connector Spec Type
+          description: Connector Spec under a specific deployment mode
+          enum:
+            - CLOUD
+            - OSS
+          order: 1
+        spec:
+          type: object
+          title: Connector Spec
+          existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+          order: 2
