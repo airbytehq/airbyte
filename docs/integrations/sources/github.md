@@ -57,7 +57,7 @@ This connector outputs the following full refresh streams:
 * [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
 * [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
 * [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
-* [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
+* [Issue labels](https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository)
 * [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
 * [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
 * [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
@@ -125,8 +125,8 @@ If you use OAuth authentication method, the oauth2.0 application requests the ne
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
-* For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/access-permissions-on-github).
-* Syncing [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs). [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
+* For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+* Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 * To sync the Projects stream, the repository must have the Projects feature enabled.
 
 ### Performance considerations

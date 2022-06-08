@@ -304,7 +304,7 @@ class Collaborators(GithubStream):
 
 class IssueLabels(GithubStream):
     """
-    API docs: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
