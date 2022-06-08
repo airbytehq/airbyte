@@ -107,12 +107,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.9"
-      #      - name: Install Pyenv and Tox
-      #        run: |
-      #          python3 -m pip install --quiet virtualenv==16.7.9 --user
-      #          python3 -m virtualenv venv
-      #          source venv/bin/activate
-      #          pip install --quiet tox==3.24.4
+      - name: Install Pyenv and Tox
+        run: |
+          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          python3 -m virtualenv venv
+          source venv/bin/activate
+          pip install --quiet tox==3.24.4
       #      - name: Install yq
       #        if: github.event.inputs.auto-bump-version == 'true' && success()
       #        run: |
@@ -120,12 +120,12 @@ jobs:
       #          sudo add-apt-repository ppa:rmescandon/yq
       #          sudo apt update
       #          sudo apt install yq -y
-      #      - name: Test and install CI scripts
-      #        # all CI python packages have the prefix "ci_"
-      #        run: |
-      #          source venv/bin/activate
-      #          tox -r -c ./tools/tox_ci.ini
-      #          pip install --quiet -e ./tools/ci_*
+      - name: Test and install CI scripts
+        # all CI python packages have the prefix "ci_"
+        run: |
+          source venv/bin/activate
+          tox -r -c ./tools/tox_ci.ini
+          pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           source venv/bin/activate
