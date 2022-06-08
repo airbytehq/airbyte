@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -17,8 +17,8 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,7 +83,7 @@ class DockerProcessFactoryTest {
 
     final DockerProcessFactory processFactory =
         new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
+    processFactory.create("tester", "job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
         new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of(), Map.of());
 
     assertEquals(
@@ -113,6 +113,7 @@ class DockerProcessFactoryTest {
     waitForDockerToInitialize(processFactory, jobRoot, workerConfigs);
 
     final Process process = processFactory.create(
+        "tester",
         "job_id",
         0,
         jobRoot,
@@ -144,6 +145,7 @@ class DockerProcessFactoryTest {
 
     while (stopwatch.elapsed().compareTo(Duration.ofSeconds(30)) < 0) {
       final Process p = processFactory.create(
+          "tester",
           "job_id_" + RandomStringUtils.randomAlphabetic(4),
           0,
           jobRoot,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -15,18 +16,19 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.PrivateSourceDefinitionRead;
-import io.airbyte.api.model.PrivateSourceDefinitionReadList;
-import io.airbyte.api.model.ReleaseStage;
-import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionReadList;
-import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.ReleaseStage;
+import io.airbyte.api.model.generated.SourceDefinitionCreate;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceDefinitionReadList;
+import io.airbyte.api.model.generated.SourceDefinitionUpdate;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -39,6 +41,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -118,8 +121,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
@@ -131,8 +134,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
@@ -159,8 +162,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
@@ -172,8 +175,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList =
@@ -203,8 +206,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
@@ -216,8 +219,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final PrivateSourceDefinitionRead expectedSourceDefinitionOptInRead1 =
@@ -249,14 +252,58 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
 
     final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
+
+    assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
+  }
+
+  @Test
+  @DisplayName("getSourceDefinitionForWorkspace should throw an exception for a missing grant")
+  void testGetDefinitionWithoutGrantForWorkspace() throws IOException {
+    when(configRepository.workspaceCanUseDefinition(sourceDefinition.getSourceDefinitionId(), workspaceId))
+        .thenReturn(false);
+
+    final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId = new SourceDefinitionIdWithWorkspaceId()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId);
+
+    assertThrows(IdNotFoundKnownException.class, () -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
+  }
+
+  @Test
+  @DisplayName("getSourceDefinitionForWorkspace should return the source if the grant exists")
+  void testGetDefinitionWithGrantForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.workspaceCanUseDefinition(sourceDefinition.getSourceDefinitionId(), workspaceId))
+        .thenReturn(true);
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId = new SourceDefinitionIdWithWorkspaceId()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId);
+
+    final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler
+        .getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId);
 
     assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
   }
@@ -278,8 +325,8 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .icon(sourceDefinition.getIcon())
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
@@ -290,16 +337,65 @@ class SourceDefinitionsHandlerTest {
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.CUSTOM)
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(create);
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createPrivateSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository)
         .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+  }
+
+  @Test
+  @DisplayName("createCustomSourceDefinition should correctly create a sourceDefinition")
+  void testCreateCustomSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
+    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+
+    when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        sourceDefinition.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final SourceDefinitionCreate create = new SourceDefinitionCreate()
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(sourceDefinition.getIcon())
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final CustomSourceDefinitionCreate customCreate = new CustomSourceDefinitionCreate()
+        .sourceDefinition(create)
+        .workspaceId(workspaceId);
+
+    final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.CUSTOM)
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(customCreate);
+
+    assertEquals(expectedRead, actualRead);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeCustomSourceDefinition(
+        sourceDefinition
+            .withReleaseDate(null)
+            .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+            .withCustom(true),
+        workspaceId);
   }
 
   @Test
@@ -367,8 +463,8 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final PrivateSourceDefinitionRead expectedPrivateSourceDefinitionRead =

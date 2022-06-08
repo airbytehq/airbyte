@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -101,10 +101,15 @@ public class SnowflakeDestinationTest {
     when(sqlOperations.getStagingPath(any(UUID.class), anyString(), anyString(), any())).thenReturn("staging_path");
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-    final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
-        .create(Destination::defaultOutputRecordCollector, mockDb,
-            sqlOperations, new SnowflakeSQLNameTransformer(), CsvSerializedBuffer.createFunction(null, FileBuffer::new),
-            config, getCatalog());
+    final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory().create(
+        Destination::defaultOutputRecordCollector,
+        mockDb,
+        sqlOperations,
+        new SnowflakeSQLNameTransformer(),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv")),
+        config,
+        getCatalog(),
+        true);
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();

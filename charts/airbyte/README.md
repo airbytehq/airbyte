@@ -6,10 +6,9 @@ Helm charts for Airbyte.
 
 ### Global Parameters
 
-| Name                   | Description                                  | Value |
-| ---------------------- | -------------------------------------------- | ----- |
-| `global.imageRegistry` | Global Docker image registry                 | `""`  |
-| `global.storageClass`  | Global StorageClass for Persistent Volume(s) | `""`  |
+| Name                   | Description                  | Value |
+| ---------------------- | ---------------------------- | ----- |
+| `global.imageRegistry` | Global Docker image registry | `""`  |
 
 
 ### Common Parameters
@@ -31,7 +30,7 @@ Helm charts for Airbyte.
 | `webapp.replicaCount`                       | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`                   | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`                   | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`  |
+| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.39.14-alpha`   |
 | `webapp.podAnnotations`                     | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `webapp.livenessProbe.enabled`              | Enable livenessProbe on the webapp                               | `true`           |
@@ -48,6 +47,7 @@ Helm charts for Airbyte.
 | `webapp.readinessProbe.successThreshold`    | Success threshold for readinessProbe                             | `1`              |
 | `webapp.service.type`                       | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`                       | The service port to expose the webapp on                         | `80`             |
+| `webapp.service.annotations`                | Annotations for the webapp service resource                      | `{}`             |
 | `webapp.resources.limits`                   | The resources limits for the Web container                       | `{}`             |
 | `webapp.resources.requests`                 | The requested resources for the Web container                    | `{}`             |
 | `webapp.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
@@ -64,23 +64,6 @@ Helm charts for Airbyte.
 | `webapp.extraEnv`                           | Additional env vars for webapp pod(s).                           | `[]`             |
 | `webapp.extraVolumeMounts`                  | Additional volumeMounts for webapp container(s).                 | `[]`             |
 | `webapp.extraVolumes`                       | Additional volumes for webapp pod(s).                            | `[]`             |
-
-
-### Scheduler Parameters
-
-| Name                           | Description                                                         | Value               |
-| ------------------------------ | ------------------------------------------------------------------- | ------------------- |
-| `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
-| `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
-| `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`      |
-| `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
-| `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
-| `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
-| `scheduler.nodeSelector`       | Node labels for pod assignment                                      | `{}`                |
-| `scheduler.tolerations`        | Tolerations for scheduler pod assignment.                           | `[]`                |
-| `scheduler.log.level`          | The log level to log at.                                            | `INFO`              |
-| `scheduler.extraEnv`           | Additional env vars for scheduler pod(s).                           | `[]`                |
 
 
 ### Pod Sweeper parameters
@@ -120,7 +103,7 @@ Helm charts for Airbyte.
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`   |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.39.14-alpha`   |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
@@ -139,9 +122,6 @@ Helm charts for Airbyte.
 | `server.resources.requests`                 | The requested resources for the server container                 | `{}`             |
 | `server.service.type`                       | The service type to use for the API server                       | `ClusterIP`      |
 | `server.service.port`                       | The service port to expose the API server on                     | `8001`           |
-| `server.persistence.accessMode`             | The access mode for the airbyte server pvc                       | `ReadWriteOnce`  |
-| `server.persistence.size`                   | The size of the pvc to use for the airbyte server pvc            | `1Gi`            |
-| `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `""`             |
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 | `server.affinity`                           | Affinity and anti-affinity for server pod assignment.            | `{}`             |
@@ -158,7 +138,7 @@ Helm charts for Airbyte.
 | `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
 | `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
 | `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
-| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`   |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.39.14-alpha`   |
 | `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
 | `worker.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
@@ -186,11 +166,17 @@ Helm charts for Airbyte.
 
 ### Bootloader Parameters
 
-| Name                          | Description                                                          | Value                |
-| ----------------------------- | -------------------------------------------------------------------- | -------------------- |
-| `bootloader.image.repository` | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
-| `bootloader.image.pullPolicy` | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
-| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`       |
+| Name                            | Description                                                          | Value                |
+| ------------------------------- | -------------------------------------------------------------------- | -------------------- |
+| `bootloader.image.repository`   | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
+| `bootloader.image.pullPolicy`   | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
+| `bootloader.image.tag`          | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.39.8-alpha`       |
+| `bootloader.podAnnotations`     | Add extra annotations to the bootloader pod                          | `{}`                 |
+| `bootloader.nodeSelector`       | Node labels for pod assignment                                       | `{}`                 |
+| `bootloader.resources.limits`   | The resources limits for the airbyte bootloader image                | `{}`                 |
+| `bootloader.resources.requests` | The requested resources for the airbyte bootloader image             | `{}`                 |
+| `bootloader.tolerations`        | Tolerations for worker pod assignment.                               | `[]`                 |
+| `bootloader.affinity`           | Affinity and anti-affinity for bootloader pod assignment.            | `{}`                 |
 
 
 ### Temporal parameters
@@ -218,6 +204,8 @@ Helm charts for Airbyte.
 | `temporal.readinessProbe.timeoutSeconds`      | Timeout seconds for readinessProbe                      | `1`                     |
 | `temporal.readinessProbe.failureThreshold`    | Failure threshold for readinessProbe                    | `3`                     |
 | `temporal.readinessProbe.successThreshold`    | Success threshold for readinessProbe                    | `1`                     |
+| `temporal.resources.limits`                   | The resources limits for temporal pod(s)                | `{}`                    |
+| `temporal.resources.requests`                 | The requested resources for temporal pod(s)             | `{}`                    |
 | `temporal.nodeSelector`                       | Node labels for temporal pod assignment                 | `{}`                    |
 | `temporal.tolerations`                        | Tolerations for temporal pod assignment.                | `[]`                    |
 | `temporal.affinity`                           | Affinity and anti-affinity for temporal pod assignment. | `{}`                    |
@@ -268,13 +256,17 @@ Helm charts for Airbyte.
 | `logs.gcs.credentials`             | The path the GCS creds are written to                  | `""`               |
 | `logs.gcs.credentialsJson`         | Base64 encoded json GCP credentials file contents      | `""`               |
 
+
 ### Minio chart overwrites
 
-| Name                       | Description                      | Value      |
-| -------------------------- | -------------------------------- | ---------- |
-| `minio.accessKey.password` | Minio Access Key                 | `minio`    |
-| `minio.secretKey.password` | Minio Secret Key                 | `minio123` |
-| `jobs.resources.limits`    | The resources limits for jobs    | `{}`       |
-| `jobs.resources.requests`  | The requested resources for jobs | `{}`       |
+| Name                       | Description                                  | Value      |
+| -------------------------- | -------------------------------------------- | ---------- |
+| `minio.accessKey.password` | Minio Access Key                             | `minio`    |
+| `minio.secretKey.password` | Minio Secret Key                             | `minio123` |
+| `jobs.resources.limits`    | The resources limits for jobs                | `{}`       |
+| `jobs.resources.requests`  | The requested resources for jobs             | `{}`       |
+| `jobs.kube.annotations`    | key/value annotations applied to kube jobs   | `{}`       |
+| `jobs.kube.nodeSelector`   | key/value node selector applied to kube jobs | `{}`       |
+| `jobs.kube.tolerations`    | Tolerations for jobs.kube pod assignment.    | `[]`       |
 
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -11,7 +11,6 @@ import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
-from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
@@ -174,11 +173,6 @@ class API:
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
         try:
-            accounts = fb_user.User(fbid="me").get_ad_accounts()
-            for account in accounts:
-                if account["account_id"] == account_id:
-                    return account
+            return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
-
-        raise FacebookAPIException("Couldn't find account with id {}".format(account_id))

@@ -1,10 +1,10 @@
 import React from "react";
 import pose from "react-pose";
 
-type IProps = {
+interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
-};
+}
 
 const itemConfig = {
   open: {
@@ -23,10 +23,7 @@ const ContentWrapperElement = pose.div(itemConfig);
 
 const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
   return (
-    <ContentWrapperElement
-      pose={!isOpen ? "closed" : "open"}
-      withParent={false}
-    >
+    <ContentWrapperElement pose={!isOpen ? "closed" : "open"} withParent={false}>
       {children}
     </ContentWrapperElement>
   );

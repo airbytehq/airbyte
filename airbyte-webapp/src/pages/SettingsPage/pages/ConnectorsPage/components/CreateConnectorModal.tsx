@@ -1,14 +1,14 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
-import { Field, FieldProps, Form, Formik } from "formik";
-
-import { useConfig } from "config";
 
 import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
 
-export type IProps = {
+import { useConfig } from "config";
+
+export interface IProps {
   errorMessage?: string;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
@@ -17,7 +17,7 @@ export type IProps = {
     dockerImageTag: string;
     dockerRepository: string;
   }) => void;
-};
+}
 
 const Content = styled.div`
   width: 585px;
@@ -89,19 +89,12 @@ const validationSchema = yup.object().shape({
   dockerRepository: yup.string().required("form.empty.error"),
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({
-  onClose,
-  onSubmit,
-  errorMessage,
-}) => {
+const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
   const config = useConfig();
   const formatMessage = useIntl().formatMessage;
 
   return (
-    <Modal
-      onClose={onClose}
-      title={<FormattedMessage id="admin.addNewConnector" />}
-    >
+    <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
       <Content>
         <Subtitle>
           <FormattedMessage
@@ -220,10 +213,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                   <ButtonWithMargin onClick={onClose} type="button" secondary>
                     <FormattedMessage id="form.cancel" />
                   </ButtonWithMargin>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !dirty || !isValid}
-                  >
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

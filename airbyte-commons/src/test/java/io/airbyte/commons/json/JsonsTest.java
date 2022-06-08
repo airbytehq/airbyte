@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -187,24 +187,6 @@ class JsonsTest {
   }
 
   @Test
-  void testMutateTypeToArrayStandard() {
-    final JsonNode expectedWithoutType = Jsons.deserialize("{\"test\":\"abc\"}");
-    final JsonNode actualWithoutType = Jsons.clone(expectedWithoutType);
-    JsonSchemas.mutateTypeToArrayStandard(expectedWithoutType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithArrayType = Jsons.clone(expectedWithArrayType);
-    JsonSchemas.mutateTypeToArrayStandard(actualWithArrayType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithoutArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
-    JsonSchemas.mutateTypeToArrayStandard(actualWithStringType);
-    assertEquals(expectedWithoutArrayType, actualWithStringType);
-  }
-
-  @Test
   void testToBytes() {
     final String jsonString = "{\"test\":\"abc\",\"type\":[\"object\"]}";
     assertArrayEquals(jsonString.getBytes(Charsets.UTF_8), Jsons.toBytes(Jsons.deserialize(jsonString)));
@@ -262,6 +244,12 @@ class JsonsTest {
     assertEquals("1", Jsons.getStringOrNull(json, "pqr"));
     assertNull(Jsons.getStringOrNull(json, "abc", "def", "xyz"));
     assertNull(Jsons.getStringOrNull(json, "xyz"));
+  }
+
+  @Test
+  void testGetEstimatedByteSize() {
+    final JsonNode json = Jsons.deserialize("{\"string_key\":\"abc\",\"array_key\":[\"item1\", \"item2\"]}");
+    assertEquals(Jsons.toBytes(json).length, Jsons.getEstimatedByteSize(json));
   }
 
   private static class ToClass {

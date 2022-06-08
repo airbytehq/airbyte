@@ -1,38 +1,29 @@
-import React, { Suspense } from "react";
-import { ThemeProvider } from "styled-components";
-import { IntlProvider } from "react-intl";
-import { BrowserRouter as Router } from "react-router-dom";
-
-import en from "locales/en.json";
-import cloudLocales from "packages/cloud/locales/en.json";
 import GlobalStyle from "global-styles";
-import { theme } from "packages/cloud/theme";
+import React, { Suspense } from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
-import { Routing } from "packages/cloud/cloudRoutes";
-import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import LoadingPage from "components/LoadingPage";
+
+import { I18nProvider } from "core/i18n";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import NotificationServiceProvider from "hooks/services/Notification";
+import en from "locales/en.json";
+import { Routing } from "packages/cloud/cloudRoutes";
+import cloudLocales from "packages/cloud/locales/en.json";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
-import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
-import { ConfigProvider } from "./services/ConfigProvider";
+import { theme } from "packages/cloud/theme";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 
-const messages = Object.assign({}, en, cloudLocales);
+import { AppServicesProvider } from "./services/AppServicesProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider
-    locale="en"
-    messages={messages}
-    defaultRichTextElements={{
-      b: (chunk) => <strong>{chunk}</strong>,
-    }}
-  >
-    {children}
-  </IntlProvider>
-);
+const messages = { ...en, ...cloudLocales };
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -45,13 +36,17 @@ const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
-        <FeatureService>
-          <AppServicesProvider>
-            <AuthenticationProvider>
-              <IntercomProvider>{children}</IntercomProvider>
-            </AuthenticationProvider>
-          </AppServicesProvider>
-        </FeatureService>
+        <ConfirmationModalService>
+          <FormChangeTrackerService>
+            <FeatureService>
+              <AppServicesProvider>
+                <AuthenticationProvider>
+                  <IntercomProvider>{children}</IntercomProvider>
+                </AuthenticationProvider>
+              </AppServicesProvider>
+            </FeatureService>
+          </FormChangeTrackerService>
+        </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
   </AnalyticsProvider>
@@ -61,7 +56,7 @@ const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
               <ConfigProvider>
@@ -73,7 +68,7 @@ const App: React.FC = () => {
               </ConfigProvider>
             </Suspense>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );

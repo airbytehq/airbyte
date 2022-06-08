@@ -225,6 +225,12 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "tickets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

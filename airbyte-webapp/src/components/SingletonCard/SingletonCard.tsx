@@ -1,17 +1,18 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Button, H5 } from "components";
+
 import ErrorSign from "./components/ErrorSign";
 
-type SingletonCardProps = {
+interface SingletonCardProps {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;
   hasError?: boolean;
   onClose?: () => void;
-};
+}
 
 export const SlideUpAnimation = keyframes`
   0% {
@@ -29,11 +30,11 @@ const Singleton = styled.div<{ hasError?: boolean }>`
   bottom: 49px;
   left: 50%;
   transform: translate(-50%, 0);
+  z-index: 20;
 
   padding: 25px 25px 22px;
 
-  background: ${({ theme, hasError }) =>
-    hasError ? theme.lightDangerColor : theme.lightPrimaryColor};
+  background: ${({ theme, hasError }) => (hasError ? theme.lightDangerColor : theme.lightPrimaryColor)};
   border: 1px solid ${({ theme }) => theme.greyColor20};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 8px;
@@ -46,8 +47,7 @@ const Singleton = styled.div<{ hasError?: boolean }>`
 `;
 
 const Title = styled(H5)<{ hasError?: boolean }>`
-  color: ${({ theme, hasError }) =>
-    hasError ? theme.dangerColor : theme.primaryColor};
+  color: ${({ theme, hasError }) => (hasError ? theme.dangerColor : theme.primaryColor)};
 
   font-style: normal;
   font-weight: bold;

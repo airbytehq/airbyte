@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs.csv;
@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -56,8 +56,10 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+    this.uploadManager = StreamTransferManagerFactory
+        .create(config.getBucketName(), objectKey, s3Client)
+        .setPartSize(config.getFormatConfig().getPartSize())
+        .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
@@ -71,7 +73,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData));
   }
 

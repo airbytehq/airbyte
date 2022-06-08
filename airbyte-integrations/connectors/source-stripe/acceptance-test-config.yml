@@ -1,7 +1,7 @@
 connector_image: airbyte/source-stripe:dev
 tests:
   spec:
-    - spec_path: "source_stripe/spec.json"
+    - spec_path: "source_stripe/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

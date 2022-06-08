@@ -223,7 +223,12 @@
       }
     },
     "user_tos_accepted": {
-      "type": ["null", "number"]
+      "type": ["null", "object"],
+      "properties": {
+        "web_custom_audience_tos": {
+          "type": ["null", "integer"]
+        }
+      }
     }
   }
 }

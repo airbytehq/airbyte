@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -18,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
 
-  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       // zero dates by default cannot be parsed into java date objects (they will throw an error)
@@ -57,7 +60,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
       final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
@@ -79,6 +84,12 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 

@@ -1,15 +1,15 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button, Spinner, StatusIcon } from "components";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
-};
+}
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
@@ -59,11 +59,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const CreateControls: React.FC<IProps> = ({
-  isSubmitting,
-  errorMessage,
-  additionBottomControls,
-}) => {
+const CreateControls: React.FC<IProps> = ({ isSubmitting, errorMessage, additionBottomControls }) => {
   if (isSubmitting) {
     return (
       <LoadingContainer>

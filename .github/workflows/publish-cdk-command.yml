@@ -14,24 +14,22 @@ on:
         description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
         required: false
       comment-id:
-        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 
 jobs:
-
   build-cdk:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # 3.7.1 - is a minimal of 3.7.X version supported by github actions
-        python-version: [3.7.1, 3.7, 3.8, 3.9]
+        python-version: ["3.9"]
     steps:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -74,9 +72,9 @@ jobs:
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           # specify the same version as in ~/.python-version
-          python_version: '3.7.9'
-          pip_version: '21.1'
-          subdir: 'airbyte-cdk/python/'
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "airbyte-cdk/python/"
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
