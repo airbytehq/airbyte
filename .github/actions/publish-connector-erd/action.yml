@@ -1,7 +1,10 @@
 name: Publish Connector ERD
 inputs:
-  connector:
+  connector_directory_name:
     description: connector_directory_name
+    required: true
+  dbdocs_token:
+    description: API token
     required: true
 description: Publish connector ERD
 runs:
@@ -15,4 +18,4 @@ runs:
       run: dbdocs
     - name: Publish ERD
       shell: bash
-      run: DBDOCS_TOKEN=${{ secrets.DBDOCS_TOKEN }} ./tools/erds/publish.sh ${{ inputs.connector_directory_name }}
+      run: DBDOCS_TOKEN=${{ inputs.dbdocs_token }} ./tools/erds/publish.sh ${{ inputs.connector_directory_name }}
