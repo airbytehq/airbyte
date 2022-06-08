@@ -1,0 +1,56 @@
+{
+  "title": "GET_SALES_AND_TRAFFIC_REPORT",
+  "description": "Available to sellers who have the Brand Analytics Selling Partner API role",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "(Parent) ASIN": {
+      "type": ["null", "string"]
+    },
+    "(Child) ASIN": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "SKU": {
+      "type": ["null", "string"]
+    },
+    "Sessions - Total": {
+      "type": ["null", "string"]
+    },
+    "Session Percentage - Total": {
+      "type": ["null", "string"]
+    },
+    "Page Views - Total": {
+      "type": ["null", "string"]
+    },
+    "Page Views Percentage - Total": {
+      "type": ["null", "string"]
+    },
+    "Featured Offer (Buy Box) Percentage": {
+      "type": ["null", "string"]
+    },
+    "Units Ordered": {
+      "type": ["null", "string"]
+    },
+    "Unit Session Percentage": {
+      "type": ["null", "string"]
+    },
+    "Unit Session Percentage - B2B": {
+      "type": ["null", "string"]
+    },
+    "Ordered Product Sales": {
+      "type": ["null", "string"]
+    },
+    "Ordered Product Sales - B2B": {
+      "type": ["null", "string"]
+    },
+    "Total Order Items": {
+      "type": ["null", "string"]
+    },
+    "Total Order Items - B2B": {
+      "type": ["null", "string"]
+    }
+  }
+}

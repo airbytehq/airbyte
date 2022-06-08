@@ -386,6 +386,20 @@ class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     cursor_field = "sku"
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
 
+class LedgerDetailViewDataReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """
+
+    name = "GET_LEDGER_DETAIL_VIEW_DATA"
+
+class SalesAndTrafficReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """
+
+    name = "GET_SALES_AND_TRAFFIC_REPORT"
+
 class FbaInventoryReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/200740930

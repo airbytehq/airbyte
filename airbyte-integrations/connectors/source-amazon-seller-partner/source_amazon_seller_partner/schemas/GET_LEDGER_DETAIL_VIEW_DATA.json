@@ -1,0 +1,44 @@
+{
+  "title": "GET_LEDGER_DETAIL_VIEW_DATA",
+  "description": "Tab-delimited flat file report",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ASIN": {
+      "type": ["null", "string"]
+    },
+    "Date": {
+      "type": ["null", "string"]
+    },
+    "MSKU": {
+      "type": ["null", "string"]
+    },
+    "FNSKU": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "Reason": {
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "type": ["null", "string"]
+    },
+    "Event Type": {
+      "type": ["null", "string"]
+    },
+    "Disposition": {
+      "type": ["null", "string"]
+    },
+    "Reference ID": {
+      "type": ["null", "string"]
+    },
+    "Fulfillment Center": {
+      "type": ["null", "string"]
+    }
+  }
+}
