@@ -10,6 +10,10 @@ description: Publish connector ERD
 runs:
   using: "composite"
   steps:
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: "17"
     - uses: actions/setup-node@v1
       with:
         node-version: "16.13.0"
