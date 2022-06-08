@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DockerImageSpec;
+import io.airbyte.config.Spec;
+import io.airbyte.config.Spec.SpecType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.Arrays;
@@ -138,8 +140,20 @@ class SeedConnectorSpecGeneratorTest {
         .withDockerImageTag(DOCKER_TAG1)
         .withName(CONNECTOR_NAME1)
         .withDocumentationUrl(DOCUMENTATION_URL);
-    final ConnectorSpecification spec = new ConnectorSpecification().withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
-    final DockerImageSpec dockerImageSpec = new DockerImageSpec().withDockerImage(DOCKER_REPOSITORY1 + ":" + DOCKER_TAG1).withSpec(spec);
+    final ConnectorSpecification defaultSpec = new ConnectorSpecification()
+        .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
+    final Spec cloudSpec = new Spec()
+        .withSpecType(SpecType.CLOUD)
+        .withSpec(new ConnectorSpecification()
+            .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar", "mode", "cloud"))));
+    final Spec ossSpec = new Spec()
+        .withSpecType(SpecType.CLOUD)
+        .withSpec(new ConnectorSpecification()
+            .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar", "mode", "oss"))));
+
+    final DockerImageSpec dockerImageSpec = new DockerImageSpec()
+        .withDockerImage(DOCKER_REPOSITORY1 + ":" + DOCKER_TAG1).withSpec(defaultSpec)
+        .withSpecs(List.of(cloudSpec, ossSpec));
 
     final JsonNode seedDefinitions = Jsons.jsonNode(List.of(sourceDefinition));
     final JsonNode seedSpecs = Jsons.jsonNode(List.of(dockerImageSpec));
@@ -149,6 +163,21 @@ class SeedConnectorSpecGeneratorTest {
 
     assertEquals(expectedSeedSpecs, actualSeedSpecs);
     verify(bucketSpecFetcherMock, never()).attemptFetch(any());
+  }
+
+  @Test
+  void testGetSpecVariants() {
+    final Spec cloudSpec = new Spec()
+        .withSpecType(SpecType.CLOUD)
+        .withSpec(new ConnectorSpecification()
+            .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar", "mode", "cloud"))));
+    final Spec ossSpec = new Spec()
+        .withSpecType(SpecType.CLOUD)
+        .withSpec(new ConnectorSpecification()
+            .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar", "mode", "oss"))));
+
+    assertEquals(List.of(cloudSpec, ossSpec),
+        seedConnectorSpecGenerator.getSpecVariants(Jsons.jsonNode(List.of(cloudSpec, ossSpec))));
   }
 
 }
