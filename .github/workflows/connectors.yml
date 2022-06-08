@@ -58,16 +58,13 @@ jobs:
           source tools/lib/lib.sh
           export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
           
-          version_exists=$(docker manifest inspect ghcr.io/estuary/airbyte-${{ matrix.connector}}:$IMAGE_VERSION > /dev/null ; echo $?)
-
           docker pull ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:dev"
           docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
           docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
-          if [[ $version_exists -ne 0 ]]; then
-            echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:$IMAGE_VERSION"
-            docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
-            docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
-          else
-            echo "Image ghcr.io/estuary/airbyte-${{ matrix.connector}}:$IMAGE_VERSION already exists. Not pushing to this tag."
-          fi
+          echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:$IMAGE_VERSION"
+          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
+          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
+          echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:v1"
+          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:v1
+          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:v1
