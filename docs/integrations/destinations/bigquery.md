@@ -409,6 +409,7 @@ The HMAC key is wrong.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.8   | 2022-06-07 | [13579](https://github.com/airbytehq/airbyte/pull/13579)   | Always check GCS bucket for GCS loading method to catch invalid HMAC keys. |
 | 1.1.7   | 2022-06-07 | [13424](https://github.com/airbytehq/airbyte/pull/13424)   | Reordered fields for specification.                                                             |
 | 1.1.6   | 2022-05-15 | [12768](https://github.com/airbytehq/airbyte/pull/12768)   | Clarify that the service account key json field is required on cloud. |
 | 1.1.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                               |
@@ -446,6 +447,7 @@ The HMAC key is wrong.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 1.1.8   | 2022-06-07 | [13579](https://github.com/airbytehq/airbyte/pull/13579)   | Always check GCS bucket for GCS loading method to catch invalid HMAC keys. |
 | 1.1.7   | 2022-06-07 | [13424](https://github.com/airbytehq/airbyte/pull/13424)   | Reordered fields for specification.                                                                                     |
 | 1.1.6   | 2022-05-15 | [12768](https://github.com/airbytehq/airbyte/pull/12768)   | Clarify that the service account key json field is required on cloud.                                                   |
 | 0.3.5   | 2022-05-12 | [12805](https://github.com/airbytehq/airbyte/pull/12805)   | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                       |
