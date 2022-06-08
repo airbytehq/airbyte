@@ -30,11 +30,11 @@ const Content = styled.div`
 interface EnabledControlProps {
   connection: WebBackendConnectionRead;
   disabled?: boolean;
-  frequencyText?: string;
+  frequencyType?: string;
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText, onStatusUpdating }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
@@ -57,7 +57,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyText,
+      frequency: frequencyType,
     });
   };
 

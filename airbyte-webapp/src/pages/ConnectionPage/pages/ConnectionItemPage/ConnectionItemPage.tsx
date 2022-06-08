@@ -5,12 +5,11 @@ import { LoadingPage, MainPageWithScroll } from "components";
 import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
-import { equal } from "utils/objects";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import { ReplicationView } from "./components/ReplicationView";
@@ -32,7 +31,7 @@ const ConnectionItemPage: React.FC = () => {
 
   const analyticsService = useAnalyticsService();
 
-  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
+  const frequency = getFrequencyConfig(connection.schedule);
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -41,7 +40,7 @@ const ConnectionItemPage: React.FC = () => {
       connector_source_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text,
+      frequency: frequency?.type,
     });
   };
 
