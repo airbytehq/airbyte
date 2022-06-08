@@ -26,6 +26,8 @@ async function run() {
   if (failures.length > 0) {
     console.log(`\nThe following URLs were not successful: ${failures.map((r) => r.reason.key).join(", ")}`);
     process.exit(1);
+  } else {
+    console.log("\n✓ All URLs have been checked successfully.");
   }
 }
 
