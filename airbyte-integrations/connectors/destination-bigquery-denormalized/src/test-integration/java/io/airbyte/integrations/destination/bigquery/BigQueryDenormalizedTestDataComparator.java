@@ -90,4 +90,5 @@ public class BigQueryDenormalizedTestDataComparator extends AdvancedTestDataComp
   private ZonedDateTime getBrokenDate() {
     return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
   }
+
 }

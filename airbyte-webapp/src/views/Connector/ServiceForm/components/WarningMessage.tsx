@@ -23,9 +23,9 @@ const Link = styled.a`
   }
 `;
 
-type WarningMessageProps = {
+interface WarningMessageProps {
   stage: typeof ReleaseStage.alpha | typeof ReleaseStage.beta;
-};
+}
 
 const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   const config = useConfig();

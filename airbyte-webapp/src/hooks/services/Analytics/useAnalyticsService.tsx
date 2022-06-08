@@ -5,13 +5,13 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 
 type AnalyticsContext = Record<string, unknown>;
 
-export type AnalyticsServiceProviderValue = {
+export interface AnalyticsServiceProviderValue {
   analyticsContext: AnalyticsContext;
   setContext: (ctx: AnalyticsContext) => void;
   addContextProps: (props: AnalyticsContext) => void;
   removeContextProps: (props: string[]) => void;
   service: AnalyticsService;
-};
+}
 
 export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(null);
 

@@ -1,10 +1,10 @@
 import React from "react";
 import pose from "react-pose";
 
-type IProps = {
+interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
-};
+}
 
 const itemConfig = {
   open: {

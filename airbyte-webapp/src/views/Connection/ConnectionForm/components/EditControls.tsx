@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   dirty: boolean;
   resetForm: () => void;
@@ -12,7 +12,7 @@ type IProps = {
   errorMessage?: React.ReactNode;
   editSchemeMode?: boolean;
   withLine?: boolean;
-};
+}
 
 const Warning = styled.div`
   margin-bottom: 10px;

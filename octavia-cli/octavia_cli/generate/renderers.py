@@ -261,5 +261,7 @@ class ConnectionRenderer(BaseRenderer):
                 "source_id": self.source.resource_id,
                 "destination_id": self.destination.resource_id,
                 "catalog": yaml_catalog,
+                "supports_normalization": self.destination.definition.supports_normalization,
+                "supports_dbt": self.destination.definition.supports_dbt,
             }
         )

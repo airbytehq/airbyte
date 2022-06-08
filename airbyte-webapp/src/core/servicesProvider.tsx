@@ -1,19 +1,19 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useMap } from "react-use";
 
-type ServiceContainer = {
+interface ServiceContainer {
   [key: string]: Service;
-};
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Service = any;
 
-type ServicesProviderApi = {
+interface ServicesProviderApi {
   register(name: string, service: Service): void;
   getService<T>(serviceType: string): T;
   unregister(name: string): void;
   registeredServices: ServiceContainer;
-};
+}
 
 const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(null);
 
