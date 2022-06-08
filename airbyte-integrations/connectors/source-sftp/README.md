@@ -1,7 +1,7 @@
 # Source Sftp
 
 This is the repository for the Sftp source connector in Java.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/source/sftp).
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/sources/sftp/).
 
 ## Local development
 
