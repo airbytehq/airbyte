@@ -47,13 +47,13 @@ export const DocumentationPanel: React.FC = () => {
           // In links replace with a link to the external documentation instead
           // The external path is the markdown URL without the "../../" prefix and the .md extension
           const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
-          return `${config.ui.docsLink}/${docPath}`;
+          return `${config.links.docsLink}/${docPath}`;
         }
       }
       return url.href;
     };
     return [[urls, sanitizeLinks], [rehypeSlug]];
-  }, [config.integrationUrl, config.ui.docsLink]);
+  }, [config.integrationUrl, config.links.docsLink]);
 
   const location = useLocation();
 
