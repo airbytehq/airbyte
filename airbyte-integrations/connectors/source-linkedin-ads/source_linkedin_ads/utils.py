@@ -7,6 +7,11 @@ from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
 
+# replace `pivot` with `_pivot`, to allow redshift normalization,
+# since `pivot` is a reserved keyword for Destination Redshift,
+# on behalf of https://github.com/airbytehq/airbyte/issues/13018,
+# expand this list, if required.
+DESTINATION_RESERVED_KEYWORDS: list = ['pivot']
 
 def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
     """
@@ -327,9 +332,6 @@ def transform_data(records: List) -> Iterable[Mapping]:
         if "variables" in record:
             record = transform_variables(record)
 
-        # replace `pivot` with `_pivot`, to allow redshift normalization,
-        # since `pivot` is a reserved keyword for Redshift.
-        # on behalf of https://github.com/airbytehq/airbyte/issues/13018
-        record = transform_col_names(record, ["pivot"])
+        record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 
         yield record
