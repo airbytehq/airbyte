@@ -77,7 +77,7 @@ const FinalStep: React.FC = () => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          link={config.ui.demoLink}
+          link={config.links.demoLink}
           img="/videoCover.png"
         />
       </Videos>
