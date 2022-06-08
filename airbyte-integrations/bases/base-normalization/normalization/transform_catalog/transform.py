@@ -58,8 +58,7 @@ python3 main_dev_transform_catalog.py \
         schema = self.config["schema"]
         output = self.config["output_path"]
         json_col = self.config["json_column"]
-        profile_config_dir = self.config["profile_config_dir"]
-        processor = CatalogProcessor(profile_config_dir=profile_config_dir, output_directory=output, destination_type=destination_type)
+        processor = CatalogProcessor(output_directory=output, destination_type=destination_type)
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)

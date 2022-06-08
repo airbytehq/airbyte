@@ -28,12 +28,11 @@ class CatalogProcessor:
     This is relying on a StreamProcessor to handle the conversion of a stream to a table one at a time.
     """
 
-    def __init__(self, profile_config_dir: str, output_directory: str, destination_type: DestinationType):
+    def __init__(self, output_directory: str, destination_type: DestinationType):
         """
         @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
         @param destination_type is the destination type of warehouse
         """
-        self.profile_config_dir: str = profile_config_dir
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
@@ -91,8 +90,7 @@ class CatalogProcessor:
         self.write_erd_file(self.dbml)
 
     def write_erd_file(self, stream_dbml):
-
-        file = os.path.join(self.profile_config_dir, "erd.dbml")
+        file = os.path.join(self.output_directory, "erd.dbml")
         output_dir = os.path.dirname(file)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
