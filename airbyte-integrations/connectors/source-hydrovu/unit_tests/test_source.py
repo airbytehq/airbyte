@@ -29,11 +29,19 @@ def config_fixture():
     return config
 '''
 
+    #return {"config": {"url_base": "https://www.hydrovu.com/public-api/v1/",
+    #"client_id": "ABC", "client_secret": "secret", }}
+
+'''
+@fixture
+def config():
+    return {"config": {"client_id": "ABC", "client_secret": "secret", }}
+'''
 
 
 @fixture
 def config():
-    return {"config": {"client_id": "ABC", "client_secret": "secret", }}
+    return {"config": {"token_refresh_endpoint": "https://www.hydrovu.com/public-api/oauth/token", "client_id": "ABC", "client_secret": "secret", }}
 
 
 #class TestHydroVuSource(TestCase):
@@ -95,14 +103,67 @@ def test_check_connection(mocker, requests_mock, config):
     #assert error_msg
 
 
-
-
 '''
-def test_streams(mocker):
+#def test_streams(mocker):
+#def test_streams(mocker, config):
+#def test_streams(mocker, config2):
+def test_streams(mocker, requests_mock, config):
     source = SourceHydrovu()
     config_mock = MagicMock()
+
+    requests_mock.post(
+        #"https://www.hydrovu.com/public-api/v1/",
+        'https://www.hydrovu.com/public-api/oauth/token',
+        json=
+            {'access_token': 'oMRyv5kYocI60byApqhmkD5sR2I', 'token_type': 'bearer', 'expires_in': 35999, 'scope': 'read:locations read:data'}
+
+    )
+
+
     streams = source.streams(config_mock)
     # TODO: replace this with your streams number
     expected_streams_number = 2
     assert len(streams) == expected_streams_number
 '''
+
+
+
+
+
+
+'''
+#def test_streams(mocker):
+#def test_streams(mocker, config2):
+def test_streams(mocker, requests_mock, config2):
+    source = SourceHydrovu()
+    #config_mock = MagicMock()
+    #streams = source.streams(config_mock)
+    requests_mock.post(
+        #"https://www.hydrovu.com/public-api/v1/",
+        'https://www.hydrovu.com/public-api/oauth/token',
+        json=
+            {'access_token': 'oMRyv5kYocI60byApqhmkD5sR2I', 'token_type': 'bearer', 'expires_in': 35999, 'scope': 'read:locations read:data'}
+
+    )
+
+
+    requests_mock.get(
+        'https://www.hydrovu.com/public-api/v1/locations/list',
+        )
+
+
+
+    #logger_mock = MagicMock()
+
+    streams = source.streams(**config2)
+    
+    #streams = source.streams(logger_mock, **config2)
+
+
+    # TODO: replace this with your streams number
+    expected_streams_number = 2
+    assert len(streams) == expected_streams_number
+
+
+'''
+

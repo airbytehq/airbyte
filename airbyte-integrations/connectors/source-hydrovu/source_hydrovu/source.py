@@ -419,12 +419,12 @@ class SourceHydrovu(AbstractSource):
         """
         try:
             # create session
-            client = BackendApplicationClient(client_id=config["client_id"])
-            oauth = OAuth2Session(client=client)
-            token = oauth.fetch_token(token_url='https://www.hydrovu.com/public-api/oauth/token',
-                                      client_id=config["client_id"],
-                                      client_secret=config["client_secret"])
-
+            auth = myOauth2Authenticator(
+                                     config['token_refresh_endpoint'],
+                                     config['client_id'],
+                                     config['client_secret'],
+                                     ""
+                                     )
             return True, None
 
         except Exception as e:
