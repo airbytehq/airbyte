@@ -367,8 +367,10 @@ publish_spec_files() {
   generate_spec_file "$image_name" "$image_version" "$tmp_cloud_spec_file" "CLOUD"
 
   gsutil cp "$tmp_default_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
-  # upload cloud spec only if it is different from oss
   if cmp --silent -- "$tmp_default_spec_file" "$tmp_cloud_spec_file"; then
+    echo "This connector has the same spec file for OSS and cloud"
+  else
+    echo "Uploading cloud specific spec file"
     gsutil cp "$tmp_cloud_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.cloud.json"
   fi
 }
