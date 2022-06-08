@@ -97,7 +97,7 @@ const SetDefaultName: React.FC = () => {
   return null;
 };
 
-export type ServiceFormProps = {
+export interface ServiceFormProps {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
@@ -114,7 +114,7 @@ export type ServiceFormProps = {
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
   testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
-};
+}
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId();
