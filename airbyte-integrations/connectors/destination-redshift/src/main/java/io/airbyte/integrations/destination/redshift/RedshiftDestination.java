@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.doesJsonNodeContainUploadingMethod;
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.validateIfAllRequiredS3fieldsAreNullOrEmpty;
+import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
+import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
@@ -46,15 +46,15 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
 
   public static DestinationType determineUploadMode(final JsonNode config) {
 
-    final JsonNode jsonNode = doesJsonNodeContainUploadingMethod(config);
+    final JsonNode jsonNode = findS3Options(config);
 
-    if (validateIfAllRequiredS3fieldsAreNullOrEmpty(jsonNode)) {
+    if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.STANDARD;
     }
 
-    if (validateIfAllRequiredS3fieldsAreNullOrEmpty(jsonNode)) {
+    if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
     return DestinationType.COPY_S3;

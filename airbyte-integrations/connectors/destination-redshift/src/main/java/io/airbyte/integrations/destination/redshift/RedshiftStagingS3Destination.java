@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.doesJsonNodeContainUploadingMethod;
+import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +49,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(doesJsonNodeContainUploadingMethod(config));
+    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
@@ -107,7 +107,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog catalog,
       final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(doesJsonNodeContainUploadingMethod(config));
+    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),

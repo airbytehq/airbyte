@@ -12,11 +12,12 @@ public class RedshiftUtil {
   private RedshiftUtil() {
   }
 
-  public static JsonNode doesJsonNodeContainUploadingMethod(final JsonNode config) {
+  // We check whether config located in root of node. (This check is done for Backward compatibility)
+  public static JsonNode findS3Options(final JsonNode config) {
     return config.has(UPLOADING_METHOD) ? config.get(UPLOADING_METHOD) : config;
   }
 
-  public static boolean validateIfAllRequiredS3fieldsAreNullOrEmpty(final JsonNode jsonNode) {
+  public static boolean anyOfS3FieldsAreNullOrEmpty(final JsonNode jsonNode) {
     return isNullOrEmpty(jsonNode.get("s3_bucket_name"))
         && isNullOrEmpty(jsonNode.get("s3_bucket_region"))
         && isNullOrEmpty(jsonNode.get("access_key_id"))
