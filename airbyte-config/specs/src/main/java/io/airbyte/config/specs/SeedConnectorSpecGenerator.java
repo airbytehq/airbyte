@@ -14,11 +14,9 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.DockerImageSpec;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.Spec;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,17 +27,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every connector definition in the seed are stored in a
- * corresponding resource file, for the purpose of seeding the specs into the config database on server startup. See ./airbyte-config/specs/readme.md
- * for more details on how this class is run and how it fits into the project.
+ * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every
+ * connector definition in the seed are stored in a corresponding resource file, for the purpose of
+ * seeding the specs into the config database on server startup. See
+ * ./airbyte-config/specs/readme.md for more details on how this class is run and how it fits into
+ * the project.
  * <p>
- * Specs are stored in a separate file from the definitions in an effort to keep the definitions yaml files human-readable and easily-editable, as
- * specs can be rather large.
+ * Specs are stored in a separate file from the definitions in an effort to keep the definitions
+ * yaml files human-readable and easily-editable, as specs can be rather large.
  * <p>
- * Specs are fetched from the GCS spec cache bucket, so if any specs are missing from the bucket then this will fail. Note that this script only pulls
- * specs from the bucket cache; it never pushes specs to the bucket. Since this script runs at build time, the decision was to depend on the bucket
- * cache rather than running a docker container to fetch the spec during the build which could be slow and unwieldy. If there is a failure, check the
- * bucket cache and figure out how to get the correct spec in there.
+ * Specs are fetched from the GCS spec cache bucket, so if any specs are missing from the bucket
+ * then this will fail. Note that this script only pulls specs from the bucket cache; it never
+ * pushes specs to the bucket. Since this script runs at build time, the decision was to depend on
+ * the bucket cache rather than running a docker container to fetch the spec during the build which
+ * could be slow and unwieldy. If there is a failure, check the bucket cache and figure out how to
+ * get the correct spec in there.
  */
 @SuppressWarnings("PMD.SignatureDeclareThrowsException")
 public class SeedConnectorSpecGenerator {
@@ -48,8 +50,6 @@ public class SeedConnectorSpecGenerator {
   private static final String DOCKER_IMAGE_TAG_FIELD = "dockerImageTag";
   private static final String DOCKER_IMAGE_FIELD = "dockerImage";
   private static final String SPEC_FIELD = "spec";
-  private static final String SPECS_FIELD = "specs";
-  private static final String SPEC_TYPE_FIELD = "spec_type";
   private static final String SPEC_BUCKET_NAME = new EnvConfigs().getSpecCacheBucket();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SeedConnectorSpecGenerator.class);
@@ -95,32 +95,19 @@ public class SeedConnectorSpecGenerator {
     return Yamls.deserialize(yamlString);
   }
 
-  final List<Spec> getSpecVariants(final JsonNode specs) {
-    if (specs == null) {
-      return Collections.emptyList();
-    }
-    return MoreIterators.toList(specs.elements())
-        .stream()
-        .map(json -> new Spec()
-            .withSpecType(Jsons.object(json.get(SPEC_TYPE_FIELD), Spec.SpecType.class))
-            .withSpec(Jsons.object(json.get(SPEC_FIELD), ConnectorSpecification.class)))
-        .toList();
-  }
-
   @VisibleForTesting
   final List<DockerImageSpec> fetchUpdatedSeedSpecs(final JsonNode seedDefinitions, final JsonNode currentSeedSpecs) {
     final List<String> seedDefinitionsDockerImages = MoreIterators.toList(seedDefinitions.elements())
         .stream()
         .map(json -> String.format("%s:%s", json.get(DOCKER_REPOSITORY_FIELD).asText(), json.get(DOCKER_IMAGE_TAG_FIELD).asText()))
-        .toList();
+        .collect(Collectors.toList());
 
     final Map<String, DockerImageSpec> currentSeedImageToSpec = MoreIterators.toList(currentSeedSpecs.elements())
         .stream()
         .collect(Collectors.toMap(
             json -> json.get(DOCKER_IMAGE_FIELD).asText(),
             json -> new DockerImageSpec().withDockerImage(json.get(DOCKER_IMAGE_FIELD).asText())
-                .withSpec(Jsons.object(json.get(SPEC_FIELD), ConnectorSpecification.class))
-                .withSpecs(getSpecVariants(json.get(SPECS_FIELD)))));
+                .withSpec(Jsons.object(json.get(SPEC_FIELD), ConnectorSpecification.class))));
 
     return seedDefinitionsDockerImages
         .stream()
