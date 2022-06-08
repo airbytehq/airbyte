@@ -222,7 +222,7 @@
 {%- endmacro -%}
 
 {%- macro sqlserver__type_time_with_timezone() -%}
-    time
+    NVARCHAR(max)
 {%- endmacro -%}
 
 
