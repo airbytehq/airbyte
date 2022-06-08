@@ -66,7 +66,8 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 ### Locally running the connector docker image
 
 #### Build
-First, make sure you build the latest Docker image:
+First, make sure you build the latest Docker image. Execute the following from
+the source-webflow project directory (where Dockerfile can be found):
 ```
 docker build . -t airbyte/source-webflow:0.1.0-alpha
 ```
