@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -19,7 +19,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -238,10 +238,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobCancelled(final JobCancelledInput input) {
     try {
       final long jobId = input.getJobId();
-      jobPersistence.cancelJob(jobId);
       final int attemptId = input.getAttemptId();
       jobPersistence.failAttempt(jobId, attemptId);
       jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
+      jobPersistence.cancelJob(jobId);
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);

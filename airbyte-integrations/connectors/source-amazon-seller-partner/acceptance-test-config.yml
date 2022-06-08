@@ -1,7 +1,7 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
 tests:
   spec:
-    - spec_path: "source_amazon_seller_partner/spec.json"
+    - spec_path: "integration_tests/spec.json"
   connection:
     # - config_path: "secrets/config.json"
     #   status: "succeed"

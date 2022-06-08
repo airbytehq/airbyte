@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ContentCard } from "components";
@@ -13,12 +13,12 @@ import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connecto
 
 import { useTestConnector } from "./useTestConnector";
 
-export type ConnectorCardProvidedProps = {
+export interface ConnectorCardProvidedProps {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
-};
+}
 
 export const ConnectorCard: React.FC<
   {
@@ -37,7 +37,13 @@ export const ConnectorCard: React.FC<
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
-  const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
+  const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
+
+  useEffect(() => {
+    // Whenever the selected connector changed, reset the check connection call and other errors
+    reset();
+    setErrorStatusRequest(null);
+  }, [props.selectedConnectorDefinitionSpecification, reset]);
 
   const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
   const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);

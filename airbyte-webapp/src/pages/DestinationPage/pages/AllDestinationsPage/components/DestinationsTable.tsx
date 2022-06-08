@@ -9,9 +9,9 @@ import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
-type DestinationsTableProps = {
+interface DestinationsTableProps {
   destinations: DestinationRead[];
-};
+}
 
 const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
   const { push } = useRouter();

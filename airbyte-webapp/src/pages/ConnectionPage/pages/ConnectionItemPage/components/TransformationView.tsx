@@ -50,7 +50,7 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 `;
 
 const CustomTransformationsCard: React.FC<{
-  operations?: OperationRead[];
+  operations?: OperationCreate[];
   onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
@@ -58,7 +58,7 @@ const CustomTransformationsCard: React.FC<{
 
   const initialValues = useMemo(
     () => ({
-      transformations: getInitialTransformations(operations),
+      transformations: getInitialTransformations(operations || []),
     }),
     [operations]
   );
@@ -144,6 +144,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
       syncCatalog: connection.syncCatalog,
       connectionId: connection.connectionId,
       status: connection.status,
+      name: connection.name,
       operations: operations,
     });
 
