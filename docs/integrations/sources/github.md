@@ -1,4 +1,17 @@
 # GitHub
+This page contains the setup guide and reference information for the GitHub source connector.
+
+## Prerequisites
+* Start date
+* GitHub Repositories
+* Branch (Optional)
+* Page size for large streams (Optional)
+
+For Airbyte Cloud:
+* Access Token
+
+For Airbyte OSS:
+* Personal Access Token
 
 ## Overview
 
