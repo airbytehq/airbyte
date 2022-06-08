@@ -20,7 +20,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.models.Attempt;
@@ -112,7 +112,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
       }
     }
   }
@@ -217,7 +217,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
     } catch (final IOException e) {
@@ -314,7 +314,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(metric, 1, MetricTags.getReleaseStage(stage));
       }
     }
   }
