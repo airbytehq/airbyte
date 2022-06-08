@@ -382,11 +382,18 @@ class Stream(HttpStream, ABC):
                 # Always return an empty generator just in case no records were ever yielded
                 yield from []
         except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 403:
-                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
-            else:
-                raise e
+            raise e
+
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+        body = response.json()
+        if body.get("category") == "MISSING_SCOPES":
+            if "errors" in body:
+                errors = body["errors"]
+                if len(errors) > 0:
+                    error = errors[0]
+                    missing_scopes = error.get("context", {}).get("requiredScopes")
+                    return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+        return super().parse_response_error_message(response)
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
@@ -1426,7 +1433,7 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
     primary_key = "id"
-    scopes = set()
+    scopes = {"crm.objects.feedback_submissions.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):
