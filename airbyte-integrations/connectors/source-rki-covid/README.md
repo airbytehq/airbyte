@@ -56,8 +56,20 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source rki-covid test creds`
+
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source slack test creds`
 and place them into `secrets/config.json`.
+
+You should be able to create a Webflow API key at a URL such as:
+
+https://webflow.com/dashboard/sites/<your-site-name>/integrations. Once you have the API, you can confirm a
+list of available sites and get their "_id" by executing
+
+```
+curl https://api.webflow.com/sites \
+  -H "Authorization: Bearer <your API Key>" \
+  -H "accept-version: 1.0.0"
+```
 
 ### Locally running the connector
 ```
