@@ -25,11 +25,19 @@ For Airbyte OSS:
 * **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`);
 * **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
 
-## Overview
+## Supported sync modes
 
-The GitHub source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The GitHub source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
-### Output schema
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Replicate Incremental Deletes | Coming soon |
+| SSL connection | Yes |
+| Namespaces | No |
+
+## Supported Streams
 
 This connector outputs the following full refresh streams:
 
@@ -97,15 +105,6 @@ This connector outputs the following incremental streams:
 * `tags`
 * `teams`
 * `users`
-### Features
-
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection | Yes |
-| Namespaces | No |
 
 ### Permissions and scopes
 
