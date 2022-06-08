@@ -121,6 +121,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.19  | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
 | 0.1.18  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                   |
 | 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
@@ -143,6 +144,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.8   | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
 | 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.5   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
