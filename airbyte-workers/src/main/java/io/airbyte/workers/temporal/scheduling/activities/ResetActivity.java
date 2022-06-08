@@ -35,14 +35,20 @@ public interface ResetActivity {
   }
 
   /**
-   * Return the resets for a given connection id
+   * Return the streams being reset for a given connection id
    */
   @ActivityMethod
   GetResetsOutput getStreamResets(UUID connectionId);
 
+  /**
+   * Creates a stream_reset record for each stream descriptor passed in
+   */
   @ActivityMethod
   void createStreamResets(UUID connectionId, List<StreamDescriptor> streamDescriptorList);
 
+  /**
+   * Deletes the stream_reset record corresponding to each stream descriptor passed in
+   */
   @ActivityMethod
   void deleteStreamResets(UUID connectionId, List<StreamDescriptor> streamDescriptorList);
 
