@@ -1,0 +1,27 @@
+documentationUrl: https://docsurl.com/TBD
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Webflow Spec
+  type: object
+  required:
+    - api_key
+    - site_id
+    - accept_version
+  additionalProperties: false
+  properties:
+    api_key:
+      title: API token
+      type: string
+      description: "The API token for authenticating to Webflow. See https://university.webflow.com/lesson/intro-to-the-webflow-api"
+      example: "Bearer <a long hex sequence>"
+    site_id:
+      title: Site id
+      type: string
+      description: "The id of the Webflow site you are requesting data from. See https://developers.webflow.com/#sites"
+    accept_version:
+      type: string
+      description: "Webflow expects a 'accept-version' header with a value of '1.0.0' (as of May 2022)"
+      const: '1.0.0'
+      airbyte_hidden: true
+
+

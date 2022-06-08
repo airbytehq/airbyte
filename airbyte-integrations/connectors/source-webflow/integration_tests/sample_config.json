@@ -1,0 +1,5 @@
+{
+  "site_id": "your-webflow-site-id",
+  "api_key": "your-webflow-token",
+  "accept_version" : "1.0.0"
+}
