@@ -1,9 +1,12 @@
-import styled from "styled-components";
+import { classy } from "utils/components";
 
-export const Card = styled.div<{ full?: boolean }>`
-  width: ${({ full }) => (full ? "100%" : "auto")};
-  background: ${({ theme }) => theme.whiteColor};
-  border-radius: 10px;
-  box-shadow: 0 2px 4px ${({ theme }) => theme.cardShadowColor};
-  //border: 1px solid ${({ theme }) => theme.greyColor20};
-`;
+interface CardProps {
+  full?: boolean;
+}
+
+export const Card = classy("div", ({ full }: CardProps) => [
+  "bg-white rounded-lg shadow-2",
+  {
+    "w-full": full,
+  },
+]);
