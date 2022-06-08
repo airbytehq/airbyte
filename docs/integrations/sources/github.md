@@ -16,7 +16,7 @@ For Airbyte OSS:
 ## Setup guide
 ### Step 1: Set up GitHub
 
-* GitHub Account;
+* Create a [GitHub Account](https://github.com).
 * **Authentication** - Select from 2 authentication methods:
     * **Authenticate via GitHub (OAuth)** - Only available in Airbyte Cloud. Authenticate by clicking the "Authenticate your account" button;
     * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
