@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -31,9 +30,7 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -66,60 +63,9 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  public static TemporalClient get(final Configs configs) {
-    if (configs.temporalCloudEnabled()) {
-      log.info("TemporalClient.get chose Cloud...");
-      return TemporalClient.cloud(configs);
-    }
-    log.info("TemporalClient.get chose Airbyte...");
-    return TemporalClient.airbyte(configs);
-  }
-
-  public static WorkerFactory getWorkerFactory(final Configs configs) {
-    return WorkerFactory.newInstance(getWorkflowClient(configs));
-  }
-
-  public static String getNamespace(final Configs configs) {
-    return configs.temporalCloudEnabled() ? configs.getTemporalCloudNamespace() : TemporalUtils.DEFAULT_NAMESPACE;
-  }
-
-  public static WorkflowClient getWorkflowClient(final Configs configs) {
-    return WorkflowClient.newInstance(
-        TemporalUtils.createTemporalService(),
-        WorkflowClientOptions.newBuilder()
-            .setNamespace(getNamespace(configs))
-            .build());
-  }
-
-  // TODO consider making this private after the Temporal Cloud migration.
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
-  // client at the same time.
-  public static TemporalClient cloud(final Configs configs) {
-    final WorkflowServiceStubs temporalCloudService = TemporalUtils.createTemporalService(true);
-    return new TemporalClient(
-        WorkflowClient.newInstance(
-            temporalCloudService,
-            WorkflowClientOptions.newBuilder()
-                .setNamespace(configs.getTemporalCloudNamespace())
-                .build()),
-        configs.getWorkspaceRoot(),
-        temporalCloudService);
-  }
-
-  // TODO consider making this private after the Temporal Cloud migration
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
-  // client at the same time.
-  public static TemporalClient airbyte(final Configs configs) {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(false);
-    return new TemporalClient(WorkflowClient.newInstance(temporalService), configs.getWorkspaceRoot(), temporalService);
-  }
-
-  // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
-  // one. either temporal decides and can report it or it is injected into temporal runs.
-  @VisibleForTesting
-  protected TemporalClient(final WorkflowClient client,
-                           final Path workspaceRoot,
-                           final WorkflowServiceStubs workflowServiceStubs) {
+  public TemporalClient(final WorkflowClient client,
+                        final Path workspaceRoot,
+                        final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;

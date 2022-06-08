@@ -17,6 +17,7 @@ import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
 import io.temporal.api.workflowservice.v1.UpdateNamespaceRequest;
 import io.temporal.client.ActivityCompletionException;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
@@ -37,6 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import javax.net.ssl.SSLException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -62,60 +64,73 @@ public class TemporalUtils {
       .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
 
-  public static WorkflowServiceStubs createTemporalService() {
-    return createTemporalService(configs.temporalCloudEnabled());
-  }
-
-  // TODO consider consolidating this into above method after the Temporal Cloud migration is
-  // complete.
-  // This method only exists to allow the migrator to instantiate a cloud and non-cloud temporal
-  // client at the same time.
-  public static WorkflowServiceStubs createTemporalService(final boolean isCloud) {
-    if (isCloud) {
-      log.info("createTemporalService chose Cloud...");
-      log.info("Using Temporal Cloud with:\nhost: {}\nnamespace: {}", configs.getTemporalCloudHost(), configs.getTemporalCloudNamespace());
-      try {
-        final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
-        final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
-
-        final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-            .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
-            .setTarget(configs.getTemporalCloudHost())
-            .build();
-
-        return getTemporalClientWhenConnected(
-            WAIT_INTERVAL,
-            MAX_TIME_TO_CONNECT,
-            WAIT_TIME_AFTER_CONNECT,
-            () -> WorkflowServiceStubs.newInstance(options),
-            configs.getTemporalCloudNamespace());
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-    log.info("createTemporalService chose Airbyte...");
-    return createAirbyteTemporalServiceAndConfigureNamespace(configs.getTemporalHost());
-  }
-
-  @VisibleForTesting
-  public static WorkflowServiceStubs createAirbyteTemporalServiceAndConfigureNamespace(final String temporalHost) {
-    log.info("Using Temporal Airbyte with:\nhost: {}\nnamespace: {}", temporalHost, DEFAULT_NAMESPACE);
-    final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-        .setTarget(configs.getTemporalHost())
-        .build();
-
-    final WorkflowServiceStubs temporalService = getTemporalClientWhenConnected(
+  public static WorkflowServiceStubs createTemporalService(final WorkflowServiceStubsOptions options, final String namespace) {
+    return getTemporalClientWhenConnected(
         WAIT_INTERVAL,
         MAX_TIME_TO_CONNECT,
         WAIT_TIME_AFTER_CONNECT,
         () -> WorkflowServiceStubs.newInstance(options),
-        DEFAULT_NAMESPACE);
-
-    configureTemporalAirbyteNamespace(temporalService);
-    return temporalService;
+        namespace);
   }
 
-  private static void configureTemporalAirbyteNamespace(final WorkflowServiceStubs temporalService) {
+  // TODO consider consolidating this method's logic into createTemporalService() after the Temporal
+  // Cloud migration is complete.
+  // The Temporal Migration migrator is the only reason this public method exists.
+  public static WorkflowServiceStubs createTemporalService(final boolean isCloud) {
+    final WorkflowServiceStubsOptions options = isCloud ? getCloudTemporalOptions() : getAirbyteTemporalOptions(configs.getTemporalHost());
+    final String namespace = isCloud ? configs.getTemporalCloudNamespace() : DEFAULT_NAMESPACE;
+
+    return createTemporalService(options, namespace);
+  }
+
+  public static WorkflowServiceStubs createTemporalService() {
+    return createTemporalService(configs.temporalCloudEnabled());
+  }
+
+  private static WorkflowServiceStubsOptions getCloudTemporalOptions() {
+    final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
+    final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
+    try {
+      return WorkflowServiceStubsOptions.newBuilder()
+          .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
+          .setTarget(configs.getTemporalCloudHost())
+          .build();
+    } catch (final SSLException e) {
+      log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
+      throw new RuntimeException(e);
+    }
+  }
+
+  @VisibleForTesting
+  public static WorkflowServiceStubsOptions getAirbyteTemporalOptions(final String temporalHost) {
+    return WorkflowServiceStubsOptions.newBuilder()
+        .setTarget(temporalHost)
+        .build();
+  }
+
+  public static WorkflowClient createWorkflowClient(final WorkflowServiceStubs workflowServiceStubs, final String namespace) {
+    return WorkflowClient.newInstance(
+        workflowServiceStubs,
+        WorkflowClientOptions.newBuilder()
+            .setNamespace(namespace)
+            .build());
+  }
+
+  public static String getNamespace() {
+    return configs.temporalCloudEnabled() ? configs.getTemporalCloudNamespace() : DEFAULT_NAMESPACE;
+  }
+
+  /**
+   * Modifies the retention period for on-premise deployment of Temporal at the default namespace.
+   * This should not be called when using Temporal Cloud, because Temporal Cloud does not allow
+   * programmatic modification of workflow execution retention TTL.
+   */
+  public static void configureTemporalNamespace(final WorkflowServiceStubs temporalService) {
+    if (configs.temporalCloudEnabled()) {
+      log.info("Skipping Temporal Namespace configuration because Temporal Cloud is in use.");
+      return;
+    }
+
     final var client = temporalService.blockingStub();
     final var describeNamespaceRequest = DescribeNamespaceRequest.newBuilder().setNamespace(DEFAULT_NAMESPACE).build();
     final var currentRetentionGrpcDuration = client.describeNamespace(describeNamespaceRequest).getConfig().getWorkflowExecutionRetentionTtl();
