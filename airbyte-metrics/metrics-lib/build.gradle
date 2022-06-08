@@ -7,7 +7,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
-    
+
     implementation libs.otel.semconv
     implementation platform(libs.otel.bom)
     implementation("io.opentelemetry:opentelemetry-api")

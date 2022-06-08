@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class OpenTelemetryMetricClientTest {
 
   OpenTelemetryMetricClient openTelemetryMetricClient;
-  private final static String EXPORTER_ENDPOINT = "localhost:4322";
+  private final static String EXPORTER_ENDPOINT = "http://localhost:4322";
 
   @BeforeEach
   void setUp() {
