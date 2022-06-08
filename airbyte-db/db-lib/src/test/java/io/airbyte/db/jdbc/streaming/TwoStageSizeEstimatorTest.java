@@ -24,4 +24,17 @@ class TwoStageSizeEstimatorTest {
     }
   }
 
+  @Test
+  public void testGetTargetBufferByteSize() {
+    assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+        TwoStageSizeEstimator.getTargetBufferByteSize(null));
+    assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+        TwoStageSizeEstimator.getTargetBufferByteSize(Long.MAX_VALUE));
+    assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+        TwoStageSizeEstimator.getTargetBufferByteSize(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE - 10L));
+    assertEquals(FetchSizeConstants.MAX_BUFFER_BYTE_SIZE,
+        TwoStageSizeEstimator.getTargetBufferByteSize(
+            Math.round(FetchSizeConstants.MAX_BUFFER_BYTE_SIZE / FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO + 10L)));
+  }
+
 }
