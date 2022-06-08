@@ -81,23 +81,18 @@ public class PerStreamStateManager extends AbstractStateManager<AirbyteStateMess
 
   @Override
   public AirbyteStateMessage toState() {
-    final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairCursorInfoMap = getPairToCursorInfoMap();
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage();
-    final List<AirbyteStreamState> airbyteStreamStates = generatePerStreamState(pairCursorInfoMap);
-
-    // TODO detect global?
-
+    final List<AirbyteStreamState> airbyteStreamStates = generatePerStreamState();
     return airbyteStateMessage.withStateType(AirbyteStateType.PER_STREAM).withStreams(airbyteStreamStates);
   }
 
   /**
    * Generates the per-stream state for each stream.
    *
-   * @param pairCursorInfoMap The map of stream name/namespace to current cursor information.
    * @return The list of per-stream state.
    */
-  private List<AirbyteStreamState> generatePerStreamState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairCursorInfoMap) {
-    return pairCursorInfoMap.entrySet().stream()
+  private List<AirbyteStreamState> generatePerStreamState() {
+    return getPairToCursorInfoMap().entrySet().stream()
         .filter(s -> s.getKey().getName() != null && s.getKey().getNamespace() != null)
         .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
         .map(e -> new AirbyteStreamState()

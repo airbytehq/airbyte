@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +99,35 @@ public class StateManagerFactoryTest {
     final JsonNode config = mock(JsonNode.class);
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> StateManagerFactory.createStateManager("Not Valid", catalog, config));
+  }
+
+  @Test
+  void testCdcDetectionLogic() {
+    final JsonNode config = mock(JsonNode.class);
+    final JsonNode replicationConfig = mock(JsonNode.class);
+
+    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
+    when(replicationConfig.hasNonNull("publication")).thenReturn(true);
+    when(config.hasNonNull("replication_method")).thenReturn(true);
+    when(config.get("replication_method")).thenReturn(replicationConfig);
+    assertTrue(StateManagerFactory.isCdc(config));
+
+    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(false);
+    assertFalse(StateManagerFactory.isCdc(config));
+
+    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
+    when(replicationConfig.hasNonNull("publication")).thenReturn(false);
+    assertFalse(StateManagerFactory.isCdc(config));
+
+    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
+    when(replicationConfig.hasNonNull("publication")).thenReturn(true);
+    when(config.hasNonNull("replication_method")).thenReturn(false);
+    assertFalse(StateManagerFactory.isCdc(config));
+
+    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(false);
+    when(replicationConfig.hasNonNull("publication")).thenReturn(false);
+    when(config.hasNonNull("replication_method")).thenReturn(false);
+    assertFalse(StateManagerFactory.isCdc(config));
   }
 
 }

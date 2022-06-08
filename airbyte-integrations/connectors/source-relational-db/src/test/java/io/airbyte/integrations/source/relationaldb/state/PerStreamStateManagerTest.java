@@ -13,11 +13,16 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
+import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getCatalog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -26,7 +31,9 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
@@ -228,4 +235,32 @@ public class PerStreamStateManagerTest {
     assertNotNull(stateManager.getCdcStateManager());
   }
 
+  @Test
+  void testNullNameNamespacePairFiltered() {
+    final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = new HashMap<>();
+    pairToCursorInfoMap.put(new AirbyteStreamNameNamespacePair(null, null), mock(CursorInfo.class));
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
+        .withStreams(List.of());
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final StateManager stateManager = spy(new PerStreamStateManager(airbyteStateMessage, catalog));
+    when(stateManager.getPairToCursorInfoMap()).thenReturn(pairToCursorInfoMap);
+
+    final AirbyteStateMessage result = stateManager.toState();
+    assertNotNull(result);
+    assertEquals(0, result.getStreams().size());
+
+    pairToCursorInfoMap.clear();
+    pairToCursorInfoMap.put(new AirbyteStreamNameNamespacePair("test", null), mock(CursorInfo.class));
+
+    final AirbyteStateMessage result2 = stateManager.toState();
+    assertNotNull(result2);
+    assertEquals(0, result2.getStreams().size());
+
+    pairToCursorInfoMap.clear();
+    pairToCursorInfoMap.put(new AirbyteStreamNameNamespacePair(null, "test"), mock(CursorInfo.class));
+
+    final AirbyteStateMessage result3 = stateManager.toState();
+    assertNotNull(result3);
+    assertEquals(0, result3.getStreams().size());
+  }
 }
