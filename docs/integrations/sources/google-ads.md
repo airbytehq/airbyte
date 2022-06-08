@@ -5,24 +5,27 @@ This page contains the setup guide and reference information for the Google Ads 
 ## Prerequisites
 
 Google Ads registered account with
-* Customer ID
-* Login Customer ID (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
-* Custom GAQL Queries (if needed)
+
+- Customer ID
+- Login Customer ID (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
+- Custom GAQL Queries (if needed)
 
 Also:
-* Start Date
-* End Date
-* Conversion Window
+
+- Start Date
+- End Date
+- Conversion Window
 
 For Airbyte OSS:
 Google Ads Account with an approved Developer Token. (note: In order to get API access to Google Ads, you must have a "manager" account; standard accounts cannot generate a Developer Token. This manager account must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://support.google.com/google-ads/answer/6139186).)
 You'll also need to find these values. See the [setup guide](#setup-guide) for instructions.
 
-* Client ID
-* Client Secret
-* Refresh Token
+- Client ID
+- Client Secret
+- Refresh Token
 
 ## Setup guide
+
 ### Step 1: Set up Google Ads
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
@@ -32,18 +35,20 @@ This guide will provide information as if starting from scratch. Please skip ove
 3. You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
 4. Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
-  ### Airbyte Open Source additional setup steps
-  1. Apply for a developer token (**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token) on your Manager account. This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
-  2. Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
+### Airbyte Open Source additional setup steps
 
-  ### How to apply for the developer token
-  Google is very picky about which software and which use case can get access to a developer token. The Airbyte team has worked with the Google Ads team to whitelist Airbyte and make sure you can get one (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
-  When you apply for a token, you need to mention:
+1. Apply for a developer token (**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token) on your Manager account. This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
+2. Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
 
-  - Why you need the token (eg: want to run some internal analytics...)
-  - That you will be using the Airbyte Open Source project
-  - That you have full access to the code base (because we're open source)
-  - That you have full access to the server running the code (because you're self-hosting Airbyte)
+### How to apply for the developer token
+
+Google is very picky about which software and which use case can get access to a developer token. The Airbyte team has worked with the Google Ads team to whitelist Airbyte and make sure you can get one (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information).
+When you apply for a token, you need to mention:
+
+- Why you need the token (eg: want to run some internal analytics...)
+- That you will be using the Airbyte Open Source project
+- That you have full access to the code base (because we're open source)
+- That you have full access to the server running the code (because you're self-hosting Airbyte)
 
 ## Step 2: Set up the Google Ads connector in Airbyte
 
@@ -59,6 +64,7 @@ This guide will provide information as if starting from scratch. Please skip ove
 8. You're done.
 
 ### For Airbyte OSS:
+
 1. Create a new Google Ads source with a suitable name.
 2. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
 3. If your access to the account is through a manager account, get the customer ID of the manager account.
@@ -69,10 +75,11 @@ This guide will provide information as if starting from scratch. Please skip ove
 ## Supported sync modes
 
 The Google Ads source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh | Overwrite
- - Full Refresh | Append
- - Incremental Sync | Append
- - Incremental Sync | Deduped History
+
+- Full Refresh | Overwrite
+- Full Refresh | Append
+- Incremental Sync | Append
+- Incremental Sync | Deduped History
 
 ## Supported Streams
 
@@ -123,7 +130,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                      |
-|:---------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| `0.1.41` | 2022-06-08 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Build the connector for both ADM and AMD platforms                                           |
 | `0.1.40` | 2022-06-02 | [13423](https://github.com/airbytehq/airbyte/pull/13423) | Fix the missing data [issue](https://github.com/airbytehq/airbyte/issues/12999)              |
 | `0.1.39` | 2022-05-18 | [12914](https://github.com/airbytehq/airbyte/pull/12914) | Fix GAQL query validation and log auth errors instead of failing the sync                    |
 | `0.1.38` | 2022-05-12 | [12807](https://github.com/airbytehq/airbyte/pull/12807) | Documentation updates                                                                        |
