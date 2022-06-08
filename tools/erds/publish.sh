@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 set -e
 
 . tools/lib/lib.sh
@@ -26,10 +25,8 @@ function main() {
   local secret_path="$connector_directory/secrets/config.json"
   local image_name=$(cat "$connector_directory/Dockerfile" | grep io.airbyte.name | cut -d= -f2)
 
-  local generate_script="$(dirname $0)/generator.sh"
-  # dbml_path is the last line output from the previous script
-  local dbml_path=$($generate_script $connector_name $secret_path | tail -n 1)
-  echo $dbml_path
+  "$(dirname $0)/generator.sh" $connector_name $secret_path
+  local dbml_path=/tmp/erds-output-dir/generated/erd.dbml
   DBDOCS_TOKEN=$DBDOCS_TOKEN dbdocs build $dbml_path --project=$connector_name
 }
 
