@@ -6,7 +6,7 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.noCondition;
 
-import io.airbyte.config.StreamKey;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.StreamResetRecord;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -40,13 +40,13 @@ public class StreamResetPersistence {
   /*
    * Get a list of streamKeys for streams that have pending or running resets
    */
-  public List<StreamKey> getStreamResets(final UUID connectionId) throws IOException {
+  public List<StreamDescriptor> getStreamResets(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx.select(DSL.asterisk())
         .from(DSL_TABLE_STREAM_RESET))
         .where(DSL.field(CONNECTION_ID_COL).eq(connectionId))
         .fetch(getStreamResetRecordMapper())
         .stream()
-        .flatMap(row -> Stream.of(new StreamKey().withName(row.streamName()).withNamespace(row.streamNamespace())))
+        .flatMap(row -> Stream.of(new StreamDescriptor().withName(row.streamName()).withNamespace(row.streamNamespace())))
         .toList();
   }
 
@@ -54,9 +54,9 @@ public class StreamResetPersistence {
    * Delete stream resets for a given connection. This is called to delete stream reset records for
    * resets that are successfully completed.
    */
-  public void deleteStreamResets(final UUID connectionId, final List<StreamKey> streamsToDelete) throws IOException {
+  public void deleteStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToDelete) throws IOException {
     final Condition condition = noCondition();
-    for (final StreamKey streamKey : streamsToDelete) {
+    for (final StreamDescriptor streamKey : streamsToDelete) {
       condition.or(
           DSL.field(CONNECTION_ID_COL).eq(connectionId)
               .and(DSL.field(STREAM_NAME_COL).eq(streamKey.getName()))
@@ -70,8 +70,8 @@ public class StreamResetPersistence {
    * Create stream resets for a given connection. This is called to create stream reset records for
    * resets that are going to be run.
    */
-  public void createStreamResets(final UUID connectionId, final List<StreamKey> streamsToCreate) throws IOException {
-    for (final StreamKey streamKey : streamsToCreate) {
+  public void createStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToCreate) throws IOException {
+    for (final StreamDescriptor streamKey : streamsToCreate) {
       final OffsetDateTime timestamp = OffsetDateTime.now();
 
       database.query(ctx -> ctx.insertInto(DSL_TABLE_STREAM_RESET)

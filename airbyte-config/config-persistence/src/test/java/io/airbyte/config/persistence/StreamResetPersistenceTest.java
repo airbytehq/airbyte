@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.config.StreamKey;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
@@ -52,15 +52,15 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   @Test
   void testCreateAndGetAndDeleteStreamResets() throws Exception {
-    final List<StreamKey> streamResetList = new ArrayList<>();
-    final StreamKey streamKey1 = new StreamKey().withName("stream_name_1").withNamespace("stream_namespace_1");
-    final StreamKey streamKey2 = new StreamKey().withName("stream_name_2");
+    final List<StreamDescriptor> streamResetList = new ArrayList<>();
+    final StreamDescriptor streamKey1 = new StreamDescriptor().withName("stream_name_1").withNamespace("stream_namespace_1");
+    final StreamDescriptor streamKey2 = new StreamDescriptor().withName("stream_name_2");
     streamResetList.add(streamKey1);
     streamResetList.add(streamKey2);
     final UUID uuid = UUID.randomUUID();
     streamResetPersistence.createStreamResets(uuid, streamResetList);
 
-    final List<StreamKey> result = streamResetPersistence.getStreamResets(uuid);
+    final List<StreamDescriptor> result = streamResetPersistence.getStreamResets(uuid);
     assertEquals(2, result.size());
     assertTrue(
         result.stream().anyMatch(streamKey -> streamKey.getName().equals("stream_name_1") && streamKey.getNamespace().equals("stream_namespace_1")));
@@ -68,7 +68,7 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     streamResetPersistence.deleteStreamResets(uuid, result);
 
-    final List<StreamKey> resultAfterDeleting = streamResetPersistence.getStreamResets(uuid);
+    final List<StreamDescriptor> resultAfterDeleting = streamResetPersistence.getStreamResets(uuid);
     assertEquals(0, resultAfterDeleting.size());
   }
 
