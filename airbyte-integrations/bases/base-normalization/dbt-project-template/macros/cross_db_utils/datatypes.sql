@@ -156,9 +156,7 @@
 {% endmacro %}
 
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
-    {#-- in TSQL timestamp is really datetime or datetime2 --#}
-    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
-    datetime2
+    datetimeoffset
 {%- endmacro -%}
 
 {% macro clickhouse__type_timestamp_with_timezone() %}
@@ -181,6 +179,12 @@
     char
 {%- endmacro -%}
 
+{%- macro sqlserver__type_timestamp_without_timezone() -%}
+    {#-- in TSQL timestamp is really datetime or datetime2 --#}
+    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
+    datetime2
+{%- endmacro -%}
+
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -197,6 +201,10 @@
     char
 {%- endmacro -%}
 
+{%- macro sqlserver__type_time_without_timezone() -%}
+    time
+{%- endmacro -%}
+
 
 {# time with time zone  -------------------------------------------------     #}
 
@@ -211,6 +219,10 @@
 {#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
 {%- macro mysql__type_time_with_timezone() -%}
     char
+{%- endmacro -%}
+
+{%- macro sqlserver__type_time_with_timezone() -%}
+    time
 {%- endmacro -%}
 
 
