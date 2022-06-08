@@ -6,12 +6,7 @@ package io.airbyte.test.acceptance;
 
 import static io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,60 +18,9 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.api.client.model.generated.AirbyteCatalog;
-import io.airbyte.api.client.model.generated.AirbyteStream;
-import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
-import io.airbyte.api.client.model.generated.AirbyteStreamConfiguration;
-import io.airbyte.api.client.model.generated.AttemptInfoRead;
-import io.airbyte.api.client.model.generated.AttemptStatus;
-import io.airbyte.api.client.model.generated.CheckConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionCreate;
-import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionSchedule;
-import io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.client.model.generated.ConnectionState;
-import io.airbyte.api.client.model.generated.ConnectionStatus;
-import io.airbyte.api.client.model.generated.ConnectionUpdate;
-import io.airbyte.api.client.model.generated.DataType;
-import io.airbyte.api.client.model.generated.DestinationCreate;
-import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
-import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.client.model.generated.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
-import io.airbyte.api.client.model.generated.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
-import io.airbyte.api.client.model.generated.DestinationRead;
-import io.airbyte.api.client.model.generated.DestinationSyncMode;
-import io.airbyte.api.client.model.generated.JobIdRequestBody;
-import io.airbyte.api.client.model.generated.JobInfoRead;
-import io.airbyte.api.client.model.generated.JobRead;
-import io.airbyte.api.client.model.generated.JobStatus;
-import io.airbyte.api.client.model.generated.LogType;
-import io.airbyte.api.client.model.generated.LogsRequestBody;
-import io.airbyte.api.client.model.generated.NamespaceDefinitionType;
-import io.airbyte.api.client.model.generated.OperationCreate;
-import io.airbyte.api.client.model.generated.OperationIdRequestBody;
-import io.airbyte.api.client.model.generated.OperationRead;
-import io.airbyte.api.client.model.generated.OperatorConfiguration;
-import io.airbyte.api.client.model.generated.OperatorNormalization;
-import io.airbyte.api.client.model.generated.OperatorNormalization.OptionEnum;
-import io.airbyte.api.client.model.generated.OperatorType;
-import io.airbyte.api.client.model.generated.SourceCreate;
-import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
-import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
-import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.client.model.generated.SourceDefinitionRead;
-import io.airbyte.api.client.model.generated.SourceDefinitionSpecificationRead;
-import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.client.model.generated.SourceIdRequestBody;
-import io.airbyte.api.client.model.generated.SourceRead;
-import io.airbyte.api.client.model.generated.SyncMode;
+import io.airbyte.api.client.model.generated.*;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.MoreBooleans;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
-import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
 import io.airbyte.db.Database;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
@@ -84,82 +28,45 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * We order tests such that earlier tests test more basic behavior that is relied upon in later
- * tests. e.g. We test that we can create a destination before we test whether we can sync data to
- * it.
+ * This class tests for api functionality and basic sync functionality.
  * <p>
- * Many of the tests here are disabled for Kubernetes. This is because they are already run as part
- * of the Docker acceptance tests and there is little value re-running on Kubernetes, especially
- * operations take much longer due to Kubernetes pod spin up times. We run a subset to sanity check
- * basic Airbyte Kubernetes Sync features.
+ * Due to the number of tests here, this set runs only on the docker deployment for speed. The tests
+ * here are disabled for Kubernetes as operations take much longer due to Kubernetes pod spin up
+ * times and there is little value in re-running these tests since this part of the system does not
+ * vary between deployments.
  * <p>
- * Some tests here use the {@link RetryingTest} annotation instead of the more common {@link Test}
- * to allow multiple tries for a test to pass. This is because these tests sometimes fail
- * transiently, and we haven't been able to fix that yet.
- * <p>
- * However, in general we should prefer using {@code @Test} instead and only resort to using
- * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
- * to using {@code @Test} if possible.
- * <p>
- * For this class we currently use {@code @RetryingTest} for all tests that can run on k8s.
+ * We order tests such that earlier tests test more basic behavior relied upon in later tests. e.g.
+ * We test that we can create a destination before we test whether we can sync data to it.
  */
-@SuppressWarnings({"rawtypes", "ConstantConditions"})
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AcceptanceTests {
+@DisabledIfEnvironmentVariable(named = "KUBE",
+                               matches = "true")
+public class BasicAcceptanceTests {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.
@@ -168,10 +75,6 @@ public class AcceptanceTests {
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
-  private static final Charset UTF8 = StandardCharsets.UTF_8;
-  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
-  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
-  private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
       System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
@@ -188,40 +91,27 @@ public class AcceptanceTests {
   private static final String SOURCE_PASSWORD = "hunter2";
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
-   * test containers are used. When we run these tests in GKE, we spawn a source and destination
-   * postgres database ane use them for testing.
+   * When the acceptance tests are run against a local instance of docker-compose these test
+   * containers are used.
    */
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
   private static AirbyteTestContainer airbyteTestContainer;
+  private static AirbyteApiClient apiClient;
+  private static UUID workspaceId;
 
-  private AirbyteApiClient apiClient;
-
-  private UUID workspaceId;
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
-  private static KubernetesClient kubernetesClient = null;
-
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException {
-    if (IS_GKE && !IS_KUBE) {
-      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
-    }
-    if (!IS_GKE) {
-      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-          .withUsername(SOURCE_USERNAME)
-          .withPassword(SOURCE_PASSWORD);
-      sourcePsql.start();
-    }
-
-    if (IS_KUBE) {
-      kubernetesClient = new DefaultKubernetesClient();
-    }
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+    sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+        .withUsername(SOURCE_USERNAME)
+        .withPassword(SOURCE_PASSWORD);
+    sourcePsql.start();
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
@@ -242,20 +132,6 @@ public class AcceptanceTests {
       LOGGER.info("Using external deployment of airbyte.");
     }
 
-  }
-
-  @AfterAll
-  public static void end() {
-    if (!IS_GKE) {
-      sourcePsql.stop();
-    }
-    if (airbyteTestContainer != null) {
-      airbyteTestContainer.stop();
-    }
-  }
-
-  @BeforeEach
-  public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -275,40 +151,38 @@ public class AcceptanceTests {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
-    if (!IS_GKE) {
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-      destinationPsql.start();
+
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
+  }
+
+  @AfterAll
+  public static void end() {
+    sourcePsql.stop();
+    destinationPsql.stop();
+
+    if (airbyteTestContainer != null) {
+      airbyteTestContainer.stop();
     }
+  }
+
+  @BeforeEach
+  public void setup() {
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
 
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
-
-    // seed database.
-    if (IS_GKE) {
-      final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
-      final StringBuilder query = new StringBuilder();
-      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
-        if (line != null && !line.isEmpty()) {
-          query.append(line);
-        }
-      }
-      database.query(context -> context.execute(query.toString()));
-    } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-    }
   }
 
   @AfterEach
-  public void tearDown() throws ApiException, SQLException {
+  public void tearDown() {
     try {
       clearSourceDbData();
-      clearDestinationDbData();
-      if (!IS_GKE) {
-        destinationPsql.stop();
-      }
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -332,8 +206,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(-2)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
@@ -345,8 +217,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(-1)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(
@@ -356,8 +226,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(0)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
@@ -368,8 +236,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(1)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationDbConfig();
@@ -389,8 +255,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(2)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testDestinationCheckConnection() throws ApiException {
     final UUID destinationId = createDestination().getDestinationId();
 
@@ -403,8 +267,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(3)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
@@ -427,8 +289,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(4)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
@@ -440,10 +300,8 @@ public class AcceptanceTests {
         checkConnectionRead.getMessage());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(5)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
@@ -481,8 +339,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(6)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -504,26 +360,8 @@ public class AcceptanceTests {
     assertEquals(name, createdConnection.getName());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(7)
-  public void testManualSync() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(false);
-  }
-
-  @RetryingTest(3)
-  @Order(8)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
 
@@ -557,8 +395,129 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-  @RetryingTest(3)
+  @Test
+  @Order(8)
+  public void testScheduledSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+
+    var conn = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
+
+    // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
+    // Then it will wait the sync interval.
+    // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
+    // syncs in progress
+    List<io.airbyte.api.client.model.generated.JobWithAttemptsRead> jobs = new ArrayList<>();
+    while (jobs.size() < 2) {
+      var listSyncJobsRequest = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
+          .configId(conn.getConnectionId().toString());
+      var resp = apiClient.getJobsApi().listJobsFor(listSyncJobsRequest);
+      jobs = resp.getJobs();
+      sleep(Duration.ofSeconds(30).toMillis());
+    }
+
+    assertSourceAndDestinationDbInSync(false);
+  }
+
+  @Test
   @Order(9)
+  public void testMultipleSchemasAndTablesSync() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    assertSourceAndDestinationDbInSync(false);
+  }
+
+  @Test
+  @Order(10)
+  public void testMultipleSchemasSameTablesSync() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    assertSourceAndDestinationDbInSync(false);
+  }
+
+  @Test
+  @Order(11)
+  public void testIncrementalDedupeSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    // sync from start
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+
+    assertSourceAndDestinationDbInSync(true);
+
+    // add new records and run again.
+    final Database source = getSourceDatabase();
+    final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
+    source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
+    // retrieve latest snapshot of source records after modifications; the deduplicated table in
+    // destination should mirror this latest state of records
+    final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
+
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+
+    assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    assertNormalizedDestinationContains(expectedNormalizedRecords);
+  }
+
+  @Test
+  @Order(12)
   public void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
@@ -583,6 +542,7 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning testIncrementalSync() sync 1");
+
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
@@ -634,86 +594,8 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(10)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testScheduledSync() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-
-    final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-
-    createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
-
-    // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
-    // Then it will wait the sync interval.
-    // todo: wait for two attempts in the UI
-    // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
-    // syncs in progress
-    sleep(Duration.ofMinutes(4).toMillis());
-    assertSourceAndDestinationDbInSync(false);
-  }
-
-  @Test
-  @Order(11)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testMultipleSchemasAndTablesSync() throws Exception {
-    // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
-
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(false);
-  }
-
-  @Test
-  @Order(12)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testMultipleSchemasSameTablesSync() throws Exception {
-    // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
-
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(false);
-  }
-
-  @Test
   @Order(13)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testIncrementalDedupeSync() throws Exception {
+  public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -726,129 +608,92 @@ public class AcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
-    final UUID connectionId =
+
+    UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    // sync from start
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
-    assertSourceAndDestinationDbInSync(true);
+    // test normal deletion of connection
+    LOGGER.info("Calling delete connection...");
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    // add new records and run again.
-    final Database source = getSourceDatabase();
-    final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
-    source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
-    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
-    // retrieve latest snapshot of source records after modifications; the deduplicated table in
-    // destination should mirror this latest state of records
-    final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
+    // remove connection to avoid exception during tear down
+    connectionIds.remove(connectionId);
 
-    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    LOGGER.info("Waiting for connection to be deleted...");
+    Thread.sleep(500);
 
-    assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
-    assertNormalizedDestinationContains(expectedNormalizedRecords);
+    ConnectionStatus connectionStatus =
+        apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
+    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
+
+    // test that repeated deletion call for same connection is successful
+    LOGGER.info("Calling delete connection a second time to test repeat call behavior...");
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // test deletion of connection when temporal workflow is in a bad state
+    LOGGER.info("Testing connection deletion when temporal is in a terminal state");
+    connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    terminateTemporalWorkflow(connectionId);
+
+    // we should still be able to delete the connection when the temporal workflow is in this state
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    LOGGER.info("Waiting for connection to be deleted...");
+    Thread.sleep(500);
+
+    connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
+    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(14)
-  public void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
-
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "EXCEPTION_AFTER_N")
-            .put("throw_after_n_records", 100)
-            .build()));
-
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
-
+  public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability
+    // to query a workflow for its current
+    // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This
+    // test just ensures that the underlying workflow
+    // is running after the update method is called.
     final String connectionName = "test-connection";
-    final UUID sourceId = source.getSourceId();
-    final UUID destinationId = destination.getDestinationId();
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
-
-    assertEquals(
-        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-        stream.getSupportedSyncModes());
-    assertTrue(MoreBooleans.isTruthy(stream.getSourceDefinedCursor()));
-
     final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
     catalog.getStreams().forEach(s -> s.getConfig()
         .syncMode(syncMode)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-    // wait to get out of pending.
-    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
-    // wait to get out of running.
-    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
-    // now cancel it so that we freeze state!
-    try {
-      apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (final Exception e) {}
+    LOGGER.info("Testing connection update when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
+    terminateTemporalWorkflow(connectionId);
 
-    // the source is set to emit a state message every 5th message. because of the multi threaded
-    // nature, we can't guarantee exactly what checkpoint will be registered. what we can do is send
-    // enough messages to make sure that we checkpoint at least once.
-    assertNotNull(connectionState.getState());
-    assertTrue(connectionState.getState().get("column1").isInt());
-    LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
-    assertTrue(connectionState.getState().get("column1").asInt() > 0);
-    assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
+    // we should still be able to update the connection when the temporal workflow is in this state
+    updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.HOURS).units(1L));
+
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
+
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(15)
-  public void testRedactionOfSensitiveRequestBodies() throws Exception {
-    // check that the source password is not present in the logs
-    final List<String> serverLogLines = java.nio.file.Files.readAllLines(
-        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
-        Charset.defaultCharset());
-
-    assertTrue(serverLogLines.size() > 0);
-
-    boolean hasRedacted = false;
-
-    for (final String line : serverLogLines) {
-      assertFalse(line.contains(SOURCE_PASSWORD));
-
-      if (line.contains("REDACTED")) {
-        hasRedacted = true;
-      }
-    }
-
-    assertTrue(hasRedacted);
-  }
-
-  // verify that when the worker uses backpressure from pipes that no records are lost.
-  @RetryingTest(3)
-  @Order(16)
-  public void testBackpressure() throws Exception {
+  public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    final String connectionName = "test-connection";
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
-
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
         workspaceId,
@@ -856,58 +701,79 @@ public class AcceptanceTests {
         Jsons.jsonNode(ImmutableMap.builder()
             .put("type", "INFINITE_FEED")
             .put("max_records", 5000)
+            .put("message_interval", 100)
             .build()));
-
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "THROTTLED")
-            .put("millis_per_record", 1)
-            .build()));
-
-    final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = destination.getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
-            .getConnectionId();
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    LOGGER.info("Testing manual sync when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    // wait to get out of pending.
-    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
-    // wait to get out of running.
-    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    LOGGER.info("Starting first manual sync");
+    final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    LOGGER.info("Terminating workflow during first sync");
+    terminateTemporalWorkflow(connectionId);
 
-    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
-    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
-    assertNotNull(attemptInfoRead);
+    LOGGER.info("Submitted another manual sync");
+    apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    int expectedMessageNumber = 0;
-    final int max = 10_000;
-    for (final String logLine : attemptInfoRead.getLogs().getLogLines()) {
-      if (expectedMessageNumber > max) {
-        break;
-      }
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
 
-      if (logLine.contains("received record: ") && logLine.contains("\"type\": \"RECORD\"")) {
-        assertTrue(
-            logLine.contains(String.format("\"column1\": \"%s\"", expectedMessageNumber)),
-            String.format("Expected %s but got: %s", expectedMessageNumber, logLine));
-        expectedMessageNumber++;
-      }
-    }
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
+    assertTrue(workflowState.isSkipScheduling());
+
+    // verify that the first manual sync was marked as failed
+    final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
+    assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
+  }
+
+  @Test
+  @Order(16)
+  public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+    LOGGER.info("Testing reset connection when temporal is in a terminal state");
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    terminateTemporalWorkflow(connectionId);
+
+    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    LOGGER.info("Waiting for workflow to be recreated...");
+    Thread.sleep(500);
+
+    final WorkflowState workflowState = getWorkflowState(connectionId);
+    assertTrue(workflowState.isRunning());
+    assertTrue(workflowState.isResetConnection());
   }
 
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
-  @RetryingTest(3)
-  @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -964,396 +830,6 @@ public class AcceptanceTests {
     }
   }
 
-  @RetryingTest(3)
-  @Order(18)
-  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-                                matches = "true")
-  public void testDowntimeDuringSync() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-
-    for (final var input : List.of("KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
-      LOGGER.info("Checking " + input);
-
-      final UUID connectionId =
-          createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
-
-      JobInfoRead connectionSyncRead = null;
-
-      while (connectionSyncRead == null) {
-
-        try {
-          connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-        } catch (final Exception e) {
-          LOGGER.error("retrying after error", e);
-        }
-      }
-
-      Thread.sleep(10000);
-
-      switch (input) {
-        case "KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST" -> {
-          LOGGER.info("Scaling down both workers at roughly the same time...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-
-          LOGGER.info("Scaling up both workers...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-        }
-        case "KILL_ONLY_SYNC" -> {
-          LOGGER.info("Scaling down only sync worker...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-
-          LOGGER.info("Scaling up sync worker...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-        }
-        case "KILL_ONLY_NON_SYNC" -> {
-          LOGGER.info("Scaling down only non-sync worker...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-
-          LOGGER.info("Scaling up non-sync worker...");
-          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-        }
-      }
-
-      waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-
-      final long numAttempts = apiClient.getJobsApi()
-          .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-          .getAttempts()
-          .size();
-
-      // it should be able to accomplish the resume without an additional attempt!
-      assertEquals(1, numAttempts);
-    }
-  }
-
-  @RetryingTest(3)
-  @Order(19)
-  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-                                matches = "true")
-  public void testCancelSyncWithInterruption() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
-
-    Thread.sleep(5000);
-
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-    Thread.sleep(1000);
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-
-    final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
-    assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
-  }
-
-  @RetryingTest(3)
-  @Order(20)
-  @Timeout(value = 5,
-           unit = TimeUnit.MINUTES)
-  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-                                matches = "true")
-  public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-
-    LOGGER.info("Creating connection...");
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    LOGGER.info("Waiting for connection to be available in Temporal...");
-
-    LOGGER.info("Run manual sync...");
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for job to run...");
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
-
-    LOGGER.info("Scale down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-
-    LOGGER.info("Wait for worker scale down...");
-    Thread.sleep(1000);
-
-    LOGGER.info("Scale up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-
-    LOGGER.info("Waiting for worker timeout...");
-    Thread.sleep(ContainerOrchestratorApp.MAX_SECONDS_TO_WAIT_FOR_FILE_COPY * 1000 + 1000);
-
-    LOGGER.info("Waiting for job to retry and succeed...");
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-  }
-
-  @RetryingTest(3)
-  @Order(21)
-  @Timeout(value = 5,
-           unit = TimeUnit.MINUTES)
-  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
-                                matches = "true")
-  public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-
-    LOGGER.info("Creating connection...");
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    LOGGER.info("Waiting for connection to be available in Temporal...");
-
-    LOGGER.info("Run manual sync...");
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for job to run...");
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
-
-    LOGGER.info("Waiting for job to run a little...");
-    Thread.sleep(5000);
-
-    LOGGER.info("Scale down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-
-    LOGGER.info("Waiting for worker shutdown...");
-    Thread.sleep(2000);
-
-    LOGGER.info("Starting background cancellation request...");
-    final var pool = Executors.newSingleThreadExecutor();
-    final var mdc = MDC.getCopyOfContextMap();
-    final Future<JobInfoRead> resp =
-        pool.submit(() -> {
-          MDC.setContextMap(mdc);
-          try {
-            final JobInfoRead jobInfoRead = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
-            LOGGER.info("jobInfoRead = " + jobInfoRead);
-            return jobInfoRead;
-          } catch (final ApiException e) {
-            LOGGER.error("Failed to read from api", e);
-            throw e;
-          }
-        });
-    Thread.sleep(2000);
-
-    LOGGER.info("Scaling up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-
-    LOGGER.info("Waiting for cancellation to go into effect...");
-    assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
-  }
-
-  @RetryingTest(3)
-  @Order(22)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testDeleteConnection() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
-
-    UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
-
-    // test normal deletion of connection
-    LOGGER.info("Calling delete connection...");
-    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    // remove connection to avoid exception during tear down
-    connectionIds.remove(connectionId);
-
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(500);
-
-    ConnectionStatus connectionStatus =
-        apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
-    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
-
-    // test that repeated deletion call for same connection is successful
-    LOGGER.info("Calling delete connection a second time to test repeat call behavior...");
-    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    // test deletion of connection when temporal workflow is in a bad state
-    LOGGER.info("Testing connection deletion when temporal is in a terminal state");
-    connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    terminateTemporalWorkflow(connectionId);
-
-    // we should still be able to delete the connection when the temporal workflow is in this state
-    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(500);
-
-    connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
-    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
-  }
-
-  @Test
-  @Order(23)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
-    // This test only covers the specific behavior of updating a connection that does not have an
-    // underlying temporal workflow.
-    // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability
-    // to query a workflow for its current
-    // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This
-    // test just ensures that the underlying workflow
-    // is running after the update method is called.
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
-
-    LOGGER.info("Testing connection update when temporal is in a terminal state");
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    terminateTemporalWorkflow(connectionId);
-
-    // we should still be able to update the connection when the temporal workflow is in this state
-    updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
-
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
-
-    final WorkflowState workflowState = getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
-  }
-
-  @Test
-  @Order(24)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
-    // This test only covers the specific behavior of updating a connection that does not have an
-    // underlying temporal workflow.
-    final String connectionName = "test-connection";
-    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 5000)
-            .put("message_interval", 100)
-            .build()));
-    final UUID sourceId = source.getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
-
-    LOGGER.info("Testing manual sync when temporal is in a terminal state");
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    LOGGER.info("Starting first manual sync");
-    final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    LOGGER.info("Terminating workflow during first sync");
-    terminateTemporalWorkflow(connectionId);
-
-    LOGGER.info("Submitted another manual sync");
-    apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
-
-    final WorkflowState workflowState = getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
-    assertTrue(workflowState.isSkipScheduling());
-
-    // verify that the first manual sync was marked as failed
-    final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
-    assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
-  }
-
-  @Test
-  @Order(25)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
-    // This test only covers the specific behavior of updating a connection that does not have an
-    // underlying temporal workflow.
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
-
-    LOGGER.info("Testing reset connection when temporal is in a terminal state");
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    terminateTemporalWorkflow(connectionId);
-
-    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
-
-    final WorkflowState workflowState = getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
-    assertTrue(workflowState.isResetConnection());
-  }
-
   private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     return WorkflowClient.newInstance(temporalService);
@@ -1404,16 +880,10 @@ public class AcceptanceTests {
   }
 
   private Database getSourceDatabase() {
-    if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getSourceDatabase();
-    }
     return getDatabase(sourcePsql);
   }
 
   private Database getDestinationDatabase() {
-    if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getDestinationDatabase();
-    }
     return getDatabase(destinationPsql);
   }
 
@@ -1550,7 +1020,7 @@ public class AcceptanceTests {
   private OperationRead createOperation() throws ApiException {
     final OperatorConfiguration normalizationConfig = new OperatorConfiguration()
         .operatorType(OperatorType.NORMALIZATION).normalization(new OperatorNormalization().option(
-            OptionEnum.BASIC));
+            OperatorNormalization.OptionEnum.BASIC));
 
     final OperationCreate operationCreate = new OperationCreate()
         .workspaceId(workspaceId)
@@ -1602,40 +1072,30 @@ public class AcceptanceTests {
   }
 
   private JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
+    return getDbConfig(sourcePsql, false, false);
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, false, true);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true);
   }
 
-  private JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
+  private JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
     try {
-      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+      final Map<Object, Object> dbConfig = localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
-      throws UnknownHostException {
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
-    if (IS_KUBE) {
-      if (IS_MINIKUBE) {
-        // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
-      } else {
-        // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
-      }
-    } else if (IS_MAC) {
+    if (IS_MAC) {
       dbConfig.put("host", "host.docker.internal");
     } else {
       dbConfig.put("host", "localhost");
@@ -1710,14 +1170,6 @@ public class AcceptanceTests {
     }
   }
 
-  private void clearDestinationDbData() throws SQLException {
-    final Database database = getDestinationDatabase();
-    final Set<SchemaTableNamePair> pairs = listAllTables(database);
-    for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
-    }
-  }
-
   private void deleteSource(final UUID sourceId) throws ApiException {
     apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
   }
@@ -1783,19 +1235,6 @@ public class AcceptanceTests {
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     }
     return job;
-  }
-
-  @SuppressWarnings("BusyWait")
-  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
-      throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    int count = 0;
-    while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
-      LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
-      sleep(1000);
-    }
-    return connectionState;
   }
 
   public enum Type {
