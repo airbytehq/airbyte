@@ -19,8 +19,7 @@ from pydantic import ValidationError
 class ConnectorRunner:
     def __init__(self, image_name: str, volume: Path):
         self._client = docker.from_env()
-        self._cassette_ctx = None
-        self.set_cassette_context("SAT")
+        self._cassette_ctx = "SAT"
         try:
             self._image = self._client.images.get(image_name)
         except docker.errors.ImageNotFound:
@@ -40,15 +39,6 @@ class ConnectorRunner:
 
     def set_cassette_context(self, ctx):
         self._cassette_ctx = ctx
-
-        # TODO the main thing this is doing is clearing the cassettes once at the start, not per "run"
-        # not sure if setting a "context" is actually useful yet
-        cassette_path = os.getenv("CASSETTE_PATH")
-        if cassette_path and os.getenv("CASSETTE_MODE") == "RECORD":
-            try:
-                os.remove(os.path.join(cassette_path, ctx))
-            except FileNotFoundError:
-                pass
 
     def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
         self.input_folder.mkdir(parents=True)
@@ -128,7 +118,8 @@ class ConnectorRunner:
             detach=True,
             environment={
                 "CASSETTE_MODE": os.getenv("CASSETTE_MODE", "RECORD"),
-                "CASSETTE_PATH": f"/cassettes/{self._cassette_ctx}"
+                "CASSETTE_PATH": "/cassettes/sat_cassettes",
+                "CASSETTE_NAME": self._cassette_ctx
             },
             **kwargs,
         )

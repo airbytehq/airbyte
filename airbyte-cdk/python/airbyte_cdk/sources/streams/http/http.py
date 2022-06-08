@@ -74,7 +74,8 @@ class HttpStream(Stream, ABC):
             base_path = os.getenv("CASSETTE_PATH", "cassettes")
 
         # TODO does it still make sense to name cassettes from stream name when using it for tests?
-        return os.path.join(base_path, f"{self.name}.yml")
+        cassette_name = os.getenv("CASSETTE_NAME", self.name)
+        return os.path.join(base_path, f"{cassette_name}.yml")
 
     @property
     def use_cache(self):

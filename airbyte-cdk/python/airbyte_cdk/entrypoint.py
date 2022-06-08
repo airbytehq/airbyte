@@ -146,7 +146,7 @@ def launch(source: Source, args: List[str]):
                 freeze_settings = json.loads(f.read())
                 time_to_freeze = freeze_settings.get("frozen_datetime")
                 freeze_time(time_to_freeze).start()
-    except FileExistsError:
+    except (FileExistsError, FileNotFoundError):
         pass
 
     for message in source_entrypoint.run(parsed_args):

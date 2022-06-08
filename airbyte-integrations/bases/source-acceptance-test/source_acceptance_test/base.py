@@ -9,6 +9,10 @@ import pytest
 
 @pytest.mark.usefixtures("inputs")
 class BaseTest:
+    @pytest.fixture(autouse=True)
+    def update_run_context(self, docker_runner):
+        docker_runner.set_cassette_context(type(self).__name__)
+
     @classmethod
     def config_key(cls):
         """Name of the test in configuration file, used to override test inputs,"""
