@@ -1,13 +1,15 @@
 # Updating Documentation
 
-Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](https://guides.github.com/features/mastering-markdown/) files are stored in our Github repository.
+Documentation is written as [Markdown](https://guides.github.com/features/mastering-markdown/) files and stored in our Github repository.
 
 ## Workflow for updating docs
 
 1. Modify docs using Git or the Github UI \(All docs live in the `docs/` folder in the [Airbyte repository](https://github.com/airbytehq/airbyte)\)
 2. If you're adding new files, update `docs/SUMMARY.md`.
-3. If you're moving existing pages, add redirects in the [`.gitbook.yaml` file](https://github.com/airbytehq/airbyte/blob/master/.gitbook.yaml) in the Airbyte repository root directory
-4. Create a Pull Request
+3. Create a Pull Request
+
+### Sidebar updates
+To edit the sidebar you must [edit this JSON in this Javascript file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js).
 
 ### Modify in the Github UI
 
@@ -35,6 +37,27 @@ Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](ht
 
 3. Modify the documentation.
 4. Create a pull request
+
+### Testing Changes
+* You can run a copy of the website locally to test how your changes will look in production
+* This is not necessary for smaller changes, but is suggested for large changes and **any** change to the sidebar, as the JSON will blow up if we misplace a comma.
+* You will need [yarn](https://yarnpkg.com) installed locally to build docusaurus
+* Run the following commands
+```bash
+cd docusaurus
+yarn install
+yarn build
+yarn serve
+```
+
+You can now navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes.  You can stop the running server in OSX/Linux by pressing `control-c` in the terminal running the server
+
+### Deploying the docs website
+We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.  An [internal guide for deployment lives here](https://github.com/airbytehq/runbooks/blob/master/deploying_and_reverting_docs.md).
+
+The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. Locally run `./tools/bin/deploy_docusaurus` from the `airbyte` monorepo project root to deploy this docs website.
+
+Automating this process via CI is currently not easy because we push to a [dedicated repo hosting the Github pages](https://github.com/airbytehq/airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet.
 
 ## Documentation Best Practices
 
@@ -71,7 +94,7 @@ Each connector should have a CHANGELOG.md section in its public facing docs in t
 ```text
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.2.0   | 20XX-05-XX | [PR2#](https://github.com/airbytehq/airbyte/pull/PR2#) | Fixed bug with schema generation <br><br> Added a better description for the `password` input parameter |
+| 0.2.0   | 20XX-05-XX | [PR2#](https://github.com/airbytehq/airbyte/pull/PR2#) | Fixed bug with schema generation <br/><br/> Added a better description for the `password` input parameter |
 | 0.1.0   | 20XX-04-XX | [PR#](https://github.com/airbytehq/airbyte/pull/PR#) | Added incremental sync |
 ```
 
@@ -133,6 +156,3 @@ _good context_:
 ```text
 When creating or updating connectors, we spend a lot of time manually transcribing JSON Schema files based on OpenAPI docs. This is ncessary because OpenAPI and JSON schema are very similar but not perfectly compatible. This process is automatable. Therefore we should create a program which converts from OpenAPI to JSONSchema format.
 ```
-
-### How docs are synced with Gitbook
-Gitbook tracks the [`gitbook/v1` branch](https://github.com/airbytehq/airbyte/tree/gitbook/v1) from the [Airbyte repository](github.com/airbytehq/airbyte). This branch is synced with master on every push via this [Github action](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-branches.yml). 

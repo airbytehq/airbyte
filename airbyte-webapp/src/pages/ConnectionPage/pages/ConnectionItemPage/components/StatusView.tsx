@@ -1,33 +1,30 @@
-import React, { useCallback, useState } from "react";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useFetcher } from "rest-hooks";
 
+import { Button, ContentCard, LoadingButton } from "components";
+import EmptyResource from "components/EmptyResourceBlock";
+import ToolTip from "components/ToolTip";
+
+import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import Status from "core/statuses";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import useLoadingState from "hooks/useLoadingState";
 import { useListJobs } from "services/job/JobService";
 
-import ContentCard from "components/ContentCard";
-import { Button, LoadingButton } from "components";
-import StatusMainInfo from "./StatusMainInfo";
-import ConnectionResource, { Connection } from "core/resources/Connection";
 import JobsList from "./JobsList";
-import EmptyResource from "components/EmptyResourceBlock";
-import ResetDataModal from "components/ResetDataModal";
-import useConnection from "hooks/services/useConnectionHook";
-import useLoadingState from "hooks/useLoadingState";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
-type IProps = {
-  connection: Connection;
-  frequencyText?: string;
-  destinationDefinition?: DestinationDefinition;
-  sourceDefinition?: SourceDefinition;
-};
+interface StatusViewProps {
+  connection: WebBackendConnectionRead;
+  isStatusUpdating?: boolean;
+}
 
 const Content = styled.div`
-  margin: 18px 10px;
+  margin: 0 10px;
 `;
 
 const StyledContentCard = styled(ContentCard)`
@@ -53,93 +50,86 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<IProps> = ({
-  connection,
-  frequencyText,
-  destinationDefinition,
-  sourceDefinition,
-}) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const analyticsService = useAnalyticsService();
+  const { hasFeature } = useFeatureService();
+  const allowSync = hasFeature(FeatureItem.AllowSync);
+
   const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });
+  const isAtLeastOneJobRunningOrPending = jobs.some((jobWithAttempts) => {
+    const status = jobWithAttempts?.job?.status;
+    return status === Status.RUNNING || status === Status.PENDING;
+  });
 
-  const SyncConnection = useFetcher(ConnectionResource.syncShape());
+  const { mutateAsync: resetConnection } = useResetConnection();
+  const { mutateAsync: syncConnection } = useSyncConnection();
 
-  const { resetConnection } = useConnection();
+  const onSync = () => syncConnection(connection);
+  const onReset = () => resetConnection(connection.connectionId);
 
-  const onSync = async () => {
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
-      frequency: frequencyText,
-    });
-    await SyncConnection({
-      connectionId: connection.connectionId,
+  const onResetDataButtonClick = () => {
+    openConfirmationModal({
+      text: `form.resetDataText`,
+      title: `form.resetData`,
+      submitButtonText: "form.reset",
+      cancelButtonText: "form.noNeed",
+      onSubmit: async () => {
+        await onReset();
+        closeConfirmationModal();
+      },
+      submitButtonDataId: "reset",
     });
   };
 
-  const onReset = useCallback(() => resetConnection(connection.connectionId), [
-    resetConnection,
-    connection.connectionId,
-  ]);
+  const resetDataBtn = (
+    <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
+      <FormattedMessage id={"connection.resetData"} />
+    </Button>
+  );
+
+  const syncNowBtn = (
+    <SyncButton
+      disabled={!allowSync || isAtLeastOneJobRunningOrPending || isStatusUpdating}
+      isLoading={isLoading}
+      wasActive={showFeedback}
+      onClick={() => startAction({ action: onSync })}
+    >
+      {showFeedback ? (
+        <FormattedMessage id={"sources.syncingNow"} />
+      ) : (
+        <>
+          <TryArrow icon={faRedoAlt} />
+          <FormattedMessage id={"sources.syncNow"} />
+        </>
+      )}
+    </SyncButton>
+  );
 
   return (
     <Content>
-      <StatusMainInfo
-        connection={connection}
-        frequencyText={frequencyText}
-        sourceDefinition={sourceDefinition}
-        destinationDefinition={destinationDefinition}
-      />
       <StyledContentCard
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            <div>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <FormattedMessage id={"connection.resetData"} />
-              </Button>
-              <SyncButton
-                isLoading={isLoading}
-                wasActive={showFeedback}
-                onClick={() => startAction({ action: onSync })}
-              >
-                {showFeedback ? (
-                  <FormattedMessage id={"sources.syncingNow"} />
-                ) : (
-                  <>
-                    <TryArrow icon={faRedoAlt} />
-                    <FormattedMessage id={"sources.syncNow"} />
-                  </>
-                )}
-              </SyncButton>
-            </div>
+            {connection.status === ConnectionStatus.active && (
+              <div>
+                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id={"connection.pendingSync"} />
+                </ToolTip>
+                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id={"connection.pendingSync"} />
+                </ToolTip>
+              </div>
+            )}
           </Title>
         }
       >
-        {jobs.length ? (
-          <JobsList jobs={jobs} />
-        ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
-        )}
+        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </StyledContentCard>
-      {isModalOpen ? (
-        <ResetDataModal
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={async () => {
-            await onReset();
-            setIsModalOpen(false);
-          }}
-        />
-      ) : null}
     </Content>
   );
 };

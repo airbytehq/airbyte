@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.services;
@@ -23,8 +23,8 @@ public class AirbyteGithubStoreTest {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(1);
 
-  private static MockWebServer webServer;
-  private static AirbyteGithubStore githubStore;
+  private MockWebServer webServer;
+  private AirbyteGithubStore githubStore;
 
   @BeforeEach
   public void setUp() {

@@ -4,35 +4,30 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": ["shop", "start_date", "credentials"],
+    "required": ["shop", "start_date"],
     "additionalProperties": true,
     "properties": {
       "shop": {
         "type": "string",
         "title": "Shopify Store",
-        "description": "The name of the shopify store. For https://EXAMPLE.myshopify.com, the shop name is 'EXAMPLE'."
-      },
-      "start_date": {
-        "type": "string",
-        "title": "Start Date",
-        "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
-        "examples": ["2021-01-01"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME'.",
+        "order": 1
       },
       "credentials": {
         "title": "Shopify Authorization Method",
+        "description": "The authorization method to use to retrieve data from Shopify",
         "type": "object",
+        "order": 2,
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
+            "description": "OAuth2.0",
             "required": ["auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "client_id": {
@@ -57,14 +52,13 @@
           },
           {
             "title": "API Password",
+            "description": "API Password Auth",
             "type": "object",
             "required": ["auth_method", "api_password"],
             "properties": {
               "auth_method": {
                 "type": "string",
                 "const": "api_password",
-                "enum": ["api_password"],
-                "default": "api_password",
                 "order": 0
               },
               "api_password": {
@@ -76,6 +70,14 @@
             }
           }
         ]
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Replication Start Date",
+        "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
+        "examples": ["2021-01-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3
       }
     }
   },

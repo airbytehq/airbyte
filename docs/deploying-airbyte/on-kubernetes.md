@@ -1,4 +1,4 @@
-# On Kubernetes \(Beta\)
+# On Kubernetes (Beta)
 
 ## Overview
 
@@ -40,13 +40,13 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
     `gcloud container clusters get-credentials CLUSTER_NAME --zone ZONE_NAME --project PROJECT_NAME`.
 
   * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl use-context <gke context>` to access the cluster from `kubectl`.
+  * Run `kubectl config use-context <gke context>` to access the cluster from `kubectl`.
 * For EKS
   * [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
   * Install [eksctl](https://eksctl.io/introduction/)
   * Run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>` to make the context available to `kubectl`
   * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl use-context <eks context>` to access the cluster with `kubectl`.
+  * Run `kubectl config use-context <eks context>` to access the cluster with `kubectl`.
 
 ### Configure Logs
 
@@ -118,6 +118,10 @@ data:
 
 ```text
 GCS_LOG_BUCKET=<your_GCS_bucket_to_write_logs_in>
+```
+
+4\) Modify the `.secrets` file in the `kube/overlays/stable` directory
+```text
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 ```
@@ -155,7 +159,7 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 
 ### Increasing job parallelism
 
-The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, the `SUBMITTER_NUM_THREADS` \(set in the `.env` file for your Kustimization overlay\) provides a global limit on the number of simultaneous jobs that can run across all worker pods.
+The number of simultaneous jobs \(getting specs, checking connections, discovering schemas, and performing syncs\) is limited by a few factors. First of all, jobs are picked up and executed by airbyte-worker pods, so increasing the number of workers will allow more jobs to be processed in parallel.
 
 The number of worker pods can be changed by increasing the number of replicas for the `airbyte-worker` deployment. An example of a Kustomization patch that increases this number can be seen in `airbyte/kube/overlays/dev-integration-test/kustomization.yaml` and `airbyte/kube/overlays/dev-integration-test/parallelize-worker.yaml`. The number of simultaneous jobs on a specific worker pod is also limited by the number of ports exposed by the worker deployment and set by `TEMPORAL_WORKER_PORTS` in your `.env` file. Without additional ports used to communicate to connector pods, jobs will start to run but will hang until ports become available.
 
@@ -185,6 +189,7 @@ As we improve our Kubernetes offering, we would like to point out some common pa
 * UI does not include configured buckets in the displayed log path. \([\#4204](https://github.com/airbytehq/airbyte/issues/4204)\)
 * Logs are not reset when Airbyte is re-deployed. \([\#4235](https://github.com/airbytehq/airbyte/issues/4235)\)
 * File sources reading from and file destinations writing to local mounts are not supported on Kubernetes.
+* Cannot run custom DBT transformation. \([\#5091](https://github.com/airbytehq/airbyte/issues/5091)\)
 
 ## Customizing Airbyte Manifests
 
@@ -213,10 +218,6 @@ Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/mast
 ### View API Server Logs
 
 `kubectl logs deployments/airbyte-server` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
-
-### View Scheduler or Job Logs
-
-`kubectl logs deployments/airbyte-scheduler` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
 
 ### Connector Container Logs
 

@@ -1,14 +1,242 @@
 # Mailchimp
 
-## Sync overview
+This page guides you through the process of setting up the Mailchimp source connector.
 
-### Output schema
+## Prerequisites
 
-The Mailchimp connector can be used to sync data for Mailchimp [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info) and [Campaigns](https://mailchimp.com/developer/api/marketing/campaigns/get-campaign-info/). The linked Mailchimp documentation contains detailed description on the fields in each entity.
+For API Key authorization:
+* Mailchimp account 
+* Mailchimp API key
 
-Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/choose) to request support for syncing more Mailchimp entities.
+For OAuth2.0 authorization:
+* Mailchimp registered app
+* Mailchimp `client_id`
+* Mailchimp `client_secret`
 
-### Data type mapping
+## Step 1: Set up Mailchimp
+
+[Log in](https://login.mailchimp.com/) to Mailchimp account. 
+If you don't have a Mailchimp account already, you’ll need to [create](https://login.mailchimp.com/signup/) one in order to use the API. 
+
+## Step 2: Set up the source connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. For using [OAuth2.0](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) creds, 
+please [register](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application) 
+your Mailchimp account.
+2. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+4. On the source setup page, select **Mailchimp** from the Source type dropdown and enter a name for this connector.
+5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
+6. Log in and Authorize to the Mailchimp account and click `Set up source`.
+
+**For Airbyte OSS:**
+
+1. For using an API key, [create an account](https://mailchimp.com/developer/marketing/guides/quick-start/#create-an-account) 
+in Mailchimp.
+2. [Generate](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) API key. 
+3. Go to local Airbyte page.
+4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+5. On the Set up the source page, enter the name for the Mailchimp connector and select **Mailchimp** from the Source type dropdown. 
+6. Select `API key` Authorization method, then copy and paste your API key from step 2. 
+7. Click `Set up source`.
+
+
+## Supported sync modes
+
+The Mailchimp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+ - Full Refresh
+ - Incremental
+
+We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams because 
+the Mailchimp doesn't give any information about deleted data in these streams.
+
+## Performance considerations
+
+At the time of this writing, [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) 
+on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous 
+connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp 
+using API keys generated from the same account.
+
+## Supported streams
+
+This source is capable of syncing the following tables and their data:
+
+**[Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info) Stream**
+
+```
+{
+  "id": "q1w2e3r4t5",
+  "web_id": 000001,
+  "name": "Newsletter Subscribers",
+  "contact": {
+    "company": "",
+    "address1": "",
+    "address2": "",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "00000-1111",
+    "country": "US",
+    "phone": ""
+  },
+  "permission_reminder": "You are receiving this email because you opted in via our website.",
+  "use_archive_bar": true,
+  "campaign_defaults": {
+    "from_name": "Airbyte Community",
+    "from_email": "hey@email.com",
+    "subject": "",
+    "language": "en"
+  },
+  "notify_on_subscribe": "",
+  "notify_on_unsubscribe": "",
+  "date_created": "2020-09-17T04:48:49+00:00",
+  "list_rating": 3,
+  "email_type_option": false,
+  "subscribe_url_short": "http://eepurl.com/hfpWAr",
+  "subscribe_url_long": "https://daxtarity.us2.list-manage.com/subscribe?u=q1q1q1q1q1q1q1q1q1q&id=q1w2e3r4t5",
+  "beamer_address": "us2-00000000-qqqqqqqqq@inbound.mailchimp.com",
+  "visibility": "prv",
+  "double_optin": false,
+  "has_welcome": false,
+  "marketing_permissions": false,
+  "modules": [],
+  "stats": {
+    "member_count": 4204,
+    "unsubscribe_count": 194,
+    "cleaned_count": 154,
+    "member_count_since_send": 91,
+    "unsubscribe_count_since_send": 19,
+    "cleaned_count_since_send": 23,
+    "campaign_count": 27,
+    "campaign_last_sent": "2022-04-01T14:29:31+00:00",
+    "merge_field_count": 5,
+    "avg_sub_rate": 219,
+    "avg_unsub_rate": 10,
+    "target_sub_rate": 18,
+    "open_rate": 39.478173607626694,
+    "click_rate": 8.504017780817234,
+    "last_sub_date": "2022-04-12T07:39:29+00:00",
+    "last_unsub_date": "2022-04-11T08:08:07+00:00"
+  },
+  "_links": [
+    {
+      "rel": "self",
+      "href": "https://us2.api.mailchimp.com/3.0/lists/q1w2e3r4t5",
+      "method": "GET",
+      "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json"
+    }
+  ]
+}
+```
+
+**[Campaigns](https://mailchimp.com/developer/api/marketing/campaigns/get-campaign-info/) Stream**
+
+```
+{
+    "id": "q1w2e3r4t5", 
+    "web_id": 0000000, 
+    "type": "regular", 
+    "create_time": "2020-11-03T22:46:43+00:00", 
+    "archive_url": "http://eepurl.com/hhSLxH", 
+    "long_archive_url": "https://mailchi.mp/xxxxxxxx/weekly-bytes-learnings-from-soft-launch-and-our-vision-0000000", 
+    "status": "sent", 
+    "emails_sent": 89, 
+    "send_time": "2020-11-05T16:15:00+00:00", 
+    "content_type": "template", 
+    "needs_block_refresh": false, 
+    "resendable": true, 
+    "recipients": {
+        "list_id": "1q2w3e4r", 
+        "list_is_active": true, 
+        "list_name": "Newsletter Subscribers", 
+        "segment_text": "",     
+        "recipient_count": 89
+    }, 
+    "settings": {
+        "subject_line": "Some subject", 
+        "preview_text": "Text", 
+        "title": "Newsletter", 
+        "from_name": "Weekly Bytes from Airbyte", 
+        "reply_to": "hey@email.com", 
+        "use_conversation": false, 
+        "to_name": "", 
+        "folder_id": "", 
+        "authenticate": true, 
+        "auto_footer": false, 
+        "inline_css": false, 
+        "auto_tweet": false, 
+        "fb_comments": true, 
+        "timewarp": false, 
+        "template_id": 0000000, 
+        "drag_and_drop": false
+    }, 
+    "tracking": {
+        "opens": true, 
+        "html_clicks": true, 
+        "text_clicks": false, 
+        "goal_tracking": false, 
+        "ecomm360": false, 
+        "google_analytics": "", 
+        "clicktale": ""
+    }, 
+    "report_summary": {
+        "opens": 46, 
+        "unique_opens": 33, 
+        "open_rate": 0.0128372, 
+        "clicks": 13, 
+        "subscriber_clicks": 7, 
+        "click_rate": 0.0383638, 
+        "ecommerce": {
+            "total_orders": 0, 
+            "total_spent": 0, 
+            "total_revenue": 0
+        }
+    }, 
+    "delivery_status": {
+        "enabled": false
+    }, 
+    "_links": [
+        {
+            "rel": "parent", 
+            "href": "https://us2.api.mailchimp.com/3.0/campaigns", 
+            "method": "GET", 
+            "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Campaigns/CollectionResponse.json", 
+            "schema": "https://us2.api.mailchimp.com/schema/3.0/Paths/Campaigns/Collection.json"
+        }
+    ]
+}
+```
+
+**[Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/) Stream**
+
+```
+{
+  "campaign_id": "q1w2q1w2q1w2",
+  "list_id": "123qwe",
+  "list_is_active": true,
+  "email_id": "qwerty123456",
+  "email_address": "email@email.com",
+  "_links": [
+    {
+      "rel": "parent",
+      "href": "https://us2.api.mailchimp.com/3.0/reports/q1w2q1w2q1w2/email-activity",
+      "method": "GET",
+      "targetSchema": "https://us2.api.mailchimp.com/schema/3.0/Definitions/Reports/EmailActivity/CollectionResponse.json"
+    }
+  ],
+  "action": "open",
+  "timestamp": "2020-10-08T22:15:43+00:00",
+  "ip": "00.000.00.5"
+}
+```
+
+## Connector-specific features & highlights
+
+There is `id` primary key for `Lists` and `Campaigns` streams. 
+`Email Activity` hasn't primary key due to Mailchimp does not give it. 
+
+## Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
@@ -18,59 +246,28 @@ Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/c
 | `object` | `object` | properties within objects are mapped based on the mappings in this table |
 | `string` | `string` |  |
 
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
-| Replicate Incremental Deletes | Coming soon |  |
-| SSL connection | Yes | Enabled by default |
-| Namespaces | No |  |
-
-### Performance considerations
-
-At the time of this writing, [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read form its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
-
-## Getting started
-
-### Requirements
-
-For Apikey authorithation:
-* Mailchimp account 
-* Mailchimp API key
-
-For OAuth authorization:
-* Mailchimp registered app
-* Mailchimp client_id
-* Mailchimp client_secret
-
-### Setup guide
-
-To start syncing Mailchimp data with Airbyte, you'll need two things:
-
-1. Your Mailchimp username. Often this is just the email address or username you use to sign into Mailchimp. 
-2. A Mailchimp API Key. Follow the [Mailchimp documentation for generating an API key](https://mailchimp.com/help/about-api-keys/).
-
-OR
-1. Register an app in [Mailchimp](https://us2.admin.mailchimp.com/account/oauth2/).
-2. Specify client_id and client_secret.
+## Tutorials
+Now that you have set up the Mailchimp source connector, check out the following Mailchimp tutorial:
+* [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.11 | 2021-12-24| [7159](https://github.com/airbytehq/airbyte/pull/7159) | Add oauth2.0 support |
-| 0.2.10 | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000) | Update connector fields title/description |
-| 0.2.9  | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975) | Updated JSON schemas |
-| 0.2.8  | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481) | Remove date-time type from some fields |
-| 0.2.7  | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137) | Source Mailchimp: fix primary key for email activities |
-| 0.2.6  | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024) | Source Mailchimp: handle records with no no "activity" field in response |
-| 0.2.5  | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621) | Mailchimp fix url-base |
-| 0.2.4  | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285) | Use datacenter URL parameter from apikey |
-| 0.2.3  | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
-| 0.2.2  | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415) | Get Members activities |
-| 0.2.1  | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
-| 0.2.0  | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.4  | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+| Version | Date       | Pull Request                                             | Subject                                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------|
+| 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                     |
+| 0.2.13  | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests                                                           |
+| 0.2.12  | 2022-03-17 | [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization                                      |
+| 0.2.11  | 2021-12-24 | [7159](https://github.com/airbytehq/airbyte/pull/7159)   | Add oauth2.0 support                                                     |
+| 0.2.10  | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000)   | Update connector fields title/description                                |
+| 0.2.9   | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975)   | Updated JSON schemas                                                     |
+| 0.2.8   | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481)   | Remove date-time type from some fields                                   |
+| 0.2.7   | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137)   | Source Mailchimp: fix primary key for email activities                   |
+| 0.2.6   | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024)   | Source Mailchimp: handle records with no no "activity" field in response |
+| 0.2.5   | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621)   | Mailchimp fix url-base                                                   |
+| 0.2.4   | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285)   | Use datacenter URL parameter from apikey                                 |
+| 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                           |
+| 0.2.2   | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415)   | Get Members activities                                                   |
+| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                            |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                  |
 

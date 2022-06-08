@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -11,11 +11,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import org.junit.Test;
 
 public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestinationAcceptanceTest {
@@ -30,23 +32,28 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         .put("encryption_algorithm", algorithm)
         .build()));
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.ORACLE.getDriverClassName(),
+            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("sid").asText()),
+            getAdditionalProperties(algorithm)));
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
+  }
+
+  private Map<String, String> getAdditionalProperties(final String algorithm) {
+    return ImmutableMap.of("oracle.net.encryption_client", "REQUIRED",
+        "oracle.net.encryption_types_client", String.format("( %s )", algorithm));
   }
 
   @Test
@@ -60,19 +67,19 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
     final String algorithm = clone.get("encryption")
         .get("encryption_algorithm").asText();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(clone.get("username").asText(),
-        clone.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            clone.get("host").asText(),
-            clone.get("port").asText(),
-            clone.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            clone.get("username").asText(),
+            clone.get("password").asText(),
+            DatabaseDriver.ORACLE.getDriverClassName(),
+            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+                clone.get("host").asText(),
+                clone.get("port").asInt(),
+                clone.get("sid").asText()),
+            getAdditionalProperties(algorithm)));
 
-    final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }

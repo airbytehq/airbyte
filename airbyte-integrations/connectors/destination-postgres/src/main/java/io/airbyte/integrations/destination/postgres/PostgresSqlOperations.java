@@ -1,28 +1,28 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.jdbc.DataAdapter;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PostgresSqlOperations extends JdbcSqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
+  public PostgresSqlOperations() {
+    super(new PostgresDataAdapter());
+  }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
@@ -42,7 +42,7 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
 
         final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
         final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
-        final var bufferedReader = new BufferedReader(new FileReader(tmpFile));
+        final var bufferedReader = new BufferedReader(new FileReader(tmpFile, StandardCharsets.UTF_8));
         copyManager.copyIn(sql, bufferedReader);
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -56,11 +56,6 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
         }
       }
     });
-  }
-
-  @Override
-  protected DataAdapter getDataAdapter() {
-    return new PostgresDataAdapter();
   }
 
 }

@@ -5,17 +5,15 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 
 type AnalyticsContext = Record<string, unknown>;
 
-export type AnalyticsServiceProviderValue = {
+export interface AnalyticsServiceProviderValue {
   analyticsContext: AnalyticsContext;
   setContext: (ctx: AnalyticsContext) => void;
   addContextProps: (props: AnalyticsContext) => void;
   removeContextProps: (props: string[]) => void;
   service: AnalyticsService;
-};
+}
 
-const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(
-  null
-);
+export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(null);
 
 function AnalyticsServiceProvider({
   children,
@@ -62,9 +60,7 @@ export const useAnalytics = (): AnalyticsServiceProviderValue => {
   const analyticsContext = useContext(analyticsServiceContext);
 
   if (!analyticsContext) {
-    throw new Error(
-      "analyticsContext must be used within a AnalyticsServiceProvider."
-    );
+    throw new Error("analyticsContext must be used within a AnalyticsServiceProvider.");
   }
 
   return analyticsContext;
@@ -77,6 +73,7 @@ export const useAnalyticsIdentifyUser = (userId?: string): void => {
     if (userId) {
       analyticsService.identify(userId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 };
 
@@ -88,9 +85,7 @@ export const useTrackPage = (page: string): void => {
   }, [analyticsService, page]);
 };
 
-export const useAnalyticsRegisterValues = (
-  props?: AnalyticsContext | null
-): void => {
+export const useAnalyticsRegisterValues = (props?: AnalyticsContext | null): void => {
   const { addContextProps, removeContextProps } = useAnalytics();
 
   useEffect(() => {
@@ -101,6 +96,7 @@ export const useAnalyticsRegisterValues = (
     }
 
     return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
 

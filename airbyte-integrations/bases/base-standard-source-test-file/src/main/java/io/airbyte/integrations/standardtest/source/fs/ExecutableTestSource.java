@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source.fs;
@@ -12,8 +12,6 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Nullable;
 
 /**
@@ -92,11 +90,6 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
       return Jsons.deserialize("{}");
     }
 
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return new ArrayList<>();
   }
 
   @Override

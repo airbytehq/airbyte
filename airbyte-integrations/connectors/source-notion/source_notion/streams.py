@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -148,6 +148,12 @@ class Users(NotionStream):
 
     def path(self, **kwargs) -> str:
         return "users"
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
+        if next_page_token:
+            params["start_cursor"] = next_page_token["next_cursor"]
+        return params
 
 
 class Databases(IncrementalNotionStream):

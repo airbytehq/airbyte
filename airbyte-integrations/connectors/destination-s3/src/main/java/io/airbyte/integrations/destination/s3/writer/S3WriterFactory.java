@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.writer;
@@ -15,9 +15,9 @@ import java.sql.Timestamp;
 public interface S3WriterFactory {
 
   DestinationFileWriter create(S3DestinationConfig config,
-                  AmazonS3 s3Client,
-                  ConfiguredAirbyteStream configuredStream,
-                  Timestamp uploadTimestamp)
+                               AmazonS3 s3Client,
+                               ConfiguredAirbyteStream configuredStream,
+                               Timestamp uploadTimestamp)
       throws Exception;
 
 }

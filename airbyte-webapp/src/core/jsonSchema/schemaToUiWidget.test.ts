@@ -175,6 +175,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         type: "object",
         title: "Credentials Condition",
         description: "Credentials Condition Description",
+        order: 0,
         oneOf: [
           {
             title: "api key",
@@ -215,6 +216,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
           type: "object",
           description: "Credentials Condition Description",
           title: "Credentials Condition",
+          order: 0,
           oneOf: [
             {
               title: "api key",
@@ -252,6 +254,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         path: "key.credentials",
         description: "Credentials Condition Description",
         title: "Credentials Condition",
+        order: 0,
         fieldKey: "credentials",
         conditions: {
           "api key": {

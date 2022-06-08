@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -17,12 +17,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -41,7 +46,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -53,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -67,10 +73,15 @@ import org.junit.jupiter.api.Test;
 // 3. From the class that extends this one, implement a @AfterEach that cleans out the database
 // between each test.
 // 4. Then implement the abstract methods documented below.
+@SuppressFBWarnings(
+                    value = {"MS_SHOULD_BE_FINAL"},
+                    justification = "The static variables are updated in sub classes for convenience, and cannot be final.")
 public abstract class JdbcSourceAcceptanceTest {
 
-  public static String SCHEMA_NAME = "jdbc_integration_test1";
-  public static String SCHEMA_NAME2 = "jdbc_integration_test2";
+  // schema name must be randomized for each test run,
+  // otherwise parallel runs can interfere with each other
+  public static String SCHEMA_NAME = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toLowerCase();
+  public static String SCHEMA_NAME2 = Strings.addRandomSuffix("jdbc_integration_test2", "_", 5).toLowerCase();
   public static Set<String> TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
 
   public static String TABLE_NAME = "id_and_name";
@@ -96,6 +107,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
 
   public JsonNode config;
+  public DataSource dataSource;
   public JdbcDatabase database;
   public JdbcSourceOperations sourceOperations = getSourceOperations();
   public Source source;
@@ -181,6 +193,10 @@ public abstract class JdbcSourceAcceptanceTest {
     return clause.toString();
   }
 
+  protected String getJdbcParameterDelimiter() {
+    return "&";
+  }
+
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
@@ -188,12 +204,16 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    database = Databases.createJdbcDatabase(
+    dataSource = DataSourceFactory.create(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
         getDriverClass(),
-        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+
+    database = new StreamingJdbcDatabase(dataSource,
+        JdbcUtils.getDefaultSourceOperations(),
+        AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
       createSchemas();
@@ -337,8 +357,8 @@ public abstract class JdbcSourceAcceptanceTest {
     expected.getStreams().add(CatalogHelpers
         .createAirbyteStream(TABLE_NAME,
             SCHEMA_NAME2,
-            Field.of(COL_ID, JsonSchemaPrimitive.STRING),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
+            Field.of(COL_ID, JsonSchemaType.STRING),
+            Field.of(COL_NAME, JsonSchemaType.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
     // sort streams by name so that we are comparing lists with the same order.
     final Comparator<AirbyteStream> schemaTableCompare = Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
@@ -362,7 +382,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaPrimitive.NUMBER));
+        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -409,8 +429,8 @@ public abstract class JdbcSourceAcceptanceTest {
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
           getDefaultNamespace(),
-          Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-          Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
+          Field.of(COL_ID, JsonSchemaType.NUMBER),
+          Field.of(COL_NAME, JsonSchemaType.STRING)));
 
       final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
           .stream()
@@ -537,6 +557,10 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testIncrementalTimestampCheckCursor() throws Exception {
+    incrementalTimestampCheck();
+  }
+
+  protected void incrementalTimestampCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
         "2005-10-18T00:00:00Z",
@@ -591,6 +615,16 @@ public abstract class JdbcSourceAcceptanceTest {
 
     assertEquals(2,
         (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
+    final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
+
+    setEmittedAtToNull(actualMessagesSecondSync);
+
+    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
+    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+  }
+
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
@@ -614,12 +648,7 @@ public abstract class JdbcSourceAcceptanceTest {
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
                     .withCursor("5")))))));
-
-    setEmittedAtToNull(actualMessagesSecondSync);
-
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
-    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
-    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+    return expectedMessages;
   }
 
   @Test
@@ -646,8 +675,8 @@ public abstract class JdbcSourceAcceptanceTest {
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
         namespace,
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
+        Field.of(COL_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_NAME, JsonSchemaType.STRING)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(Lists.newArrayList(COL_ID));
@@ -720,11 +749,11 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // when initial and final cursor fields are the same.
-  private void incrementalCursorCheck(
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages)
+  protected void incrementalCursorCheck(
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(cursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages);
@@ -801,25 +830,25 @@ public abstract class JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -881,8 +910,8 @@ public abstract class JdbcSourceAcceptanceTest {
     return CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
         getDefaultNamespace(),
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_LAST_NAME_WITH_SPACE, JsonSchemaPrimitive.STRING));
+        Field.of(COL_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_LAST_NAME_WITH_SPACE, JsonSchemaType.STRING));
   }
 
   public String getFullyQualifiedTableName(final String tableName) {

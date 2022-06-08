@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.facebook;
@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 public class FacebookMarketingOAuthFlow extends FacebookOAuthFlow {
 
-  private static final String SCOPES = "ads_management,ads_read,read_insights";
+  private static final String SCOPES = "ads_management,ads_read,read_insights,business_management";
 
   public FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);

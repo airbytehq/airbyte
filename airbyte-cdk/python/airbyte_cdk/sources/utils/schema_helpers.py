@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -207,8 +207,8 @@ def get_secret_values(schema: Mapping[str, Any], config: Mapping[str, Any]) -> L
                     traverse_schema(i, path)
             else:
                 if path[-1] == "airbyte_secret" and schema is True:
-                    path = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])
-                    pathes.add(path)
+                    path_str = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])
+                    pathes.add(path_str)
 
         traverse_schema(schema, [])
         return pathes

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -10,15 +10,19 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -30,6 +34,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
@@ -69,6 +74,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", "wrong password")
+        .put("database", "test")
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("ssl", false)
@@ -119,17 +125,17 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
+    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, SQLDialect.DEFAULT);
+    return new Database(dslContext).query(
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get("database")));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+        });
   }
 
   @BeforeAll
@@ -139,28 +145,30 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     db.start();
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
-    // constructor. at least explicitly handle it, even if the impl doesn't change.
-    return Databases.createDatabase(
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
             config.get("host").asText(),
             config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
 
-  // how to interact with the mssql test container manaully.
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  // how to interact with the mssql test container manually.
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
@@ -175,7 +183,9 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @AfterAll
   static void cleanUp() {

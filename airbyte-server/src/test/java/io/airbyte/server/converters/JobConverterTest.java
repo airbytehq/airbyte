@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -10,10 +10,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.*;
+import io.airbyte.api.model.generated.AttemptFailureOrigin;
+import io.airbyte.api.model.generated.AttemptFailureReason;
+import io.airbyte.api.model.generated.AttemptFailureSummary;
+import io.airbyte.api.model.generated.AttemptFailureType;
+import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStreamStats;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
@@ -53,6 +71,10 @@ class JobConverterTest {
   private static final long RECORDS_COMMITTED = 10L;
   private static final long STATE_MESSAGES_EMITTED = 2L;
   private static final String STREAM_NAME = "stream1";
+  private static final String FAILURE_EXTERNAL_MESSAGE = "something went wrong";
+  private static final long FAILURE_TIMESTAMP = System.currentTimeMillis();
+  private static final String FAILURE_STACKTRACE = "stacktrace";
+  private static final boolean PARTIAL_SUCCESS = false;
 
   private static final JobOutput JOB_OUTPUT = new JobOutput()
       .withOutputType(OutputType.SYNC)
@@ -81,14 +103,14 @@ class JobConverterTest {
           .job(new JobRead()
               .id(JOB_ID)
               .configId(JOB_CONFIG_ID)
-              .status(io.airbyte.api.model.JobStatus.RUNNING)
+              .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
               .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
               .createdAt(CREATED_AT)
               .updatedAt(CREATED_AT))
           .attempts(Lists.newArrayList(new AttemptInfoRead()
               .attempt(new AttemptRead()
                   .id(ATTEMPT_ID)
-                  .status(io.airbyte.api.model.AttemptStatus.RUNNING)
+                  .status(io.airbyte.api.model.generated.AttemptStatus.RUNNING)
                   .recordsSynced(RECORDS_EMITTED)
                   .bytesSynced(BYTES_EMITTED)
                   .totalStats(new AttemptStats()
@@ -105,7 +127,15 @@ class JobConverterTest {
                           .recordsCommitted(RECORDS_COMMITTED))))
                   .updatedAt(CREATED_AT)
                   .createdAt(CREATED_AT)
-                  .endedAt(CREATED_AT))
+                  .endedAt(CREATED_AT)
+                  .failureSummary(new AttemptFailureSummary()
+                      .failures(Lists.newArrayList(new AttemptFailureReason()
+                          .failureOrigin(AttemptFailureOrigin.SOURCE)
+                          .failureType(AttemptFailureType.SYSTEM_ERROR)
+                          .externalMessage(FAILURE_EXTERNAL_MESSAGE)
+                          .stacktrace(FAILURE_STACKTRACE)
+                          .timestamp(FAILURE_TIMESTAMP)))
+                      .partialSuccess(PARTIAL_SUCCESS)))
               .logs(new LogRead().logLines(new ArrayList<>()))));
 
   private static final String version = "0.33.4";
@@ -118,7 +148,7 @@ class JobConverterTest {
       new JobDebugRead()
           .id(JOB_ID)
           .configId(JOB_CONFIG_ID)
-          .status(io.airbyte.api.model.JobStatus.RUNNING)
+          .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
           .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
           .airbyteVersion(airbyteVersion.serialize())
           .sourceDefinition(sourceDefinitionRead)
@@ -127,6 +157,15 @@ class JobConverterTest {
   private static final JobWithAttemptsRead JOB_WITH_ATTEMPTS_READ = new JobWithAttemptsRead()
       .job(JOB_INFO.getJob())
       .attempts(JOB_INFO.getAttempts().stream().map(AttemptInfoRead::getAttempt).collect(Collectors.toList()));
+
+  private static final io.airbyte.config.AttemptFailureSummary FAILURE_SUMMARY = new io.airbyte.config.AttemptFailureSummary()
+      .withFailures(Lists.newArrayList(new FailureReason()
+          .withFailureOrigin(FailureOrigin.SOURCE)
+          .withFailureType(FailureType.SYSTEM_ERROR)
+          .withExternalMessage(FAILURE_EXTERNAL_MESSAGE)
+          .withStacktrace(FAILURE_STACKTRACE)
+          .withTimestamp(FAILURE_TIMESTAMP)))
+      .withPartialSuccess(PARTIAL_SUCCESS);
 
   @BeforeEach
   public void setUp() {
@@ -148,6 +187,7 @@ class JobConverterTest {
     when(attempt.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getEndedAtInSecond()).thenReturn(Optional.of(CREATED_AT));
+    when(attempt.getFailureSummary()).thenReturn(Optional.of(FAILURE_SUMMARY));
 
   }
 
@@ -175,8 +215,8 @@ class JobConverterTest {
   @Test
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
-    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
-    assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
+    assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.generated.AttemptStatus.class));
   }
 
 }

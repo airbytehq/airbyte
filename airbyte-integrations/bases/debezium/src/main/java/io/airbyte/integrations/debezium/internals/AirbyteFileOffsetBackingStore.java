@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -84,6 +84,10 @@ public class AirbyteFileOffsetBackingStore {
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
     try (final SafeObjectInputStream is = new SafeObjectInputStream(Files.newInputStream(offsetFilePath))) {
+      // todo (cgardens) - we currently suppress a security warning for this line. use of readObject from
+      // untrusted sources is considered unsafe. Since the source is controlled by us in this case it
+      // should be safe. That said, changing this implementation to not use readObject would remove some
+      // headache.
       final Object obj = is.readObject();
       if (!(obj instanceof HashMap))
         throw new ConnectException("Expected HashMap but found " + obj.getClass());

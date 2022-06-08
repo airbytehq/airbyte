@@ -6,6 +6,7 @@
     
     
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
+    
   as (
     
 -- depends_on: ref('dedup_exchange_rate_stg')

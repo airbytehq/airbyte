@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.21.1
+FROM fishtownanalytics/dbt:1.0.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install SSH Tunneling dependencies
@@ -29,5 +29,5 @@ WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.62
+LABEL io.airbyte.version=0.1.73
 LABEL io.airbyte.name=airbyte/normalization-snowflake

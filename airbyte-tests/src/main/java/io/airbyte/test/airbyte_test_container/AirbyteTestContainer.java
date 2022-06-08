@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.airbyte_test_container;
@@ -7,9 +7,9 @@ package io.airbyte.test.airbyte_test_container;
 import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Maps;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.HealthApi;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.generated.HealthApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.concurrency.WaitingUtils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -97,8 +98,8 @@ public class AirbyteTestContainer {
   private static File prepareDockerComposeFile(final File originalDockerComposeFile) throws IOException {
     final File cleanedDockerComposeFile = Files.createTempFile(Path.of("/tmp"), "docker_compose", "acceptance_test").toFile();
 
-    try (final Scanner scanner = new Scanner(originalDockerComposeFile)) {
-      try (final FileWriter fileWriter = new FileWriter(cleanedDockerComposeFile)) {
+    try (final Scanner scanner = new Scanner(originalDockerComposeFile, StandardCharsets.UTF_8)) {
+      try (final FileWriter fileWriter = new FileWriter(cleanedDockerComposeFile, StandardCharsets.UTF_8)) {
         while (scanner.hasNextLine()) {
           final String s = scanner.nextLine();
           if (s.contains("container_name")) {
@@ -157,7 +158,7 @@ public class AirbyteTestContainer {
   private Consumer<OutputFrame> logConsumer(final String service, final Consumer<String> customConsumer) {
     return c -> {
       if (c != null && c.getBytes() != null) {
-        final String log = new String(c.getBytes());
+        final String log = new String(c.getBytes(), StandardCharsets.UTF_8);
         if (customConsumer != null) {
           customConsumer.accept(log);
         }

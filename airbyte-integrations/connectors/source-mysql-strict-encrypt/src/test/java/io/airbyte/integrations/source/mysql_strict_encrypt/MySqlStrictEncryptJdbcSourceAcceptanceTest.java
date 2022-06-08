@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
@@ -13,7 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -22,6 +23,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -36,8 +38,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   protected static final String TEST_PASSWORD = "test";
   protected static MySQLContainer<?> container;
 
-  protected JsonNode config;
   protected Database database;
+  protected DSLContext dslContext;
 
   @BeforeAll
   static void init() throws SQLException {
@@ -47,7 +49,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
@@ -61,29 +63,28 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("password", TEST_PASSWORD)
         .build());
 
-    database = Databases.createDatabase(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        config.get("password").asText(),
+        "",
+        DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
             String.join("&", SSL_PARAMETERS)),
-        MySqlSource.DRIVER_CLASS,
-
         SQLDialect.MYSQL);
+    database = new Database(dslContext);
 
     database.query(ctx -> {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       return null;
     });
-    database.close();
 
     super.setup();
   }
 
   @AfterEach
   void tearDownMySql() throws Exception {
-    database.close();
+    dslContext.close();
     super.tearDown();
   }
 

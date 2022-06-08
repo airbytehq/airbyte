@@ -3,12 +3,15 @@
 connector_image: airbyte/source-salesforce:dev
 tests:
   spec:
-    - spec_path: "source_salesforce/spec.json"
+    - spec_path: "source_salesforce/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
+    - config_path: "secrets/config_sandbox.json"
+      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+
   discovery:
     - config_path: "secrets/config.json"
   basic_read:

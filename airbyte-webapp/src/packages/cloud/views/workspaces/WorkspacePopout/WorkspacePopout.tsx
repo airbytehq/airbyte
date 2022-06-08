@@ -1,15 +1,13 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
+import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
-import { FormattedMessage } from "react-intl";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
+import styled from "styled-components";
 
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import {
-  useListCloudWorkspaces,
-  useWorkspaceService,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+
+import { useWorkspaceService, useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";
@@ -56,8 +54,7 @@ const TopElement = styled.div<{ single: boolean }>`
     text-overflow: ellipsis;
   }
 
-  ${({ single, theme }) =>
-    !single && `border-bottom: 1px solid ${theme.greyColor20};`}
+  ${({ single, theme }) => !single && `border-bottom: 1px solid ${theme.greyColor20};`}
 `;
 
 const List = styled.div`
@@ -74,11 +71,7 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false> & {
   selectedWorkspace: string;
 };
 
-const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
-  children,
-  selectedWorkspace,
-  ...props
-}) => {
+const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({ children, selectedWorkspace, ...props }) => {
   const { exitWorkspace } = useWorkspaceService();
 
   return (
@@ -100,16 +93,18 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 };
 
 const WorkspacePopout: React.FC<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const workspaceList = useListCloudWorkspaces();
+  const { formatMessage } = useIntl();
+  const { data: workspaceList, isLoading } = useListCloudWorkspacesAsync();
   const { selectWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
 
   const options = useMemo(
     () =>
       workspaceList
-        .filter((w) => w.workspaceId !== workspace.workspaceId)
+        ?.filter((w) => w.workspaceId !== workspace.workspaceId)
         .map((workspace) => ({
           value: workspace.workspaceId,
           label: workspace.name,
@@ -119,16 +114,18 @@ const WorkspacePopout: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen, value: workspace.name })
-      }
+      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen, value: workspace.name })}
       components={{
-        MenuList: (props) => (
-          <WorkspacesList {...props} selectedWorkspace={workspace.name} />
-        ),
+        MenuList: (props) => <WorkspacesList {...props} selectedWorkspace={workspace.name} />,
       }}
       isSearchable={false}
       options={options}
+      isLoading={isLoading}
+      loadingMessage={() =>
+        formatMessage({
+          id: "workspaces.loading",
+        })
+      }
       value={workspace.slug}
       onChange={({ value }) => selectWorkspace(value)}
     />

@@ -1,8 +1,4 @@
-const StarsIcon = ({
-  color = "currentColor",
-}: {
-  color?: string;
-}): JSX.Element => (
+const StarsIcon = ({ color = "currentColor" }: { color?: string }): JSX.Element => (
   <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
     <path
       d="M12.5 0L14.4622 10.5378L25 12.5L14.4622 14.4622L12.5 25L10.5378 14.4622L0 12.5L10.5378 10.5378L12.5 0Z"

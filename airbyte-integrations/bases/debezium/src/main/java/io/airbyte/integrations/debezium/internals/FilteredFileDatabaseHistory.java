@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -102,6 +102,10 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   public void stop() {
     fileDatabaseHistory.stop();
     // this is just for tests
+    resetDbName();
+  }
+
+  public static void resetDbName() {
     databaseName = null;
   }
 

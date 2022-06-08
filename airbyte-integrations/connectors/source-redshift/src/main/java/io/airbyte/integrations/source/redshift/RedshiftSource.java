@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.redshift;
@@ -7,12 +7,21 @@ package io.airbyte.integrations.source.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -21,12 +30,14 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
-  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
+  private static final String SCHEMAS = "schemas";
+  private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -35,12 +46,25 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
+        .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asText(),
+            redshiftConfig.get("port").asInt(),
             redshiftConfig.get("database").asText()));
+
+    if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
+        schemas.add(schema.asText());
+      }
+
+      if (schemas != null && !schemas.isEmpty()) {
+        additionalProperties.add("currentSchema=" + String.join(",", schemas));
+      }
+    }
+
     addSsl(additionalProperties);
-    builder.put("connection_properties", String.join(";", additionalProperties));
+
+    builder.put("connection_properties", String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());
@@ -52,8 +76,48 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      for (final String schema : schemas) {
+        LOGGER.debug("Discovering schema: {}", schema);
+        internals.addAll(super.discoverInternal(database, schema));
+      }
+      for (final TableInfo<CommonField<JDBCType>> info : internals) {
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+      }
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
+    }
+  }
+
+  @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return new HashSet<>(database.bufferedResultSetQuery(
+        connection -> {
+          connection.setAutoCommit(true);
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT schemaname, tablename "
+                  + "FROM   pg_tables "
+                  + "WHERE  has_table_privilege(schemaname||'.'||tablename, 'select') = true AND schemaname = ?;");
+          ps.setString(1, schema);
+          return ps.executeQuery();
+        },
+        resultSet -> {
+          final JsonNode json = sourceOperations.rowToJson(resultSet);
+          return JdbcPrivilegeDto.builder()
+              .schemaName(json.get("schemaname").asText())
+              .tableName(json.get("tablename").asText())
+              .build();
+        }));
   }
 
   public static void main(final String[] args) throws Exception {

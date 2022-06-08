@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -16,12 +16,12 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -29,15 +29,15 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 public class BufferedStreamConsumerTest {
 
@@ -48,13 +48,13 @@ public class BufferedStreamConsumerTest {
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING)),
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING)),
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME2,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING))));
 
   private static final AirbyteMessage STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -65,7 +65,7 @@ public class BufferedStreamConsumerTest {
 
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
-  private RecordWriter recordWriter;
+  private RecordWriter<AirbyteRecordMessage> recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
@@ -81,11 +81,10 @@ public class BufferedStreamConsumerTest {
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new InMemoryRecordBufferingStrategy(recordWriter, 1_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        1_000);
+        isValidRecord);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -164,11 +163,10 @@ public class BufferedStreamConsumerTest {
     final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        10_000);
+        isValidRecord);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -312,13 +310,14 @@ public class BufferedStreamConsumerTest {
   }
 
   private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
-    List<AirbyteMessage> output = Lists.newArrayList();
+    final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
-      JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
-      long sizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(payload));
+      final JsonNode payload =
+          Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
+      final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
-      AirbyteMessage airbyteMessage = new AirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage()
               .withStream(STREAM_NAME)

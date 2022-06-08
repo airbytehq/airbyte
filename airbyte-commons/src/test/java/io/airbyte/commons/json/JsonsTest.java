@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -55,7 +56,7 @@ class JsonsTest {
     assertEquals(
         "{\"test\":\"dGVzdA==\"}",
         Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
-            "test", new BinaryNode("test".getBytes())))));
+            "test", new BinaryNode("test".getBytes(StandardCharsets.UTF_8))))));
   }
 
   @Test
@@ -135,6 +136,11 @@ class JsonsTest {
   }
 
   @Test
+  void testArrayNode() {
+    assertEquals(Jsons.deserialize("[]"), Jsons.arrayNode());
+  }
+
+  @Test
   void testToObject() {
     final ToClass expected = new ToClass("abc", 999, 888L);
     assertEquals(
@@ -178,24 +184,6 @@ class JsonsTest {
     final ToClass actual = Jsons.clone(expected);
     assertNotSame(expected, actual);
     assertEquals(expected, actual);
-  }
-
-  @Test
-  void testMutateTypeToArrayStandard() {
-    final JsonNode expectedWithoutType = Jsons.deserialize("{\"test\":\"abc\"}");
-    final JsonNode actualWithoutType = Jsons.clone(expectedWithoutType);
-    JsonSchemas.mutateTypeToArrayStandard(expectedWithoutType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithArrayType = Jsons.clone(expectedWithArrayType);
-    JsonSchemas.mutateTypeToArrayStandard(actualWithArrayType);
-    assertEquals(expectedWithoutType, actualWithoutType);
-
-    final JsonNode expectedWithoutArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
-    JsonSchemas.mutateTypeToArrayStandard(actualWithStringType);
-    assertEquals(expectedWithoutArrayType, actualWithStringType);
   }
 
   @Test
@@ -256,6 +244,12 @@ class JsonsTest {
     assertEquals("1", Jsons.getStringOrNull(json, "pqr"));
     assertNull(Jsons.getStringOrNull(json, "abc", "def", "xyz"));
     assertNull(Jsons.getStringOrNull(json, "xyz"));
+  }
+
+  @Test
+  void testGetEstimatedByteSize() {
+    final JsonNode json = Jsons.deserialize("{\"string_key\":\"abc\",\"array_key\":[\"item1\", \"item2\"]}");
+    assertEquals(Jsons.toBytes(json).length, Jsons.getEstimatedByteSize(json));
   }
 
   private static class ToClass {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
@@ -15,6 +15,8 @@ import java.util.UUID;
 
 public class SleepingSyncWorkflow implements SyncWorkflow {
 
+  public static final Duration RUN_TIME = Duration.ofMinutes(10L);
+
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig sourceLauncherConfig,
@@ -22,7 +24,7 @@ public class SleepingSyncWorkflow implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    Workflow.sleep(Duration.ofMinutes(1));
+    Workflow.sleep(RUN_TIME);
 
     return new StandardSyncOutput();
   }

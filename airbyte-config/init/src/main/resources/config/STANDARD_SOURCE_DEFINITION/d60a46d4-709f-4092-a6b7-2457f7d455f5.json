@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "d60a46d4-709f-4092-a6b7-2457f7d455f5",
-  "name": "Prestashop",
-  "dockerRepository": "airbyte/source-prestashop",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/presta-shop",
-  "icon": "prestashop.svg"
-}

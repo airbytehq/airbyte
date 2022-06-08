@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -14,7 +14,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -46,11 +48,12 @@ class SqlOperationsUtilsTest {
 
     final JsonNode config = createConfig();
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            config.get("jdbc_url").asText()));
 
     uuidSupplier = mock(Supplier.class);
   }
@@ -93,13 +96,13 @@ class SqlOperationsUtilsTest {
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
             .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(0).getEmittedAt()))
+                .toISO8601StringWithMicroseconds(Instant.ofEpochMilli(records.get(0).getEmittedAt())))
             .build()),
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
             .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(1).getEmittedAt()))
+                .toISO8601StringWithMicroseconds(Instant.ofEpochMilli(records.get(1).getEmittedAt())))
             .build()));
 
     actualRecords.forEach(

@@ -37,7 +37,7 @@ select
     cast(id as 
     signed
 ) as id,
-    cast(`User Id` as char) as `User Id`,
+    cast(`User Id` as char(1024)) as `User Id`,
     cast(user_id as 
     float
 ) as user_id,
@@ -47,7 +47,7 @@ select
     cast(`user id_2` as 
     float
 ) as `user id_2`,
-    cast(`User@Id` as char) as `User@Id`,
+    cast(`User@Id` as char(1024)) as `User@Id`,
     cast(userid as 
     float
 ) as userid,

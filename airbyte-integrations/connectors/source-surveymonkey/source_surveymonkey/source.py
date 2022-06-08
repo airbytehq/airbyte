@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -31,7 +31,8 @@ class SourceSurveymonkey(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
         start_date = pendulum.parse(config["start_date"])
-        args = {"authenticator": authenticator, "start_date": start_date}
+        survey_ids = config.get("survey_ids", [])
+        args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
         return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]
 
     @staticmethod

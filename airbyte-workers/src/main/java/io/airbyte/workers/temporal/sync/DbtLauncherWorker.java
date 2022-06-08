@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
@@ -10,7 +10,10 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
+import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
 
@@ -18,21 +21,23 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
   private static final String POD_NAME_PREFIX = "orchestrator-dbt";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
-  public DbtLauncherWorker(final IntegrationLauncherConfig destinationLauncherConfig,
+  public DbtLauncherWorker(final UUID connectionId,
+                           final IntegrationLauncherConfig destinationLauncherConfig,
                            final JobRunConfig jobRunConfig,
                            final WorkerConfigs workerConfigs,
                            final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                           final String airbyteVersion) {
+                           final Supplier<ActivityExecutionContext> activityContext) {
     super(
+        connectionId,
         DBT,
         POD_NAME_PREFIX,
         jobRunConfig,
         Map.of(
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        airbyteVersion,
         workerConfigs.getResourceRequirements(),
-        Void.class);
+        Void.class,
+        activityContext);
   }
 
 }
