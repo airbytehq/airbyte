@@ -43,6 +43,8 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_DEFAULT_ENV_MAP,
           EnvConfigs.LOCAL_ROOT,
           EnvConfigs.PUBLISH_METRICS,
+          EnvConfigs.DD_AGENT_HOST,
+          EnvConfigs.DD_DOGSTATSD_PORT,
           LOG_LEVEL,
           LogClientSingleton.GCS_LOG_BUCKET,
           LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
