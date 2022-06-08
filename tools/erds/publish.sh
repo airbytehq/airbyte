@@ -15,10 +15,13 @@ $(basename $0) source-facebook-marketing
 
 # install dbdocs
 function main() {
-  [ -n $DBDOCS_TOKEN ] || error "Expected the DBDOCS_TOKEN env variable to be set!"
+  [[ -n $DBDOCS_TOKEN ]] || error "Expected the DBDOCS_TOKEN env variable to be set!"
   local connector_name=$1; shift || error $USAGE
-
-  # TODO include only allow-listed connectors
+  if [[ -z $(cat "$(dirname $0)/allowlist.txt" | grep -w ^$connector_name$) ]]
+  then
+     echo "Skipping ERD generation for $connector_name because it's not in the allowlist"
+     exit 0
+  fi
 
   local connector_directory="airbyte-integrations/connectors/$connector_name/"
   # assume config json is in secrets/config.json. If there is no config.json then error out
