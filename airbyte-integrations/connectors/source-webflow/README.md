@@ -46,8 +46,12 @@ See `integration_tests/sample_config.json` for a sample config file.
 
 You should be able to create a Webflow API key at a URL such as:
 
+
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source stripe test creds`
+and place them into `secrets/config.json`.
+
 https://webflow.com/dashboard/sites/<your-site-name>/integrations. Once you have the API, you can confirm a
-list of available sites and get their "_id" by executing
+list of available sites and get their "_id" by executing the following:
 
 ```
 curl https://api.webflow.com/sites \
