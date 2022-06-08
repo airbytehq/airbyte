@@ -554,10 +554,9 @@ public class ConnectionManagerWorkflowTest {
           .jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
-    @RepeatedTest(10)
-    @Timeout(value = 10,
+    @Timeout(value = 40,
              unit = TimeUnit.SECONDS)
-    @DisplayName("Test that cancelling a running workflow cancels the sync")
+    @DisplayName("Test that deleting a running workflow cancels the sync")
     public void deleteRunning() throws InterruptedException {
 
       final UUID testId = UUID.randomUUID();

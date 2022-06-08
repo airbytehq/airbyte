@@ -4,9 +4,11 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     testImplementation project(':airbyte-oauth')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

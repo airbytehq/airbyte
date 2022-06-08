@@ -1,9 +1,9 @@
 import React from "react";
 import sanitizeHtml from "sanitize-html";
 
-type IProps = {
+interface IProps {
   text?: string;
-};
+}
 
 const allowedAttributes = {
   ...sanitizeHtml.defaults.allowedAttributes,

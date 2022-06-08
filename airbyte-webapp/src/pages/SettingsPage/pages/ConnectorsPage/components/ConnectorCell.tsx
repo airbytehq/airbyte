@@ -8,13 +8,13 @@ import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-type ConnectorCellProps = {
+interface ConnectorCellProps {
   connectorName: string;
   img?: string;
   hasUpdate?: boolean;
   isDeprecated?: boolean;
   releaseStage?: ReleaseStage;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;

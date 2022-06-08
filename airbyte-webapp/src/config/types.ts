@@ -20,7 +20,7 @@ declare global {
   }
 }
 
-export type Config = {
+export interface Config {
   ui: UiConfig;
   features: Feature[];
   segment: { token: string; enabled: boolean };
@@ -31,7 +31,7 @@ export type Config = {
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
-};
+}
 
 export type DeepPartial<T> = {
   [P in keyof T]+?: DeepPartial<T[P]>;

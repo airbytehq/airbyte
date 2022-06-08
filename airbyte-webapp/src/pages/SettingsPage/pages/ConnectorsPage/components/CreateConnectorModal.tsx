@@ -8,7 +8,7 @@ import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
 
 import { useConfig } from "config";
 
-export type IProps = {
+export interface IProps {
   errorMessage?: string;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
@@ -17,7 +17,7 @@ export type IProps = {
     dockerImageTag: string;
     dockerRepository: string;
   }) => void;
-};
+}
 
 const Content = styled.div`
   width: 585px;

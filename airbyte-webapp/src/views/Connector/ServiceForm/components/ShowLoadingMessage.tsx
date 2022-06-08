@@ -5,9 +5,9 @@ import { Link } from "components";
 
 import { useConfig } from "config";
 
-type ShowLoadingMessageProps = {
+interface ShowLoadingMessageProps {
   connector?: string;
-};
+}
 
 const TIMEOUT_MS = 10000;
 

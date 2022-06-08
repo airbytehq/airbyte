@@ -8,10 +8,10 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
 
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-s3')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'

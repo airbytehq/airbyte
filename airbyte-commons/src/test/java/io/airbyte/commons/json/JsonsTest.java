@@ -246,6 +246,12 @@ class JsonsTest {
     assertNull(Jsons.getStringOrNull(json, "xyz"));
   }
 
+  @Test
+  void testGetEstimatedByteSize() {
+    final JsonNode json = Jsons.deserialize("{\"string_key\":\"abc\",\"array_key\":[\"item1\", \"item2\"]}");
+    assertEquals(Jsons.toBytes(json).length, Jsons.getEstimatedByteSize(json));
+  }
+
   private static class ToClass {
 
     @JsonProperty("str")

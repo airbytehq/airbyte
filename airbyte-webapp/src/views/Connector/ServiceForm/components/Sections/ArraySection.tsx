@@ -10,16 +10,19 @@ import { useServiceForm } from "../../serviceFormContext";
 import { SectionContainer } from "./common";
 import { FormSection } from "./FormSection";
 
+interface ArraySectionProps {
+  formField: FormObjectArrayItem;
+  path: string;
+  disabled?: boolean;
+}
+
 /**
  * ArraySection is responsible for handling array of objects
  * @param formField
  * @param path
  * @constructor
  */
-export const ArraySection: React.FC<{
-  formField: FormObjectArrayItem;
-  path: string;
-}> = ({ formField, path }) => {
+export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
   const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
   const [field, , form] = useField(path);
 
@@ -55,8 +58,11 @@ export const ArraySection: React.FC<{
               }}
               onRemove={arrayHelpers.remove}
               items={items}
+              disabled={disabled}
             >
-              {() => <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} skipAppend />}
+              {() => (
+                <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} disabled={disabled} skipAppend />
+              )}
             </ArrayOfObjectsEditor>
           )}
         />

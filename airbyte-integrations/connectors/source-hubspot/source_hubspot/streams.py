@@ -9,7 +9,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -19,6 +19,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -128,20 +129,29 @@ class API:
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
 
-    def get_authenticator(self, credentials):
-        return Oauth2Authenticator(
-            token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
-            client_id=credentials["client_id"],
-            client_secret=credentials["client_secret"],
-            refresh_token=credentials["refresh_token"],
-        )
+    def is_oauth2(self) -> bool:
+        credentials_title = self.credentials.get("credentials_title")
+
+        return credentials_title == "OAuth Credentials"
+
+    def get_authenticator(self) -> Optional[Oauth2Authenticator]:
+        if self.is_oauth2():
+            return Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=self.credentials["client_id"],
+                client_secret=self.credentials["client_secret"],
+                refresh_token=self.credentials["refresh_token"],
+            )
+        else:
+            return None
 
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
+        self.credentials = credentials
         credentials_title = credentials.get("credentials_title")
 
-        if credentials_title == "OAuth Credentials":
-            self._session.auth = self.get_authenticator(credentials)
+        if self.is_oauth2():
+            self._session.auth = self.get_authenticator()
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
@@ -210,6 +220,17 @@ class Stream(HttpStream, ABC):
     offset = 0
     primary_key = None
     filter_old_records: bool = True
+
+    @property
+    @abstractmethod
+    def scopes(self) -> Set[str]:
+        """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
+
+    def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
+        if not self.scopes:
+            return True
+        else:
+            return len(self.scopes.intersection(granted_scopes)) > 0
 
     @property
     def url_base(self) -> str:
@@ -361,18 +382,25 @@ class Stream(HttpStream, ABC):
                 # Always return an empty generator just in case no records were ever yielded
                 yield from []
         except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 403:
-                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
-            else:
-                raise e
+            raise e
+
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+        body = response.json()
+        if body.get("category") == "MISSING_SCOPES":
+            if "errors" in body:
+                errors = body["errors"]
+                if len(errors) > 0:
+                    error = errors[0]
+                    missing_scopes = error.get("context", {}).get("requiredScopes")
+                    return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+        return super().parse_response_error_message(response)
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
         if declared_format == "date":
             return dt.to_date_string()
         elif declared_format == "date-time":
-            return dt.to_datetime_string()
+            return dt.to_rfc3339_string()
 
     @classmethod
     def _cast_datetime(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -655,38 +683,34 @@ class IncrementalStream(Stream, ABC):
         self._update_state(latest_cursor=latest_cursor)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        if self.state:
-            return self.state
-        return (
-            {self.updated_at_field: int(self._start_date.timestamp() * 1000)}
-            if self.state_pk == "timestamp"
-            else {self.updated_at_field: str(self._start_date)}
-        )
+        return self.state
 
     @property
-    def state(self) -> Optional[Mapping[str, Any]]:
-        """Current state, if wasn't set return None"""
+    def state(self) -> MutableMapping[str, Any]:
+        if self._sync_mode is None:
+            raise RuntimeError("sync_mode is not defined")
         if self._state:
-            return (
-                {self.updated_at_field: int(self._state.timestamp() * 1000)}
-                if self.state_pk == "timestamp"
-                else {self.updated_at_field: str(self._state)}
-            )
-        return None
+            if self.state_pk == "timestamp":
+                return {self.cursor_field: int(self._state.timestamp() * 1000)}
+            return {self.cursor_field: self._state.to_iso8601_string()}
+        return {}
 
     @state.setter
-    def state(self, value):
-        state_value = value.get(self.updated_at_field, self._state)
-        self._state = (
-            pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
-            if isinstance(state_value, int)
-            else pendulum.parse(state_value)
-        )
-        self._start_date = max(self._state, self._start_date)
+    def state(self, value: MutableMapping[str, Any]):
+        if value.get(self.cursor_field):
+            self._state = self._field_to_datetime(value[self.cursor_field])
+
+    def set_sync(self, sync_mode: SyncMode):
+        self._sync_mode = sync_mode
+        if self._sync_mode == SyncMode.incremental:
+            if not self._state:
+                self._state = self._start_date
+            self._state = self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+        self._sync_mode = None
 
     def _update_state(self, latest_cursor):
         if latest_cursor:
@@ -699,6 +723,7 @@ class IncrementalStream(Stream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         chunk_size = pendulum.duration(days=30)
         slices = []
 
@@ -869,6 +894,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         return [None]
 
 
@@ -953,6 +979,7 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
     primary_key = "id"
+    scopes = {"crm.lists.read"}
 
     def read_records(
         self,
@@ -971,6 +998,8 @@ class ContactLists(IncrementalStream):
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
@@ -978,6 +1007,7 @@ class ContactLists(IncrementalStream):
     created_at_field = "createdAt"
     limit_field = "count"
     need_chunk = False
+    scopes = {"crm.lists.read"}
 
 
 class ContactsListMemberships(Stream):
@@ -997,6 +1027,7 @@ class ContactsListMemberships(Stream):
     page_filter = "vidOffset"
     page_field = "vid-offset"
     primary_key = "canonical-vid"
+    scopes = {"crm.objects.contacts.read"}
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1025,8 +1056,9 @@ class Deals(CRMSearchStream):
 
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "companies"]
+    associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
 
 
 class DealPipelines(Stream):
@@ -1039,6 +1071,7 @@ class DealPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "pipelineId"
+    scopes = {"contacts", "tickets"}
 
 
 class TicketPipelines(Stream):
@@ -1051,6 +1084,25 @@ class TicketPipelines(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {
+        "media_bridge.read",
+        "tickets",
+        "crm.schemas.custom.read",
+        "e-commerce",
+        "timeline",
+        "contacts",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.deals.write",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.line_items.read",
+        "crm.objects.companies.write",
+    }
 
 
 class EmailEvents(IncrementalStream):
@@ -1064,6 +1116,7 @@ class EmailEvents(IncrementalStream):
     updated_at_field = "created"
     created_at_field = "created"
     primary_key = "id"
+    scopes = {"content"}
 
 
 class Engagements(IncrementalStream):
@@ -1077,6 +1130,7 @@ class Engagements(IncrementalStream):
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"}
 
     @property
     def url(self):
@@ -1103,6 +1157,7 @@ class Engagements(IncrementalStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         return [None]
 
     def read_records(
@@ -1159,6 +1214,7 @@ class Forms(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"forms"}
 
 
 class FormSubmissions(Stream):
@@ -1170,6 +1226,7 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    scopes = {"forms"}
 
     def path(
         self,
@@ -1231,6 +1288,7 @@ class MarketingEmails(Stream):
     updated_at_field = "updated"
     created_at_field = "created"
     primary_key = "id"
+    scopes = {"content"}
 
 
 class Owners(Stream):
@@ -1242,6 +1300,7 @@ class Owners(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
 
 
 class PropertyHistory(IncrementalStream):
@@ -1259,6 +1318,7 @@ class PropertyHistory(IncrementalStream):
     page_field = "vid-offset"
     page_filter = "vidOffset"
     limit = 100
+    scopes = {"crm.objects.contacts.read"}
 
     def list(self, fields) -> Iterable:
         properties = self._api.get("/properties/v2/contact/properties")
@@ -1282,7 +1342,7 @@ class PropertyHistory(IncrementalStream):
                     continue
                 if versions:
                     for version in versions:
-                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_rfc3339_string()
                         version["property"] = key
                         version["vid"] = vid
                         yield version
@@ -1297,6 +1357,7 @@ class SubscriptionChanges(IncrementalStream):
     data_field = "timeline"
     more_key = "hasMore"
     updated_at_field = "timestamp"
+    scopes = {"content"}
 
 
 class Workflows(Stream):
@@ -1309,6 +1370,7 @@ class Workflows(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
     primary_key = "id"
+    scopes = {"automation"}
 
 
 class Companies(CRMSearchStream):
@@ -1316,6 +1378,7 @@ class Companies(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class Contacts(CRMSearchStream):
@@ -1323,6 +1386,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1330,6 +1394,7 @@ class EngagementsCalls(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsEmails(CRMSearchStream):
@@ -1337,6 +1402,7 @@ class EngagementsEmails(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "sales-email-read"}
 
 
 class EngagementsMeetings(CRMSearchStream):
@@ -1344,6 +1410,7 @@ class EngagementsMeetings(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsNotes(CRMSearchStream):
@@ -1351,6 +1418,7 @@ class EngagementsNotes(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class EngagementsTasks(CRMSearchStream):
@@ -1358,31 +1426,37 @@ class EngagementsTasks(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
 
 
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
     primary_key = "id"
+    scopes = {"crm.objects.feedback_submissions.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
+    scopes = {"e-commerce"}
 
 
 class Products(CRMObjectIncrementalStream):
     entity = "product"
     primary_key = "id"
+    scopes = {"e-commerce"}
 
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
     primary_key = "id"
+    scopes = {"tickets"}
 
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
     associations = ["deals"]
     primary_key = "id"
+    scopes = {"e-commerce"}

@@ -116,7 +116,8 @@ jobs:
         env:
           USER: root
           HOME: /home/runner
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           ACTION_RUN_ID: ${{github.run_id}}
         run: |
           ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh

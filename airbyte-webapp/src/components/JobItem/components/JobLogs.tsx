@@ -13,10 +13,10 @@ import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
 import Tabs, { TabsData } from "./Tabs";
 
-type JobLogsProps = {
+interface JobLogsProps {
   jobIsFailed?: boolean;
   job: SynchronousJobReadWithStatus | JobsWithJobs;
-};
+}
 
 const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;
@@ -52,7 +52,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   });
 
   if (isSynchronousJobRead) {
-    return <Logs logsArray={debugInfo?.attempts[attemptNumber].logs.logLines ?? job.logs?.logLines} />;
+    return <Logs logsArray={debugInfo?.attempts[attemptNumber]?.logs.logLines ?? job.logs?.logLines} />;
   }
 
   const currentAttempt = job.attempts?.[attemptNumber];
@@ -84,7 +84,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
         currentAttempt={currentAttempt}
         jobDebugInfo={debugInfo}
         showAttemptStats={attempts > 1}
-        logs={debugInfo?.attempts[attemptNumber].logs.logLines}
+        logs={debugInfo?.attempts[attemptNumber]?.logs.logLines}
       />
     </>
   );

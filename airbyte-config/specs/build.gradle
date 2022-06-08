@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 dependencies {
@@ -7,8 +7,8 @@ dependencies {
 
     implementation project(':airbyte-commons')
     implementation project(':airbyte-commons-cli')
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-json-validation')
 }
 
@@ -22,3 +22,5 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
 }
 
 project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
