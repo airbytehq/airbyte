@@ -417,9 +417,9 @@ public class BasicAcceptanceTests {
     // syncs in progress
     List<io.airbyte.api.client.model.generated.JobWithAttemptsRead> jobs = new ArrayList<>();
     while (jobs.size() < 2) {
-      var a = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
+      var listSyncJobsRequest = new io.airbyte.api.client.model.generated.JobListRequestBody().configTypes(List.of(JobConfigType.SYNC))
           .configId(conn.getConnectionId().toString());
-      var resp = apiClient.getJobsApi().listJobsFor(a);
+      var resp = apiClient.getJobsApi().listJobsFor(listSyncJobsRequest);
       jobs = resp.getJobs();
       sleep(Duration.ofSeconds(30).toMillis());
     }
