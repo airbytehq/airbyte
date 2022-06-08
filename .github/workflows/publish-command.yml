@@ -114,6 +114,7 @@ jobs:
         run: |
           node --version
           npm --version
+          npm install -g dbdocs
       - name: Install Pyenv and Tox
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
