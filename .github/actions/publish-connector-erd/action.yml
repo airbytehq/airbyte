@@ -10,6 +10,9 @@ description: Publish connector ERD
 runs:
   using: "composite"
   steps:
+    - uses: actions/setup-node@v1
+      with:
+        node-version: "16.13.0"
     - name: Install dbdocs
       shell: bash
       run: npm install -g dbdocs
