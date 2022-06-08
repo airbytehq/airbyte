@@ -43,6 +43,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-aws-cloudtrail:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/aws-cloudtrail"
@@ -87,6 +88,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-amazon-ads:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
@@ -213,6 +215,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-amazon-seller-partner:0.2.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -438,6 +441,7 @@
               type: "string"
               path_in_connector_config:
               - "lwa_client_secret"
+  specs: []
 - dockerImage: "airbyte/source-amazon-sqs:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-sqs"
@@ -547,6 +551,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-amplitude:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
@@ -583,6 +588,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-apify-dataset:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/apify-dataset"
@@ -607,6 +613,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-appstore-singer:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/appstore"
@@ -655,6 +662,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-asana:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -726,6 +734,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-azure-table:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -766,6 +775,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-bamboo-hr:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bamboo-hr"
@@ -797,6 +807,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-bigcommerce:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigcommerce"
@@ -830,6 +841,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-bigquery:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
@@ -868,6 +880,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
+  specs: []
 - dockerImage: "airbyte/source-bing-ads:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
@@ -1011,6 +1024,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-braintree:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/braintree"
@@ -1072,6 +1086,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-cart:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cart"
@@ -1106,6 +1121,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-chargebee:0.1.11"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
@@ -1154,6 +1170,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-chargify:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chargify"
@@ -1177,6 +1194,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
@@ -1217,6 +1235,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-clickhouse:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
@@ -1368,6 +1387,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-close-com:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/close-com"
@@ -1395,6 +1415,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-cockroachdb:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
@@ -1449,6 +1470,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-commercetools:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/commercetools"
@@ -1497,6 +1519,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-confluence:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -1528,6 +1551,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "farosai/airbyte-customer-io-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -1546,6 +1570,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-delighted:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -1571,6 +1596,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-dixa:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/dixa"
@@ -1604,6 +1630,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-drift:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/drift"
@@ -1687,6 +1714,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-e2e-test:2.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/e2e-test"
@@ -1800,6 +1828,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-exchange-rates:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
@@ -1838,6 +1867,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-facebook-marketing:0.2.50"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2186,6 +2216,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+  specs: []
 - dockerImage: "airbyte/source-facebook-pages:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-pages"
@@ -2217,6 +2248,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+  specs: []
 - dockerImage: "airbyte/source-faker:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
@@ -2263,6 +2295,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-file:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
@@ -2489,6 +2522,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-freshdesk:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
@@ -2532,6 +2566,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-freshsales:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshsales"
@@ -2559,6 +2594,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-freshservice:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshservice"
@@ -2595,6 +2631,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-github:0.2.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
@@ -2730,6 +2767,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-gitlab:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/gitlab"
@@ -2780,6 +2818,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-google-ads:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
@@ -2937,6 +2976,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-google-analytics-v4:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
@@ -3067,6 +3107,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-google-directory:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-directory"
@@ -3161,6 +3202,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-google-search-console:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
@@ -3290,6 +3332,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-google-sheets:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
@@ -3374,6 +3417,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports"
@@ -3408,6 +3452,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-greenhouse:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/greenhouse"
@@ -3427,6 +3472,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "farosai/airbyte-harness-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -3471,6 +3517,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-harvest:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/harvest"
@@ -3607,6 +3654,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-hellobaton:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -3633,6 +3681,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-hubspot:0.1.67"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
@@ -3730,6 +3779,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-db2:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
@@ -3821,6 +3871,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-instagram:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/instagram"
@@ -3861,6 +3912,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+  specs: []
 - dockerImage: "airbyte/source-intercom:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
@@ -3898,6 +3950,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+  specs: []
 - dockerImage: "airbyte/source-iterable:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/iterable"
@@ -3928,6 +3981,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "farosai/airbyte-jenkins-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -3974,6 +4028,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-jira:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
@@ -4053,6 +4108,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-kafka:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
@@ -4299,6 +4355,7 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
+  specs: []
 - dockerImage: "airbyte/source-klaviyo:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
@@ -4329,6 +4386,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+  specs: []
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -4347,6 +4405,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-lever-hiring:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/lever-hiring"
@@ -4475,6 +4534,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-linkedin-ads:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
@@ -4562,6 +4622,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-linnworks:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linnworks"
@@ -4597,6 +4658,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-looker:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
@@ -4639,6 +4701,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-mailchimp:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mailchimp"
@@ -4736,6 +4799,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-mailgun:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mailgun"
@@ -4769,6 +4833,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-marketo:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
@@ -4820,6 +4885,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-mssql:0.4.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
@@ -5094,6 +5160,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-microsoft-teams:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-teams"
@@ -5241,6 +5308,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-mixpanel:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
@@ -5326,6 +5394,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-monday:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/monday"
@@ -5445,6 +5514,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-mongodb-v2:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
@@ -5566,6 +5636,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-my-hours:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/my-hours"
@@ -5609,6 +5680,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-mysql:0.5.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
@@ -5785,6 +5857,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-notion:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
@@ -5815,6 +5888,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-okta:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
@@ -5841,6 +5915,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/onesignal"
@@ -5880,6 +5955,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-openweather:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -5998,6 +6074,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-oracle:0.3.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
@@ -6214,6 +6291,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-orb:0.1.2"
   spec:
     documentationUrl: "https://docs.withorb.com/"
@@ -6268,6 +6346,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-outreach:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/outreach"
@@ -6315,6 +6394,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "farosai/airbyte-pagerduty-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -6364,6 +6444,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-paypal-transaction:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
@@ -6404,6 +6485,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-paystack:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paystack"
@@ -6443,6 +6525,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-persistiq:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/persistiq"
@@ -6462,6 +6545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-pinterest:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
@@ -6509,6 +6593,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-pipedrive:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
@@ -6591,6 +6676,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-pivotal-tracker:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -6610,6 +6696,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-plaid:0.3.1"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
@@ -6656,6 +6743,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-pokeapi:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pokeapi"
@@ -6679,6 +6767,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-posthog:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/posthog"
@@ -6715,6 +6804,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-postgres:0.4.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
@@ -6951,6 +7041,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-prestashop:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -6974,6 +7065,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"
@@ -7027,6 +7119,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
+  specs: []
 - dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
@@ -7090,6 +7183,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-recharge:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
@@ -7121,6 +7215,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-recurly:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
@@ -7158,6 +7253,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-redshift:0.3.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
@@ -7222,6 +7318,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-retently:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -7326,6 +7423,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-rki-covid:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/rki-covid"
@@ -7346,6 +7444,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-s3:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -7606,6 +7705,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
+  specs: []
 - dockerImage: "airbyte/source-salesloft:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesloft"
@@ -7646,6 +7746,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-salesforce:1.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
@@ -7777,6 +7878,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-search-metrics:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/seacrh-metrics"
@@ -7851,6 +7953,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-sendgrid:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
@@ -7875,6 +7978,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-shopify:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
@@ -7999,6 +8103,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-shortio:0.1.2"
   spec:
     documentationUrl: "https://developers.short.io/reference"
@@ -8031,6 +8136,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-slack:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
@@ -8157,6 +8263,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-smartsheets:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
@@ -8226,6 +8333,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
+  specs: []
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
@@ -8275,6 +8383,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "airbyte/source-snowflake:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
@@ -8456,6 +8565,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-square:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/square"
@@ -8598,6 +8708,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-strava:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/strava"
@@ -8692,6 +8803,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-stripe:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
@@ -8740,6 +8852,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-surveymonkey:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
@@ -8785,6 +8898,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+  specs: []
 - dockerImage: "airbyte/source-talkdesk-explore:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -8834,6 +8948,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-tempo:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
@@ -8854,6 +8969,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-tidb:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
@@ -9014,6 +9130,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-tiktok-marketing:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -9166,6 +9283,7 @@
           - "app_id"
           - "secret"
     additionalProperties: true
+  specs: []
 - dockerImage: "airbyte/source-trello:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/trello"
@@ -9218,6 +9336,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
+  specs: []
 - dockerImage: "airbyte/source-twilio:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
@@ -9254,6 +9373,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+  specs: []
 - dockerImage: "airbyte/source-typeform:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
@@ -9293,6 +9413,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-us-census:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/us-census"
@@ -9329,6 +9450,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-youtube-analytics:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/youtube-analytics"
@@ -9378,6 +9500,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+  specs: []
 - dockerImage: "farosai/airbyte-victorops-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -9415,6 +9538,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-zendesk-chat:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
@@ -9543,6 +9667,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-zendesk-sunshine:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk_sunshine"
@@ -9674,6 +9799,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-zendesk-support:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
@@ -9795,6 +9921,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+  specs: []
 - dockerImage: "airbyte/source-zendesk-talk:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-talk"
@@ -9838,6 +9965,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+  specs: []
 - dockerImage: "airbyte/source-zenloop:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
@@ -9874,6 +10002,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-sentry:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sentry"
@@ -9911,6 +10040,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-zoom-singer:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zoom"
@@ -9931,6 +10061,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-zuora:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zuora"
@@ -10007,6 +10138,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-kustomer-singer:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kustomer"
@@ -10034,6 +10166,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-zoho-crm:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
@@ -10114,6 +10247,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
 - dockerImage: "airbyte/source-sftp:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/sftp"
@@ -10218,3 +10352,4 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+  specs: []
