@@ -11,7 +11,8 @@ import pendulum as pdm
 # since `pivot` is a reserved keyword for Destination Redshift,
 # on behalf of https://github.com/airbytehq/airbyte/issues/13018,
 # expand this list, if required.
-DESTINATION_RESERVED_KEYWORDS: list = ['pivot']
+DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
+
 
 def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
     """
