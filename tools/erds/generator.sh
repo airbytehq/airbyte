@@ -17,7 +17,9 @@ CATALOG_PATH=$ERD_OUTPUT_DIR/catalog.json
 DESTINATION_CONFIG_PATH=$ERD_OUTPUT_DIR/destination_dummy_config.json
 
 function build_normalization_image(){
-  # building via gradle builds a bunch of unnecessary variants of the normalization image
+  # building via gradle builds a bunch of unnecessary variants of the normalization image, so we run assemble to compile any code
+  # then build the docker image directly
+  SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-integrations:bases:base-normalization:assemble
   echo "Building normalization dev image"
   cd airbyte-integrations/bases/base-normalization
   docker build . -t airbyte/normalization:dev
