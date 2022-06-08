@@ -203,6 +203,12 @@ jobs:
           if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
           then exit 1
           fi
+      - name: Publish ERD
+        if: success()
+        id: publish-erd
+        uses: ./.github/actions/publish-connector-erd
+        with:
+          connector: ${{ env.IMAGE_NAME }}
       - name: Bump version in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |

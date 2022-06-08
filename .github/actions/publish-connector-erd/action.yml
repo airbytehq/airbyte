@@ -1,0 +1,16 @@
+name: Publish Connector ERD
+inputs:
+  connector:
+    description: connector
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Install dbdocs
+      run: sudo npm install -g dbdocs
+    - name: Check dbdocs
+      run: dbdocs
+    - name: Publish ERD
+      run: ./tools/erds/publish.sh ${{ inputs.connector }}
+      with:
+        DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
