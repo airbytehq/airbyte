@@ -1,4 +1,7 @@
-name: Release Airbyte
+# This is an action that runs when an Airbyte version bump is merged into master.
+# It fetches the changelog from the version bump PR and automatically creates a
+# Release for the version bump.
+name: Create Release
 
 on:
   push:
@@ -6,7 +9,7 @@ on:
       - master
 
 jobs:
-  release-airbyte:
+  create-release:
     if: startsWith(github.event.head_commit.message, 'Bump Airbyte version')
     runs-on: ubuntu-latest
     permissions:
