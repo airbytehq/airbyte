@@ -2452,7 +2452,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.18"
+- dockerImage: "airbyte/destination-mssql:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
