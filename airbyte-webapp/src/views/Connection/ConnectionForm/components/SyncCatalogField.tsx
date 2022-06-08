@@ -107,7 +107,7 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
         <FormattedMessage id="form.syncMode" />
         <InformationToolTip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.ui.syncModeLink}>
+          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
             <FormattedMessage id="form.entrypoint.docs" />
           </LearnMoreLink>
         </InformationToolTip>
