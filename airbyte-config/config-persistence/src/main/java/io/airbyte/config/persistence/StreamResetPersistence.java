@@ -38,7 +38,7 @@ public class StreamResetPersistence {
   }
 
   /*
-   * Get a list of streamKeys for streams that have pending or running resets
+   * Get a list of streamDescriptors for streams that have pending or running resets
    */
   public List<StreamDescriptor> getStreamResets(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx.select(DSL.asterisk())
@@ -56,11 +56,11 @@ public class StreamResetPersistence {
    */
   public void deleteStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToDelete) throws IOException {
     final Condition condition = noCondition();
-    for (final StreamDescriptor streamKey : streamsToDelete) {
+    for (final StreamDescriptor streamDescriptor : streamsToDelete) {
       condition.or(
           DSL.field(CONNECTION_ID_COL).eq(connectionId)
-              .and(DSL.field(STREAM_NAME_COL).eq(streamKey.getName()))
-              .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamKey.getNamespace())));
+              .and(DSL.field(STREAM_NAME_COL).eq(streamDescriptor.getName()))
+              .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamDescriptor.getNamespace())));
     }
 
     database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition).execute();
@@ -71,14 +71,14 @@ public class StreamResetPersistence {
    * resets that are going to be run.
    */
   public void createStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToCreate) throws IOException {
-    for (final StreamDescriptor streamKey : streamsToCreate) {
+    for (final StreamDescriptor streamDescriptor : streamsToCreate) {
       final OffsetDateTime timestamp = OffsetDateTime.now();
 
       database.query(ctx -> ctx.insertInto(DSL_TABLE_STREAM_RESET)
           .set(DSL.field(ID_COL), UUID.randomUUID())
           .set(DSL.field(CONNECTION_ID_COL), connectionId)
-          .set(DSL.field(STREAM_NAME_COL), streamKey.getName())
-          .set(DSL.field(STREAM_NAMESPACE_COL), streamKey.getNamespace())
+          .set(DSL.field(STREAM_NAME_COL), streamDescriptor.getName())
+          .set(DSL.field(STREAM_NAMESPACE_COL), streamDescriptor.getNamespace())
           .set(DSL.field(CREATED_AT_COL), timestamp)
           .set(DSL.field(UPDATED_AT_COL), timestamp)).execute();
     }

@@ -53,18 +53,18 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   @Test
   void testCreateAndGetAndDeleteStreamResets() throws Exception {
     final List<StreamDescriptor> streamResetList = new ArrayList<>();
-    final StreamDescriptor streamKey1 = new StreamDescriptor().withName("stream_name_1").withNamespace("stream_namespace_1");
-    final StreamDescriptor streamKey2 = new StreamDescriptor().withName("stream_name_2");
-    streamResetList.add(streamKey1);
-    streamResetList.add(streamKey2);
+    final StreamDescriptor streamDescriptor1 = new StreamDescriptor().withName("stream_name_1").withNamespace("stream_namespace_1");
+    final StreamDescriptor streamDescriptor2 = new StreamDescriptor().withName("stream_name_2");
+    streamResetList.add(streamDescriptor1);
+    streamResetList.add(streamDescriptor2);
     final UUID uuid = UUID.randomUUID();
     streamResetPersistence.createStreamResets(uuid, streamResetList);
 
     final List<StreamDescriptor> result = streamResetPersistence.getStreamResets(uuid);
     assertEquals(2, result.size());
     assertTrue(
-        result.stream().anyMatch(streamKey -> streamKey.getName().equals("stream_name_1") && streamKey.getNamespace().equals("stream_namespace_1")));
-    assertTrue(result.stream().anyMatch(streamKey -> streamKey.getName().equals("stream_name_2") && streamKey.getNamespace() == null));
+        result.stream().anyMatch(streamDescriptor -> streamDescriptor.getName().equals("stream_name_1") && streamDescriptor.getNamespace().equals("stream_namespace_1")));
+    assertTrue(result.stream().anyMatch(streamDescriptor -> streamDescriptor.getName().equals("stream_name_2") && streamDescriptor.getNamespace() == null));
 
     streamResetPersistence.deleteStreamResets(uuid, result);
 
