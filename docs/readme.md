@@ -1,26 +1,23 @@
-# Welcome to Airbyte docs
+# Welcome to Airbyte Docs
 
-Learn how to use and contribute to Airbyte
+Whether you are an Airbyte user or contributor, we have docs for you! 
 
--------------------------------------------------------------------------------------------
+### For Airbyte Cloud users
 
-### Use Airbyte Cloud
-
-Explore the [connector catalog](integrations) to check if the connector you want is supported on Airbyte Cloud. If the connector is not yet supported, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
+Browse the [connector catalog](integrations) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
 
 Next, check out the [step-by-step tutorial](cloud/getting-started-with-airbyte-cloud) to sign up for Airbyte Cloud, understand Airbyte [concepts](cloud/core-concepts.md), and run your first sync. Then learn how to [manage your Airbyte Cloud account](cloud/managing-airbyte-cloud.md).
 
-### Use Airbyte Open Source
+### For Airbyte Open Source users
 
-Explore the [connector catalog](integrations) to check if the connector you want is supported on Airbyte Open Source. If the connector is not yet supported, [build your own connector](connector-development).
+Browse the [connector catalog](integrations) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](connector-development).
 
 Next, check out the [Airbye Open Source QuickStart](quickstart/deploy-airbyte.md). Then learn how to [deploy](deploying-airbyte/local-deployment) and [manage](operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
-### Get help
 
-Check out the [Troubleshooting & FAQ](troubleshooting/README.md), chat with us on [Discourse](https://discuss.airbyte.io/), or join us on [Slack](https://slack.airbyte.io/).
+To get help with Airbyte deployments, check out the [Troubleshooting & FAQ](troubleshooting/README.md), chat with Support on [Discourse](https://discuss.airbyte.io/), or join us on [Community Slack](https://slack.airbyte.io/).
 
-### Contribute to Airbyte
+### For Airbyte contributors
 
 To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](contributing-to-airbyte). 
 
