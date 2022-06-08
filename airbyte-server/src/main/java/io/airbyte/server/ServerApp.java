@@ -9,6 +9,7 @@ import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Resources;
 import com.google.pubsub.v1.TopicName;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
@@ -57,7 +58,9 @@ import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import java.io.IOException;
+import java.net.URL;
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -217,10 +220,13 @@ public class ServerApp implements ServerRunnable {
     // hackdayz
     Publisher publisher = null;
     try {
+      final URL resource = Resources.getResource("service-account-key.json");
+      final String jsonKey = Resources.toString(resource, StandardCharsets.UTF_8);
+
       final GoogleCredentials credentials = GoogleCredentials.fromStream(
           // key can be retrieved form
           // https://console.cloud.google.com/iam-admin/serviceaccounts/details/118180997045040256619/keys?project=dataline-integration-testing
-          new StringInputStream("todo: fill in your service account json key here"));
+          new StringInputStream(jsonKey));
 
       final TopicName topicName = TopicName.of("dataline-integration-testing", "hack-day-test");
 

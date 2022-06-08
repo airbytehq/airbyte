@@ -4,14 +4,11 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.PubsubMessage;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.ConnectionCreate;
@@ -162,20 +159,20 @@ public class ConnectionsHandler {
     }
 
     final String message = String.format("""
-        {
-        "type": "CreateConnection",
-        "name": "%s",
-        "sourceId": "%s",
-        "destinationId": "%s",
-        "schedule": "%s"
-        }
-        """,connectionCreate.getName(), connectionCreate.getSourceId(), connectionCreate.getDestinationId(), connectionCreate.getSchedule());
+                                         {
+                                         "type": "CreateConnection",
+                                         "name": "%s",
+                                         "sourceId": "%s",
+                                         "destinationId": "%s",
+                                         "schedule": "%s"
+                                         }
+                                         """, connectionCreate.getName(), connectionCreate.getSourceId(), connectionCreate.getDestinationId(),
+        connectionCreate.getSchedule());
 
-//    pubToSub(Jsons.serialize(connectionCreate));
+    // pubToSub(Jsons.serialize(connectionCreate));
 
     return buildConnectionRead(connectionId);
   }
-
 
   private void trackNewConnection(final StandardSync standardSync) {
     try {
