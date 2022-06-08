@@ -151,6 +151,12 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
           SENTRY_PROJECT: airbyte-connectors
+      - name: Publish ERD
+        if: success()
+        id: publish-erd
+        uses: ./.github/actions/publish-connector-erd
+        with:
+          connector_directory_name: $(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)
       - name: Publish ${{ github.event.inputs.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
@@ -203,12 +209,6 @@ jobs:
           if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
           then exit 1
           fi
-      - name: Publish ERD
-        if: success()
-        id: publish-erd
-        uses: ./.github/actions/publish-connector-erd
-        with:
-          connector_directory_name: $(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)
       - name: Bump version in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
