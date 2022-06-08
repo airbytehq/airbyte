@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -55,15 +55,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeAll
   static void init() {
     // Oracle returns uppercase values
-
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
-    ORACLE_DB.start();
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
-
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
@@ -84,6 +75,13 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
 
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+    ORACLE_DB.start();
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
@@ -124,7 +122,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         final String tableName = resultSet.getString("TABLE_NAME");
         final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
+        conn.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
     if (!conn.isClosed())

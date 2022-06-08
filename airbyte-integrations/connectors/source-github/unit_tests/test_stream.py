@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -14,6 +14,7 @@ from source_github.streams import (
     Branches,
     Collaborators,
     Comments,
+    CommitCommentReactions,
     CommitComments,
     Commits,
     Deployments,
@@ -48,7 +49,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 def test_internal_server_error_retry(time_mock):
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
-    stream_slice = {"repository": "test_repo", "id": "id"}
+    stream_slice = {"repository": "test_repo", "comment_id": "id"}
 
     time_mock.reset_mock()
     responses.add(
@@ -157,20 +158,27 @@ def test_stream_repositories_404():
 
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
 def test_stream_repositories_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Repositories(**organization_args)
-    responses.add("GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1}, {"id": 2}])
-    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3}])
+    updated_at = "2020-01-01T00:00:00Z"
+    responses.add(
+        "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
+    )
+    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
     records = read_full_refresh(stream)
-    assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
+    assert records == [
+        {"id": 1, "organization": "org1", "updated_at": updated_at},
+        {"id": 2, "organization": "org1", "updated_at": updated_at},
+        {"id": 3, "organization": "org2", "updated_at": updated_at},
+    ]
     assert len(responses.calls) == 2
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100"
-    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
@@ -561,7 +569,7 @@ def test_stream_comments():
 
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
-        "page_size_for_large_streams": 100,
+        "page_size_for_large_streams": 2,
         "start_date": "2022-02-02T10:10:03Z",
     }
 
@@ -572,6 +580,8 @@ def test_stream_comments():
         {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
         {"id": 3, "updated_at": "2022-02-02T10:10:06Z"},
         {"id": 4, "updated_at": "2022-02-02T10:10:08Z"},
+        {"id": 5, "updated_at": "2022-02-02T10:10:10Z"},
+        {"id": 6, "updated_at": "2022-02-02T10:10:12Z"},
     ]
 
     api_url = "https://api.github.com/repos/organization/repository/issues/comments"
@@ -587,7 +597,17 @@ def test_stream_comments():
         "GET",
         api_url,
         json=data[2:4],
+        headers={
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
+        },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[4:6],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "page": "2", "per_page": "2"}, strict_match=False)],
     )
 
     stream_state = {}
@@ -599,8 +619,10 @@ def test_stream_comments():
     assert records == [
         {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:06Z"},
         {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:08Z"},
+        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:10Z"},
+        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:12Z"},
     ]
-    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
+    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:12Z"}}
 
 
 @responses.activate
@@ -776,4 +798,83 @@ def test_stream_team_members_full_refresh():
         {"username": "login1", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
+
+
+@responses.activate
+def test_stream_commit_comment_reactions_incremental_read():
+
+    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
+    stream = CommitCommentReactions(**repository_args)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538825/reactions",
+        json=[
+            {"id": 154935429, "created_at": "2022-01-01T15:00:00Z"},
+            {"id": 154935430, "created_at": "2022-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[{"id": 154935431, "created_at": "2022-01-01T17:00:00Z"}],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+
+    assert stream_state == {
+        "airbytehq/integration-test": {
+            "55538825": {"created_at": "2022-01-01T16:00:00Z"},
+            "55538826": {"created_at": "2022-01-01T17:00:00Z"},
+        }
+    }
+
+    assert records == [
+        {"id": 154935429, "comment_id": 55538825, "created_at": "2022-01-01T15:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935430, "comment_id": 55538825, "created_at": "2022-01-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935431, "comment_id": 55538826, "created_at": "2022-01-01T17:00:00Z", "repository": "airbytehq/integration-test"},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+            {"id": 55538827, "updated_at": "2022-02-01T15:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[
+            {"id": 154935431, "created_at": "2022-01-01T17:00:00Z"},
+            {"id": 154935432, "created_at": "2022-02-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538827/reactions",
+        json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
+    )
+
+    records = read_incremental(stream, stream_state)
+
+    assert records == [
+        {"id": 154935432, "comment_id": 55538826, "created_at": "2022-02-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935433, "comment_id": 55538827, "created_at": "2022-02-01T17:00:00Z", "repository": "airbytehq/integration-test"},
     ]

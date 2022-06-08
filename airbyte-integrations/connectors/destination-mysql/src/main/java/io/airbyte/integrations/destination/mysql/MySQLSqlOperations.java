@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MySQLSqlOperations extends JdbcSqlOperations {
 
@@ -100,9 +99,10 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private double getVersion(final JdbcDatabase database) throws SQLException {
-    final List<String> value = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
-        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
-    return Double.parseDouble(value.get(0).substring(0, 3));
+    final List<String> versions = database.queryStrings(
+        connection -> connection.createStatement().executeQuery("select version()"),
+        resultSet -> resultSet.getString("version()"));
+    return Double.parseDouble(versions.get(0).substring(0, 3));
   }
 
   VersionCompatibility isCompatibleVersion(final JdbcDatabase database) throws SQLException {
@@ -116,11 +116,10 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    final List<String> value =
-        database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-            resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
-
-    return value.get(0).equalsIgnoreCase("on");
+    final List<String> localFiles = database.queryStrings(
+        connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+        resultSet -> resultSet.getString("Value"));
+    return localFiles.get(0).equalsIgnoreCase("on");
   }
 
   @Override

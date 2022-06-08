@@ -14,4 +14,5 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 
 LABEL io.airbyte.version=0.2.45
+LABEL io.airbyte.version=0.2.51
 LABEL io.airbyte.name=airbyte/source-facebook-marketing

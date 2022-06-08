@@ -5,12 +5,12 @@ import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 
-type ConnectionCellProps = {
+interface ConnectionCellProps {
   sourceDefinitionName: string;
   destinationDefinitionName: string;
   sourceIcon?: string;
   destinationIcon?: string;
-};
+}
 
 const Icon = styled(ConnectorIcon)`
   margin-right: 12px;

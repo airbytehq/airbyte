@@ -2,6 +2,9 @@
   "type": "object",
   "required": ["base", "date", "rates"],
   "properties": {
+    "access_key": {
+      "type": "string"
+    },
     "base": {
       "type": "string"
     },

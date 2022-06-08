@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -22,6 +22,12 @@ from source_salesforce.streams import (
     IncrementalSalesforceStream,
     SalesforceStream,
 )
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -482,7 +488,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "flag1": True,
                         "queryable": True,
                     }
-                    for stream_name in stream_names if stream_name != "Describe"
+                    for stream_name in stream_names
+                    if stream_name != "Describe"
                 ],
             },
         )
@@ -518,3 +525,10 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_decoding(stream_config, stream_api):
+    stream_name = "AcceptedEventRelation"
+    stream = generate_stream(stream_name, stream_config, stream_api)
+    assert stream.decode(b"\xe9\x97\xb4\xe5\x8d\x95\xe7\x9a\x84\xe8\xaf\xb4 \xf0\x9f\xaa\x90") == "间单的说 🪐"
+    assert stream.decode(b"0\xe5") == "0å"

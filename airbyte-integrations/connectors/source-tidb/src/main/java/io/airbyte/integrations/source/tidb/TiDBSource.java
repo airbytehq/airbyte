@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.tidb;
@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -22,7 +23,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBSource.class);
 
-  static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+  static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true",
@@ -33,14 +34,14 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   }
 
   public TiDBSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), new TiDBSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new TiDBSourceOperations());
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
         config.get("host").asText(),
-        config.get("port").asText(),
+        config.get("port").asInt(),
         config.get("database").asText()));
 
     if (config.get("jdbc_url_params") != null

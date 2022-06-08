@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -209,7 +209,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             if data_format:
                 metric_data["format"] = data_format
             schema["properties"][metric] = metric_data
-
+        schema["properties"]["isDataGolden"] = {"type": "boolean"}
         return schema
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -226,14 +226,15 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
-        today = pendulum.now().date()
+        end_date = pendulum.now().date()
         start_date = pendulum.parse(self.start_date).date()
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
-            start_date = prev_end_date.add(days=1)
-        end_date = today
-        if start_date > end_date:
-            return [None]
+            start_date = prev_end_date.add(days=1)  # do not include previous `end_date`
+        # always resync 2 previous days to be sure data is golden
+        # https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article
+        # https://github.com/airbytehq/airbyte/issues/12013#issuecomment-1111255503
+        start_date = start_date.subtract(days=2)
 
         date_slices = []
         slice_start_date = start_date
@@ -403,11 +404,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                         record[metric_name.replace("ga:", "ga_")] = value
 
                 record["view_id"] = self.view_id
-
+                record["isDataGolden"] = report.get("data", {}).get("isDataGolden", False)
                 yield record
 
     def check_for_sampled_result(self, data: Mapping) -> None:
-        if not data.get("isDataGolden", True):
+        if not data.get("isDataGolden", False):
             self.logger.warning(DATA_IS_NOT_GOLDEN_MSG)
         if data.get("samplesReadCounts", False):
             self.logger.warning(RESULT_IS_SAMPLED_MSG)

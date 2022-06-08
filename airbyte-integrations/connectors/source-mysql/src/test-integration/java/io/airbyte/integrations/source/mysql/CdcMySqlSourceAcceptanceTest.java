@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -31,6 +32,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -130,15 +132,16 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
-        String.format("jdbc:mysql://%s:%s/%s",
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
         SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));
@@ -175,7 +178,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
-    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
+
+    // Uncaught exceptions are now handled by the AirbyteExceptionHandler, so
+    // it will not be thrown outside the connector execution.
+    assertDoesNotThrow(() -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
 }

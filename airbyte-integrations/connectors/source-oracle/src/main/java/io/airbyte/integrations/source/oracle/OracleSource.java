@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -7,9 +7,10 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -18,6 +19,7 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
   private List<String> schemas;
 
@@ -45,7 +47,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   public static Source sshWrappedSource() {
@@ -92,7 +94,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       }
     }
     if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(";", additionalParameters);
+      final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
       configBuilder.put("connection_properties", connectionParams);
     }
 
@@ -129,7 +131,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -168,6 +170,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of();
+  }
+
+  @Override
+  protected String getJdbcParameterDelimiter() {
+    return ";";
   }
 
   public static void main(final String[] args) throws Exception {

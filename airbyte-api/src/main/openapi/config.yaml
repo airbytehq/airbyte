@@ -3143,7 +3143,6 @@ components:
     WebBackendConnectionCreate:
       type: object
       required:
-        - connection
         - sourceId
         - destinationId
         - status
@@ -3218,6 +3217,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3258,6 +3260,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionRead:
       type: object
       required:
@@ -3298,6 +3303,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionSearch:
       type: object
       properties:
@@ -3375,7 +3383,6 @@ components:
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
-      nullable: true
       required:
         - units
         - timeUnit
@@ -3827,6 +3834,8 @@ components:
           $ref: "#/components/schemas/AttemptFailureType"
         externalMessage:
           type: string
+        internalMessage:
+          type: string
         stacktrace:
           type: string
         retryable:
@@ -3845,6 +3854,7 @@ components:
         - persistence
         - normalization
         - dbt
+        - airbyte_platform
     AttemptFailureType:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
@@ -4359,6 +4369,9 @@ components:
           type: boolean
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        catalogId:
+          type: string
+          format: uuid
     WebBackendConnectionReadList:
       type: object
       required:

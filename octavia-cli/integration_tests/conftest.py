@@ -1,11 +1,13 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import os
 
 import pytest
 import yaml
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 from octavia_cli.apply.resources import Connection, Destination, Source
 from octavia_cli.entrypoint import get_api_client, get_workspace_id
 from octavia_cli.init.commands import DIRECTORIES_TO_CREATE as OCTAVIA_PROJECT_DIRECTORIES
@@ -62,7 +64,7 @@ def source(api_client, workspace_id, source_configuration_and_path, source_state
     configuration, path = source_configuration_and_path
     source = Source(api_client, workspace_id, configuration, path)
     yield source
-    source.api_instance.delete_source(source.resource_id_request_body)
+    source.api_instance.delete_source(source.get_payload)
 
 
 @pytest.fixture(scope="session")
@@ -86,7 +88,7 @@ def destination(api_client, workspace_id, destination_configuration_and_path, de
     configuration, path = destination_configuration_and_path
     destination = Destination(api_client, workspace_id, configuration, path)
     yield destination
-    destination.api_instance.delete_destination(destination.resource_id_request_body)
+    destination.api_instance.delete_destination(destination.get_payload)
 
 
 @pytest.fixture(scope="session")
@@ -105,24 +107,47 @@ def connection_state_path(octavia_test_project_directory):
     silent_remove(state_path)
 
 
-def updated_connection_configuration_and_path(octavia_test_project_directory, source, destination):
-    path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration.yaml"
-    edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration.yaml"
+@pytest.fixture(scope="session")
+def connection_with_normalization_state_path(octavia_test_project_directory):
+    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/state.yaml"
+    silent_remove(state_path)
+    yield state_path
+    silent_remove(state_path)
+
+
+def updated_connection_configuration_and_path(octavia_test_project_directory, source, destination, with_normalization=False):
+    if with_normalization:
+        path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/configuration.yaml"
+        edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/updated_configuration.yaml"
+    else:
+        path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration.yaml"
+        edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration.yaml"
     with open(path, "r") as dumb_local_configuration_file:
         local_configuration = yaml.safe_load(dumb_local_configuration_file)
     local_configuration["source_id"] = source.resource_id
     local_configuration["destination_id"] = destination.resource_id
-    local_configuration["configuration"]["sourceId"] = source.resource_id
-    local_configuration["configuration"]["destinationId"] = destination.resource_id
     with open(edited_path, "w") as updated_configuration_file:
         yaml.dump(local_configuration, updated_configuration_file)
     return local_configuration, edited_path
 
 
 @pytest.fixture(scope="session")
-def connection(api_client, workspace_id, octavia_test_project_directory, source, destination):
+def connection(api_client, workspace_id, octavia_test_project_directory, source, destination, connection_state_path):
     configuration, configuration_path = updated_connection_configuration_and_path(octavia_test_project_directory, source, destination)
     connection = Connection(api_client, workspace_id, configuration, configuration_path)
     yield connection
-    connection.api_instance.delete_connection(connection.resource_id_request_body)
+    connection_api.ConnectionApi(api_client).delete_connection(ConnectionIdRequestBody(connection.resource_id))
+    silent_remove(configuration_path)
+
+
+@pytest.fixture(scope="session")
+def connection_with_normalization(
+    api_client, workspace_id, octavia_test_project_directory, source, destination, connection_with_normalization_state_path
+):
+    configuration, configuration_path = updated_connection_configuration_and_path(
+        octavia_test_project_directory, source, destination, with_normalization=True
+    )
+    connection = Connection(api_client, workspace_id, configuration, configuration_path)
+    yield connection
+    connection_api.ConnectionApi(api_client).delete_connection(ConnectionIdRequestBody(connection.resource_id))
     silent_remove(configuration_path)

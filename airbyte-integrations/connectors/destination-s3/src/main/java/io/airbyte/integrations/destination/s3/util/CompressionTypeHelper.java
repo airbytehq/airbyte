@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.util;
@@ -10,6 +10,8 @@ import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFA
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class CompressionTypeHelper {
+
+  private CompressionTypeHelper() {}
 
   /**
    * Sample expected input: { "compression_type": "No Compression" }
