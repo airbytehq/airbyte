@@ -28,8 +28,10 @@ function main() {
 
   local generate_script="$(dirname $0)/generator.sh"
   # dbml_path is the last line output from the previous script
-  local dbml_path=$($generate_script $connector_name $secret_path | tail -n 1)
-  echo $dbml_path
+  local generate_script_output=$($generate_script $connector_name $secret_path)
+  echo $generate_script_output
+
+  local dbml_path=$(echo $generate_script_output | tail -n 1)
   DBDOCS_TOKEN=$DBDOCS_TOKEN dbdocs build $dbml_path --project=$connector_name
 }
 
