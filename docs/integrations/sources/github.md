@@ -16,14 +16,27 @@ For Airbyte OSS:
 ## Setup guide
 ### Step 1: Set up GitHub
 
-* Create a [GitHub Account](https://github.com).
-* **Authentication** - Select from 2 authentication methods:
-    * **Authenticate via GitHub (OAuth)** - Only available in Airbyte Cloud. Authenticate by clicking the "Authenticate your account" button;
-    * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
-* **Start date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
-* **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`;
-* **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`);
-* **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
+Create a [GitHub Account](https://github.com).
+
+### Airbyte Open Source additional setup steps
+
+Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+
+### Step 2: Set up the GitHub connector in Airbyte
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **GitHub** from the Source type dropdown and enter a name for this connector.
+4. Click `Authenticate your GitHub account`.
+5. Log in and Authorize to the GitHub account.
+6. **Start date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`.
+7. **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+8. **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+9. **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
+
+**For Airbyte OSS:**
+1. Authenticate with **Personal Access Token**.
 
 ## Supported sync modes
 
