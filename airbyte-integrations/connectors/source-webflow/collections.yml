@@ -1,0 +1,68 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer 40b7511d4494a0193340902f443187bc175838bd6d723dc0e4f3397c5bf80bf3
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+      accept-version:
+      - 1.0.0
+    method: GET
+    uri: https://api.webflow.com/sites/605e01bc25f7e19a82e74788/collections
+  response:
+    body:
+      string: '[{"_id":"6230e46a76e13a04718aa509","lastUpdated":"2022-04-15T13:27:27.020Z","createdOn":"2022-01-13T20:35:32.721Z","name":"Data
+        Champions","slug":"data-champions","singularName":"Data Champion"},{"_id":"6230e46a76e13a0dca8aa54a","lastUpdated":"2022-03-15T19:09:42.573Z","createdOn":"2022-02-16T13:59:51.289Z","name":"Launch
+        Weeks","slug":"launch-weeks","singularName":"Launch Week"},{"_id":"6230e46a76e13a0e968aa4f6","lastUpdated":"2022-03-15T19:09:42.306Z","createdOn":"2021-03-31T18:01:01.016Z","name":"Connector
+        Categories","slug":"connector-categories","singularName":"Connector Category"},{"_id":"6230e46a76e13a0fa98aa49c","lastUpdated":"2022-03-15T19:09:41.933Z","createdOn":"2021-03-31T18:04:16.580Z","name":"Tutorials-Archives","slug":"tutorials-archives","singularName":"Tutorials-Archive"},{"_id":"6230e46a76e13a1b348aa4c2","lastUpdated":"2022-03-18T15:36:55.397Z","createdOn":"2021-07-15T19:41:14.930Z","name":"Contributor
+        Gamifications","slug":"contributor-gamification","singularName":"Contributor
+        Gamification"},{"_id":"6230e46a76e13a2af58aa450","lastUpdated":"2022-03-15T19:09:39.955Z","createdOn":"2021-07-02T18:19:26.277Z","name":"Tutorial
+        Categories","slug":"tutorial-categories","singularName":"Tutorial Category"},{"_id":"6230e46a76e13a41f18aa3fd","lastUpdated":"2022-03-15T19:09:39.873Z","createdOn":"2021-07-19T06:10:38.505Z","name":"Case
+        Studies","slug":"case-studies","singularName":"Case Study"},{"_id":"6230e46a76e13a46338aa3d3","lastUpdated":"2022-06-01T15:04:32.944Z","createdOn":"2021-03-31T17:36:31.772Z","name":"Blog
+        Posts","slug":"blog","singularName":"Blog Post"},{"_id":"6230e46a76e13a55278aa4e2","lastUpdated":"2022-03-15T19:09:42.296Z","createdOn":"2021-07-25T08:42:26.093Z","name":"Contributors
+        Won Dates","slug":"contributors-won-dates","singularName":"Contributors Won
+        Date"},{"_id":"6230e46a76e13a5c2b8aa43c","lastUpdated":"2022-05-10T15:02:13.213Z","createdOn":"2021-09-26T11:41:27.562Z","name":"Testimonials","slug":"testimonials","singularName":"Testimonial"},{"_id":"6230e46a76e13a6d4f8aa3bc","lastUpdated":"2022-05-31T14:35:53.613Z","createdOn":"2021-03-31T18:00:26.724Z","name":"Blog
+        Authors","slug":"blog-authors","singularName":"Blog Author"},{"_id":"6230e46a76e13a6f7e8aa476","lastUpdated":"2022-03-15T19:09:41.201Z","createdOn":"2021-07-25T08:11:26.622Z","name":"Contributor
+        Awards","slug":"contributor-awards","singularName":"Contributor Award"},{"_id":"6230e46a76e13a7b498aa428","lastUpdated":"2022-05-03T16:01:24.693Z","createdOn":"2021-07-01T12:34:39.474Z","name":"Tutorials","slug":"tutorials","singularName":"Tutorial"},{"_id":"6230e46a76e13a7cb28aa414","lastUpdated":"2022-03-15T19:09:39.898Z","createdOn":"2021-06-14T16:02:05.522Z","name":"Contributors","slug":"contributors","singularName":"Contributor"},{"_id":"6230e46a76e13a899a8aa463","lastUpdated":"2022-03-15T19:09:40.284Z","createdOn":"2021-03-31T17:37:28.581Z","name":"Blog
+        Categories","slug":"blog-categories","singularName":"Blog Category"},{"_id":"6230e46a76e13aacea8aa3bb","lastUpdated":"2022-03-15T19:09:39.113Z","createdOn":"2021-09-29T20:42:03.903Z","name":"Connections","slug":"connections","singularName":"Connection"},{"_id":"6230e46a76e13aba6e8aa535","lastUpdated":"2022-03-15T19:09:42.535Z","createdOn":"2022-02-14T19:03:52.516Z","name":"Launch
+        Week Speakers","slug":"launch-week-speakers","singularName":"Launch Week Speaker"},{"_id":"6230e46a76e13abed58aa4af","lastUpdated":"2022-03-15T19:09:42.111Z","createdOn":"2021-06-28T16:20:30.859Z","name":"Team
+        Members","slug":"team-members","singularName":"Team Member"},{"_id":"6230e46a76e13ac8dd8aa574","lastUpdated":"2022-03-15T19:09:42.650Z","createdOn":"2022-03-02T18:48:23.564Z","name":"Events
+        Categories","slug":"events-categories","singularName":"Events Category"},{"_id":"6230e46a76e13acf858aa489","lastUpdated":"2022-03-15T19:09:41.589Z","createdOn":"2021-07-19T08:50:30.525Z","name":"Case
+        Studies Categories","slug":"case-studies-categories","singularName":"Case
+        Studies Category"},{"_id":"6230e46a76e13ad3d58aa3ea","lastUpdated":"2022-03-15T19:09:39.586Z","createdOn":"2021-07-02T13:33:48.142Z","name":"Connectors","slug":"connectors","singularName":"Connector"},{"_id":"6230e46a76e13ade6e8aa3ba","lastUpdated":"2022-03-15T19:09:39.103Z","createdOn":"2021-09-22T08:58:32.143Z","name":"Comparisons","slug":"etl-tools","singularName":"Comparison"},{"_id":"6230e46a76e13aff048aa55f","lastUpdated":"2022-03-15T19:09:42.627Z","createdOn":"2022-03-02T18:47:38.479Z","name":"Events","slug":"events","singularName":"Event"},{"_id":"6245aba044878d4fcaffd0c6","lastUpdated":"2022-03-31T13:58:48.059Z","createdOn":"2022-03-31T13:24:48.073Z","name":"Maintainers","slug":"maintainers","singularName":"Maintainer"},{"_id":"62696f8587ae706fa5129dcf","lastUpdated":"2022-04-27T16:39:27.364Z","createdOn":"2022-04-27T16:29:57.053Z","name":"Airbyte
+        Versions","slug":"airbyte-version","singularName":"Airbyte Version"},{"_id":"62696fe6e3e1ac6dae820b0a","lastUpdated":"2022-04-27T16:31:35.018Z","createdOn":"2022-04-27T16:31:34.830Z","name":"Tutorial
+        Tools","slug":"tutorial-tools","singularName":"Tutorial Tool"},{"_id":"627a7f06b7f7cb7c0634a46d","lastUpdated":"2022-05-10T15:09:59.239Z","createdOn":"2022-05-10T15:04:38.230Z","name":"Press
+        Coverages","slug":"press-coverage","singularName":"Press Coverage"},{"_id":"627a7f66585a1b9d16a621d9","lastUpdated":"2022-05-10T15:10:11.143Z","createdOn":"2022-05-10T15:06:14.524Z","name":"Press
+        Podcasts & Videos","slug":"press-podcasts-videos","singularName":"Press Podcasts
+        & Video"},{"_id":"6282637faf2e2ec9bdc19623","lastUpdated":"2022-05-16T16:56:06.291Z","createdOn":"2022-05-16T14:45:19.509Z","name":"Community
+        Calls","slug":"community-calls","singularName":"Community Call"},{"_id":"628d1633f117ba2bbf4dadd1","lastUpdated":"2022-05-24T17:31:18.312Z","createdOn":"2022-05-24T17:30:27.537Z","name":"Glossaries","slug":"glossary","singularName":"Glossary"}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5871'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Thu, 02 Jun 2022 09:35:50 GMT
+      Etag:
+      - W/"pbxPnw+dn50gTV8ytq1fkw=="
+      X-Ratelimit-Limit:
+      - '120'
+      X-Ratelimit-Remaining:
+      - '119'
+      X-Response-Time:
+      - 67.492ms
+      X-Wf-Rid:
+      - 026cd589-14dd-417f-bf77-07367fc886bb
+    status:
+      code: 200
+      message: OK
+version: 1
