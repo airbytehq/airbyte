@@ -982,6 +982,13 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: Webflow
+  sourceDefinitionId: 9f691874-e73f-11ec-8fea-0242ac120002
+  dockerRepository: airbyte/source-webflow
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
+  sourceType: api
+  releaseStage: alpha
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
