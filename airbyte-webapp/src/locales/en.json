@@ -504,6 +504,11 @@
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
 
+  "frequency.manual": "Manual",
+  "frequency.minutes": "{value} min",
+  "frequency.hour": "hour",
+  "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
+
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",

@@ -1,9 +1,8 @@
-import React, { useMemo } from "react";
+import React from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
 import { ConnectionSchedule } from "core/request/AirbyteClient";
-import { equal } from "utils/objects";
 
 interface FrequencyCellProps {
   value: ConnectionSchedule;
@@ -14,13 +13,10 @@ const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
-const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled }) => {
-  const text = useMemo<string>(() => {
-    const cellText = FrequencyConfig.find((item) => equal(item.config, value ?? null));
-    return cellText?.text ?? "";
-  }, [value]);
-
-  return <Content enabled={enabled}>{text}</Content>;
-};
+const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled }) => (
+  <Content enabled={enabled}>
+    <FormattedMessage id={`frequency.${value ? value.timeUnit : "manual"}`} values={{ value: value?.units }} />
+  </Content>
+);
 
 export default FrequencyCell;

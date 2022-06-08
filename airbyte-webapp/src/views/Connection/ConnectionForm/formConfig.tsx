@@ -261,17 +261,23 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
     () =>
       FrequencyConfig.map((item) => ({
         value: item.config,
-        label:
-          item.config === null
-            ? item.text
-            : formatMessage(
-                {
-                  id: "form.every",
-                },
-                {
-                  value: item.simpleText || item.text,
-                }
-              ),
+        label: item.config
+          ? formatMessage(
+              {
+                id: "form.every",
+              },
+              {
+                value: formatMessage(
+                  {
+                    id: `frequency.${
+                      item.config.timeUnit === "hours" && item.config.units === 1 ? "hour" : item.config.timeUnit
+                    }`,
+                  },
+                  { value: item.config?.units }
+                ),
+              }
+            )
+          : formatMessage({ id: "frequency.manual" }),
       })),
     [formatMessage]
   );
