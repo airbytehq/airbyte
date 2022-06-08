@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
@@ -100,4 +102,9 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
     return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
   }
 
+  @Override
+  protected void compareObjects(JsonNode expectedObject, JsonNode actualObject) {
+    JsonNode actualJsonNode = (actualObject.isTextual() ? Jsons.deserialize(actualObject.textValue()) : actualObject);
+    super.compareObjects(expectedObject, actualJsonNode);
+  }
 }
