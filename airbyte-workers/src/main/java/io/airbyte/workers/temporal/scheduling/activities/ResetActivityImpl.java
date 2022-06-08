@@ -26,6 +26,7 @@ public class ResetActivityImpl implements ResetActivity {
     }
   }
 
+  @Override
   public void createStreamResets(final UUID connectionId, final List<StreamDescriptor> streamDescriptorList) {
     try {
       streamResetPersistence.createStreamResets(connectionId, streamDescriptorList);
@@ -34,6 +35,7 @@ public class ResetActivityImpl implements ResetActivity {
     }
   }
 
+  @Override
   public void deleteStreamResets(final UUID connectionId, final List<StreamDescriptor> streamDescriptorList) {
     try {
       streamResetPersistence.deleteStreamResets(connectionId, streamDescriptorList);
