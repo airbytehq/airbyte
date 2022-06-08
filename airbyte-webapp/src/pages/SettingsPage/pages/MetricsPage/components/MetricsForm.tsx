@@ -61,7 +61,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
           id={"preferences.collectData"}
           values={{
             docs: (docs: React.ReactNode) => (
-              <DocsLink target="_blank" href={config.ui.docsLink}>
+              <DocsLink target="_blank" href={config.links.docsLink}>
                 {docs}
               </DocsLink>
             ),
