@@ -72,7 +72,7 @@ This connector outputs the following incremental streams:
    Please, consider this behaviour when using those 20 incremental streams because it may affect you API call limits.
 
 3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
-**The "Start date" configuration option does not apply to the streams below, because the Github API does not include dates which can be used for filtering:**
+**The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 * `assignees`
 * `branches`
@@ -97,20 +97,20 @@ This connector outputs the following incremental streams:
 
 ### Performance considerations
 
-The Github connector should not run into Github API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The GitHub connector should not run into GitHub API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
 ### Requirements
 
-* Github Account;
+* GitHub Account;
 * **Authentication** - Select from 2 authentication methods:
     * **Authenticate via GitHub (OAuth)** - Only available in Airbyte Cloud. Authenticate by clicking the "Authenticate your account" button;
     * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
 * **Start date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
 * **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`;
 * **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`);
-* **Page size for large streams (Optional)** - The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
+* **Page size for large streams (Optional)** - The GitHub connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
 
 ### Permissions and scopes
 
@@ -149,7 +149,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.2.10  | 2021-01-03 | [7250](https://github.com/airbytehq/airbyte/pull/7250) | Use CDK caching and convert PR-related streams to incremental                                                |
 | 0.2.9   | 2021-12-29 | [9179](https://github.com/airbytehq/airbyte/pull/9179) | Use default retry delays on server error responses                                                           |
 | 0.2.8   | 2021-12-07 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description                                                                    |
-| 0.2.7   | 2021-12-06 | [8518](https://github.com/airbytehq/airbyte/pull/8518) | Add connection retry with Github                                                                             |
+| 0.2.7   | 2021-12-06 | [8518](https://github.com/airbytehq/airbyte/pull/8518) | Add connection retry with GitHub                                                                             |
 | 0.2.6   | 2021-11-24 | [8030](https://github.com/airbytehq/airbyte/pull/8030) | Support start date property for PullRequestStats and Reviews streams                                         |
 | 0.2.5   | 2021-11-21 | [8170](https://github.com/airbytehq/airbyte/pull/8170) | Fix slow check connection for organizations with a lot of repos                                              |
 | 0.2.4   | 2021-11-11 | [7856](https://github.com/airbytehq/airbyte/pull/7856) | Resolve $ref fields in some stream schemas                                                                   |
