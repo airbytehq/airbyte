@@ -1,6 +1,6 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-webflow:0.1.1
+connector_image: airbyte/source-webflow:0.1.0-alpha
 tests:
   spec:
     - spec_path: "source_webflow/spec.yaml"
