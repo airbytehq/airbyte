@@ -101,6 +101,7 @@ import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
@@ -438,19 +439,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
-    final String message = String.format("""
-        {
-        "type": "CreateSource",
-        "name": "%s",
-        "workspaceId": "%s",
-        "config": "%s"
-        }
-        """,
-        sourceCreate.getName(),
-        sourceCreate.getWorkspaceId(),
-        sourceCreate.getConnectionConfiguration());
-
-    pubToSub(message);
+    pubToSub(Jsons.serialize(sourceCreate));
     return execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
@@ -611,19 +600,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
-    final String message = String.format("""
-        {
-        "type": "CreateDestination",
-        "name": "%s",
-        "workspaceId": "%s",
-        "config": "%s"
-        }
-        """,
-        destinationCreate.getName(),
-        destinationCreate.getWorkspaceId(),
-        destinationCreate.getConnectionConfiguration());
-
-    pubToSub(message);
+    pubToSub(Jsons.serialize(destinationCreate));
     return execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
@@ -674,6 +651,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
+    pubToSub(Jsons.serialize(connectionCreate));
     return execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
@@ -684,13 +662,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    final String message = String.format("""
-        {
-        "type": "ListConnections",
-        "workspaceId": "%s"
-        }
-        """, workspaceIdRequestBody.getWorkspaceId());
-    pubToSub(message);
     return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
@@ -711,7 +682,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    pubToSub("Delete Connection: " + connectionIdRequestBody.getConnectionId());
     execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());

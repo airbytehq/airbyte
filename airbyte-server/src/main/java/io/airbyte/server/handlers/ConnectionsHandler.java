@@ -171,27 +171,11 @@ public class ConnectionsHandler {
         }
         """,connectionCreate.getName(), connectionCreate.getSourceId(), connectionCreate.getDestinationId(), connectionCreate.getSchedule());
 
-    pubToSub(message);
+//    pubToSub(Jsons.serialize(connectionCreate));
 
     return buildConnectionRead(connectionId);
   }
 
-
-  // nice to have logger output here, as opposed to publishing in ConfigurationApi.java
-  private void pubToSub(final String message) {
-    try {
-      final ByteString data = ByteString.copyFromUtf8(message);
-      final PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
-
-      // Once published, returns a server-assigned message id (unique within the topic)
-      final ApiFuture<String> messageIdFuture = publisher.publish(pubsubMessage);
-      final String messageId = messageIdFuture.get();
-      LOGGER.info("Published message ID: " + messageId);
-      publisher.publishAllOutstanding();
-    } catch (final Exception e) {
-      LOGGER.error("PubSub failed", e);
-    }
-  }
 
   private void trackNewConnection(final StandardSync standardSync) {
     try {
