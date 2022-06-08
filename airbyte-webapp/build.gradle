@@ -37,8 +37,18 @@ task licenseCheck(type: NpmTask) {
     inputs.file 'package-lock.json'
 }
 
+task validateLinks(type: NpmTask) {
+    dependsOn npmInstall
+
+    args = ['run', 'validate-links']
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+}
+
 // Make sure to always run a license check after we installed dependencies
 npmInstall.finalizedBy licenseCheck
+// Validate all links after installing dependencies
+npmInstall.finalizedBy validateLinks
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
