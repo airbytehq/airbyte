@@ -37,8 +37,8 @@ dependencies {
     testImplementation libs.flyway.core
     testImplementation 'org.mockito:mockito-inline:4.0.0'
     testImplementation libs.postgresql
-    testImplementation libs.testcontainers
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers
+    testImplementation libs.platform.testcontainers.postgresql
 
     testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')

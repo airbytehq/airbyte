@@ -14,7 +14,7 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation libs.flyway.core
 
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
 }
 
