@@ -194,14 +194,7 @@ $yellows: (
 
 $color-maps: $blues, $dark-blues, $greys, $oranges, $greens, $reds, $beiges, $black-and-white, $yellows;
 
-// THEME
-
-$primary: $blue;
-
-$theme-colors: (
-  "primary": $blue,
-  "secondary": $orange,
-);
+// LEGACY - DEPRECATED
 
 $primaryColor: $blue;
 $primaryColor10: rgba(98, 94, 255, 0.1);
