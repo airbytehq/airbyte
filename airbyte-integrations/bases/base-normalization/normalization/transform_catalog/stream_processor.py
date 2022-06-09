@@ -1102,11 +1102,10 @@ where 1 = 1
         return sql
 
     def get_incremental_clause(self, tablename: str) -> Any:
-        return "{{ incremental_clause(" + self.get_emitted_at(in_jinja=True) + ", " + tablename + ") }}"
+        return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True))
 
-    # TODO add optional param to get_incremental_clause
-    def get_incremental_clause_normalized_at(self, tablename: str) -> Any:
-        return "{{ incremental_clause(" + self.get_normalized_at(in_jinja=True) + ", " + tablename + ") }}"
+    def get_incremental_clause_for_column(self, tablename: str, column: str) -> Any:
+        return "{{ incremental_clause(" + column + ", " + tablename + ") }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
@@ -1222,8 +1221,9 @@ where 1 = 1
                         quoted_scd_new_data_table=jinja_call(scd_new_data_table),
                         active_row_column_name=active_row_column_name,
                         scd_table=scd_table,
-                        normalized_at_incremental_clause=self.get_incremental_clause_normalized_at(
-                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name)
+                        normalized_at_incremental_clause=self.get_incremental_clause_for_column(
+                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name),
+                            self.get_normalized_at(in_jinja=True),
                         ),
                         unique_key_reference=unique_key_reference,
                     )
