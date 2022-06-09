@@ -33,6 +33,10 @@ jobs:
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+
+      - name: Change to HydroVu source connector directory1
+        run: cd ./airbyte-integrations/connectors/source-hydrovu/
+
       - name: PWD1
         run: pwd 
 
