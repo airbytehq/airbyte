@@ -109,7 +109,7 @@ function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchemaDefinition):
   return isRequired;
 }
 
-const defaultFields: (keyof AirbyteJSONSchema)[] = [
+const defaultFields: Array<keyof AirbyteJSONSchema> = [
   "default",
   "examples",
   "description",

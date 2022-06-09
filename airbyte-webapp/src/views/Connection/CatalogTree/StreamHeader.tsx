@@ -31,9 +31,9 @@ interface StreamHeaderProps {
   stream: SyncSchemaStream;
   destName: string;
   destNamespace: string;
-  availableSyncModes: {
+  availableSyncModes: Array<{
     value: SyncSchema;
-  }[];
+  }>;
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
   primitiveFields: SyncSchemaField[];

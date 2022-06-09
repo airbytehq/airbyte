@@ -21,7 +21,7 @@ const BreadcrumbsItem = styled.div`
 `;
 
 interface IProps {
-  data: { name: string | React.ReactNode; onClick?: () => void }[];
+  data: Array<{ name: string | React.ReactNode; onClick?: () => void }>;
 }
 
 const Breadcrumbs: React.FC<IProps> = ({ data }) => {

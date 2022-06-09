@@ -99,14 +99,14 @@ const Th = styled.th<IThProps>`
 
 interface IProps {
   light?: boolean;
-  columns: (IHeaderProps | Column<Record<string, unknown>>)[];
+  columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClickRow?: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sortBy?: SortingRule<any>[];
+  sortBy?: Array<SortingRule<any>>;
 }
 
 const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {

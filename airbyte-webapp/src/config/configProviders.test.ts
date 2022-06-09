@@ -29,7 +29,7 @@ describe("applyProviders", () => {
         innerProp: "1",
       },
     };
-    const providers: ProviderAsync<DeepPartial<Value>>[] = [
+    const providers: Array<ProviderAsync<DeepPartial<Value>>> = [
       async () => ({
         prop1: {
           innerProp: "John",

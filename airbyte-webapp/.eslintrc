@@ -60,7 +60,7 @@
         }
       }
     ],
-    "@typescript-eslint/array-type": "warn",
+    "@typescript-eslint/array-type": ["warn", { "default": "array-simple" }],
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {

@@ -63,7 +63,7 @@ function removeNestedPaths(
 
 function applyFuncAt(
   schema: JSONSchema7Definition,
-  path: (string | number)[],
+  path: Array<string | number>,
   f: (schema: JSONSchema7Definition) => JSONSchema7
 ): JSONSchema7Definition {
   if (typeof schema === "boolean") {
