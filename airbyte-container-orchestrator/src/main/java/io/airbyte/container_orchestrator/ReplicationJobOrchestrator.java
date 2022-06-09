@@ -9,8 +9,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.DatadogSchemaValidationMetricReporter;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
@@ -105,8 +107,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        configs,
-        sourceLauncherConfig.getDockerImage());
+        new DatadogSchemaValidationMetricReporter(new DatadogClientConfiguration(configs), sourceLauncherConfig.getDockerImage()));
 
     log.info("Running replication worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());

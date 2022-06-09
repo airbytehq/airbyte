@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.general;
 
-import io.airbyte.config.Configs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -15,10 +14,6 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
-import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.*;
@@ -83,8 +78,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
-  private final Configs configs;
-  private final String dockerImage;
+  private final DatadogSchemaValidationMetricReporter metricReporter;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -93,8 +87,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
-                                  final Configs configs,
-                                  final String dockerImage) {
+                                  final DatadogSchemaValidationMetricReporter metricReporter) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -103,8 +96,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
-    this.configs = configs;
-    this.dockerImage = dockerImage;
+    this.metricReporter = metricReporter;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -117,7 +109,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator) {
-    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null, null);
+    this(jobId, attempt, source, mapper, destination, messageTracker, recordSchemaValidator, null);
   }
 
   /**
@@ -175,7 +167,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, configs, dockerImage),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -315,8 +307,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
-                                                 final Configs configs,
-                                                 final String dockerImage) {
+                                                 final DatadogSchemaValidationMetricReporter metricReporter) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -358,18 +349,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
-          DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
-          final String[] dockerImageInfo = dockerImage.split(":");
-          final String dockerRepo = dockerImageInfo[0];
-          final String dockerVersion = dockerImageInfo.length > 1 ? dockerImageInfo[1] : "";
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
-            final String[] validationErrorMetadata = {
-              "docker_repo:" + dockerRepo,
-              "docker_version:" + dockerVersion,
-              "stream:" + stream
-            };
-            DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
+            metricReporter.track(stream);
           });
         }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers;
 
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -5,6 +9,7 @@ import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 
 public class DatadogSchemaValidationMetricReporter {
+
   private final String dockerRepo;
   private final String dockerVersion;
 
@@ -16,10 +21,11 @@ public class DatadogSchemaValidationMetricReporter {
 
   public void track(final String stream) {
     final String[] validationErrorMetadata = {
-        "docker_repo:" + dockerRepo,
-        "docker_version:" + dockerVersion,
-        "stream:" + stream
+      "docker_repo:" + dockerRepo,
+      "docker_version:" + dockerVersion,
+      "stream:" + stream
     };
     DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
   }
+
 }
