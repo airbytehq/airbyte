@@ -44,6 +44,8 @@ jobs:
 
       - name: Test with pytest1
         run: |
+          cd ./airbyte-integrations/connectors/source-hydrovu/
+          pwd
           pytest
 
       - name: Lint with flake8
