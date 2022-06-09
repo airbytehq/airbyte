@@ -390,11 +390,15 @@ class TemporalClientTest {
       when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
       doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
 
+      final WorkflowStub untypedWorkflowStub = mock(WorkflowStub.class);
+      when(workflowClient.newUntypedWorkflowStub(anyString())).thenReturn(untypedWorkflowStub);
+
       temporalClient.update(CONNECTION_ID);
 
       // this is only called when updating an existing workflow
       verify(mConnectionManagerWorkflow, Mockito.never()).connectionUpdated();
 
+      verify(untypedWorkflowStub, Mockito.times(1)).terminate(anyString());
       verify(temporalClient, Mockito.times(1)).submitConnectionUpdaterAsync(CONNECTION_ID);
     }
 
