@@ -44,7 +44,7 @@
     "billable": {
       "type": ["null", "boolean"]
     },
-    "locked": {
+    "inLockedPeriod": {
       "type": ["null", "boolean"]
     },
     "billableAmount": {
@@ -62,7 +62,7 @@
     "laborDuration": {
       "type": ["null", "number"]
     },
-    "logduration": {
+    "logDuration": {
       "type": ["null", "number"]
     },
     "expense": {
@@ -101,8 +101,11 @@
     "monthOfYear": {
       "type": ["null", "string"]
     },
-    "weekOfYear": {
+    "weekNo": {
       "type": ["null", "number"]
+    },
+    "weekOfYear": {
+      "type": ["null", "string"]
     },
     "times": {
       "type": ["null", "array"],
