@@ -4025,11 +4025,19 @@ components:
           $ref: "#/components/schemas/ConnectionStateObject"
         globalState:
           $ref: "#/components/schemas/ConnectionStateObject"
-        streamState:
+        streamStates:
           type: array
           $ref: "#/components/schemas/StreamStateObject"
     ConnectionStateObject:
       type: object
+      required:
+        - streamStates
+      properties:
+        shared:
+          $ref: "#/components/schemas/ConnectionStateObject"
+        streamStates:
+          type: array
+          $ref: "#/components/schemas/StreamStateObject"
     StreamStateObject:
       type: object
       required:
@@ -4043,8 +4051,8 @@ components:
       type: string
       enum:
         - global
-        - per_stream
-        - not_set
+        - stream
+        - legacy
     SyncCatalogChanges:
       type: object
       description: "Describe what has changed between the result of a schema discovery and the stored catalog"

@@ -680,8 +680,24 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "globalState" : {
+    "streamStates" : {
+      "streamKey" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }
+  },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "streamState" : {
+  "state" : {
+    "streamStates" : {
+      "streamKey" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      }
+    }
+  },
+  "streamStates" : {
     "streamKey" : {
       "name" : "name",
       "namespace" : "namespace"
@@ -11122,7 +11138,7 @@ font-style: italic;
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
 <div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
-<div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamStateObject">StreamStateObject</a></span>  </div>
+<div class="param">streamStates (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamStateObject">StreamStateObject</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
