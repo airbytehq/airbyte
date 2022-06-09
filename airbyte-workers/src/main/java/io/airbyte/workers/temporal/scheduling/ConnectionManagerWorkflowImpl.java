@@ -197,7 +197,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         // inject check connection true/false here
         final SyncCheckConnectionFailure syncCheckConnectionFailure =
-            checkConnections(jobInputs, connectionUpdaterInput.isRunCheck());
+            checkConnections(jobInputs, !connectionUpdaterInput.isRunCheck());
         if (syncCheckConnectionFailure.isFailed()) {
           final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
