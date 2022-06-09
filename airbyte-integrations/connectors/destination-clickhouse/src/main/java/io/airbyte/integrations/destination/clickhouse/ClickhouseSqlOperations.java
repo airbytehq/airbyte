@@ -15,9 +15,9 @@ import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.yandex.clickhouse.ClickHouseConnection;
-import ru.yandex.clickhouse.ClickHouseStatement;
-import ru.yandex.clickhouse.domain.ClickHouseFormat;
+import com.clickhouse.jdbc.ClickHouseConnection;
+import com.clickhouse.jdbc.ClickHouseStatement;
+import com.clickhouse.client.ClickHouseFormat;
 
 public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
@@ -82,7 +82,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         ClickHouseStatement sth = conn.createStatement();
         sth.write() // Write API entrypoint
             .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
-            .data(tmpFile, ClickHouseFormat.CSV) // specify input
+            .format(ClickHouseFormat.CSV) // set a format
+            .data(tmpFile.getAbsolutePath()) // specify input
             .send();
 
       } catch (final Exception e) {
