@@ -25,7 +25,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
-
+    testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
