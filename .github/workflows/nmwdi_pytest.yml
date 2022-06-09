@@ -44,6 +44,7 @@ jobs:
           source .venv/bin/activate
           pip install wheel
           pip install -r requirements.txt
+          pip install '.[tests]'
           pytest
 
       - name: Lint with flake8
