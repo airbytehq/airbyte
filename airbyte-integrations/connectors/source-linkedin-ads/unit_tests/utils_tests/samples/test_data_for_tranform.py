@@ -62,6 +62,7 @@ input_test_data = [
                 }
             }
         },
+        "pivot": "TEST_PIVOT_VALUE",
     }
 ]
 
@@ -130,5 +131,6 @@ output_test_data = [
         "lastModified": "2021-08-22 20:35:44",
         "start_date": "2021-08-13",
         "end_date": "2021-08-13",
+        "_pivot": "TEST_PIVOT_VALUE",
     }
 ]
