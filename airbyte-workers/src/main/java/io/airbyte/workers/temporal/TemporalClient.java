@@ -228,19 +228,14 @@ public class TemporalClient {
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-    log.info("PARKER: called startConnectionManagerNoSignal, got this: {} with getState: {}", connectionManagerWorkflow,
         connectionManagerWorkflow.getState());
     try {
-      log.info("PARKER: about to create while loop");
       CompletableFuture.supplyAsync(() -> {
         try {
           do {
-            log.info("PARKER: sleeping between queries");
             Thread.sleep(DELAY_BETWEEN_QUERY_MS);
           } while (!isWorkflowReachable(connectionId));
-        } catch (final InterruptedException e) {
-          log.error("PARKER: caught an interrupted exception:", e);
-        }
+        } catch (final InterruptedException e) {}
         return null;
       }).get(60, TimeUnit.SECONDS);
     } catch (final InterruptedException | ExecutionException e) {
@@ -476,7 +471,6 @@ public class TemporalClient {
       ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
       return true;
     } catch (final Exception e) {
-      log.error("PARKER: caught isWorkflowReachable exception.", e);
       return false;
     }
   }
