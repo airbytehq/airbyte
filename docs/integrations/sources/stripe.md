@@ -2,26 +2,14 @@
 
 This page guides you through the process of setting up the Stripe source connector.
 
-
-
 ## Prerequisites (Airbyte Open Source)
 
-* Stripe `Account ID` - the `Account ID` of your [Stripe Account](https://dashboard.stripe.com/settings/account)
-* Stripe `Secret Key` - the `Secret Key` to be used with [authorized API calls](https://dashboard.stripe.com/apikeys) to retrieve your Stripe data. 
-* `Lookback Window (in days)` (Optional) - the value in days, which allows you to sync your data with shift equals to the number of days set. If your data is updated after creation, you can use the this option to always reload data from the past N days. This allows you to pick up updates to the data. 
-Example usage: `Start Date` is set to "2021-01-01T00:00:00Z" then:
-    * Default is 0, meaning data will be synced from the `Start Date`.
-    * 1 - means (`Start Date` - 1 day), so the start point of the sync will be "2020-12-31T00:00:00Z"
-    * 7 - means (`Start Date` - 7 days) then `Start Date` will be "2020-12-25T00:00:00Z"
-    * 30 - means (`Start Date` - 30 days) then `Start Date` will be "2020-12-02T00:00:00Z"
-        
-## Step 1: Set up Stripe
+* Your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account)
+* Your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
+    
+    We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
 
-in the Stripe [dashboard](https://dashboard.stripe.com/apikeys) access the secret key for your account. Secret keys for the live Stripe environment will be prefixed with `sk_live_`or `rk_live`.
-
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
-
-If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_test_` API keys are also supported.
+    If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_test_` API keys are also supported.
 
 ## Step 2: Set up the source connector in Airbyte
 
