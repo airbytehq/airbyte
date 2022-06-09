@@ -27,8 +27,6 @@ class TwilioStream(HttpStream, ABC):
 
     def __init__(self, page_size: int, **kwargs):
         super().__init__(**kwargs)
-        self._page_size = page_size
-
     @property
     def data_field(self):
         return self.name
