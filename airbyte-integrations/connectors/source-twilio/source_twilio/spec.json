@@ -45,18 +45,6 @@
         "type": "integer",
         "order": 4
       },
-      "page_size": {
-        "title": "Page Size",
-        "description": "How many resources to return in each list page. The default is 50, and the maximum is 1000.",
-        "examples": [
-          500
-        ],
-        "minimum": 50,
-        "maximum": 1000,
-        "default": 50,
-        "type": "integer",
-        "order": 5
-      }
     }
   },
   "supportsIncremental": true,
