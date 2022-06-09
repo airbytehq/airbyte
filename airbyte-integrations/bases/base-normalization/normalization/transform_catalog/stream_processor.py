@@ -1197,7 +1197,7 @@ where 1 = 1
                         ) and {{ unique_key_reference }} not in (
                             select {{ unique_key }}
                             from {{ '{{ this }}' }}
-                            where _airbyte_active_row = 1 {{ normalized_at_incremental_clause }}
+                            where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
                         )
                         {{ '{% else %}' }}
                         -- We have to have a non-empty query, so just do a noop delete
@@ -1208,19 +1208,9 @@ where 1 = 1
                         delete_statement=delete_statement,
                         noop_delete_statement=noop_delete_statement,
                         final_table_name=final_table_name,
-                        quoted_final_table_name=jinja_call(self.name_transformer.apply_quote(final_table_name)),
                         unique_key=self.get_unique_key(in_jinja=False),
                         quoted_unique_key=self.get_unique_key(in_jinja=True),
-                        primary_keys=self.list_primary_keys(column_names),
-                        stg_schema=stg_schema,
-                        stg_table=stg_table,
-                        incremental_clause=self.get_incremental_clause(
-                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name)
-                        ),
-                        scd_new_data_table=scd_new_data_table,
-                        quoted_scd_new_data_table=jinja_call(scd_new_data_table),
                         active_row_column_name=active_row_column_name,
-                        scd_table=scd_table,
                         normalized_at_incremental_clause=self.get_incremental_clause_for_column(
                             "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name),
                             self.get_normalized_at(in_jinja=True),
