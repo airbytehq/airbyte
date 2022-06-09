@@ -1,7 +1,7 @@
 # Webflow Source
 
 This is the repository for the Webflow source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/webflow).
+For information about how to use this connector within Airbyte, see [Webflow source documentation](https://docs.airbyte.io/integrations/sources/webflow).
 
 ## Local development
 
@@ -41,23 +41,13 @@ To build using Gradle, from the Airbyte repository root, run:
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/webflow)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_webflow/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+Note that any directory named `secrets` is git-ignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-You should be able to create a Webflow API key at a URL such as:
-
+For more information about creating Webflow credentials, see [the documentation](https://docs.airbyte.io/integrations/sources/webflow).
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source webflow test creds`
 and place them into `secrets/config.json`.
-
-https://webflow.com/dashboard/sites/<your-site-name>/integrations. Once you have the API, you can confirm a
-list of available sites and get their "_id" by executing the following:
-
-```
-curl https://api.webflow.com/sites \
-  -H "Authorization: Bearer <your API Key>" \
-  -H "accept-version: 1.0.0"
-```
 
 ### Locally running the connector
 ```
