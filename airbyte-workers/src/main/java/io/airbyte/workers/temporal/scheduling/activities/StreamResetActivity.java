@@ -19,15 +19,6 @@ public interface StreamResetActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class GetResetsOutput {
-
-    private List<StreamDescriptor> streamDescriptorList;
-
-  }
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
   class DeleteStreamResetsInput {
 
     private UUID connectionId;
