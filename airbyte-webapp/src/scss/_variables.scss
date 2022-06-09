@@ -27,22 +27,22 @@ $border-0: 0;
 $border-1: 1px;
 $border-2: 2px;
 
-$spacing-0: 0;
-$spacing-1: 3px;
-$spacing-2: 5px;
-$spacing-3: 10px;
-$spacing-4: 15px;
-$spacing-5: 20px;
-$spacing-6: 40px;
+$spacing-none: 0;
+$spacing-xs: 3px;
+$spacing-sm: 5px;
+$spacing-m: 10px;
+$spacing-l: 15px;
+$spacing-xl: 20px;
+$spacing-2xl: 40px;
 
 $spacing-map: (
-  "0": $spacing-0,
-  "1": $spacing-1,
-  "2": $spacing-2,
-  "3": $spacing-3,
-  "4": $spacing-4,
-  "5": $spacing-5,
-  "6": $spacing-6,
+  "0": $spacing-none,
+  "1": $spacing-xs,
+  "2": $spacing-sm,
+  "3": $spacing-m,
+  "4": $spacing-l,
+  "5": $spacing-xl,
+  "6": $spacing-2xl,
   "auto": auto,
 );
 
