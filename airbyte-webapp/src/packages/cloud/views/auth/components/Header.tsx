@@ -45,11 +45,11 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ toLogin }) => {
-  const { ui } = useConfig();
+  const { links } = useConfig();
 
   return (
     <Links>
-      <BackLink href={ui.webpageLink}>
+      <BackLink href={links.webpageLink}>
         <FontAwesomeIcon icon={faArrowLeft} />
         <TextBlock>Back</TextBlock>
       </BackLink>

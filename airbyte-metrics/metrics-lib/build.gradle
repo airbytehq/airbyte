@@ -8,6 +8,12 @@ dependencies {
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
 
+    implementation libs.otel.semconv
+    implementation platform(libs.otel.bom)
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
     implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
 
     testImplementation project(':airbyte-config:config-persistence')
