@@ -1,4 +1,4 @@
-name: Python package
+name: NMWDI tests
 
 on: [push]
 
@@ -11,6 +11,8 @@ jobs:
         python-version: ["3.6", "3.7", "3.8", "3.9"]
 
     steps:
+      - name: PWD
+        run: pwd 
 
       - name: Change to HydroVu source connector directory
         run: cd ./airbyte-integrations/connectors/source-hydrovu/
