@@ -98,6 +98,12 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
+    final Optional<DatadogMetricReporter> metricReporter;
+    if (configs.getDDAgentHost() != null && configs.getDDDogStatsDPort() != null) {
+      metricReporter = Optional.of(new DatadogMetricReporter(new DatadogClientConfiguration(configs), sourceLauncherConfig.getDockerImage()));
+    } else {
+      metricReporter = Optional.ofNullable(null);
+    }
     log.info("Setting up replication worker...");
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
@@ -107,7 +113,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        Optional.of(new DatadogMetricReporter(new DatadogClientConfiguration(configs), sourceLauncherConfig.getDockerImage())));
+        metricReporter);
 
     log.info("Running replication worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
