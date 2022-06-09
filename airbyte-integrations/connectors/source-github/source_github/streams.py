@@ -684,7 +684,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
-
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
