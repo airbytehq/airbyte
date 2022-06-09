@@ -32,6 +32,24 @@ NOT_AUDIENCE_METRICS = [
     "secondary_goal_result_rate",
     "cash_spend",
     "voucher_spend",
+    "video_play_actions",
+    "video_watched_2s",
+    "video_watched_6s",
+    "average_video_play",
+    "average_video_play_per_user",
+    "video_views_p25",
+    "video_views_p50",
+    "video_views_p75",
+    "video_views_p100",
+    "profile_visits",
+    "likes",
+    "comments",
+    "shares",
+    "follows",
+    "clicks_on_music_disc",
+    "real_time_app_install",
+    "real_time_app_install_cost",
+    "app_install"
 ]
 
 T = TypeVar("T")
