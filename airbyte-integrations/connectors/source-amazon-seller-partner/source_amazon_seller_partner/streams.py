@@ -771,6 +771,13 @@ class FinanceStream(AmazonSPStream, ABC):
         if self._replication_end_date:
             end_date = self._replication_end_date
 
+        # start date and end date should not be more than 180 days apart.
+        # shifting end date in past will help the user to sync further data after taken end date
+        end_date = min(pendulum.parse(end_date), pendulum.parse(self._replication_start_date).add(days=180)).strftime(DATE_TIME_FORMAT)
+
+        # logging to make sure user knows taken end date
+        logger.info("end date used: %s", end_date)
+
         params[self.replication_end_date_field] = end_date
         return params
 
