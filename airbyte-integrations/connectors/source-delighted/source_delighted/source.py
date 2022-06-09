@@ -146,13 +146,6 @@ class SourceDelighted(AbstractSource):
         token = base64.b64encode(f"{config['api_key']}:".encode("utf-8")).decode("utf-8")
         return TokenAuthenticator(token=token, auth_method="Basic")
 
-    #Function to covert a timestamp to UNIX time format
-    def toUnix (self,config):
-        timeDate = config["since"]
-        dateFormat = datetime.datetime.strptime(timeDate, "%m-%d-%Y,%H:%M:%S")
-        unixDate = datetime.datetime.timestamp(dateFormat)
-        return unixDate
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
 
