@@ -49,7 +49,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Disabled
 class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";

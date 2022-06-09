@@ -228,7 +228,6 @@ public class TemporalClient {
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-        connectionManagerWorkflow.getState());
     try {
       CompletableFuture.supplyAsync(() -> {
         try {
