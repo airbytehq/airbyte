@@ -65,7 +65,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
           img="/videoCover.png"
-          link={config.ui.demoLink}
+          link={config.links.demoLink}
         />
       </Videos>
       <BigButton onClick={onNextStep} shadow>

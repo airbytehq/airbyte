@@ -1,8 +1,8 @@
 import { Feature } from "hooks/services/Feature";
 import { FeatureItem } from "hooks/services/Feature/types";
 
+import { links } from "./links";
 import { Config } from "./types";
-import { uiConfig } from "./uiConfig";
 
 const features: Feature[] = [
   {
@@ -23,7 +23,7 @@ const features: Feature[] = [
 ];
 
 const defaultConfig: Config = {
-  ui: uiConfig,
+  links,
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",
