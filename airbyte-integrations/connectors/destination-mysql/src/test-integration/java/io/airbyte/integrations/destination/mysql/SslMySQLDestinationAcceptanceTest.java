@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -14,10 +15,15 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
@@ -145,4 +151,14 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
     }
   }
 
+  @Test
+  public void testUserHasNoPermissionToDataBase() {
+    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    JsonNode config = ((ObjectNode) getConfig()).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
+    MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertEquals(INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
+  }
 }

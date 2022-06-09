@@ -316,10 +316,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Test
-  public void testUserHasNoPermissionToDataBase() throws SQLException {
-    final Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", db.getPassword());
-    connection.createStatement()
-        .execute("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+  public void testUserHasNoPermissionToDataBase() {
+    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
     JsonNode config = ((ObjectNode) getConfig()).put("username", USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     MySQLDestination destination = new MySQLDestination();
