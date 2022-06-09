@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -108,9 +107,9 @@ class TemporalUtilsTest {
     when(serviceSupplier.get())
         .thenThrow(RuntimeException.class)
         .thenReturn(workflowServiceStubs);
-    when(workflowServiceStubs.blockingStub().listNamespaces(any()).getNamespacesList())
+    when(workflowServiceStubs.blockingStub().describeNamespace(any()))
         .thenThrow(RuntimeException.class)
-        .thenReturn(List.of(describeNamespaceResponse));
+        .thenReturn(describeNamespaceResponse);
     getTemporalClientWhenConnected(Duration.ofMillis(10), Duration.ofSeconds(1), Duration.ofSeconds(0), serviceSupplier, namespace);
   }
 
