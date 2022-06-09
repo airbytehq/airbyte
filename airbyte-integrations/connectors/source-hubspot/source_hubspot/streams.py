@@ -334,7 +334,7 @@ class Stream(HttpStream, ABC):
         #  and the official documentation, this does not exist at the moment.
 
         group_by_pk = self.primary_key and not self.denormalize_records
-        post_processor: IRecordPostProcessor = GroupByKey() if group_by_pk else StoreAsIs()
+        post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
         for properties in split_properties(properties_list):
@@ -343,7 +343,7 @@ class Stream(HttpStream, ABC):
                 stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
             )
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
-                post_processor.add_record(record, self.primary_key)
+                post_processor.add_record(record)
 
         return post_processor.flat, response
 
