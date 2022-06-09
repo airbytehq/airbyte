@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,15 +38,16 @@ public class SnowflakeDestinationResolver {
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
-    final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
+    final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination();
+    final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination();
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
     final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination();
 
     return ImmutableMap.of(
-        DestinationType.COPY_S3, copyS3Destination,
-        DestinationType.COPY_GCS, copyGcsDestination,
+        DestinationType.COPY_S3, s3StagingDestination,
+        DestinationType.COPY_GCS, gcsStagingDestination,
         DestinationType.COPY_AZURE_BLOB, azureBlobStorageDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
+
 }

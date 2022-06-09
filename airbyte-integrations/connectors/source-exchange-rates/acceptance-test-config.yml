@@ -3,7 +3,7 @@
 connector_image: airbyte/source-exchange-rates:dev
 tests:
   spec:
-    - spec_path: "source_exchange_rates/spec.json"
+    - spec_path: "source_exchange_rates/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

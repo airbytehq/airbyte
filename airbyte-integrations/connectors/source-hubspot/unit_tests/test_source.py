@@ -1,61 +1,117 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
+from http import HTTPStatus
+from unittest.mock import MagicMock
 
+import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Workflows, split_properties
+from source_hubspot.streams import (
+    API,
+    PROPERTIES_PARAM_MAX_LENGTH,
+    Companies,
+    Deals,
+    Engagements,
+    Products,
+    Stream,
+    Workflows,
+    split_properties,
+)
+
+from .utils import read_full_refresh, read_incremental
 
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
 
 
-@pytest.fixture(name="oauth_config")
-def oauth_config_fixture():
-    return {
-        "start_date": "2021-10-10T00:00:00Z",
-        "credentials": {
-            "credentials_title": "OAuth Credentials",
-            "redirect_uri": "https://airbyte.io",
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-            "access_token": "test_access_token",
-            "token_expires": "2021-05-30T06:00:00Z",
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
+def test_check_connection_ok(requests_mock, config):
+    responses = [
+        {"json": [], "status_code": 200},
+    ]
+
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config)
+
+    assert ok
+    assert not error_msg
+
+
+def test_check_connection_empty_config(config):
+    config = {}
+
+    with pytest.raises(KeyError):
+        SourceHubspot().check_connection(logger, config=config)
+
+
+def test_check_connection_invalid_config(config):
+    config.pop("start_date")
+
+    with pytest.raises(TypeError):
+        SourceHubspot().check_connection(logger, config=config)
+
+
+def test_check_connection_exception(config):
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config)
+
+    assert not ok
+    assert error_msg
+
+
+def test_streams(config):
+    streams = SourceHubspot().streams(config)
+
+    assert len(streams) == 27
+
+
+def test_check_credential_title_exception(config):
+    config["credentials"].pop("credentials_title")
+
+    with pytest.raises(Exception):
+        SourceHubspot().check_connection(logger, config=config)
+
+
+def test_parse_and_handle_errors(some_credentials):
+    response = MagicMock()
+    response.status_code = HTTPStatus.TOO_MANY_REQUESTS
+
+    with pytest.raises(HubspotRateLimited):
+        API(some_credentials)._parse_and_handle_errors(response)
+
+
+def test_convert_datetime_to_string():
+    pendulum_time = pendulum.now()
+
+    assert Stream._convert_datetime_to_string(pendulum_time, declared_format="date")
+    assert Stream._convert_datetime_to_string(pendulum_time, declared_format="date-time")
+
+
+def test_cast_datetime(common_params, caplog):
+    field_value = pendulum.now()
+    field_name = "curent_time"
+
+    Companies(**common_params)._cast_datetime(field_name, field_value)
+
+    expected_warining_message = {
+        "type": "LOG",
+        "log": {
+            "level": "WARN",
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
         },
     }
-
-
-@pytest.fixture(name="common_params")
-def common_params_fixture(config):
-    source = SourceHubspot()
-    common_params = source.get_common_params(config=config)
-    return common_params
-
-
-@pytest.fixture(name="config")
-def config_fixture():
-    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"}}
-
-
-@pytest.fixture(name="some_credentials")
-def some_credentials_fixture():
-    return {"credentials_title": "API Key Credentials", "api_key": "wrong_key"}
-
-
-@pytest.fixture(name="creds_with_wrong_permissions")
-def creds_with_wrong_permissions():
-    return {"credentials_title": "API Key Credentials", "api_key": "THIS-IS-THE-API_KEY"}
-
-
-@pytest.fixture(name="fake_properties_list")
-def fake_properties_list():
-    return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
+    assert expected_warining_message["log"]["message"] in caplog.text
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -132,10 +188,6 @@ class TestSplittingPropertiesFunctionality:
         "archived": False,
     }
 
-    @pytest.fixture
-    def api(self, some_credentials):
-        return API(some_credentials)
-
     @staticmethod
     def set_mock_properties(requests_mock, url, fake_properties_list):
         properties_response = [
@@ -173,6 +225,10 @@ class TestSplittingPropertiesFunctionality:
 
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
+        test_stream._sync_mode = SyncMode.full_refresh
+        test_stream_url = test_stream.url
+        test_stream._sync_mode = None
+
         after_id = None
         for id_list in record_ids_paginated:
             for property_slice in parsed_properties:
@@ -190,13 +246,13 @@ class TestSplittingPropertiesFunctionality:
                 ]
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream.url}?limit=100&properties={','.join(property_slice)}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?limit=100&properties={','.join(property_slice)}{f'&after={after_id}' if after_id else ''}",
                     record_responses,
                 )
             after_id = id_list[-1]
 
         # Read preudo-output from generator object
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        stream_records = read_full_refresh(test_stream)
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
@@ -258,10 +314,12 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
+            test_stream._sync_mode = SyncMode.full_refresh
             requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+            test_stream._sync_mode = None
             ids_list.append("1092593513")
 
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        stream_records = read_full_refresh(test_stream)
 
         assert len(stream_records) == 6
 
@@ -358,10 +416,123 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
+    test_stream._sync_mode = SyncMode.incremental
     requests_mock.register_uri("POST", test_stream.url, responses)
+    test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00+00:00"
+    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
+
+
+def test_engagements_stream_pagination_works(requests_mock, common_params):
+    """
+    Tests the engagements stream handles pagination correctly, for both
+    full_refresh and incremental sync modes.
+    """
+
+    # Mocking Request
+    requests_mock.register_uri(
+        "GET",
+        "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250",
+        [
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250)],
+                    "hasMore": True,
+                    "offset": 250,
+                },
+                "status_code": 200,
+            },
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250, 500)],
+                    "hasMore": True,
+                    "offset": 500,
+                },
+                "status_code": 200,
+            },
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}} for y in range(500, 600)],
+                    "hasMore": False,
+                },
+                "status_code": 200,
+            },
+        ],
+    )
+
+    requests_mock.register_uri(
+        "GET",
+        "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100",
+        [
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                    "hasMore": True,
+                    "offset": 100,
+                },
+                "status_code": 200,
+            },
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100, 200)],
+                    "hasMore": True,
+                    "offset": 200,
+                },
+                "status_code": 200,
+            },
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(200, 250)],
+                    "hasMore": False,
+                },
+                "status_code": 200,
+            },
+        ],
+    )
+
+    # Create test_stream instance for full refresh.
+    test_stream = Engagements(**common_params)
+
+    records = read_full_refresh(test_stream)
+    # The stream should handle pagination correctly and output 600 records.
+    assert len(records) == 600
+    assert test_stream.state["lastUpdated"] == 1641234595251
+
+    records, _ = read_incremental(test_stream, {})
+    # The stream should handle pagination correctly and output 600 records.
+    assert len(records) == 250
+    assert test_stream.state["lastUpdated"] == 1641234595252
+
+
+def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
+    """
+    If there are more than 10,000 engagements that would be returned by the Hubspot recent engagements endpoint,
+    the Engagements instance should stop at the 10Kth record.
+    """
+
+    responses = [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                "hasMore": True,
+                "offset": x * 100,
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 102)
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Engagements(**common_params)
+    test_stream.state = {"lastUpdated": 1641234595251}
+
+    # Mocking Request
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
+    records, _ = read_incremental(test_stream, {})
+    # The stream should not attempt to get more than 10K records.
+    assert len(records) == 10000
+    assert test_stream.state["lastUpdated"] == +1641234595252

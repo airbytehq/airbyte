@@ -1,6 +1,62 @@
 # HubSpot
 
-## Features
+This page contains the setup guide and reference information for the HubSpot source connector.
+
+## Prerequisites
+
+Chose `start date` which is any data before this date will not be replicated and should be UTC date and time in the format 2017-01-25T00:00:00Z. 
+
+## Setup guide
+### Step 1: Set up HubSpot
+
+If you are using OAuth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
+
+| Stream | Required Scope |
+| :--- | :--- |
+| `campaigns` | `content` |
+| `companies` | `contacts` |
+| `contact_lists` | `contacts` |
+| `contacts` | `contacts` |
+| `contacts_list_memberships` | `contacts` |
+| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
+| `deals` | `contacts` |
+| `email_events` | `content` |
+| `engagements` | `contacts` |
+| `engagements_emails` | `sales-email-read` |
+| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
+| `forms` | `forms` |
+| `form_submissions`| `forms` |
+| `line_items` | `e-commerce` |
+| `owners` | `contacts` |
+| `products` | `e-commerce` |
+| `property_history` | `contacts` |
+| `quotes` | no scope required |
+| `subscription_changes` | `content` |
+| `tickets` | `tickets` |
+| `workflows` | `automation` |
+
+
+## Step 2: Set up the HubSpot connector in Airbyte
+
+### For Airbyte Cloud:
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the HubSpot connector and select **HubSpot** from the Source type dropdown. 
+4. Click `Authenticate your account` to sign in with Google and authorize your account.
+5. Fill out a `start date`.
+6. You're done.
+
+### For Airbyte OSS:
+1. Fill out a `API Key`.
+2. Fill out a `start date`.
+3. You're done.
+
+To obtain the API Key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; API Key. If you already have an API Key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+
+
+## Supported sync modes
+
+The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported? |
 | :--- | :--- |
@@ -9,13 +65,7 @@
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 
-## Troubleshooting
-
-Check out common troubleshooting issues for the HubSpot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
-
 ## Supported Streams
-
-This source is capable of syncing the following tables and their data:
 
 * [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
 * [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
@@ -57,25 +107,13 @@ Depending on the type of engagement, different properties will be set for that o
 * A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column.
 * A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
+**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
-## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
-
-#### Requirements
-
-* HubSpot Account
-* Api credentials
-* If using Oauth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
-
-{% hint style="info" %} HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day. {% endhint %}
-
-This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
-
-## Rate Limiting & Performance
+## Performance considerations
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-When connector reads the stream using `API Key` that doesn't have neccessary permissions to read particular stream, like `workflows`, which requires to be enabled in order to be processed, the log message returned to the output and sync operation goes on with other streams available.
+Some streams, such as `workflows` need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
 Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
@@ -84,41 +122,36 @@ Example of the output message when trying to read `workflows` stream with missin
     "type": "LOG",
     "log": {
         "level": "WARN",
-        "message": 'Stream `workflows` cannot be procced. This hapikey (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
+        "message": 'Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
     }
 }
 ```
 
-### Required scopes
-
-If you are using Oauth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
-
-| Stream | Required Scope |
-| :--- | :--- |
-| `campaigns` | `content` |
-| `companies` | `contacts` |
-| `contact_lists` | `contacts` |
-| `contacts` | `contacts` |
-| `contacts_list_memberships` | `contacts` |
-| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals` | `contacts` |
-| `email_events` | `content` |
-| `engagements` | `contacts` |
-| `forms` | `forms` |
-| `form_submissions`| `forms` |
-| `line_items` | `e-commerce` |
-| `owners` | `contacts` |
-| `products` | `e-commerce` |
-| `property_history` | `contacts` |
-| `quotes` | no scope required |
-| `subscription_changes` | `content` |
-| `tickets` | `tickets` |
-| `workflows` | `automation` |
+HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.67  | 2022-06-07 | [13566](https://github.com/airbytehq/airbyte/pull/13566) | Report which scopes are missing to the user                                                                                                    |
+| 0.1.66  | 2022-06-05 | [13475](https://github.com/airbytehq/airbyte/pull/13475) | Scope `crm.objects.feedback_submissions.read` added for `feedback_submissions` stream                                                          |
+| 0.1.65  | 2022-06-03 | [13455](https://github.com/airbytehq/airbyte/pull/13455) | Discover only returns streams for which required scopes were granted                                                                           |
+| 0.1.64  | 2022-06-03 | [13218](https://github.com/airbytehq/airbyte/pull/13218) | Transform `contact_lists` data to comply with schema                                                                                           |
+| 0.1.63  | 2022-06-02 | [13320](https://github.com/airbytehq/airbyte/pull/13320) | Fix connector incremental state handling                                                                                                       |
+| 0.1.62  | 2022-06-01 | [13383](https://github.com/airbytehq/airbyte/pull/13383) | Add `line items` to `deals` stream                                                                                                             |
+| 0.1.61  | 2022-05-25 | [13381](https://github.com/airbytehq/airbyte/pull/13381) | Requests scopes as optional instead of required                                                                                                |
+| 0.1.60  | 2022-05-25 | [13159](https://github.com/airbytehq/airbyte/pull/13159) | Use RFC3339 datetime                                                                                                                           |
+| 0.1.59  | 2022-05-10 | [12711](https://github.com/airbytehq/airbyte/pull/12711) | Ensure oauth2.0 token has all needed scopes in "check" command                                                                                 |
+| 0.1.58  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                                |
+| 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes                                                                                                              |
+| 0.1.56  | 2022-05-02 | [12515](https://github.com/airbytehq/airbyte/pull/12515) | Extra logs for troubleshooting 403 errors                                                                                                      |
+| 0.1.55  | 2022-04-28 | [12424](https://github.com/airbytehq/airbyte/pull/12424) | Correct schema for ticket_pipeline stream                                                                                                      |
+| 0.1.54  | 2022-04-28 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Mock time slep in unit test s                                                                                                                  |
+| 0.1.53  | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230) | Change spec json to yaml format                                                                                                                |
+| 0.1.52  | 2022-03-25 | [11423](https://github.com/airbytehq/airbyte/pull/11423) | Add tickets associations to engagements streams                                                                                                |
+| 0.1.51  | 2022-03-24 | [11321](https://github.com/airbytehq/airbyte/pull/11321) | Fix updated at field non exists issue                                                                                                          |
+| 0.1.50  | 2022-03-22 | [11266](https://github.com/airbytehq/airbyte/pull/11266) | Fix Engagements Stream Pagination                                                                                                              |
+| 0.1.49  | 2022-03-17 | [11218](https://github.com/airbytehq/airbyte/pull/11218) | Anchor hyperlink in input configuration                                                                                                        |
 | 0.1.48  | 2022-03-16 | [11105](https://github.com/airbytehq/airbyte/pull/11105) | Fix float numbers, upd docs                                                                                                                    |
 | 0.1.47  | 2022-03-15 | [11121](https://github.com/airbytehq/airbyte/pull/11121) | Add partition keys where appropriate                                                                                                           |
 | 0.1.46  | 2022-03-14 | [10700](https://github.com/airbytehq/airbyte/pull/10700) | Handle 10k+ records reading in Hubspot streams                                                                                                 |
@@ -144,7 +177,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.26  | 2021-11-30 | [8329](https://github.com/airbytehq/airbyte/pull/8329)   | Removed 'skip_dynamic_fields' config param                                                                                                     |
 | 0.1.25  | 2021-11-23 | [8216](https://github.com/airbytehq/airbyte/pull/8216)   | Add skip dynamic fields for testing only                                                                                                       |
 | 0.1.24  | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683)   | Fix name issue 'Hubspot' -> 'HubSpot'                                                                                                          |
-| 0.1.23  | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730)   | Fix oAuth flow schema                                                                                                                          |
+| 0.1.23  | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730)   | Fix OAuth flow schema                                                                                                                          |
 | 0.1.22  | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562)   | Migrate Hubspot source to CDK structure                                                                                                        |
 | 0.1.21  | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405)   | Change of package `import` from `urllib` to `urllib.parse`                                                                                     |
 | 0.1.20  | 2021-10-26 | [7393](https://github.com/airbytehq/airbyte/pull/7393)   | Hotfix for `split_properties` function, add the length of separator symbol `,`(`%2C` in HTTP format) to the checking of the summary URL length |

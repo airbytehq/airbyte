@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
-  public static final String NORMALIZATION_VERSION = "0.1.71";
+  public static final String NORMALIZATION_VERSION = "0.2.1";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
@@ -32,7 +32,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-oracle-strict-encrypt", ImmutablePair.of("airbyte/normalization-oracle", DestinationType.ORACLE))
           .put("airbyte/destination-postgres", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
           .put("airbyte/destination-postgres-strict-encrypt", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
-          .put("airbyte/destination-redshift", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.REDSHIFT))
+          .put("airbyte/destination-redshift", ImmutablePair.of("airbyte/normalization-redshift", DestinationType.REDSHIFT))
           .put("airbyte/destination-snowflake", ImmutablePair.of("airbyte/normalization-snowflake", DestinationType.SNOWFLAKE))
           .build();
 

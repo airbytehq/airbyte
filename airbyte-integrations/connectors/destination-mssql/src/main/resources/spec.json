@@ -54,11 +54,17 @@
         "airbyte_secret": true,
         "order": 5
       },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 6
+      },
       "ssl_method": {
         "title": "SSL Method",
         "type": "object",
         "description": "The encryption method which is used to communicate with the database.",
-        "order": 6,
+        "order": 7,
         "oneOf": [
           {
             "title": "Unencrypted",
@@ -69,6 +75,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "unencrypted",
                 "enum": ["unencrypted"],
                 "default": "unencrypted"
               }
@@ -83,6 +90,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_trust_server_certificate",
                 "enum": ["encrypted_trust_server_certificate"],
                 "default": "encrypted_trust_server_certificate"
               }
@@ -97,6 +105,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_verify_certificate",
                 "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
@@ -104,7 +113,7 @@
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "order": 8
               }
             }
           }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination;
@@ -20,6 +20,14 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   @Override
   public String getIdentifier(final String name) {
     return convertStreamName(name);
+  }
+
+  /**
+   * Most destinations have the same naming requirement for namespace and stream names.
+   */
+  @Override
+  public String getNamespace(final String namespace) {
+    return convertStreamName(namespace);
   }
 
   @Override

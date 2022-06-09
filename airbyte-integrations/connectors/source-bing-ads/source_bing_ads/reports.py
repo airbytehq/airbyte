@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -170,9 +170,10 @@ class ReportsMixin(ABC):
         )
         return current_stream_state
 
-    def send_request(self, params: Mapping[str, Any], account_id: str) -> _RowReport:
+    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str) -> _RowReport:
         request_kwargs = {
             "service_name": None,
+            "customer_id": customer_id,
             "account_id": account_id,
             "operation_name": self.operation_name,
             "is_report_service": True,
@@ -262,6 +263,6 @@ class ReportsMixin(ABC):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in source_bing_ads.source.Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"]}
+            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []

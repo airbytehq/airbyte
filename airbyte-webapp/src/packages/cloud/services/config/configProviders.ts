@@ -1,5 +1,6 @@
-import type { ConfigProvider } from "config/types";
 import type { CloudConfig } from "./types";
+
+import type { ConfigProvider } from "config/types";
 import { isDefined } from "utils/common";
 
 const CONFIG_PATH = "/config.json";
@@ -32,8 +33,10 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
     firebase: {
       apiKey: window.FIREBASE_API_KEY,
       authDomain: window.FIREBASE_AUTH_DOMAIN,
+      authEmulatorHost: window.FIREBASE_AUTH_EMULATOR_HOST,
     },
     cloudApiUrl: window.CLOUD_API_URL,
+    launchDarkly: window.LAUNCHDARKLY_KEY,
   };
 };
 
@@ -43,21 +46,17 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
     firebase: {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+      authEmulatorHost: process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_HOST,
     },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
-      enabled:
-        isDefined(process.env.REACT_APP_FULLSTORY) &&
-        process.env.REACT_APP_FULLSTORY !== "disabled",
+      enabled: isDefined(process.env.REACT_APP_FULLSTORY) && process.env.REACT_APP_FULLSTORY !== "disabled",
     },
     intercom: {
       appId: process.env.REACT_APP_INTERCOM_APP_ID,
     },
+    launchDarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
   };
 };
 
-export {
-  fileConfigProvider,
-  cloudWindowConfigProvider,
-  cloudEnvConfigProvider,
-};
+export { fileConfigProvider, cloudWindowConfigProvider, cloudEnvConfigProvider };

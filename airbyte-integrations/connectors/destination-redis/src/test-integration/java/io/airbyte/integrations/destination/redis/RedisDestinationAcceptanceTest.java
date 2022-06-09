@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.redis;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +67,26 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 

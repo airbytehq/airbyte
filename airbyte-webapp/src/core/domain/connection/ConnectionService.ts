@@ -1,23 +1,16 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { Connection } from "./types";
+import { deleteConnection, resetConnection, syncConnection } from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
-class ConnectionService extends AirbyteRequestService {
-  get url() {
-    return "web_backend/connections";
+export class ConnectionService extends AirbyteRequestService {
+  public sync(connectionId: string) {
+    return syncConnection({ connectionId }, this.requestOptions);
   }
 
-  public async getConnection(
-    connectionId: string,
-    withRefreshedCatalog?: boolean
-  ): Promise<Connection> {
-    const rs = ((await this.fetch(`${this.url}/get`, {
-      connectionId,
-      withRefreshedCatalog,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    })) as any) as Connection;
+  public reset(connectionId: string) {
+    return resetConnection({ connectionId }, this.requestOptions);
+  }
 
-    return rs;
+  public delete(connectionId: string) {
+    return deleteConnection({ connectionId }, this.requestOptions);
   }
 }
-
-export { ConnectionService };

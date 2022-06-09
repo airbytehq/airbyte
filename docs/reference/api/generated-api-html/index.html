@@ -259,11 +259,19 @@ font-style: italic;
   </ul>
   <h4><a href="#DestinationDefinition">DestinationDefinition</a></h4>
   <ul>
+  <li><a href="#createCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create_custom</code></a></li>
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
+  <li><a href="#deleteCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete_custom</code></a></li>
   <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
+  <li><a href="#getDestinationDefinitionForWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/get_for_workspace</code></a></li>
+  <li><a href="#grantDestinationDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/grant_definition</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
+  <li><a href="#listDestinationDefinitionsForWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/list_for_workspace</code></a></li>
   <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
+  <li><a href="#listPrivateDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_private</code></a></li>
+  <li><a href="#revokeDestinationDefinitionFromWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/revoke_definition</code></a></li>
+  <li><a href="#updateCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update_custom</code></a></li>
   <li><a href="#updateDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update</code></a></li>
   </ul>
   <h4><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h4>
@@ -332,11 +340,19 @@ font-style: italic;
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
+  <li><a href="#createCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create_custom</code></a></li>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
+  <li><a href="#deleteCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete_custom</code></a></li>
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
+  <li><a href="#getSourceDefinitionForWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/get_for_workspace</code></a></li>
+  <li><a href="#grantSourceDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></a></li>
   <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
+  <li><a href="#listPrivateSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_private</code></a></li>
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
+  <li><a href="#listSourceDefinitionsForWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/list_for_workspace</code></a></li>
+  <li><a href="#revokeSourceDefinitionFromWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/revoke_definition</code></a></li>
+  <li><a href="#updateCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update_custom</code></a></li>
   <li><a href="#updateSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update</code></a></li>
   </ul>
   <h4><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></h4>
@@ -347,6 +363,7 @@ font-style: italic;
   <ul>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
+  <li><a href="#webBackendGetWorkspaceState"><code><span class="http-method">post</span> /v1/web_backend/workspace/state</code></a></li>
   <li><a href="#webBackendListAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
@@ -402,6 +419,9 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "prefix" : "prefix",
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -412,7 +432,6 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -449,8 +468,7 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -554,6 +572,9 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "prefix" : "prefix",
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -564,7 +585,6 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -601,8 +621,7 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -720,6 +739,9 @@ font-style: italic;
     <pre class="example"><code>{
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -730,7 +752,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -767,10 +788,12 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -781,7 +804,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -818,8 +840,7 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   } ]
 }</code></pre>
 
@@ -880,6 +901,9 @@ font-style: italic;
     <pre class="example"><code>{
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -890,7 +914,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -927,10 +950,12 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -941,7 +966,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -978,8 +1002,7 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   } ]
 }</code></pre>
 
@@ -1056,11 +1079,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -1105,11 +1130,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -1202,6 +1229,9 @@ font-style: italic;
     <pre class="example"><code>{
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -1212,7 +1242,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1249,10 +1278,12 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "prefix" : "prefix",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -1263,7 +1294,6 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1300,8 +1330,7 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "operationIds" : [ null, null ]
   } ]
 }</code></pre>
 
@@ -1375,11 +1404,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -1424,11 +1455,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -1520,6 +1553,9 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "sourceCatalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "prefix" : "prefix",
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -1530,7 +1566,6 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -1567,8 +1602,7 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "namespaceFormat" : "${SOURCE_NAMESPACE}",
-  "operationIds" : [ null, null ],
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -2570,6 +2604,90 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="DestinationDefinition">DestinationDefinition</a></h1>
+  <div class="method"><a name="createCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/create_custom</code></pre></div>
+    <div class="method-summary">Creates a custom destinationDefinition for the given workspace (<span class="nickname">createCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomDestinationDefinitionCreate <a href="#CustomDestinationDefinitionCreate">CustomDestinationDefinitionCreate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="createDestinationDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2649,6 +2767,54 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/delete_custom</code></pre></div>
+    <div class="method-summary">Delete a custom destination definition for the given workspace (<span class="nickname">deleteCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The destination was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -2789,6 +2955,183 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getDestinationDefinitionForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/get_for_workspace</code></pre></div>
+    <div class="method-summary">Get a destinationDefinition that is configured for the given workspace (<span class="nickname">getDestinationDefinitionForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="grantDestinationDefinitionToWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/grant_definition</code></pre></div>
+    <div class="method-summary">grant a private, non-custom destinationDefinition to a given workspace (<span class="nickname">grantDestinationDefinitionToWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#PrivateDestinationDefinitionRead">PrivateDestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinition" : {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "granted" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#PrivateDestinationDefinitionRead">PrivateDestinationDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listDestinationDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2798,6 +3141,120 @@ font-style: italic;
 
 
 
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinitions" : [ {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listDestinationDefinitionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_for_workspace</code></pre></div>
+    <div class="method-summary">List all the destinationDefinitions the given workspace is configured to use (<span class="nickname">listDestinationDefinitionsForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
 
 
 
@@ -2993,6 +3450,261 @@ font-style: italic;
         <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="listPrivateDestinationDefinitions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_private</code></pre></div>
+    <div class="method-summary">List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants. (<span class="nickname">listPrivateDestinationDefinitions</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#PrivateDestinationDefinitionReadList">PrivateDestinationDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinitions" : [ {
+    "destinationDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "granted" : true
+  }, {
+    "destinationDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "granted" : true
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#PrivateDestinationDefinitionReadList">PrivateDestinationDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="revokeDestinationDefinitionFromWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/revoke_definition</code></pre></div>
+    <div class="method-summary">revoke a grant to a private, non-custom destinationDefinition from a given workspace (<span class="nickname">revokeDestinationDefinitionFromWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/update_custom</code></pre></div>
+    <div class="method-summary">Update a custom destinationDefinition for the given workspace (<span class="nickname">updateCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomDestinationDefinitionUpdate <a href="#CustomDestinationDefinitionUpdate">CustomDestinationDefinitionUpdate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="updateDestinationDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -3097,7 +3809,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationDefinitionIdRequestBody <a href="#DestinationDefinitionIdRequestBody">DestinationDefinitionIdRequestBody</a> (required)</div>
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -3268,11 +3980,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3317,11 +4031,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3493,11 +4209,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3542,11 +4260,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3655,11 +4375,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3704,11 +4426,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3817,11 +4541,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3861,11 +4587,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3913,11 +4641,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -3957,11 +4687,13 @@ font-style: italic;
         "failures" : [ {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
+          "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
           "timestamp" : 1
         } ],
@@ -5052,6 +5784,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -5443,7 +6176,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+      <div class="param">SourceDiscoverSchemaRequestBody <a href="#SourceDiscoverSchemaRequestBody">SourceDiscoverSchemaRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -5463,6 +6196,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "catalog" : {
     "streams" : [ {
       "stream" : {
@@ -5807,6 +6541,90 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
+  <div class="method"><a name="createCustomSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/create_custom</code></pre></div>
+    <div class="method-summary">Creates a custom sourceDefinition for the given workspace (<span class="nickname">createCustomSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomSourceDefinitionCreate <a href="#CustomSourceDefinitionCreate">CustomSourceDefinitionCreate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="createSourceDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -5886,6 +6704,54 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteCustomSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/delete_custom</code></pre></div>
+    <div class="method-summary">Delete a custom source definition for the given workspace (<span class="nickname">deleteCustomSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -6026,6 +6892,183 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getSourceDefinitionForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/get_for_workspace</code></pre></div>
+    <div class="method-summary">Get a sourceDefinition that is configured for the given workspace (<span class="nickname">getSourceDefinitionForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="grantSourceDefinitionToWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></pre></div>
+    <div class="method-summary">grant a private, non-custom sourceDefinition to a given workspace (<span class="nickname">grantSourceDefinitionToWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#PrivateSourceDefinitionRead">PrivateSourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinition" : {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "granted" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#PrivateSourceDefinitionRead">PrivateSourceDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listLatestSourceDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6128,6 +7171,126 @@ font-style: italic;
         <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="listPrivateSourceDefinitions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_private</code></pre></div>
+    <div class="method-summary">List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants. (<span class="nickname">listPrivateSourceDefinitions</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#PrivateSourceDefinitionReadList">PrivateSourceDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinitions" : [ {
+    "sourceDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "granted" : true
+  }, {
+    "sourceDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "granted" : true
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#PrivateSourceDefinitionReadList">PrivateSourceDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listSourceDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6228,6 +7391,255 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listSourceDefinitionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_for_workspace</code></pre></div>
+    <div class="method-summary">List all the sourceDefinitions the given workspace is configured to use (<span class="nickname">listSourceDefinitionsForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinitions" : [ {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="revokeSourceDefinitionFromWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/revoke_definition</code></pre></div>
+    <div class="method-summary">revoke a grant to a private, non-custom sourceDefinition from a given workspace (<span class="nickname">revokeSourceDefinitionFromWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateCustomSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/update_custom</code></pre></div>
+    <div class="method-summary">Update a custom sourceDefinition for the given workspace (<span class="nickname">updateCustomSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomSourceDefinitionUpdate <a href="#CustomSourceDefinitionUpdate">CustomSourceDefinitionUpdate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateSourceDefinition"/>
@@ -6334,7 +7746,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceDefinitionIdRequestBody <a href="#SourceDefinitionIdRequestBody">SourceDefinitionIdRequestBody</a> (required)</div>
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -6509,6 +7921,7 @@ font-style: italic;
     },
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -6666,6 +8079,7 @@ font-style: italic;
     },
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -6716,6 +8130,66 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="webBackendGetWorkspaceState"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/workspace/state</code></pre></div>
+    <div class="method-summary">Returns the current state of a workspace (<span class="nickname">webBackendGetWorkspaceState</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WebBackendWorkspaceState <a href="#WebBackendWorkspaceState">WebBackendWorkspaceState</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendWorkspaceStateResult">WebBackendWorkspaceStateResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "hasDestinations" : true,
+  "hasConnections" : true,
+  "hasSources" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendWorkspaceStateResult">WebBackendWorkspaceStateResult</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -6827,6 +8301,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -6931,6 +8406,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -7093,6 +8569,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -7197,6 +8674,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -7359,6 +8837,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -7463,6 +8942,7 @@ font-style: italic;
       },
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
+    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -7621,6 +9101,7 @@ font-style: italic;
     },
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -7729,13 +9210,15 @@ font-style: italic;
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -7856,13 +9339,15 @@ font-style: italic;
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -7938,13 +9423,15 @@ font-style: italic;
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -8009,13 +9496,15 @@ font-style: italic;
         "webhook" : "webhook"
       },
       "sendOnSuccess" : false,
-      "sendOnFailure" : true
+      "sendOnFailure" : true,
+      "customerioConfiguration" : "{}"
     }, {
       "slackConfiguration" : {
         "webhook" : "webhook"
       },
       "sendOnSuccess" : false,
-      "sendOnFailure" : true
+      "sendOnFailure" : true,
+      "customerioConfiguration" : "{}"
     } ],
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -8035,13 +9524,15 @@ font-style: italic;
         "webhook" : "webhook"
       },
       "sendOnSuccess" : false,
-      "sendOnFailure" : true
+      "sendOnFailure" : true,
+      "customerioConfiguration" : "{}"
     }, {
       "slackConfiguration" : {
         "webhook" : "webhook"
       },
       "sendOnSuccess" : false,
-      "sendOnFailure" : true
+      "sendOnFailure" : true,
+      "customerioConfiguration" : "{}"
     } ],
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -8112,13 +9603,15 @@ font-style: italic;
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -8239,13 +9732,15 @@ font-style: italic;
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
     },
     "sendOnSuccess" : false,
-    "sendOnFailure" : true
+    "sendOnFailure" : true,
+    "customerioConfiguration" : "{}"
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -8304,6 +9799,10 @@ font-style: italic;
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
+    <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
+    <li><a href="#CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a></li>
+    <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
+    <li><a href="#CustomSourceDefinitionUpdate"><code>CustomSourceDefinitionUpdate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
     <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
     <li><a href="#DbMigrationRead"><code>DbMigrationRead</code> - </a></li>
@@ -8314,6 +9813,7 @@ font-style: italic;
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionIdRequestBody"><code>DestinationDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#DestinationDefinitionIdWithWorkspaceId"><code>DestinationDefinitionIdWithWorkspaceId</code> - </a></li>
     <li><a href="#DestinationDefinitionRead"><code>DestinationDefinitionRead</code> - </a></li>
     <li><a href="#DestinationDefinitionReadList"><code>DestinationDefinitionReadList</code> - </a></li>
     <li><a href="#DestinationDefinitionSpecificationRead"><code>DestinationDefinitionSpecificationRead</code> - </a></li>
@@ -8364,6 +9864,10 @@ font-style: italic;
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
+    <li><a href="#PrivateDestinationDefinitionRead"><code>PrivateDestinationDefinitionRead</code> - </a></li>
+    <li><a href="#PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a></li>
+    <li><a href="#PrivateSourceDefinitionRead"><code>PrivateSourceDefinitionRead</code> - </a></li>
+    <li><a href="#PrivateSourceDefinitionReadList"><code>PrivateSourceDefinitionReadList</code> - </a></li>
     <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
@@ -8374,11 +9878,13 @@ font-style: italic;
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
     <li><a href="#SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#SourceDefinitionIdWithWorkspaceId"><code>SourceDefinitionIdWithWorkspaceId</code> - </a></li>
     <li><a href="#SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a></li>
     <li><a href="#SourceDefinitionReadList"><code>SourceDefinitionReadList</code> - </a></li>
     <li><a href="#SourceDefinitionSpecificationRead"><code>SourceDefinitionSpecificationRead</code> - </a></li>
     <li><a href="#SourceDefinitionUpdate"><code>SourceDefinitionUpdate</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a></li>
+    <li><a href="#SourceDiscoverSchemaRequestBody"><code>SourceDiscoverSchemaRequestBody</code> - </a></li>
     <li><a href="#SourceIdRequestBody"><code>SourceIdRequestBody</code> - </a></li>
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
@@ -8395,6 +9901,8 @@ font-style: italic;
     <li><a href="#WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
+    <li><a href="#WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a></li>
+    <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
@@ -8477,6 +9985,7 @@ font-style: italic;
       <div class="param">failureOrigin (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureOrigin">AttemptFailureOrigin</a></span>  </div>
 <div class="param">failureType (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureType">AttemptFailureType</a></span>  </div>
 <div class="param">externalMessage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">internalMessage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">stacktrace (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">retryable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known. </div>
 <div class="param">timestamp </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
@@ -8612,6 +10121,7 @@ font-style: italic;
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
+<div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -8637,6 +10147,7 @@ font-style: italic;
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
+<div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -8701,6 +10212,39 @@ font-style: italic;
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
+<div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionCreate">DestinationDefinitionCreate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionUpdate">DestinationDefinitionUpdate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionCreate">SourceDefinitionCreate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomSourceDefinitionUpdate"><code>CustomSourceDefinitionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionUpdate">SourceDefinitionUpdate</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -8786,6 +10330,14 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationDefinitionIdWithWorkspaceId"><code>DestinationDefinitionIdWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9096,6 +10648,7 @@ font-style: italic;
 <div class="param">sendOnSuccess </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">sendOnFailure </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">slackConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
+<div class="param">customerioConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9227,6 +10780,36 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="PrivateDestinationDefinitionRead"><code>PrivateDestinationDefinitionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionRead">DestinationDefinitionRead</a></span>  </div>
+<div class="param">granted </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitions </div><div class="param-desc"><span class="param-type"><a href="#PrivateDestinationDefinitionRead">array[PrivateDestinationDefinitionRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="PrivateSourceDefinitionRead"><code>PrivateSourceDefinitionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionRead">SourceDefinitionRead</a></span>  </div>
+<div class="param">granted </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="PrivateSourceDefinitionReadList"><code>PrivateSourceDefinitionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitions </div><div class="param-desc"><span class="param-type"><a href="#PrivateSourceDefinitionRead">array[PrivateSourceDefinitionRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="ReleaseStage"><code>ReleaseStage</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -9310,6 +10893,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceDefinitionIdWithWorkspaceId"><code>SourceDefinitionIdWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -9358,6 +10949,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
+<div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDiscoverSchemaRequestBody"><code>SourceDiscoverSchemaRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9462,6 +11062,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
+<div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9486,6 +11087,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
+<div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9536,6 +11138,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
+<div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9546,6 +11149,22 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">hasConnections </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">hasSources </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">hasDestinations </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

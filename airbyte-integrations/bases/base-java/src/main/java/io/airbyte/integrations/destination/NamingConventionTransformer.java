@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination;
@@ -20,6 +20,12 @@ public interface NamingConventionTransformer {
    *         destination.
    */
   String getIdentifier(String name);
+
+  /**
+   * Handle naming conversions of an input name to output a valid namespace for the desired
+   * destination.
+   */
+  String getNamespace(String namespace);
 
   /**
    * Same as getIdentifier but returns also the name of the table for storing raw data

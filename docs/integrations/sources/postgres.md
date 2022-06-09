@@ -137,7 +137,11 @@ If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2jso
 
 #### 5. Create publications and replication identities for tables
 
-For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. **You must add the replication identity before creating the publication. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.** Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+
+Please note that:
+- You must **add the replication identity before creating the publication**. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.
+- The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
@@ -233,6 +237,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `circle`                              | string         |                                                                                                                                                 |
 | `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903).         |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `hstore`                              | string         |                                                                                                                                                 |
 | `inet`                                | string         |                                                                                                                                                 |
 | `integer`, `int`, `int4`              | number         |                                                                                                                                                 |
 | `interval`                            | string         |                                                                                                                                                 |
@@ -257,7 +262,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `timetz`                              | string         |                                                                                                             |
 | `timestamp`                           | string         |                                                                                                             |
 | `timestamptz`                         | string         |                                                                                                             |
-| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsquery`                             | string         |                                                                                                             |
 | `tsvector`                            | string         |                                                                                                             |
 | `uuid`                                | string         |                                                                                                             |
 | `xml`                                 | string         |                                                                                                             |
@@ -270,10 +275,22 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.21  | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size |
+| 0.4.20  | 2022-06-02 | [13367](https://github.com/airbytehq/airbyte/pull/13367) | Added convertion hstore to json format |
+| 0.4.19  | 2022-05-25 | [13166](https://github.com/airbytehq/airbyte/pull/13166) | Added timezone awareness and handle BC dates |
+| 0.4.18  | 2022-05-25 | [13083](https://github.com/airbytehq/airbyte/pull/13083) | Add support for tsquey type |
+| 0.4.17  | 2022-05-19 | [13016](https://github.com/airbytehq/airbyte/pull/13016) | CDC modify schema to allow null values |
+| 0.4.16  | 2022-05-14 | [12840](https://github.com/airbytehq/airbyte/pull/12840) | Added custom JDBC parameters field |
+| 0.4.15  | 2022-05-13 | [12834](https://github.com/airbytehq/airbyte/pull/12834) | Fix the bug that the connector returns empty catalog for Azure Postgres database |
+| 0.4.14  | 2022-05-08 | [12689](https://github.com/airbytehq/airbyte/pull/12689) | Add table retrieval according to role-based `SELECT` privilege |
+| 0.4.13  | 2022-05-05 | [10230](https://github.com/airbytehq/airbyte/pull/10230) | Explicitly set null value for field in json  |
+| 0.4.12  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
+| 0.4.11  | 2022-04-11 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0  |
+| 0.4.10  | 2022-04-08 | [11798](https://github.com/airbytehq/airbyte/pull/11798) | Fixed roles for fetching materialized view processing |
 | 0.4.8   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
 | 0.4.7   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
 | 0.4.6   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                                       |
+| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table |
 | 0.4.4   | 2022-01-26 | [9807](https://github.com/airbytehq/airbyte/pull/9807) | Update connector fields title/description                                                                       |
 | 0.4.3   | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC                                                                          |
 | 0.4.2   | 2022-01-13 | [9360](https://github.com/airbytehq/airbyte/pull/9360) | Added schema selection                                                                                          |
@@ -311,4 +328,3 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync                                                                                        |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas                                                      |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                         |
-

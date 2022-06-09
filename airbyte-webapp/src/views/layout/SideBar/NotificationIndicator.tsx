@@ -1,8 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-import useConnector from "hooks/services/useConnector";
 import Indicator from "components/Indicator";
+
+import useConnector from "hooks/services/useConnector";
 
 const Notification = styled(Indicator)`
   position: absolute;

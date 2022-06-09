@@ -11,6 +11,7 @@ export interface CloudWorkspace {
   billingUserId: string;
   remainingCredits: number;
   creditStatus?: CreditStatus;
+  lastCreditPurchaseIncrementTimestamp?: number | null;
 }
 
 export interface CreditConsumptionByConnector {

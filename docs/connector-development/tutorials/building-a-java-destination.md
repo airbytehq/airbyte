@@ -21,13 +21,17 @@ Docker and Java with the versions listed in the [tech stack section](../../under
 * Step 7: Write unit tests or integration tests
 * Step 8: Update the docs \(in `docs/integrations/destinations/<destination-name>.md`\)
 
-{% hint style="info" %}
-All `./gradlew` commands must be run from the root of the airbyte project.
-{% endhint %}
+:::info
 
-{% hint style="info" %}
+All `./gradlew` commands must be run from the root of the airbyte project.
+
+:::
+
+:::info
+
 If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have, or ask us on [slack](https://slack.airbyte.io).
-{% endhint %}
+
+:::
 
 ## Explaining Each Step
 
@@ -51,19 +55,13 @@ You can build the destination by running:
 ./gradlew :airbyte-integrations:connectors:destination-<name>:build
 ```
 
-On Mac M1\(Apple Silicon\) machines\(until openjdk images natively support ARM64 images\) set the platform variable as shown below and build
+This compiles the Java code for your destination and builds a Docker image with the connector. At this point, we haven't implemented anything of value yet, but once we do, you'll use this command to compile your code and Docker image.
 
-```bash
-export DOCKER_BUILD_PLATFORM=linux/amd64
-# Must be run from the Airbyte project root
-./gradlew :airbyte-integrations:connectors:destination-<name>:build
-```
+:::info
 
-this compiles the java code for your destination and builds a Docker image with the connector. At this point, we haven't implemented anything of value yet, but once we do, you'll use this command to compile your code and Docker image.
-
-{% hint style="info" %}
 Airbyte uses Gradle to manage Java dependencies. To add dependencies for your connector, manage them in the `build.gradle` file inside your connector's directory.
-{% endhint %}
+
+:::
 
 #### Iterating on your implementation
 
@@ -113,6 +111,38 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 Note: Each time you make a change to your implementation you need to re-build the connector image via `./gradlew :airbyte-integrations:connectors:destination-<name>:build`.
 
 The nice thing about this approach is that you are running your destination exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
+
+#### Handling Exceptions
+
+In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../../understanding-airbyte/airbyte-specification.md#The Airbyte Protocol) implements AirbyteTraceMessage.
+
+We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
+
+Airbyte provides a static utility class, `io.airbyte.integrations.base.AirbyteTraceMessageUtility`, to give you a clear and straight-forward way to emit these AirbyteTraceMessages. Example usage:
+```java
+try {
+  // some connector code responsible for doing X
+} 
+catch (ExceptionIndicatingIncorrectCredentials credErr) {
+  AirbyteTraceMessageUtility.emitConfigErrorTrace(
+    credErr, "Connector failed due to incorrect credentials while doing X. Please check your connection is using valid credentials.")
+  throw credErr
+} 
+catch (ExceptionIndicatingKnownErrorY knownErr) {
+  AirbyteTraceMessageUtility.emitSystemErrorTrace(
+    knownErr, "Connector failed because of reason Y while doing X. Please check/do/make ... to resolve this.")
+  throw knownErr
+} 
+catch (Exception e) {
+  AirbyteTraceMessageUtility.emitSystemErrorTrace(
+    e, "Connector failed while doing X. Possible reasons for this could be ...")
+  throw e 
+}
+```
+
+Note the two different error trace methods.
+- Where possible `emitConfigErrorTrace` should be used when we are certain the issue arises from a problem with the user's input configuration, e.g. invalid credentials.
+- For everything else or if unsure, use `emitSystemErrorTrace`.
 
 ### Step 3: Implement `spec`
 
@@ -164,9 +194,11 @@ To implement the `write` Airbyte operation, implement the `getConsumer` method i
 * [Local CSV](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
 * [Postgres](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
 
-{% hint style="info" %}
+:::info
+
 The Postgres destination leverages the `AbstractJdbcDestination` superclass which makes it extremely easy to create a destination for a database or data warehouse if it has a compatible JDBC driver. If the destination you are implementing has a JDBC driver, be sure to check out `AbstractJdbcDestination`.
-{% endhint %}
+
+:::
 
 For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
 

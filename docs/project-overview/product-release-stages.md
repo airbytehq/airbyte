@@ -4,8 +4,8 @@ The following release stages describe the lifecycle of an Airbyte product, featu
 
 | Expectations | Alpha | Beta | General Availability (GA)|
 |:-------------|:------|:-----|:-------------------------|
-| Customer Availability | Alpha features and products may have limited availability (by invitation only) <br><br> Alpha connectors are available to all users | Beta features and products may have limited availability (by invitation only) <br><br> Beta connectors are available to all users | Available to all users |
-|Support | Cloud: No Support SLAs <br><br> Open-source: Community Slack Support | Cloud: Official Beta Support SLA <br><br> Open-source: Community Slack Support | Cloud: Official GA Support SLA <br><br> Open-source: Community Slack Support |
+| Customer Availability | Alpha features and products may have limited availability (by invitation only) <br/><br/> Alpha connectors are available to all users | Beta features and products may have limited availability (by invitation only) <br/><br/> Beta connectors are available to all users | Available to all users |
+|Support | Cloud: No Support SLAs <br/><br/> Open-source: Community Slack Support | Cloud: Official Beta Support SLA <br/><br/> Open-source: Community Slack Support | Cloud: Official GA Support SLA <br/><br/> Open-source: Community Slack Support |
 | Production Readiness | No | Yes (with caveats) | Yes |
 
 ## Alpha 

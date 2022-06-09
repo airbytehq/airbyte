@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {

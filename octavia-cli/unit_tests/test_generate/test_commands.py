@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -9,8 +9,8 @@ from octavia_cli.generate import commands
 
 
 @pytest.fixture
-def context_object(mocker):
-    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mocker.Mock(), "WORKSPACE_ID": "foo"}
+def context_object(mock_api_client, mock_telemetry_client):
+    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "foo", "TELEMETRY_CLIENT": mock_telemetry_client}
 
 
 def test_generate_initialized(mocker, context_object):
@@ -54,7 +54,7 @@ def test_generate_source_or_destination(mocker, context_object, command, resourc
     result = runner.invoke(command, ["uuid", resource_name], obj=context_object)
     assert result.exit_code == 0
     assert result.output == f"✅ - Created the {definition_type} template for {resource_name} in expected_output_path.\n"
-    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], "uuid")
+    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "uuid")
     commands.ConnectorSpecificationRenderer.assert_called_with(resource_name, commands.definitions.factory.return_value)
     mock_renderer.write_yaml.assert_called_with(project_path=".")
 
@@ -89,9 +89,8 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
     mocker.patch.object(commands, "ConnectionRenderer", mocker.Mock())
     mock_renderer = commands.ConnectionRenderer.return_value
     mock_renderer.write_yaml.return_value = "expected_output_path"
-    result = runner.invoke(
-        commands.connection, ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path], obj=context_object
-    )
+    cli_input = ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path]
+    result = runner.invoke(commands.connection, cli_input, obj=context_object)
     if source_created and destination_created:
         assert result.exit_code == 0
         assert result.output == "✅ - Created the connection template for my_new_connection in expected_output_path.\n"

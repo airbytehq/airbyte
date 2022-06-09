@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -8,14 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -46,16 +46,17 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            dbName),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL,
-        Map.of("zeroDateTimeBehavior", "convertToNull"));
+    final Database database = new Database(
+        DSLContextFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.MYSQL.getDriverClassName(),
+            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText()),
+            SQLDialect.MYSQL,
+            Map.of("zeroDateTimeBehavior", "convertToNull")));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -79,4 +80,5 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     // for MySQL DB name ans schema name would be the same
     return Stream.of(Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000));
   }
+
 }

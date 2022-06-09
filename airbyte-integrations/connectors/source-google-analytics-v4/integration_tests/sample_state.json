@@ -10,5 +10,5 @@
   "daily_active_users": { "ga_date": "2021-02-11" },
   "devices": { "ga_date": "2021-02-11" },
   "users_per_day": { "ga_date": "2021-02-11" },
-  "sessions_per_country_day": { "ga_date": "2021-02-11" }
+  "new_users_per_day": { "ga_date": "2021-02-11" }
 }

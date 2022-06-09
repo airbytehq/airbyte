@@ -2,9 +2,11 @@
 
 ## High-Level Overview
 
-{% hint style="info" %}
+:::info
+
 The high-level overview contains all the information you need to use Basic Normalization when pulling from APIs. Information past that can be read for advanced or educational purposes.
-{% endhint %}
+
+:::
 
 When you run your first Airbyte sync without the basic normalization, you'll notice that your data gets written to your destination as one data column with a JSON blob that contains all of your data. This is the `_airbyte_raw_` table that you may have seen before. Why do we create this table? A core tenet of ELT philosophy is that data should be untouched as it moves through the E and L stages so that the raw data is always accessible. If an unmodified version of the data exists in the destination, it can be retransformed without needing to sync data again.
 
@@ -350,6 +352,14 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.1 | 2022-05-17 | [\#12924](https://github.com/airbytehq/airbyte/pull/12924) | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
+|                 | 0.2.0 | 2022-05-15 | [\#12745](https://github.com/airbytehq/airbyte/pull/12745) | Snowflake: add datetime without timezone |
+|                 | 0.1.78 | 2022-05-06 | [\#12305](https://github.com/airbytehq/airbyte/pull/12305) | Mssql: use NVARCHAR and datetime2 by default |
+| 0.36.2-alpha    | 0.1.77 | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Add support redshift SUPER type |
+| 0.35.65-alpha   | 0.1.75 | 2022-04-09 | [\#11511](https://github.com/airbytehq/airbyte/pull/11511) | Move DBT modules from `/tmp/dbt_modules` to `/dbt` |
+| 0.35.61-alpha   | 0.1.74 | 2022-03-24 | [\#10905](https://github.com/airbytehq/airbyte/pull/10905) | Update clickhouse dbt version |
+| 0.35.60-alpha   | 0.1.73 | 2022-03-25 | [\#11267](https://github.com/airbytehq/airbyte/pull/11267) | Set `--event-buffer-size` to reduce memory usage |
+| 0.35.59-alpha   | 0.1.72 | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added Snowflake OAuth2.0 support |
 | 0.35.53-alpha   | 0.1.71 | 2022-03-14 | [\#11077](https://github.com/airbytehq/airbyte/pull/11077) | Enable BigQuery to handle project ID embedded inside dataset ID |
 | 0.35.49-alpha   | 0.1.70 | 2022-03-11 | [\#11051](https://github.com/airbytehq/airbyte/pull/11051) | Upgrade dbt to 1.0.0 (except for MySQL and Oracle) |
 | 0.35.45-alpha   | 0.1.69 | 2022-03-04 | [\#10754](https://github.com/airbytehq/airbyte/pull/10754) | Enable Clickhouse normalization over SSL |

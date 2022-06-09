@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -307,7 +307,6 @@ class IntegrationRunnerTest {
           throw new IOException("random error");
         },
         Assertions::fail,
-        false,
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
@@ -334,7 +333,6 @@ class IntegrationRunnerTest {
           throw new IOException("random error");
         },
         () -> exitCalled.set(true),
-        false,
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {

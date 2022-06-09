@@ -99,7 +99,7 @@
                 "type": ["null", "string"]
               },
               "call_duration": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
               },
               "answered_by_name": {
                 "type": ["null", "string"]
