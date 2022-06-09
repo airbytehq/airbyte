@@ -13,7 +13,6 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getCatalog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -263,4 +262,5 @@ public class PerStreamStateManagerTest {
     assertNotNull(result3);
     assertEquals(0, result3.getStreams().size());
   }
+
 }
