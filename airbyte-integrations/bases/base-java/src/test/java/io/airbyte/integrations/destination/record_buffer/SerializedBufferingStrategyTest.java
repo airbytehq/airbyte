@@ -39,7 +39,6 @@ public class SerializedBufferingStrategyTest {
   private final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
   private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> perStreamFlushHook =
       mock(CheckedBiConsumer.class);
-  private final VoidCallable flushAllHook = mock(VoidCallable.class);
 
   private final SerializableBuffer recordWriter1 = mock(SerializableBuffer.class);
   private final SerializableBuffer recordWriter2 = mock(SerializableBuffer.class);
@@ -73,7 +72,6 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message3 = generateMessage(stream2);
     final AirbyteMessage message4 = generateMessage(stream2);
     final AirbyteMessage message5 = generateMessage(stream2);
-    buffering.registerFlushAllEventHook(flushAllHook);
 
     when(recordWriter1.getByteCount()).thenReturn(10L); // one record in recordWriter1
     buffering.addRecord(stream1, message1);
@@ -81,7 +79,6 @@ public class SerializedBufferingStrategyTest {
     buffering.addRecord(stream2, message2);
 
     // Total and per stream Buffers still have room
-    verify(flushAllHook, times(0)).call();
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
 
@@ -91,7 +88,6 @@ public class SerializedBufferingStrategyTest {
     buffering.addRecord(stream2, message4);
 
     // The buffer limit is now reached for stream2, flushing that single stream only
-    verify(flushAllHook, times(0)).call();
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
 
@@ -100,7 +96,6 @@ public class SerializedBufferingStrategyTest {
 
     // force flush to terminate test
     buffering.flushAll();
-    verify(flushAllHook, times(1)).call();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(2)).accept(stream2, recordWriter2);
   }
@@ -119,12 +114,10 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message4 = generateMessage(stream1);
     final AirbyteMessage message5 = generateMessage(stream2);
     final AirbyteMessage message6 = generateMessage(stream3);
-    buffering.registerFlushAllEventHook(flushAllHook);
 
     buffering.addRecord(stream1, message1);
     buffering.addRecord(stream2, message2);
     // Total and per stream Buffers still have room
-    verify(flushAllHook, times(0)).call();
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(0)).accept(stream3, recordWriter3);
@@ -135,7 +128,6 @@ public class SerializedBufferingStrategyTest {
     when(recordWriter2.getByteCount()).thenReturn(20L); // second record in recordWriter2
     buffering.addRecord(stream2, message5);
     // Buffer limit reached for total streams, flushing all streams
-    verify(flushAllHook, times(1)).call();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);
@@ -143,7 +135,6 @@ public class SerializedBufferingStrategyTest {
     buffering.addRecord(stream3, message6);
     // force flush to terminate test
     buffering.flushAll();
-    verify(flushAllHook, times(2)).call();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(2)).accept(stream3, recordWriter3);
@@ -162,20 +153,17 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message3 = generateMessage(stream3);
     final AirbyteMessage message4 = generateMessage(stream4);
     final AirbyteMessage message5 = generateMessage(stream1);
-    buffering.registerFlushAllEventHook(flushAllHook);
 
     buffering.addRecord(stream1, message1);
     buffering.addRecord(stream2, message2);
     buffering.addRecord(stream3, message3);
     // Total and per stream Buffers still have room
-    verify(flushAllHook, times(0)).call();
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(0)).accept(stream3, recordWriter3);
 
     buffering.addRecord(stream4, message4);
     // Buffer limit reached for concurrent streams, flushing all streams
-    verify(flushAllHook, times(1)).call();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);
@@ -184,7 +172,6 @@ public class SerializedBufferingStrategyTest {
     buffering.addRecord(stream1, message5);
     // force flush to terminate test
     buffering.flushAll();
-    verify(flushAllHook, times(2)).call();
     verify(perStreamFlushHook, times(2)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);

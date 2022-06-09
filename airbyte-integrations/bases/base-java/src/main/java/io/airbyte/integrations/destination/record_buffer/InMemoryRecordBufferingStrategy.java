@@ -39,7 +39,6 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private final RecordSizeEstimator recordSizeEstimator;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
-  private VoidCallable onFlushAllEventHook;
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                          final long maxQueueSizeInBytes) {
@@ -55,20 +54,24 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.bufferSizeInBytes = 0;
     this.recordSizeEstimator = new RecordSizeEstimator();
-    this.onFlushAllEventHook = null;
   }
 
   @Override
-  public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    boolean didFlush = false;
+
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
       flushAll();
+      didFlush = true;
       bufferSizeInBytes = 0;
     }
 
     final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
     bufferedRecords.add(message.getRecord());
     bufferSizeInBytes += messageSizeInBytes;
+
+    return didFlush;
   }
 
   @Override
@@ -91,20 +94,11 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
     close();
     clear();
-
-    if (onFlushAllEventHook != null) {
-      onFlushAllEventHook.call();
-    }
   }
 
   @Override
   public void clear() {
     streamBuffer = new HashMap<>();
-  }
-
-  @Override
-  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
-    this.onFlushAllEventHook = onFlushAllEventHook;
   }
 
   @Override

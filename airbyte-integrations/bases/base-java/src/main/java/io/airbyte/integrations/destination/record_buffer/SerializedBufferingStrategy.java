@@ -27,7 +27,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
   private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush;
-  private VoidCallable onFlushAllEventHook;
 
   private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
   private long totalBufferSizeInBytes;
@@ -40,16 +39,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
     this.totalBufferSizeInBytes = 0;
-    this.onFlushAllEventHook = null;
   }
 
   @Override
-  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
-    this.onFlushAllEventHook = onFlushAllEventHook;
-  }
-
-  @Override
-  public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    boolean didFlush = false;
 
     final SerializableBuffer streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
       LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
@@ -71,10 +65,14 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
         || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
       flushAll();
+      didFlush = true;
       totalBufferSizeInBytes = 0;
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
+      // cannot mark didFlush here, because there is no guarantee that all records for a given state have been flushed.
     }
+
+    return didFlush;
   }
 
   @Override
@@ -99,9 +97,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       clear();
     }, Map.of("bufferSizeInBytes", totalBufferSizeInBytes));
 
-    if (onFlushAllEventHook != null) {
-      onFlushAllEventHook.call();
-    }
     totalBufferSizeInBytes = 0;
   }
 
