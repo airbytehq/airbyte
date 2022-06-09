@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
@@ -45,24 +49,25 @@ public class LegacyAdapterStateManagerTest {
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-                    new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
-                        .withCursor("a"),
-                    new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2)),
-                    new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
-                .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+                .withCursor("a"),
+            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2)),
+            new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
+            .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
-                    new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
-                        .withCursor("a"),
-                    new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2))
-                        .withCursor("b"),
-                    new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
-                .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
+            new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
+                .withCursor("a"),
+            new DbStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD2))
+                .withCursor("b"),
+            new DbStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
+            .stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
     final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b");
     assertEquals(expectedSecondEmission, actualSecondEmission);
   }
+
 }
