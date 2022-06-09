@@ -18,7 +18,7 @@ jobs:
         run: ls -la
 
       - name: Change to HydroVu source connector directory
-        run: cd ../../airbyte-integrations/connectors/source-hydrovu/
+        run: cd ../airbyte-integrations/connectors/source-hydrovu/
 
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
