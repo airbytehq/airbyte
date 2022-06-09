@@ -243,6 +243,7 @@ public class ConnectionManagerUtils {
         .attemptNumber(1)
         .workflowState(null)
         .resetConnection(false)
+        .runCheck(false)
         .fromJobResetFailure(false)
         .build();
   }

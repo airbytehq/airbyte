@@ -40,5 +40,6 @@ public class ConnectionUpdaterInput {
   private boolean resetConnection;
   @Builder.Default
   private boolean fromJobResetFailure = false;
+  private boolean runCheck;
 
 }
