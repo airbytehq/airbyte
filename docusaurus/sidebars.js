@@ -212,6 +212,7 @@ module.exports = {
       },
       items: [
         'contributing-to-airbyte/code-of-conduct',
+        'contributing-to-airbyte/maintainer-code-of-conduct',
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
