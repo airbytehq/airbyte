@@ -70,6 +70,7 @@ runs:
         echo ::set-output name=pid::$!
         echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
         echo "::echo::on"
+        sleep 10
 
     - name: Python Tests
       id: ci-py-tests
