@@ -55,7 +55,6 @@ The connector should be enhanced to support variable batch sizes.
 * Elasticsearch >= 7.x
 * Configuration 
   * Endpoint URL [ex. https://elasticsearch.savantly.net:9423]
-  * Port number [defaults to 9002]
   * Username [optional] (basic auth)
   * Password [optional] (basic auth)
   * Api key ID [optional]
