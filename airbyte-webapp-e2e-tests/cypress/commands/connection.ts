@@ -17,7 +17,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   cy.get("div[data-testid='connectionName']").type("Connection name");
   cy.get("div[data-testid='schedule']").click();
-  cy.get("div[data-testid='manual']").click();
+  cy.get("div[data-testid='Manual']").click();
 
   cy.get("div[data-testid='namespaceDefinition']").click();
   cy.get("div[data-testid='namespaceDefinition-source']").click();
