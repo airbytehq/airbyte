@@ -40,6 +40,9 @@ jobs:
         run: |
           cd ./airbyte-integrations/connectors/source-hydrovu/
           pwd
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
           pytest
 
       - name: Lint with flake8
