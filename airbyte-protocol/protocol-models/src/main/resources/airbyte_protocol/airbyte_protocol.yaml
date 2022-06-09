@@ -75,9 +75,7 @@ definitions:
       state_type:
         "$ref": "#/definitions/AirbyteStateType"
       stream:
-        type: array
-        items:
-          "$ref": "#/definitions/AirbyteStreamState"
+        "$ref": "#/definitions/AirbyteStreamState"
       global:
         "$ref": "#/definitions/AirbyteGlobalState"
       data:
