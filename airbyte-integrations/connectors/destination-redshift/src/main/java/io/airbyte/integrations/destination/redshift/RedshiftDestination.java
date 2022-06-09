@@ -53,10 +53,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
           "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.STANDARD;
     }
-
-    if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
-      throw new RuntimeException("Error: Partially missing S3 Configuration.");
-    }
     return DestinationType.COPY_S3;
   }
 
