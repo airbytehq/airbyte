@@ -33,6 +33,11 @@ jobs:
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      - name: PWD1
+        run: pwd 
+
+
+
       - name: Test with pytest1
         run: |
           pytest
