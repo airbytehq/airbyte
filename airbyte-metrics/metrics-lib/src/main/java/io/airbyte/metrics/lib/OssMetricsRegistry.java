@@ -105,7 +105,7 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
       "count of the number of workflow failures"),
-  NUM_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
+  NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
       "record_schema_validation_error",
       "number of record schema validation errors");
 
