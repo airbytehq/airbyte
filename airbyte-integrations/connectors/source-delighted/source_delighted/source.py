@@ -165,7 +165,7 @@ class SourceDelighted(AbstractSource):
 
         try:
             auth = self._get_authenticator(config)
-            args = {"authenticator": auth, "since": self.toUnix(config)}
+            args = {"authenticator": auth, "since": pendulum.parse(config["since"])}
             stream = SurveyResponses(**args)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
