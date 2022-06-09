@@ -26,7 +26,7 @@ const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) =>
       id="form.tooLong"
       values={{
         lnk: (...lnk: React.ReactNode[]) => (
-          <Link target="_blank" href={config.ui.technicalSupport} as="a">
+          <Link target="_blank" href={config.links.technicalSupport} as="a">
             {lnk}
           </Link>
         ),
