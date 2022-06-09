@@ -12,13 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        
-      - name: PWD
-        run: pwd 
-
-      - name: LS
-        run: ls -la
-
+  
       - name: Change to HydroVu source connector directory
         run: cd ./airbyte-integrations/connectors/source-hydrovu/
 
