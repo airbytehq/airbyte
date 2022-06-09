@@ -25,7 +25,7 @@ public class DatadogMetricReporter {
       "docker_version:" + dockerVersion,
       "stream:" + stream
     };
-    DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
+    DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
   }
 
 }
