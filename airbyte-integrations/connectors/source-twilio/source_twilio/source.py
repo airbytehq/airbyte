@@ -60,7 +60,7 @@ class SourceTwilio(AbstractSource):
                 config["auth_token"],
             ),
         )
-        full_refresh_stream_kwargs = {"authenticator": auth, "pagesize": config["page_size"]}
+        full_refresh_stream_kwargs = {"authenticator": auth}
         incremental_stream_kwargs = {
             "authenticator": auth,
             "start_date": config["start_date"],
