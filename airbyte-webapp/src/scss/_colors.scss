@@ -203,7 +203,7 @@ $theme-colors: (
   "secondary": $orange,
 );
 
-$primaryColor: #615eff;
+$primaryColor: $blue;
 $primaryColor10: rgba(98, 94, 255, 0.1);
 $primaryColor12: rgba(103, 87, 255, 0.12);
 $primaryColor25: rgba(98, 94, 255, 0.25);
@@ -216,7 +216,7 @@ $lightPrimaryColor: #edebff;
 
 $brightColor: #f7f6ff;
 
-$dangerColor: #ff5e7b;
+$dangerColor: $red;
 $dangerColor14: rgba(255, 94, 123, 0.14);
 $dangerColor25: rgba(255, 94, 123, 0.25);
 $warningColor: #ffbf00;
@@ -228,12 +228,12 @@ $successColor: #67dae1;
 $successColor10: rgba(69, 230, 152, 0.1);
 $successColor14: rgb(103, 218, 225, 0.14);
 $successColor20: rgba(69, 230, 152, 0.2);
-$backgroundColor: #fef9f4;
+$backgroundColor: $beige;
 $shadowColor: rgba(0, 0, 0, 0.25);
 $cardShadowColor: rgba(26, 25, 77, 0.12);
 
-$textColor: #1a194d;
-$lightTextColor: #afafc1;
+$textColor: $dark-blue;
+$lightTextColor: $grey;
 $textColor90: rgba(26, 26, 33, 0.9);
 $darkBlue90: rgba(26, 25, 77, 0.9);
 $greyColor80: #353542;
@@ -241,23 +241,23 @@ $greyColor70: #555461;
 $greyColor60: #6b6b75;
 $greyColor55: #868696;
 $greyColor40: #b3b3bd;
-$greyColor30: #d9d9e0;
-$greyColor20: #e8e8ed;
+$greyColor30: $grey-200;
+$greyColor20: $grey-100;
 $greyColor10: #f0f0f5;
 $greyColor0: #f7f7fa;
 
-$whiteColor: #ffffff;
-$blackColor: #000000;
-$beigeColor: #fef9f4;
-$darkBeigeColor: #ffebd7;
+$whiteColor: $white;
+$blackColor: $black;
+$beigeColor: $beige;
+$darkBeigeColor: $beige-100;
 $borderTableColor: #d3dce4;
 $lightTableColor: #f5f7f9;
-$darkGreyColor: #8b8ba0;
-$redColor: #ff6a4d;
+$darkGreyColor: $grey-400;
+$redColor: $orange;
 $lightRedColor: #ff8870;
 $redTransparentColor: rgba(255, 118, 94, 0.1);
 $whiteColor5: rgba(255, 255, 255, 0.5);
 $transparentColor: rgba(255, 255, 255, 0);
 
-$barChartColor1: #e8e8ed;
-$barChartColor2: #afafc1;
+$barChartColor1: $grey-100;
+$barChartColor2: $grey-300; // Or $grey
