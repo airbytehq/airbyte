@@ -30,6 +30,7 @@ REPORT_MAPPING = {
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
 }
+API_VERSION = "v9"
 
 
 class GoogleAds:
@@ -39,7 +40,7 @@ class GoogleAds:
         # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
         # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
         credentials["use_proto_plus"] = True
-        self.client = GoogleAdsClient.load_from_dict(credentials)
+        self.client = GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
         self.ga_service = self.client.get_service("GoogleAdsService")
 
     def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
