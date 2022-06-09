@@ -23,9 +23,10 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
+    page_size = 1000
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
-    def __init__(self, page_size: int, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
     @property
     def data_field(self):
