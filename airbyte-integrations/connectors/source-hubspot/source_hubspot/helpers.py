@@ -11,6 +11,7 @@ class IRecordPostProcessor(abc.ABC):
     The interface is designed to post process records (like group them by ID and update) after the API response is parsed and
     before they are emitted up the stack.
     """
+
     @abc.abstractmethod
     def add_record(self, record: MutableMapping):
         """"""
