@@ -996,12 +996,12 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.0"
+- dockerImage: "airbyte/destination-databricks:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Databricks Destination Spec"
+      title: "Databricks Delta Lake Destination Spec"
       type: "object"
       required:
       - "accept_terms"
@@ -1017,18 +1017,21 @@
           description: "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\"\
             >Terms & Conditions</a> to use this connector."
           default: false
+          order: 1
         databricks_server_hostname:
           title: "Server Hostname"
           type: "string"
           description: "Databricks Cluster Server Hostname."
           examples:
           - "abc-12345678-wxyz.cloud.databricks.com"
+          order: 2
         databricks_http_path:
           title: "HTTP Path"
           type: "string"
           description: "Databricks Cluster HTTP Path."
           examples:
           - "sql/protocolvx/o/1234567489/0000-1111111-abcd90"
+          order: 3
         databricks_port:
           title: "Port"
           type: "string"
@@ -1036,6 +1039,7 @@
           default: "443"
           examples:
           - "443"
+          order: 4
         databricks_personal_access_token:
           title: "Access Token"
           type: "string"
@@ -1044,6 +1048,7 @@
           examples:
           - "dapi0123456789abcdefghij0123456789AB"
           airbyte_secret: true
+          order: 5
         database_schema:
           title: "Database Schema"
           type: "string"
@@ -1053,6 +1058,7 @@
           default: "public"
           examples:
           - "public"
+          order: 6
         data_source:
           title: "Data Source"
           type: "object"
@@ -1072,6 +1078,7 @@
                 enum:
                 - "S3"
                 default: "S3"
+                order: 1
               s3_bucket_name:
                 title: "S3 Bucket Name"
                 type: "string"
@@ -1079,6 +1086,7 @@
                   \ of the data."
                 examples:
                 - "airbyte.staging"
+                order: 2
               s3_bucket_path:
                 title: "S3 Bucket Path"
                 type: "string"
@@ -1086,6 +1094,7 @@
                   \ written."
                 examples:
                 - "data_sync/test"
+                order: 3
               s3_bucket_region:
                 title: "S3 Bucket Region"
                 type: "string"
@@ -1119,6 +1128,7 @@
                 - "me-south-1"
                 - "us-gov-east-1"
                 - "us-gov-west-1"
+                order: 4
               s3_access_key_id:
                 type: "string"
                 description: "The Access Key Id granting allow one to access the above\
@@ -1128,6 +1138,7 @@
                 examples:
                 - "A012345678910EXAMPLE"
                 airbyte_secret: true
+                order: 5
               s3_secret_access_key:
                 title: "S3 Secret Access Key"
                 type: "string"
@@ -1135,11 +1146,14 @@
                 examples:
                 - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
                 airbyte_secret: true
+                order: 6
+          order: 7
         purge_staging_data:
           title: "Purge Staging Files and Tables"
           type: "boolean"
           description: "Default to 'true'. Switch it to 'false' for debugging purpose."
           default: true
+          order: 8
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -2452,7 +2466,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.18"
+- dockerImage: "airbyte/destination-mssql:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
