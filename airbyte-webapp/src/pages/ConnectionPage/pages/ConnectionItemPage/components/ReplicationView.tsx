@@ -68,14 +68,20 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
   const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
-    const initialSyncSchema = connection?.syncCatalog;
-    const connectionAsUpdate = connection ? toWebBackendConnectionUpdate(connection) : undefined;
+    if (!connection) {
+      // onSubmit should only be called when a connection object exists.
+      return;
+    }
+
+    const initialSyncSchema = connection.syncCatalog;
+    const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
     await updateConnection({
       ...connectionAsUpdate,
       ...values,
       connectionId,
-      // Use the name and status from the initial connection because these can be updating while refreshing the schema.
+      // Use the name and status from the initial connection because
+      // The status can be toggled and the name can be changed in-between refreshing the schema
       name: initialConnection.name,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
