@@ -25,6 +25,16 @@ public interface StreamResetActivity {
 
   }
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class DeleteStreamResetsInput {
+
+    private UUID connectionId;
+    private List<StreamDescriptor> streamDescriptorList;
+
+  }
+
   /**
    * Return the streams being reset for a given connection id
    */
@@ -35,6 +45,6 @@ public interface StreamResetActivity {
    * Deletes the stream_reset record corresponding to each stream descriptor passed in
    */
   @ActivityMethod
-  void deleteStreamResets(UUID connectionId, List<StreamDescriptor> streamDescriptorList);
+  void deleteStreamResets(DeleteStreamResetsInput streamsToDelete);
 
 }

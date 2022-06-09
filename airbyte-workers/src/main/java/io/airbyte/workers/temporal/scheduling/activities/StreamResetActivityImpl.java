@@ -26,7 +26,9 @@ public class StreamResetActivityImpl implements StreamResetActivity {
   }
 
   @Override
-  public void deleteStreamResets(final UUID connectionId, final List<StreamDescriptor> streamDescriptorList) {
+  public void deleteStreamResets(final DeleteStreamResetsInput streamsToDelete) {
+    final List<StreamDescriptor> streamDescriptorList = streamsToDelete.getStreamDescriptorList();
+    final UUID connectionId = streamsToDelete.getConnectionId();
     try {
       streamResetPersistence.deleteStreamResets(connectionId, streamDescriptorList);
     } catch (final Exception e) {
