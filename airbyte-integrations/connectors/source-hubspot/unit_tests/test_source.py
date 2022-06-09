@@ -244,9 +244,10 @@ class TestSplittingPropertiesFunctionality:
                         "status_code": 200,
                     }
                 ]
+                property_param_set = "&".join([f"property={prop}" for prop in property_slice])
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?limit=100&properties={','.join(property_slice)}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?limit=100&{property_param_set}{f'&after={after_id}' if after_id else ''}",
                     record_responses,
                 )
             after_id = id_list[-1]
@@ -282,7 +283,8 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
 
         stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
@@ -315,7 +317,8 @@ class TestSplittingPropertiesFunctionality:
                 }
             ]
             test_stream._sync_mode = SyncMode.full_refresh
-            requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
             test_stream._sync_mode = None
             ids_list.append("1092593513")
 

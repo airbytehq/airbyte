@@ -44,7 +44,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Apify Dataset
   sourceDefinitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
   dockerRepository: airbyte/source-apify-dataset
@@ -295,7 +295,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.31
+  dockerImageTag: 0.2.33
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -311,7 +311,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.40
+  dockerImageTag: 0.1.41
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -390,7 +390,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.67
+  dockerImageTag: 0.1.68
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -477,11 +477,11 @@
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/linkedin-ads
   icon: linkedin.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Linnworks
   sourceDefinitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
   dockerRepository: airbyte/source-linnworks

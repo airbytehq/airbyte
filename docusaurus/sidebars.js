@@ -25,206 +25,17 @@ module.exports = {
   mySidebar: [
     {
       type: 'doc',
+      label: 'Start here',
       id: "readme",
     },
     {
       type: 'category',
-      label: 'Airbyte Cloud QuickStart',
-      items: [
-          {
-            type: 'doc',
-            id: "cloud/getting-started-with-airbyte-cloud",
-          },
-          {
-            type: 'doc',
-            id: "cloud/core-concepts",
-          },
-          {
-            type: 'doc',
-            id: "cloud/managing-airbyte-cloud",
-          },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Airbyte Open Source QuickStart',
-      items: [
-        {
-          type: 'doc',
-          id: "quickstart/deploy-airbyte",
-        },
-        {
-          type: 'doc',
-          id: "quickstart/add-a-source",
-        },
-        {
-          type: 'doc',
-          id: "quickstart/add-a-destination",
-        },
-        {
-          type: 'doc',
-          id: "quickstart/set-up-a-connection",
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Documentation Help',
-      items: [
-        {
-          type: 'doc',
-          id: "docusaurus/contributing_to_docs",
-        },
-        {
-          type: 'doc',
-          id: "docusaurus/making_a_redirect",
-        },
-        {
-          type: 'doc',
-          id: "docusaurus/deploying_and_reverting_docs",
-        },
-        {
-          type: 'doc',
-          id: "docusaurus/locally_testing_docusaurus",
-        },
-        {
-          type: 'doc',
-          id: "docusaurus/readme",
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Deploying Airbyte Open Source',
-      items: [
-        {
-          type: 'doc',
-          id: "deploying-airbyte/local-deployment",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-aws-ec2",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-aws-ecs",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-azure-vm-cloud-shell",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-gcp-compute-engine",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-kubernetes",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-plural",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-oci-vm",
-        },
-        {
-          type: 'doc',
-          id: "deploying-airbyte/on-digitalocean-droplet",
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Operator Guides',
-      items: [
-        {
-          type: 'doc',
-          id: "operator-guides/upgrading-airbyte",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/reset",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/configuring-airbyte-db",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/browsing-output-logs",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/using-the-airflow-airbyte-operator",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/using-prefect-task",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/using-dagster-integration",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/locating-files-local-destination",
-        },
-        {
-          type: 'category',
-          label: 'Transformations and Normalization',
-          items: [
-            {
-              type: 'doc',
-              id: "operator-guides/transformation-and-normalization/transformations-with-sql",
-            },
-            {
-              type: 'doc',
-              id: "operator-guides/transformation-and-normalization/transformations-with-dbt",
-            },
-            {
-              type: 'doc',
-              id: "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-            },
-            ]
-          },
-        {
-          type: 'category',
-          label: 'Configuring Airbyte',
-          items: [
-            {
-               type: 'doc',
-              id: "operator-guides/configuring-airbyte",
-            },
-            {
-              type: 'doc',
-              id: "operator-guides/sentry-integration",
-            },
-            ]
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/using-custom-connectors",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/scaling-airbyte",
-        },
-        {
-          type: 'doc',
-          id: "operator-guides/securing-airbyte",
-        },
-      ]
-    },
-    {
-      type: 'category',
       label: 'Connector Catalog',
+      link: {
+        type: 'doc',
+        id: 'integrations/README',
+      },
       items: [
-        {
-            type: 'doc',
-            id: "integrations/README",
-          },
           {
             type: 'category',
             label: 'Sources',
@@ -244,278 +55,224 @@ module.exports = {
       },
     {
       type: 'category',
-      label: 'Connector Development',
+      label: 'Airbyte Cloud',
+      link: {
+        type: 'doc',
+        id: 'cloud/getting-started-with-airbyte-cloud',
+      },
       items: [
+        'cloud/core-concepts',
+        'cloud/managing-airbyte-cloud',
+
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Airbyte Open Source QuickStart',
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'quickstart/deploy-airbyte',
+        'quickstart/add-a-source',
+        'quickstart/add-a-destination',
+        'quickstart/set-up-a-connection',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Deploy Airbyte Open Source',
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'deploying-airbyte/local-deployment',
+        'deploying-airbyte/on-aws-ec2',
+        'deploying-airbyte/on-azure-vm-cloud-shell',
+        'deploying-airbyte/on-gcp-compute-engine',
+        'deploying-airbyte/on-kubernetes',
+        'deploying-airbyte/on-plural',
+        'deploying-airbyte/on-oci-vm',
+        'deploying-airbyte/on-digitalocean-droplet',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Manage Airbyte Open Source',
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'operator-guides/upgrading-airbyte',
+        'operator-guides/reset',
+        'operator-guides/configuring-airbyte-db',
+        'operator-guides/browsing-output-logs',
+        'operator-guides/using-the-airflow-airbyte-operator',
+        'operator-guides/using-prefect-task',
+        'operator-guides/using-dagster-integration',
+        'operator-guides/locating-files-local-destination',
         {
-          type: 'doc',
-          id: "connector-development/README",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/tutorials/cdk-speedrun",
-        },
+          type: 'category',
+          label: 'Transformations and Normalization',
+          items: [
+            'operator-guides/transformation-and-normalization/transformations-with-sql',
+            'operator-guides/transformation-and-normalization/transformations-with-dbt',
+            'operator-guides/transformation-and-normalization/transformations-with-airbyte',
+            ]
+          },
+          {
+            type: 'category',
+            label: 'Configuring Airbyte',
+            link: {
+              type: 'doc',
+              id: 'operator-guides/configuring-airbyte',
+            },
+            items: [
+                'operator-guides/sentry-integration',
+              ]
+          },
+        'operator-guides/using-custom-connectors',
+        'operator-guides/scaling-airbyte',
+        'operator-guides/securing-airbyte',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Troubleshoot Airbyte',
+      link: {
+        type: 'doc',
+        id: 'troubleshooting/README',
+      },
+      items: [
+        'troubleshooting/on-deploying',
+        'troubleshooting/new-connection',
+        'troubleshooting/running-sync',     
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Build a connector',
+      link: {
+        type: 'doc',
+        id: 'connector-development/README',
+      },      
+      items: [
+        'connector-development/tutorials/cdk-speedrun',
         {
           type: 'category',
           label: 'Python CDK: Creating a HTTP API Source',
           items: [
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/getting-started",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/creating-the-source",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/install-dependencies",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/define-inputs",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/connection-checking",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/declare-schema",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/read-data",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/tutorials/cdk-tutorial-python-http/test-your-connector",
-            },
+            'connector-development/tutorials/cdk-tutorial-python-http/getting-started',
+            'connector-development/tutorials/cdk-tutorial-python-http/creating-the-source',
+            'connector-development/tutorials/cdk-tutorial-python-http/install-dependencies',
+            'connector-development/tutorials/cdk-tutorial-python-http/define-inputs',
+            'connector-development/tutorials/cdk-tutorial-python-http/connection-checking',
+            'connector-development/tutorials/cdk-tutorial-python-http/declare-schema',
+            'connector-development/tutorials/cdk-tutorial-python-http/read-data',
+            'connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte',
+            'connector-development/tutorials/cdk-tutorial-python-http/test-your-connector',
           ]
         },
-        {
-          type: 'doc',
-          id: "connector-development/tutorials/building-a-python-source",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/tutorials/building-a-python-destination",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/tutorials/building-a-java-destination",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/tutorials/profile-java-connector-memory",
-        },
+        'connector-development/tutorials/building-a-python-source',
+        'connector-development/tutorials/building-a-python-destination',
+        'connector-development/tutorials/building-a-java-destination',
+        'connector-development/tutorials/profile-java-connector-memory',
         {
           type: 'category',
           label: 'Connector Development Kit (Python)',
+          link: {
+            type: 'doc',
+            id: 'connector-development/cdk-python/README',
+          },
           items: [
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/README",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/basic-concepts",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/schemas",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/full-refresh-stream",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/incremental-stream",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/http-streams",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/python-concepts",
-            },
-            {
-              type: 'doc',
-              id: "connector-development/cdk-python/stream-slices",
-            },
+            'connector-development/cdk-python/basic-concepts',
+            'connector-development/cdk-python/schemas',
+            'connector-development/cdk-python/full-refresh-stream',
+            'connector-development/cdk-python/incremental-stream',
+            'connector-development/cdk-python/http-streams',
+            'connector-development/cdk-python/python-concepts',
+            'connector-development/cdk-python/stream-slices',
           ]
         },
-        {
-          type: 'doc',
-          id: "connector-development/cdk-faros-js",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/airbyte101",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/testing-connectors/README",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/testing-connectors/source-acceptance-tests-reference",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/connector-specification-reference",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/best-practices",
-        },
-        {
-          type: 'doc',
-          id: "connector-development/ux-handbook",
-        },
+        'connector-development/cdk-faros-js',
+        'connector-development/airbyte101',
+        'connector-development/testing-connectors/README',
+        'connector-development/testing-connectors/source-acceptance-tests-reference',
+        'connector-development/connector-specification-reference',
+        'connector-development/best-practices',
+        'connector-development/ux-handbook',
       ]
     },
     {
       type: 'category',
-      label: 'Contributing to Airbyte',
+      label: 'Contribute to Airbyte',
+      link: {
+        type: 'doc',
+        id: 'contributing-to-airbyte/README',
+      },
       items: [
+        'contributing-to-airbyte/code-of-conduct',
+        'contributing-to-airbyte/developing-locally',
+        'contributing-to-airbyte/developing-on-docker',
+        'contributing-to-airbyte/developing-on-kubernetes',
+        'contributing-to-airbyte/monorepo-python-development',
+        'contributing-to-airbyte/code-style',
+        'contributing-to-airbyte/gradle-cheatsheet',
+        'contributing-to-airbyte/gradle-dependency-update',
+        'contributing-to-airbyte/monorepo-python-development',
         {
-          type: 'doc',
-          id: "contributing-to-airbyte/README",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/code-of-conduct",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/developing-locally",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/developing-on-docker",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/developing-on-kubernetes",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/monorepo-python-development",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/code-style",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/gradle-cheatsheet",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/gradle-dependency-update",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/updating-documentation",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/templates/README",
-        },
-        {
-          type: 'doc',
-          id: "contributing-to-airbyte/templates/integration-documentation-template",
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Understanding Airbyte',
-      items: [
-        {
-          type: 'doc',
-          id: "understanding-airbyte/beginners-guide-to-catalog",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/catalog",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/airbyte-specification",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/basic-normalization",
+          type: 'link',
+          label: 'Connector template',
+          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
         },
         {
           type: 'category',
-          label: 'Connections and Sync Modes',
+          label: 'Updating documentation',
+          link: {
+            type: 'doc',
+            id: 'contributing-to-airbyte/updating-documentation',
+          },
           items: [
-            {
-              type: 'doc',
-              id: "understanding-airbyte/connections/README",
-            },
-            {
-              type: 'doc',
-              id: "understanding-airbyte/connections/full-refresh-overwrite",
-            },
-            {
-              type: 'doc',
-              id: "understanding-airbyte/connections/full-refresh-append",
-            },
-            {
-              type: 'doc',
-              id: "understanding-airbyte/connections/incremental-append",
-            },
-            {
-              type: 'doc',
-              id: "understanding-airbyte/connections/incremental-deduped-history",
-            },
+            'docusaurus/contributing_to_docs',
+            'docusaurus/making_a_redirect',
+            'docusaurus/deploying_and_reverting_docs',
+            'docusaurus/locally_testing_docusaurus',
+            'docusaurus/readme',
           ]
         },
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Understand Airbyte',
+      items: [
+        'understanding-airbyte/beginners-guide-to-catalog',
+        'understanding-airbyte/catalog',
+        'understanding-airbyte/airbyte-specification',
+        'understanding-airbyte/basic-normalization',
         {
-          type: 'doc',
-          id: "understanding-airbyte/operations",
+          type: 'category',
+          label: 'Connections and Sync Modes',
+          link: {
+            type: 'doc',
+            id: 'understanding-airbyte/connections/README',
+          },
+          items: [
+            'understanding-airbyte/connections/full-refresh-overwrite',
+            'understanding-airbyte/connections/full-refresh-append',
+            'understanding-airbyte/connections/incremental-append',
+            'understanding-airbyte/connections/incremental-deduped-history',
+          ]
         },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/high-level-view",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/jobs",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/tech-stack",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/cdc",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/namespaces",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/supported-data-types",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/json-avro-conversion",
-        },
-        {
-          type: 'doc',
-          id: "understanding-airbyte/glossary",
-        },
+        'understanding-airbyte/operations',
+        'understanding-airbyte/high-level-view',
+        'understanding-airbyte/jobs',
+        'understanding-airbyte/tech-stack',
+        'understanding-airbyte/cdc',
+        'understanding-airbyte/namespaces',
+        'understanding-airbyte/supported-data-types',
+        'understanding-airbyte/json-avro-conversion',
+        'understanding-airbyte/glossary',
       ]
     },
     {
@@ -536,94 +293,38 @@ module.exports = {
           label: 'Roadmap',
           href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
         },
+        'project-overview/product-release-stages',
         {
           type: 'category',
           label: 'Changelog',
           items: [
-            {
-              type: 'doc',
-              id: "project-overview/changelog/README",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/changelog/platform",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/changelog/connectors",
-            },
+            'project-overview/changelog/README',
+            'project-overview/changelog/platform',
+            'project-overview/changelog/connectors',
           ]
         },
+        'project-overview/slack-code-of-conduct',
+        'project-overview/security',
         {
-          type: 'doc',
-          id: "project-overview/slack-code-of-conduct",
-        },
-        {
-          type: 'doc',
-          id: "project-overview/security",
+          type: 'link',
+          label: 'Airbyte Repository',
+          href: 'https://github.com/airbytehq/airbyte',
         },
         {
           type: 'category',
           label: 'Licenses',
+          link: {
+            type: 'doc',
+            id: 'project-overview/licenses/README',
+          },
           items: [
-            {
-              type: 'doc',
-              id: "project-overview/licenses/README",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/licenses/license-faq",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/licenses/elv2-license",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/licenses/mit-license",
-            },
-            {
-              type: 'doc',
-              id: "project-overview/licenses/examples",
-            },
+            'project-overview/licenses/license-faq',
+            'project-overview/licenses/elv2-license',
+            'project-overview/licenses/mit-license',
+            'project-overview/licenses/examples',
           ]
         },
-        {
-          type: 'doc',
-          id: "project-overview/product-release-stages",
-        },
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Troubleshooting & FAQ',
-      items: [
-       {
-          type: 'doc',
-          id: "troubleshooting/README",
-        },
-        {
-          type: 'doc',
-          id: "troubleshooting/on-deploying",
-        },
-        {
-          type: 'doc',
-          id: "troubleshooting/new-connection",
-        },
-        {
-          type: 'doc',
-          id: "troubleshooting/running-sync",
-        },
-        {
-          type: 'doc',
-          id: "troubleshooting/on-upgrading",
-        },
-      ]
-    },
-    {
-      type: 'link',
-      label: 'Airbyte Repository',
-      href: 'https://github.com/airbytehq/airbyte',
+      ],
     },
   ],
 }
