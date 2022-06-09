@@ -36,7 +36,7 @@ public class StateManagerFactoryTest {
   }
 
   @Test
-  void testLegacyStateManagerCreationFromAirbyteStateMessage() {
+  void testLegacyAdapterStateManagerCreationFromAirbyteStateMessage() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
     final JsonNode config = mock(JsonNode.class);
@@ -45,7 +45,7 @@ public class StateManagerFactoryTest {
     final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
 
     Assertions.assertNotNull(stateManager);
-    Assertions.assertEquals(LegacyStateManager.class, stateManager.getClass());
+    Assertions.assertEquals(LegacyAdapterStateManager.class, stateManager.getClass());
   }
 
   @Test
@@ -86,6 +86,7 @@ public class StateManagerFactoryTest {
     final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
     final JsonNode config = mock(JsonNode.class);
     when(airbyteStateMessage.getData()).thenReturn(null);
+    when(airbyteStateMessage.getStateType()).thenReturn(AirbyteStateType.PER_STREAM);
 
     final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
 

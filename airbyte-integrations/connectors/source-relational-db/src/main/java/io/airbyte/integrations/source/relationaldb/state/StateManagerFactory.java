@@ -38,8 +38,8 @@ public class StateManagerFactory {
   public static StateManager createStateManager(final Object state, final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
     if (state instanceof AirbyteStateMessage airbyteStateMessage) {
       if (airbyteStateMessage.getData() != null) {
-        LOGGER.info("Legacy state manager selected to manage state object with type {}.", state.getClass().getName());
-        return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
+        LOGGER.info("Legacy adapter state manager selected to manage state object with type {}.", state.getClass().getName());
+        return new LegacyAdapterStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
       } else if (isCdc(config)) {
         LOGGER.info("CDC state manager selected to manage state object with type {}.", state.getClass().getName());
         // TODO create proper CDC state manager
