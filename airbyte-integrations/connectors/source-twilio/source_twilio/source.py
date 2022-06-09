@@ -65,7 +65,6 @@ class SourceTwilio(AbstractSource):
             "authenticator": auth,
             "start_date": config["start_date"],
             "lookback": config["lookback"],
-            "pagesize": config["page_size"],
         }
 
         streams = [
