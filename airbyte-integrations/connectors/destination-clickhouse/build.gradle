@@ -18,7 +18,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     // https://mvnrepository.com/artifact/ru.yandex.clickhouse/clickhouse-jdbc
-    implementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1-patch'
+    implementation group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.3.2-patch9'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     testImplementation libs.connectors.destination.testcontainers.clickhouse
