@@ -13,7 +13,6 @@ from source_hydrovu.source import SourceHydrovu
 import pytest
 from pytest import fixture
 
-import requests
 import requests_mock
 import traceback
 
