@@ -319,6 +319,7 @@ class StreamProcessor(object):
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
                 column_names=column_names,
+                scd_table=from_table,
             )
         return self.find_children_streams(from_table, column_names)
 
@@ -1103,6 +1104,10 @@ where 1 = 1
     def get_incremental_clause(self, tablename: str) -> Any:
         return "{{ incremental_clause(" + self.get_emitted_at(in_jinja=True) + ", " + tablename + ") }}"
 
+    # TODO add optional param to get_incremental_clause
+    def get_incremental_clause_normalized_at(self, tablename: str) -> Any:
+        return "{{ incremental_clause(" + self.get_normalized_at(in_jinja=True) + ", " + tablename + ") }}"
+
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
@@ -1119,6 +1124,7 @@ where 1 = 1
         do_deletions: bool = False,
         column_names: Dict[str, Tuple[str, str]] = {},
         scd_new_data_table: str = "",
+        scd_table: str = "",
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -1150,19 +1156,18 @@ where 1 = 1
                     active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
                     if self.destination_type == DestinationType.CLICKHOUSE:
                         # Clickhouse has special delete syntax
-                        delete_statement = "alter table {{ final_table_relation }} delete where " + self.get_unique_key(in_jinja=False)
+                        delete_statement = "alter table {{ final_table_relation }} delete"
+                        unique_key_reference = self.get_unique_key(in_jinja=False)
                         noop_delete_statement = "alter table {{ this }} delete where 1=0"
                     elif self.destination_type == DestinationType.BIGQUERY:
                         # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
                         # it requires "delete from project.schema.table table_alias where table_alias.column in"
-                        delete_statement = "delete from {{ final_table_relation }} final_table where final_table." + self.get_unique_key(
-                            in_jinja=False
-                        )
+                        delete_statement = "delete from {{ final_table_relation }} final_table"
+                        unique_key_reference = "final_table." + self.get_unique_key(in_jinja=False)
                         noop_delete_statement = "delete from {{ this }} where 1=0"
                     else:
-                        delete_statement = "delete from {{ final_table_relation }} where {{ final_table_relation }}." + self.get_unique_key(
-                            in_jinja=False
-                        )
+                        delete_statement = "delete from {{ final_table_relation }}"
+                        unique_key_reference = "{{ final_table_relation }}." + self.get_unique_key(in_jinja=False)
                         noop_delete_statement = "delete from {{ this }} where 1=0"
                     deletion_hook = Template(
                         """
@@ -1183,37 +1188,17 @@ where 1 = 1
                         {{ '%}' }}
 
                         -- Delete records which are no longer active:
-                        -- 1. Find the records which are being updated by querying the _scd_new_data model
-                        -- 2. Then join that against the SCD model to find the records which have no row with _airbyte_active_row = 1
-                        -- We can't just delete all the modified_ids from final_table because those records might still be active, but not included
-                        -- in the most recent increment (i.e. the final table model would not re-insert them, so the data would be incorrectly lost).
-                        -- In fact, there's no guarantee that the active record is included in the previous_active_scd_data CTE either,
-                        -- so we _must_ join against the entire SCD table to find the active row for each record.
-                        -- We're using a subquery because not all destinations support CTEs in DELETE statements (c.f. Snowflake).
-                        -- Similarly, the subquery doesn't use CTEs because Clickhouse doesn't support CTEs inside delete conditions.
-                        {{ delete_statement }} in (
-                            select modified_ids.{{ unique_key }}
-                            from
-                                (
-                                    select nullif(scd_table.{{ unique_key }}, '') as {{ unique_key }} from {{ '{{ this }}' }} scd_table
--- TODO is this even necessary?
---                              inner join modified_ids on scd_table.{{ unique_key }} = modified_ids.{{ unique_key }}
-                                    where {{ active_row_column_name }} =  1
-                                ) scd_active_rows
-                                right outer join (
-                                    select
-                                        {{ '{{' }} dbt_utils.surrogate_key([
-                                            {%- for primary_key in primary_keys %}
-                                                {{ primary_key }},
-                                            {%- endfor %}
-                                        ]) {{ '}}' }} as {{ unique_key }}
-                                    from {{ quoted_scd_new_data_table }}
-                                    where 1=1
-                                        {{ incremental_clause }}
-                                ) modified_ids
-                                on modified_ids.{{ unique_key }} = scd_active_rows.{{ unique_key }}
-                            group by modified_ids.{{ unique_key }}
-                            having count(scd_active_rows.{{ unique_key }}) = 0
+                        -- The first subquery finds the most recent increment to the SCD table
+                        -- The second subquery finds, within that increment, the records which are still active
+                        -- We want to delete rows which are in that increment, but are not active
+                        {{ delete_statement }} where {{ unique_key_reference }} in (
+                            select {{ unique_key }}
+                            from {{ '{{ this }}' }}
+                            where 1 = 1 {{ normalized_at_incremental_clause }}
+                        ) and {{ unique_key_reference }} not in (
+                            select {{ unique_key }}
+                            from {{ '{{ this }}' }}
+                            where _airbyte_active_row = 1 {{ normalized_at_incremental_clause }}
                         )
                         {{ '{% else %}' }}
                         -- We have to have a non-empty query, so just do a noop delete
@@ -1236,6 +1221,11 @@ where 1 = 1
                         scd_new_data_table=scd_new_data_table,
                         quoted_scd_new_data_table=jinja_call(scd_new_data_table),
                         active_row_column_name=active_row_column_name,
+                        scd_table=scd_table,
+                        normalized_at_incremental_clause=self.get_incremental_clause_normalized_at(
+                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name)
+                        ),
+                        unique_key_reference=unique_key_reference,
                     )
                     hooks.append(deletion_hook)
 
