@@ -77,7 +77,7 @@ class TwilioStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params["PageSize"] = self._page_size
+        params["PageSize"] = self.page_size
         if next_page_token:
             params.update(**next_page_token)
         return params
