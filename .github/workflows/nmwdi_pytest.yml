@@ -14,6 +14,9 @@ jobs:
       - name: PWD
         run: pwd 
 
+      - name: LS
+        run: ls
+
       - name: Change to HydroVu source connector directory
         run: cd ./airbyte-integrations/connectors/source-hydrovu/
 
