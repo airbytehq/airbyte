@@ -102,6 +102,7 @@ class TemporalUtilsTest {
     final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
     final String namespace = "default";
 
+    when(namespaceInfo.isInitialized()).thenReturn(true);
     when(namespaceInfo.getName()).thenReturn(namespace);
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
     when(serviceSupplier.get())
