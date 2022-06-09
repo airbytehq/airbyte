@@ -14,16 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @ActivityInterface
-public interface ResetActivity {
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  class ResetInput {
-
-    private UUID connectionId;
-
-  }
+public interface StreamResetActivity {
 
   @Data
   @NoArgsConstructor
@@ -39,12 +30,6 @@ public interface ResetActivity {
    */
   @ActivityMethod
   GetResetsOutput getStreamResets(UUID connectionId);
-
-  /**
-   * Creates a stream_reset record for each stream descriptor passed in
-   */
-  @ActivityMethod
-  void createStreamResets(UUID connectionId, List<StreamDescriptor> streamDescriptorList);
 
   /**
    * Deletes the stream_reset record corresponding to each stream descriptor passed in
