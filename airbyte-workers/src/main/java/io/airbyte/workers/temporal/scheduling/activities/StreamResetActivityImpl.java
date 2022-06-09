@@ -17,15 +17,6 @@ public class StreamResetActivityImpl implements StreamResetActivity {
   private StreamResetPersistence streamResetPersistence;
 
   @Override
-  public GetResetsOutput getStreamResets(final UUID connectionId) {
-    try {
-      return new GetResetsOutput(streamResetPersistence.getStreamResets(connectionId));
-    } catch (final Exception e) {
-      throw new RetryableException(e);
-    }
-  }
-
-  @Override
   public void deleteStreamResets(final DeleteStreamResetsInput streamsToDelete) {
     final List<StreamDescriptor> streamDescriptorList = streamsToDelete.getStreamDescriptorList();
     final UUID connectionId = streamsToDelete.getConnectionId();
