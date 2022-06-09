@@ -27,9 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Collections;
 import org.postgresql.jdbc.PgResultSetMetaData;
 import org.slf4j.Logger;
@@ -79,13 +77,55 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      Date date = Date.valueOf(value);
-      preparedStatement.setDate(parameterIndex, date);
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+  public void setStatementField(final PreparedStatement preparedStatement,
+                                final int parameterIndex,
+                                final JDBCType cursorFieldType,
+                                final String value)
+          throws SQLException {
+    switch (cursorFieldType) {
+
+      case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
+      case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
+      case DATE -> setDate(preparedStatement, parameterIndex, value);
+      case BIT -> setBit(preparedStatement, parameterIndex, value);
+      case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
+      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
+      case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
+      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
+      case REAL -> setReal(preparedStatement, parameterIndex, value);
+      case NUMERIC, DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> setString(preparedStatement, parameterIndex, value);
+      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
+      // since cursor are expected to be comparable, handle cursor typing strictly and error on
+      // unrecognized types
+      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
     }
+  }
+
+  private void setTimeWithTimezone(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+  }
+
+  private void setTimestampWithTimezone(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+  }
+
+  @Override
+  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+  }
+
+  @Override
+  protected void setTime(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+  }
+
+  @Override
+  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
   @Override
