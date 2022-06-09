@@ -9,13 +9,13 @@ import { useConfig } from "config";
 
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
-export type MetricsFormProps = {
+export interface MetricsFormProps {
   onChange: (data: { anonymousDataCollection: boolean }) => void;
   anonymousDataCollection?: boolean;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   isLoading?: boolean;
-};
+}
 
 const FormItem = styled.div`
   display: flex;
@@ -61,7 +61,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
           id={"preferences.collectData"}
           values={{
             docs: (docs: React.ReactNode) => (
-              <DocsLink target="_blank" href={config.ui.docsLink}>
+              <DocsLink target="_blank" href={config.links.docsLink}>
                 {docs}
               </DocsLink>
             ),

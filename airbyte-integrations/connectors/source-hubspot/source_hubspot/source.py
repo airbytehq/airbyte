@@ -7,12 +7,14 @@ import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
 from source_hubspot.streams import (
     API,
@@ -45,42 +47,13 @@ from source_hubspot.streams import (
     Workflows,
 )
 
-SCOPES = [
-    "automation",
-    "content",
-    "crm.lists.read",
-    "crm.objects.companies.read",
-    "crm.objects.contacts.read",
-    "crm.objects.deals.read",
-    "crm.objects.feedback_submissions.read",
-    "crm.objects.owners.read",
-    "crm.schemas.companies.read",
-    "crm.schemas.contacts.read",
-    "crm.schemas.deals.read",
-    "e-commerce",
-    "files",
-    "files.ui_hidden.read",
-    "forms",
-    "forms-uploaded-files",
-    "sales-email-read",
-    "tickets",
-]
-
 
 class SourceHubspot(AbstractSource):
+    logger = AirbyteLogger()
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
         common_params = self.get_common_params(config=config)
-        if common_params.get("authenticator"):
-            access_token = common_params["authenticator"].get_access_token()
-            url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
-            try:
-                response = requests.get(url=url)
-                response.raise_for_status()
-                return self.check_scopes(response.json())
-            except Exception as e:
-                return False, repr(e)
-
         alive = True
         error_msg = None
         try:
@@ -91,13 +64,17 @@ class SourceHubspot(AbstractSource):
             error_msg = repr(error)
         return alive, error_msg
 
-    @staticmethod
-    def check_scopes(response_json):
-        granted_scopes = response_json["scopes"]
-        missed_scopes = set(SCOPES) - set(granted_scopes)
-        if missed_scopes:
-            return False, "missed required scopes: " + ", ".join(sorted(missed_scopes))
-        return True, None
+    def get_granted_scopes(self, authenticator):
+        try:
+            access_token = authenticator.get_access_token()
+            url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
+            response = requests.get(url=url)
+            response.raise_for_status()
+            response_json = response.json()
+            granted_scopes = response_json["scopes"]
+            return granted_scopes
+        except Exception as e:
+            return False, repr(e)
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:
@@ -111,7 +88,7 @@ class SourceHubspot(AbstractSource):
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
         if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator(credentials)
+            common_params["authenticator"] = api.get_authenticator()
         return common_params
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -150,7 +127,20 @@ class SourceHubspot(AbstractSource):
         if credentials_title == "API Key Credentials":
             streams.append(Quotes(**common_params))
 
-        return streams
+        api = API(credentials=credentials)
+        if api.is_oauth2():
+            authenticator = API(credentials=credentials).get_authenticator()
+            granted_scopes = self.get_granted_scopes(authenticator)
+            self.logger.info(f"The following scopes were granted: {granted_scopes}")
+
+            available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
+            unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
+            self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+        else:
+            self.logger.info("No scopes to grant when authenticating with API key.")
+            available_streams = streams
+
+        return available_streams
 
     def read(
         self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
@@ -185,7 +175,10 @@ class SourceHubspot(AbstractSource):
                         internal_config=internal_config,
                     )
                 except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     logger.info(f"Finished syncing {self.name}")

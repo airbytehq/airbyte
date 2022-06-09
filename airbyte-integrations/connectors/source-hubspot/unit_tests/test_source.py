@@ -24,6 +24,8 @@ from source_hubspot.streams import (
     split_properties,
 )
 
+from .utils import read_full_refresh, read_incremental
+
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
@@ -223,6 +225,10 @@ class TestSplittingPropertiesFunctionality:
 
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
+        test_stream._sync_mode = SyncMode.full_refresh
+        test_stream_url = test_stream.url
+        test_stream._sync_mode = None
+
         after_id = None
         for id_list in record_ids_paginated:
             for property_slice in parsed_properties:
@@ -238,15 +244,16 @@ class TestSplittingPropertiesFunctionality:
                         "status_code": 200,
                     }
                 ]
+                property_param_set = "&".join([f"property={prop}" for prop in property_slice])
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream.url}?limit=100&properties={','.join(property_slice)}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?limit=100&{property_param_set}{f'&after={after_id}' if after_id else ''}",
                     record_responses,
                 )
             after_id = id_list[-1]
 
         # Read preudo-output from generator object
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        stream_records = read_full_refresh(test_stream)
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
@@ -276,7 +283,8 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
 
         stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
@@ -308,10 +316,13 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+            test_stream._sync_mode = SyncMode.full_refresh
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
+            test_stream._sync_mode = None
             ids_list.append("1092593513")
 
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        stream_records = read_full_refresh(test_stream)
 
         assert len(stream_records) == 6
 
@@ -408,13 +419,15 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
+    test_stream._sync_mode = SyncMode.incremental
     requests_mock.register_uri("POST", test_stream.url, responses)
+    test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00+00:00"
+    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
@@ -487,12 +500,12 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     # Create test_stream instance for full refresh.
     test_stream = Engagements(**common_params)
 
-    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+    records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
     assert test_stream.state["lastUpdated"] == 1641234595251
 
-    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    records, _ = read_incremental(test_stream, {})
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 250
     assert test_stream.state["lastUpdated"] == 1641234595252
@@ -522,7 +535,7 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
 
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
-    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
     assert test_stream.state["lastUpdated"] == +1641234595252

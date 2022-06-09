@@ -4,12 +4,12 @@ import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 
-type UseCaseBlockProps = {
+interface UseCaseBlockProps {
   count: number;
   id: string;
   href: string;
   onSkip: (id: string) => void;
-};
+}
 
 const Block = styled(ContentCard)`
   margin-bottom: 10px;

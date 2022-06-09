@@ -22,6 +22,8 @@ plugins {
     id 'maven-publish'
 }
 
+apply from: "$rootDir/publish-repositories.gradle"
+
 repositories {
     mavenCentral()
 }
@@ -164,6 +166,30 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('NGINX_IMAGE', nginxImage)
         buildArgs.put('JDK_IMAGE', openjdkImage)
         buildArgs.put('VERSION', buildVersion)
+    })
+}
+
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
+    // generate a unique task name based on the directory name.
+    return task ("publishArtifact-$subproject.name" {
+        apply plugin: 'maven-publish'
+        publishing {
+            repositories {
+                publications {
+                    "$subproject.name"(MavenPublication) {
+                        from subproject.components.java
+
+                        // use the subproject group and name with the assumption there are no identical subproject
+                        // names, group names or subproject group/name combination.
+                        groupId = "$subproject.group"
+                        artifactId = "$subproject.name"
+                        version = "$buildVersion"
+                        repositories.add(rootProject.repositories.getByName('cloudrepo'))
+                    }
+                }
+            }
+        }
     })
 }
 
@@ -440,8 +466,7 @@ task('generate-docker') {
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')
-    dependsOn(':airbyte-scheduler:app:assemble')
-    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-db:db-lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
     dependsOn(':airbyte-temporal:assemble')
 }
@@ -460,52 +485,17 @@ catalog {
     }
 }
 
-//// TODO: Davin will turn this back on.
-//// Configure what subprojects to publish.
-//String[] toPublish = [
-//        ':airbyte-analytics',
-//        ':airbyte-api',
-//        ':airbyte-commons',
-//        ':airbyte-commons-docker',
-//        ':airbyte-config:init',
-//        ':airbyte-config:models',
-//        ':airbyte-config:persistence',
-//        ':airbyte-db:lib',
-//        ':airbyte-json-validation',
-//        ':airbyte-notification',
-//        ':airbyte-protocol:models',
-//        ':airbyte-scheduler:client',
-//        ':airbyte-scheduler:models',
-//        ':airbyte-scheduler:persistence',
-//        ':airbyte-server',
-//        ':airbyte-workers'
-//]
-//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-//    apply plugin: 'maven-publish'
-//
 publishing {
     publications {
-        // This block is present so Gradle knows to publish a Maven jar.
+        // This block is present for dependency catalog publishing.
         maven(MavenPublication) {
             groupId = 'io.airbyte'
             artifactId = 'oss-catalog'
 
             from components.versionCatalog
             // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+            // e.g. the subproject :airbyte-scheduler:scheduler-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
         }
     }
-
-    repositories {
-        maven {
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-        }
-
-        mavenLocal()
-    }
+    repositories.add(rootProject.repositories.getByName('cloudrepo'))
 }

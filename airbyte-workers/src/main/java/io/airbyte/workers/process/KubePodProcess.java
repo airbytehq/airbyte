@@ -9,7 +9,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -558,7 +558,8 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || KubePodResourceHelper.isTerminal(p);
     }, 20, TimeUnit.MINUTES);
-    DogStatsDMetricSingleton.recordTimeGlobal(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
+    MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS,
+        System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");

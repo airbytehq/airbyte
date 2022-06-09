@@ -26,7 +26,7 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-type FormRootProps = {
+interface FormRootProps {
   formFields: FormBlock;
   hasSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
@@ -35,7 +35,7 @@ type FormRootProps = {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-};
+}
 
 const FormRoot: React.FC<FormRootProps> = ({
   isTestConnectionInProgress = false,
@@ -53,7 +53,7 @@ const FormRoot: React.FC<FormRootProps> = ({
 
   return (
     <FormContainer>
-      <FormSection blocks={formFields} />
+      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
