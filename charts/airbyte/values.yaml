@@ -888,3 +888,8 @@ jobs:
     ##   value: "true"
     ##   effect: NoSchedule
     tolerations: []
+
+    ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+    ## image pull secret to use for job pod
+    ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+    main_container_image_pull_secret: ""
