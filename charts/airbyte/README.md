@@ -28,7 +28,7 @@ Helm charts for Airbyte.
 | `webapp.replicaCount`                       | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`                   | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`                   | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.39.13-alpha`  |
+| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.39.16-alpha`   |
 | `webapp.podAnnotations`                     | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `webapp.livenessProbe.enabled`              | Enable livenessProbe on the webapp                               | `true`           |
@@ -99,7 +99,11 @@ Helm charts for Airbyte.
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
+<<<<<<< HEAD
 | `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.39.13-alpha`  |
+=======
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.39.16-alpha`   |
+>>>>>>> master
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
@@ -133,7 +137,7 @@ Helm charts for Airbyte.
 | `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
 | `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
 | `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
-| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.39.13-alpha`  |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.39.16-alpha`   |
 | `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
 | `worker.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
