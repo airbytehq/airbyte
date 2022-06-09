@@ -3,9 +3,11 @@
 connector_image: airbyte/source-google-sheets:dev
 tests:
   spec:
-    - spec_path: "google_sheets_source/spec.json"
+    - spec_path: "google_sheets_source/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "secrets/config_with_url.json"
       status: "succeed"
     - config_path: "secrets/service_config.json"
       status: "succeed"
@@ -17,7 +19,6 @@ tests:
   discovery:
     - config_path: "secrets/service_config.json"
   basic_read:
-    # Sometimes test could fail (on weekends) because transactions could temporary disappear from Paypal Sandbox account
     - config_path: "secrets/service_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:

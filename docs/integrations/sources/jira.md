@@ -95,6 +95,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.20 | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202) | Adds resolutiondate to `fields` object on `issues` stream |
+| 0.2.19 | 2022-05-04 | [\#10835](https://github.com/airbytehq/airbyte/pull/10835) | Change description for array fields |
 | 0.2.18 | 2021-12-23 | [\#7378](https://github.com/airbytehq/airbyte/pull/7378) | Adds experimental endpoint Pull Request |
 | 0.2.17 | 2021-12-23 | [\#9079](https://github.com/airbytehq/airbyte/pull/9079) | Update schema for `filters` stream + fix fetching `filters` stream |
 | 0.2.16 | 2021-12-21 | [\#8999](https://github.com/airbytehq/airbyte/pull/8999) | Update connector fields title/description |

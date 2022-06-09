@@ -3,5 +3,10 @@ plugins {
 }
 
 dependencies {
-    // Dependencies for this module should be specified in the top-level build.gradle.
+    // Dependencies for this module should be specified in the top-level build.gradle. See readme for more explanation.
+
+    // this dependency is an exception to the above rule because it is only used INTERNALLY to the commons library.
+    implementation 'com.jayway.jsonpath:json-path:2.7.0'
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

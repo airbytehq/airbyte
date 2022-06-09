@@ -1,5 +1,5 @@
 ---
-{{- if .Values.webapp.ingress.enabled -}}
+{{ if .Values.webapp.ingress.enabled -}}
 {{- $fullName := include "airbyte.fullname" . -}}
 {{- $svcPort := .Values.webapp.service.port -}}
 {{- if and .Values.webapp.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}

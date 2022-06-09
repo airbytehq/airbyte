@@ -1,11 +1,12 @@
 import React from "react";
 import styled, { useTheme } from "styled-components";
-import Spinner from "components/Spinner";
 import { Theme } from "theme";
 
-type IProps = {
+import Spinner from "components/Spinner";
+
+interface IProps {
   full?: boolean;
-};
+}
 
 const Container = styled.div<IProps>`
   width: 100%;

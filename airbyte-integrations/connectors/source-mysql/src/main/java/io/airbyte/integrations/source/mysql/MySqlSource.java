@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -16,7 +16,9 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -46,7 +48,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
-  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
@@ -61,7 +63,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public MySqlSource() {
-    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration(), new MySqlSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MySqlSourceOperations());
   }
 
   private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
@@ -129,7 +131,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         config.get("port").asText(),
         config.get("database").asText()));
 
-    // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
+    // To fetch the result in batches, the "useCursorFetch=true" must be set.
+    // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.
+    // When using this approach MySql creates a temporary table which may have some effect on db
+    // performance.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
     // ensure the return tinyint(1) is boolean
@@ -181,8 +186,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
               catalog, true);
 
-      Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
-      MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
+      final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
+      final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
       cdcState.ifPresent(cdc -> checkBinlog(cdc.getState(), database));
       return handler.getIncrementalIterators(fetcher, new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {

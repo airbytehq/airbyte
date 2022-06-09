@@ -1,4 +1,4 @@
-# Connector Development Kit \(Python\)
+# Connector Development Kit (Python)
 
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
@@ -69,14 +69,14 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 
 ### First time setup
 
-We assume `python` points to python &gt;=3.7.
+We assume `python` points to python &gt;=3.9.
 
 Setup a virtual env:
 
 ```text
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]" # [dev] installs development-only dependencies
+pip install -e ".[tests]" # [tests] installs test-only dependencies
 ```
 
 #### Iteration

@@ -1,9 +1,9 @@
 import React from "react";
-
 import styled from "styled-components";
-import { IProps } from "components/base/Button/types";
 
-const StyledButton = styled.button<IProps>`
+import { ButtonProps } from "components/base/Button/types";
+
+const StyledButton = styled.button<ButtonProps>`
   align-items: center;
   background: #4285f4;
   border: 0 solid #4285f4;
@@ -17,8 +17,7 @@ const StyledButton = styled.button<IProps>`
   line-height: 15px;
   outline: none;
   padding: 0 10px 0 0;
-  pointer-events: ${(props) =>
-    props.wasActive && !props.clickable ? "none" : "all"};
+  pointer-events: ${(props) => (props.wasActive && !props.clickable ? "none" : "all")};
   text-align: center;
   text-decoration: none;
   width: ${(props) => (props.full ? "100%" : "auto")};
@@ -32,8 +31,7 @@ const StyledButton = styled.button<IProps>`
   }
 
   &:hover {
-    box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2),
-      0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
+    box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2), 0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
   }
 `;
 
@@ -45,10 +43,7 @@ const Img = styled.img`
 
 const GoogleAuthButton: React.FC = (props) => (
   <StyledButton {...props}>
-    <Img
-      src="/connectors/google/btn_google_light_normal_ios.svg"
-      alt={"Sign in with Google"}
-    />
+    <Img src="/connectors/google/btn_google_light_normal_ios.svg" alt={"Sign in with Google"} />
     {props.children}
   </StyledButton>
 );

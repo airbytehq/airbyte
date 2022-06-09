@@ -4,10 +4,10 @@ import styled from "styled-components";
 import BadIcon from "./BadIcon";
 import GoodIcon from "./GoodIcon";
 
-type FeedbackButtonProps = {
+interface FeedbackButtonProps {
   isBad?: boolean;
   onClick: () => void;
-};
+}
 
 const ButtonView = styled.div<FeedbackButtonProps>`
   color: ${({ theme, isBad }) => (isBad ? theme.redColor : theme.primaryColor)};

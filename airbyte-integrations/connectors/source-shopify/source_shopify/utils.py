@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -20,6 +20,7 @@ SCOPES_MAPPING = {
     "read_locations": ["Locations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
+    "read_shopify_payments_payouts": ["BalanceTransactions"],
 }
 
 

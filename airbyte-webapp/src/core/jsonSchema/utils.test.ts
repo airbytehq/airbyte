@@ -180,7 +180,7 @@ test("apply func at", () => {
 
   const applied = applyFuncAt(schema, ["ssl", 0], (sch) => {
     if (typeof sch === "boolean") {
-      return sch as any;
+      return {};
     }
 
     sch.properties = sch.properties ?? {};

@@ -1,19 +1,21 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
-import io.airbyte.api.model.ImportRequestBody;
-import io.airbyte.api.model.UploadRead;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.ImportRead;
+import io.airbyte.api.model.generated.ImportRead.StatusEnum;
+import io.airbyte.api.model.generated.ImportRequestBody;
+import io.airbyte.api.model.generated.UploadRead;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
@@ -38,6 +40,8 @@ public class ArchiveHandler {
 
   public ArchiveHandler(final AirbyteVersion version,
                         final ConfigRepository configRepository,
+                        final SecretsRepositoryReader secretsRepositoryReader,
+                        final SecretsRepositoryWriter secretsRepositoryWriter,
                         final JobPersistence jobPersistence,
                         final ConfigPersistence seed,
                         final WorkspaceHelper workspaceHelper,
@@ -46,8 +50,8 @@ public class ArchiveHandler {
     this(
         version,
         fileTtlManager,
-        new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper),
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, importDefinitions),
+        new ConfigDumpExporter(configRepository, secretsRepositoryReader, jobPersistence, workspaceHelper),
+        new ConfigDumpImporter(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, importDefinitions),
         seed);
   }
 

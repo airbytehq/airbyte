@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.redshift;
@@ -7,8 +7,10 @@ package io.airbyte.integrations.source.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -28,14 +30,14 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
-  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   private static final String SCHEMAS = "schemas";
   private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -44,9 +46,9 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
+        .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asText(),
+            redshiftConfig.get("port").asInt(),
             redshiftConfig.get("database").asText()));
 
     if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {

@@ -1,18 +1,18 @@
-export type Notification = {
+export interface Notification {
   id: string | number;
   title: string;
   text?: string;
   isError?: boolean;
   nonClosable?: boolean;
   onClose?: () => void;
-};
+}
 
-export type NotificationServiceApi = {
+export interface NotificationServiceApi {
   addNotification: (notification: Notification) => void;
   deleteNotificationById: (notificationId: string | number) => void;
   clearAll: () => void;
-};
+}
 
-export type NotificationServiceState = {
+export interface NotificationServiceState {
   notifications: Notification[];
-};
+}

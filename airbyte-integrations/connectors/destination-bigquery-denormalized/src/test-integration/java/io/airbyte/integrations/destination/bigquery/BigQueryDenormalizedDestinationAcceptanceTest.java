@@ -1,14 +1,17 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
@@ -21,28 +24,34 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.bigquery.BigQueryResultSet;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -52,11 +61,12 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final String CONFIG_DATASET_ID = "dataset_id";
-  private static final String CONFIG_PROJECT_ID = "project_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
   private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -78,7 +88,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
   }
@@ -91,6 +101,51 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   @Override
   protected boolean implementsNamespaces() {
     return true;
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new BigQueryDenormalizedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  // #13154 Normalization issue
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return false;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+    if (testCaseId.equals("S3A-1")) {
+      // bigquery allows namespace starting with a number, and prepending underscore
+      // will hide the dataset, so we don't do it as we do for other destinations
+      assertEquals("99namespace", actualNormalizedNamespace, message);
+    } else {
+      assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
+    }
   }
 
   @Override
@@ -112,42 +167,29 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    result.add(namingResolver.getIdentifier(identifier));
-    return result;
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
                 String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+            // .setUseLegacySql(false)
+            .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+            .build();
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
+    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            if (!isAirbyteColumn(field.getName()) && value != null) {
-              jsonMap.put(field.getName(), value);
-            }
-          }
-          return jsonMap;
-        })
-        .map(Jsons::jsonNode)
-        .collect(Collectors.toList());
+    return Streams.stream(queryResults.iterateAll())
+        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
   private boolean isAirbyteColumn(final String name) {
@@ -173,6 +215,21 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     }
   }
 
+  protected JsonNode createConfig() throws IOException {
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(CONFIG_PROJECT_ID, projectId)
+        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .build());
+  }
+
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
@@ -181,23 +238,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    config = createConfig();
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
 
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
-
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
-        .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
-        .build());
-
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
         .setCredentials(credentials)
@@ -224,7 +268,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 

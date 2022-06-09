@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.lang;
@@ -39,22 +39,6 @@ public class Exceptions {
    */
   public static void toRuntime(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
-  }
-
-  /**
-   * Return a Runnable that logs anonymous function exceptions.
-   *
-   * @param voidCallable
-   * @return
-   */
-  public static Runnable toSwallowExceptionRunnable(final Procedure voidCallable) {
-    return () -> {
-      try {
-        voidCallable.call();
-      } catch (Exception e) {
-        log.error("Exception: ", e);
-      }
-    };
   }
 
   public static void toIllegalState(final Procedure voidCallable) {

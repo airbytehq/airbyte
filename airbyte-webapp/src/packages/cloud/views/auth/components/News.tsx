@@ -1,13 +1,14 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
+
+import { H2, H4, H5 } from "components";
 
 import { useConfig } from "config";
 import { news } from "packages/cloud/data/news";
 
-import { H2, H4, H5 } from "components";
 import NewsItem from "./NewsItem";
 
 const Icon = styled.img`
@@ -47,7 +48,7 @@ const News: React.FC = () => {
           <NewsItemStyled key={i} {...n} />
         ))}
       </div>
-      <GitLink href={config.ui.gitLink} target="_blank">
+      <GitLink href={config.links.gitLink} target="_blank">
         <H2>
           <FormattedMessage id="login.selfhosting" />
         </H2>

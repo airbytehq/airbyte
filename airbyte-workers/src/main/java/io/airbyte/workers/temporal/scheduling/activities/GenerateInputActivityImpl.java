@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -74,6 +74,14 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     } catch (final Exception e) {
       throw new RetryableException(e);
     }
+  }
+
+  @Override
+  public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
+    return getSyncWorkflowInput(new SyncInput(
+        input.getAttemptNumber(),
+        input.getJobId(),
+        input.isReset()));
   }
 
 }

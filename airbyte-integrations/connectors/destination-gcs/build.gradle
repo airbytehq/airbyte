@@ -10,8 +10,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
@@ -30,13 +30,10 @@ dependencies {
     implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.0'
     implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
-    implementation('tech.allegro.schema.json2avro:converter') {
-        version {
-            branch = 'master'
-        }
-    }
+    implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-gcs')

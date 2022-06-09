@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.state;
@@ -17,7 +17,7 @@ import lombok.Setter;
 public class WorkflowInternalState {
 
   private Long jobId = null;
-  private Integer attemptId = null;
+  private Integer attemptNumber = null;
 
   // StandardSyncOutput standardSyncOutput = null;
   private final Set<FailureReason> failures = new HashSet<>();
