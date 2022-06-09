@@ -132,7 +132,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             params.update(
                 {
                     self.incremental_filter_field: (
-                        pendulum.parse(start_date, strict=False) - timedelta(minutes=self._lookback_window)
+                        pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
                     ).strftime(self.time_filter_template)
                 }
             )
