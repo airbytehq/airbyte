@@ -70,8 +70,8 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.cursor_field in stream_state:
-            params["updated_at[gte]"] = stream_state[self.cursor_field]
+        # Fall back to start_date if this is the first time.
+        params["updated_at[gte]"] = stream_state.get(self.cursor_field, self.start_date)
         return params
 
 
@@ -246,10 +246,24 @@ class Groups(SalesloftStream):
         return "groups"
 
 
+class SalesloftOauth2Authenticator(Oauth2Authenticator):
+    """
+    Implementation of OAuth2Authenticator that is more aggressive about
+    refreshing the access token, since Salesloft has a 2 hour expiration.
+    """
+
+    def refresh_access_token(self) -> Tuple[str, int]:
+        token, expires_in = super().refresh_access_token()
+        # Refresh at the half-life of the token.
+        # Without this, it is easy to have a token that is about to expire, and then
+        # go into a rate limit loop that ends up using an expired token.
+        return token, expires_in / 2
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def _create_authenticator(self, config):
-        return Oauth2Authenticator(
+        return SalesloftOauth2Authenticator(
             token_refresh_endpoint="https://accounts.salesloft.com/oauth/token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
