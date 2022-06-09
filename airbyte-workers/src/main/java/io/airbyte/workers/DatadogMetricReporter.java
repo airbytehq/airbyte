@@ -8,18 +8,18 @@ import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 
-public class DatadogSchemaValidationMetricReporter {
+public class DatadogMetricReporter {
 
   private final String dockerRepo;
   private final String dockerVersion;
 
-  public DatadogSchemaValidationMetricReporter(final DatadogClientConfiguration ddConfig, final String dockerImage) {
+  public DatadogMetricReporter(final DatadogClientConfiguration ddConfig, final String dockerImage) {
     final String[] dockerImageInfo = dockerImage.split(":");
     this.dockerRepo = dockerImageInfo[0];
     this.dockerVersion = dockerImageInfo.length > 1 ? dockerImageInfo[1] : "";
   }
 
-  public void track(final String stream) {
+  public void trackSchemaValidationError(final String stream) {
     final String[] validationErrorMetadata = {
       "docker_repo:" + dockerRepo,
       "docker_version:" + dockerVersion,

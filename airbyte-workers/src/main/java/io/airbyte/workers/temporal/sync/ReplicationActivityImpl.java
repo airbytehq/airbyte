@@ -218,7 +218,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
           new AirbyteMessageTracker(),
-          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)));
+          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+          Optional.ofNullable(null));
     };
   }
 
