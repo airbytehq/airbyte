@@ -16,7 +16,6 @@ class InterpolatedPaginator(Paginator):
         self._config = config
 
     def next_page_token(self, response: Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        print(f"type: {type(response)}")
         interpolated_values = self._next_page_token_template.eval(
             self._config, decoded_response=response.body, headers=response.headers, last_records=last_records
         )

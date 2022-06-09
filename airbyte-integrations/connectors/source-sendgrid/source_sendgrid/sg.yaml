@@ -3,7 +3,7 @@ url_base: https://api.sendgrid.com
 lists_path:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
-  default: /v3/marketing/lists
+  default: "/v3/marketing/lists"
 
 http_method: GET
 

@@ -302,7 +302,6 @@ class HttpStream(Stream, ABC):
                 raise exc
         global request_count
         request_count += 1
-        self.logger.info(f"sent {request_count} request")
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
