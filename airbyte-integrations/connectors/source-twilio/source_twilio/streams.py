@@ -2,9 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 from abc import ABC, abstractmethod
-from datetime import timedelta
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -18,7 +16,6 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
-
 
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
@@ -129,15 +126,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self.start_date
         if start_date:
-            params.update(
-                {
-                    self.incremental_filter_field: (
-                        pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
-                    ).strftime(self.time_filter_template)
-                }
-            )
+            start_date_with_lookback_window = pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
+            params[self.incremental_filter_field] =  start_date_with_lookback_window.strftime(self.time_filter_template)
         return params
-
+            
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = pendulum.parse(record[self.cursor_field], strict=False)
