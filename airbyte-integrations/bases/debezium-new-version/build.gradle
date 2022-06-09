@@ -14,6 +14,7 @@ dependencies {
 //    implementation 'io.debezium:debezium-connector-mysql:1.9.2.Final'
     implementation 'io.debezium:debezium-connector-postgres:1.9.2.Final'
 //    implementation 'io.debezium:debezium-connector-sqlserver:1.9.2.Final'
+    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     testFixturesImplementation project(':airbyte-db:lib')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')

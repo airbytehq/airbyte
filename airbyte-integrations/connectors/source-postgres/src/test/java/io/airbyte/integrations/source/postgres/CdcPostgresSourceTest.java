@@ -47,12 +47,12 @@ import org.testcontainers.utility.MountableFile;
 
 abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String PUBLICATION = "publication";
+  protected static final String SLOT_NAME_BASE = "debezium_slot";
+  protected static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
 
-  private String dbName;
-  private Database database;
+  protected String dbName;
+  protected Database database;
   private DSLContext dslContext;
   private PostgresSource source;
   private JsonNode config;
@@ -83,6 +83,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     dslContext = getDslContext(config);
     database = getDatabase(dslContext);
+    super.setup();
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -90,7 +91,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       return null;
     });
 
-    super.setup();
   }
 
   private JsonNode getConfig(final String dbName) {

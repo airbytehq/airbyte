@@ -171,7 +171,6 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // table selection
     final String tableWhitelist = getTableWhitelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
-    props.setProperty("database.include.list", config.get("database").asText());
 
     return props;
   }

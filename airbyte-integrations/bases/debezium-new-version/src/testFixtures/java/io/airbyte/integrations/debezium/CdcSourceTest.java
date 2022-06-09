@@ -78,7 +78,7 @@ public abstract class CdcSourceTest {
     CONFIGURED_CATALOG.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
   }
 
-  private static final List<JsonNode> MODEL_RECORDS = ImmutableList.of(
+  protected static final List<JsonNode> MODEL_RECORDS = ImmutableList.of(
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 11, COL_MAKE_ID, 1, COL_MODEL, "Fiesta")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 12, COL_MAKE_ID, 1, COL_MODEL, "Focus")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 13, COL_MAKE_ID, 1, COL_MODEL, "Ranger")),
@@ -185,7 +185,7 @@ public abstract class CdcSourceTest {
     }
   }
 
-  private void writeModelRecord(final JsonNode recordJson) {
+  protected void writeModelRecord(final JsonNode recordJson) {
     writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL);
   }
 
@@ -203,7 +203,7 @@ public abstract class CdcSourceTest {
             recordJson.get(modelCol).asText()));
   }
 
-  private static Set<AirbyteRecordMessage> removeDuplicates(final Set<AirbyteRecordMessage> messages) {
+  protected static Set<AirbyteRecordMessage> removeDuplicates(final Set<AirbyteRecordMessage> messages) {
     final Set<JsonNode> existingDataRecordsWithoutUpdated = new HashSet<>();
     final Set<AirbyteRecordMessage> output = new HashSet<>();
 
@@ -235,7 +235,7 @@ public abstract class CdcSourceTest {
     return recordMessageSet;
   }
 
-  private List<AirbyteStateMessage> extractStateMessages(final List<AirbyteMessage> messages) {
+  protected List<AirbyteStateMessage> extractStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
@@ -366,7 +366,7 @@ public abstract class CdcSourceTest {
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
   @Test
   @DisplayName("Verify that when data is inserted into the database while a sync is happening and after the first sync, it all gets replicated.")
-  void testRecordsProducedDuringAndAfterSync() throws Exception {
+  protected void testRecordsProducedDuringAndAfterSync() throws Exception {
 
     final int recordsToCreate = 20;
     final int[] recordsCreated = {0};

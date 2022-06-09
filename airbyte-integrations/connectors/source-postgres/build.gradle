@@ -21,7 +21,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-new-version'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
