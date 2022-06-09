@@ -10818,7 +10818,7 @@ font-style: italic;
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
-    <li><a href="#StreamKey"><code>StreamKey</code> - </a></li>
+    <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
     <li><a href="#StreamStateObject"><code>StreamStateObject</code> - </a></li>
     <li><a href="#StreamUpdate"><code>StreamUpdate</code> - </a></li>
     <li><a href="#SyncCatalogChanges"><code>SyncCatalogChanges</code> - </a></li>
@@ -11510,7 +11510,7 @@ font-style: italic;
 <div class="param">createdAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">updatedAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
-<div class="param">streams (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamKey">array[StreamKey]</a></span>  </div>
+<div class="param">streams (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">array[StreamDescriptor]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11975,7 +11975,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="StreamKey"><code>StreamKey</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="StreamDescriptor"><code>StreamDescriptor</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
@@ -11986,7 +11986,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="StreamStateObject"><code>StreamStateObject</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">streamKey </div><div class="param-desc"><span class="param-type"><a href="#StreamKey">StreamKey</a></span>  </div>
+      <div class="param">streamKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
 <div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -12003,7 +12003,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="SyncCatalogChanges"><code>SyncCatalogChanges</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>Describe what has changed between the result of a schema discovery and the stored catalog</div>
     <div class="field-items">
-      <div class="param">streamsRemoved </div><div class="param-desc"><span class="param-type"><a href="#StreamKey">array[StreamKey]</a></span> Streams being removed </div>
+      <div class="param">streamsRemoved </div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">array[StreamDescriptor]</a></span> Streams being removed </div>
 <div class="param">streamsAdded </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Streams being added </div>
 <div class="param">streamsUpdated </div><div class="param-desc"><span class="param-type"><a href="#StreamUpdate">array[StreamUpdate]</a></span> Streams being updated </div>
     </div>  <!-- field-items -->

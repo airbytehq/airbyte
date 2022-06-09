@@ -3733,8 +3733,8 @@ components:
         streams:
           type: array
           items:
-            $ref: "#/components/schemas/StreamKey"
-    StreamKey:
+            $ref: "#/components/schemas/StreamDescriptor"
+    StreamDescriptor:
       type: object
       required:
         - name
@@ -4033,10 +4033,10 @@ components:
     StreamStateObject:
       type: object
       required:
-        - streamKey
+        - streamDescriptor
       properties:
         streamKey:
-          $ref: "#/components/schemas/StreamKey"
+          $ref: "#/components/schemas/StreamDescriptor"
         state:
           $ref: "#/components/schemas/ConnectionStateObject"
     ConnectionStateType:
@@ -4057,7 +4057,7 @@ components:
           description: "Streams being removed"
           type: array
           items:
-            $ref: "#/components/schemas/StreamKey"
+            $ref: "#/components/schemas/StreamDescriptor"
         streamsAdded:
           description: "Streams being added"
           type: array
