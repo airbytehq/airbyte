@@ -50,7 +50,7 @@ jobs:
         with:
           java-version: '14'
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 'lts/gallium'
 
