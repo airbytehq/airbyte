@@ -26,7 +26,6 @@ lists_stream:
     class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"
     file_path: "./source_sendgrid/schemas/{{options['name']}}.yaml"
   retriever:
-    class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
     stream_slicer:
       class_name: "airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice"
     paginator: "*ref(paginator)"
