@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -16,6 +17,7 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
@@ -80,18 +82,24 @@ public class PerStreamStateManager extends AbstractStateManager<AirbyteStateMess
 
   @Override
   public AirbyteStateMessage toState() {
+    final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage();
-    final List<AirbyteStreamState> airbyteStreamStates = generatePerStreamState();
-    return airbyteStateMessage.withStateType(AirbyteStateType.PER_STREAM).withStreams(airbyteStreamStates);
+    final List<AirbyteStreamState> airbyteStreamStates = generatePerStreamState(pairToCursorInfoMap);
+    return airbyteStateMessage
+        .withStateType(AirbyteStateType.PER_STREAM)
+        // Temporarily include legacy state for backwards compatibility with the platform
+        .withData(Jsons.jsonNode(generateDbState(pairToCursorInfoMap)))
+        .withStreams(airbyteStreamStates);
   }
 
   /**
    * Generates the per-stream state for each stream.
    *
+   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor information for that stream
    * @return The list of per-stream state.
    */
-  private List<AirbyteStreamState> generatePerStreamState() {
-    return getPairToCursorInfoMap().entrySet().stream()
+  private List<AirbyteStreamState> generatePerStreamState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+    return pairToCursorInfoMap.entrySet().stream()
         .filter(s -> s.getKey().getName() != null && s.getKey().getNamespace() != null)
         .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
         .map(e -> new AirbyteStreamState()
@@ -99,6 +107,19 @@ public class PerStreamStateManager extends AbstractStateManager<AirbyteStateMess
             .withNamespace(e.getKey().getNamespace())
             .withState(Jsons.jsonNode(generateDbStreamState(e.getKey(), e.getValue()))))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Generates the legacy global state for backwards compatibility.
+   *
+   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor information for that stream
+   * @return The legacy {@link DbState}.
+   */
+  private DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+    return new DbState().withStreams(pairToCursorInfoMap.entrySet().stream()
+            .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
+            .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
+            .collect(Collectors.toList()));
   }
 
   /**

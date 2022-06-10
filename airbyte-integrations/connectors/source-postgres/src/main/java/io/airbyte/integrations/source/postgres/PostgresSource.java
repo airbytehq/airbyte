@@ -409,7 +409,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
   // state.
   @Override
-  protected AirbyteStateMessage serializeState(final JsonNode stateJson) {
+  protected AirbyteStateMessage deserializeState(final JsonNode stateJson) {
     if (stateJson == null) {
       // TODO What should the default/empty state be -- per stream or global?
       return new AirbyteStateMessage()
