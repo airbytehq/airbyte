@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_requ
 )
 from airbyte_cdk.sources.declarative.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
+from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.response import Response
 from airbyte_cdk.sources.declarative.types import Config
@@ -35,7 +36,7 @@ class HttpRequester(Requester):
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
         decoder: Decoder = JsonDecoder(),
-        retrier: Retrier,
+        retrier: Retrier = None,
         config: Config,
     ):
         if request_parameters is None:
@@ -44,6 +45,8 @@ class HttpRequester(Requester):
             request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_parameters=request_parameters)
         if request_headers_provider is None:
             request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
+        if retrier is None:
+            retrier = DefaultRetrier()
         self._name = name
         self._authenticator = authenticator
         if type(url_base) == str:

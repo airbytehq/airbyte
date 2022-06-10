@@ -7,7 +7,7 @@ http_method: GET
 authenticator:
   class_name: "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator"
   token: "{{ config['apikey'] }}"
-  
+
 extractor:
   type: "jq"
   transform: ".result[]"
@@ -41,8 +41,6 @@ lists_stream:
       authenticator: "*ref(authenticator)"
       request_parameters:
         page_size: 10
-      retrier:
-        class_name: "airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier"
     extractor: "*ref(extractor)"
 
 streams:
