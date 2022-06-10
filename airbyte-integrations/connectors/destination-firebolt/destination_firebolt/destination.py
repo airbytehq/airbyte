@@ -12,6 +12,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from firebolt.client import DEFAULT_API_URL
+from firebolt.client.auth import UsernamePassword
 from firebolt.db import Connection, connect
 
 from .writer import FireboltS3Writer, FireboltSQLWriter
@@ -28,8 +29,7 @@ def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[s
     """
     connection_args = {
         "database": config["database"],
-        "username": config["username"],
-        "password": config["password"],
+        "auth": UsernamePassword(config["username"], config["password"]),
         "api_endpoint": config.get("host", DEFAULT_API_URL),
         "account_name": config.get("account"),
     }
