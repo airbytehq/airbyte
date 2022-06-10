@@ -19,9 +19,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -82,12 +80,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
+  private final DestinationStateManager stateManager;
 
   private boolean hasStarted;
   private boolean hasClosed;
-
-  private final Queue<AirbyteMessage> lastFlushedState;
-  private final Queue<AirbyteMessage> pendingState;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -105,8 +101,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
+<<<<<<< HEAD
     this.lastFlushedState = new LinkedList<>();
     this.pendingState = new LinkedList<>();
+=======
+    this.stateManager = new DefaultDestinationStateManager(); // todo (cgardens) - dependency inject.
+    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
+>>>>>>> 82ca1d4258 (state iface)
   }
 
   @Override
@@ -143,7 +144,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
     } else if (message.getType() == Type.STATE) {
-      pendingState.add(message);
+      stateManager.addState(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
@@ -151,10 +152,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void markStatesAsFlushedToTmpDestination() {
-    if (!pendingState.isEmpty()) {
-      lastFlushedState.addAll(pendingState);
-      pendingState.clear();
-    }
+    stateManager.markAllReceivedMessagesAsFlushedToTmpDestination();
   }
 
   private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
@@ -181,9 +179,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     bufferingStrategy.close();
 
     try {
-      // if no state was emitted (i.e. full refresh), if there were still no failures, then we can
-      // still succeed.
-      if (lastFlushedState.isEmpty()) {
+      // if no state was emitted (i.e. full refresh) and if there were still no failures, we claim
+      // success. this is the full refresh case. if there was no state AND a failure, we assume failure.
+      if (stateManager.listAllFlushedButNotCommittedState().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
         // if any state message flushed that means we can still go for at least a partial success.
@@ -192,7 +190,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
-      lastFlushedState.forEach(outputRecordCollector);
+      stateManager.markAllFlushedMessageAsCommitted();
+      stateManager.listAllCommittedState().forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;
