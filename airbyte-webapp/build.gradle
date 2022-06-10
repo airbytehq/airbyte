@@ -1,9 +1,9 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "3.1.1"
+    id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
 
 node {
     download = true
