@@ -244,7 +244,7 @@ public class ConnectionManagerUtils {
         .attemptNumber(1)
         .workflowState(null)
         .resetConnection(false)
-        .runCheck(new EnvConfigs().getCheckConnectionsDuringSync())
+        .runCheck(new EnvConfigs().shouldRunCheckConnectionsDuringSync())
         .fromJobResetFailure(false)
         .build();
   }

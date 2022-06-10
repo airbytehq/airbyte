@@ -19,4 +19,4 @@ echo "Waiting for services to begin"
 while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8000/api/v1/health)" != "200" ]]; do echo "Waiting for docker deployment.."; sleep 5; done
 
 echo "Running e2e tests via gradle"
-SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true CHECK_CONNECTION_DURING_SYNC=false ./gradlew :airbyte-tests:acceptanceTests --rerun-tasks --scan
+SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true SHOULD_RUN_CHECK_CONNECTION_DURING_SYNC=false ./gradlew :airbyte-tests:acceptanceTests --rerun-tasks --scan

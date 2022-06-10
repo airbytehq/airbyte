@@ -262,9 +262,10 @@ public interface Configs {
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   /**
-   * Check if
+   * Determine if sync jobs will run check connection as a sanity check for connector config.
+   * Typically true. False for integration tests for speed. Internal-use only.
    */
-  boolean getCheckConnectionsDuringSync();
+  boolean shouldRunCheckConnectionsDuringSync();
 
   // Jobs - Kube only
   /**

@@ -97,7 +97,6 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
   private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
   private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
-  public static final String CHECK_CONNECTION_DURING_SYNC = "CHECK_CONNECTION_DURING_SYNC";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -119,6 +118,7 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+  public static final String SHOULD_RUN_CHECK_CONNECTION_DURING_SYNC = "SHOULD_RUN_CHECK_CONNECTION_DURING_SYNC";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
@@ -679,8 +679,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean getCheckConnectionsDuringSync() {
-    return getEnvOrDefault(CHECK_CONNECTION_DURING_SYNC, true);
+  public boolean shouldRunCheckConnectionsDuringSync() {
+    return getEnvOrDefault(SHOULD_RUN_CHECK_CONNECTION_DURING_SYNC, true);
   }
 
   @Override

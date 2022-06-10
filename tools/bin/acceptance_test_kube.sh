@@ -76,4 +76,4 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true CHECK_CONNECTION_DURING_SYNC=false ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true SHOULD_RUN_CHECK_CONNECTION_DURING_SYNC=false ./gradlew :airbyte-tests:acceptanceTests --scan
