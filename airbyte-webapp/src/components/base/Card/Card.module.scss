@@ -1,0 +1,12 @@
+@import "../../../scss/colors";
+@import "../../../scss/variables";
+
+.card {
+  background-color: $white;
+  box-shadow: $shadow-2;
+  border-radius: $rounded-4;
+
+  &.full {
+    width: 100%;
+  }
+}
