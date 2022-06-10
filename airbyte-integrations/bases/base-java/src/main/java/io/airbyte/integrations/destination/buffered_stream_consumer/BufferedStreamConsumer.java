@@ -84,9 +84,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasStarted;
   private boolean hasClosed;
 
-  // represents the last state message for which all of it records have been flushed to tmp storage in the destination.
+  // represents the last state message for which all of it records have been flushed to tmp storage in
+  // the destination.
   private AirbyteMessage lastFlushedToTmpDstState;
-  // presents the last state message whose state is waitint to be flushed to tmp storage in the destination.
+  // presents the last state message whose state is waitint to be flushed to tmp storage in the
+  // destination.
   private AirbyteMessage pendingState;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -136,7 +138,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       // if the buffer flushes, update the states appropriately.
-      if(bufferingStrategy.addRecord(stream, message)) {
+      if (bufferingStrategy.addRecord(stream, message)) {
         markStatesAsFlushesToTmpDestination();
       }
 

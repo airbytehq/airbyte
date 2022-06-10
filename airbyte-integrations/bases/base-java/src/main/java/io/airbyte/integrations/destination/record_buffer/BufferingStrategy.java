@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
@@ -69,7 +68,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       totalBufferSizeInBytes = 0;
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
-      // cannot mark didFlush here, because there is no guarantee that all records for a given state have been flushed.
+      // cannot mark didFlush here, because there is no guarantee that all records for a given state have
+      // been flushed.
     }
 
     return didFlush;
