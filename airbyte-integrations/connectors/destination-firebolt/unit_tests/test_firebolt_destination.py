@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_firebolt.destination import DestinationFirebolt, establish_connection
+from destination_firebolt.destination import DestinationFirebolt, establish_connection, parse_config
 from pytest import fixture
 
 
@@ -125,6 +125,18 @@ def airbyte_message2() -> AirbyteMessage:
 @fixture
 def airbyte_state_message() -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE)
+
+
+def test_parse_config(config: Dict[str, str]):
+    config["engine"] = "override_engine"
+    result = parse_config(config)
+    assert result["database"] == "my_database"
+    assert result["engine_name"] == "override_engine"
+    assert result["auth"].username == "my_username"
+    assert result["auth"].password == "my_password"
+    config["engine"] = "override_engine.api.firebolt.io"
+    result = parse_config(config)
+    assert result["engine_url"] == "override_engine.api.firebolt.io"
 
 
 @patch("destination_firebolt.destination.connect", MagicMock())
