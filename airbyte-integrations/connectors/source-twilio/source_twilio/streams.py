@@ -124,7 +124,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self.start_date
+        start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self._start_date
         if start_date:
             start_date_with_lookback_window = pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
             params[self.incremental_filter_field] =  start_date_with_lookback_window.strftime(self.time_filter_template)
