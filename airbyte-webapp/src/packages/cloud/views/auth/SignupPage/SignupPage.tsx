@@ -15,14 +15,14 @@ import CheckBoxControl from "../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
 import SpecialBlock from "./components/SpecialBlock";
 
-type FormValues = {
+interface FormValues {
   name: string;
   companyName: string;
   email: string;
   password: string;
   news: boolean;
   security: boolean;
-};
+}
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -162,12 +162,12 @@ const SignupPage: React.FC = () => {
                         id="login.security"
                         values={{
                           terms: (terms: React.ReactNode) => (
-                            <Link $clear target="_blank" href={config.ui.termsLink} as="a">
+                            <Link $clear target="_blank" href={config.links.termsLink} as="a">
                               {terms}
                             </Link>
                           ),
                           privacy: (privacy: React.ReactNode) => (
-                            <Link $clear target="_blank" href={config.ui.privacyLink} as="a">
+                            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
                               {privacy}
                             </Link>
                           ),

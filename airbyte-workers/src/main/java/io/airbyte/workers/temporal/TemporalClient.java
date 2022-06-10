@@ -256,6 +256,8 @@ public class TemporalClient {
       log.error(
           String.format("Failed to retrieve ConnectionManagerWorkflow for connection %s. Repairing state by creating new workflow.", connectionId),
           e);
+      ConnectionManagerUtils.safeTerminateWorkflow(client, connectionId,
+          "Terminating workflow in unreachable state before starting a new workflow for this connection");
       submitConnectionUpdaterAsync(connectionId);
       return;
     }

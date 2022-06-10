@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Bar, BarChart as BasicBarChart, CartesianGrid, Label, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { barChartColors, theme } from "theme";
 
-type BarChartProps = {
+interface BarChartProps {
   data: {
     name: string;
     value: number;
@@ -10,7 +10,7 @@ type BarChartProps = {
   legendLabels: string[];
   xLabel?: string;
   yLabel?: string;
-};
+}
 
 const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel }) => {
   const chartLinesColor = theme.greyColor20;

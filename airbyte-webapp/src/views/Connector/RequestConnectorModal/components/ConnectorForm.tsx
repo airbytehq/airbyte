@@ -28,12 +28,12 @@ const RequestButton = styled(Button)`
   min-width: 105px;
 `;
 
-type ConnectorFormProps = {
+interface ConnectorFormProps {
   onSubmit: (values: Values) => void;
   onCancel: () => void;
   currentValues?: Values;
   hasFeedback?: boolean;
-};
+}
 
 const requestConnectorValidationSchema = yup.object().shape({
   connectorType: yup.string().required("form.empty.error"),

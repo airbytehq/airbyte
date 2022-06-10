@@ -18,6 +18,7 @@ import { GAIcon } from "components/icons/GAIcon";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
+import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -151,7 +152,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
   );
 };
 
-const ConnectorServiceTypeControl: React.FC<{
+interface ConnectorServiceTypeControlProps {
   property: FormBaseItem;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
@@ -159,7 +160,10 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl?: string;
   onChangeServiceType?: (id: string) => void;
   onOpenRequestConnectorModal: (initialName: string) => void;
-}> = ({
+  disabled?: boolean;
+}
+
+const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
   property,
   formType,
   isEditMode,
@@ -167,36 +171,17 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices,
   documentationUrl,
   onOpenRequestConnectorModal,
+  disabled,
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
-
-  // TODO Begin hack
-  // During the Cloud private beta, we let users pick any connector in our catalog.
-  // Later on, we realized we shouldn't have allowed using connectors whose platforms required oauth
-  // But by that point, some users were already leveraging them, so removing them would crash the app for users
-  // instead we'll filter out those connectors from this drop down menu, and retain them in the backend
-  // This way, they will not be available for usage in new connections, but they will be available for users
-  // already leveraging them.
-  // TODO End hack
   const workspace = useCurrentWorkspace();
-  const disallowedOauthConnectors =
-    // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD === "true"
-      ? [
-          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
-          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          ...(workspace.workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
-            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
-            : []),
-        ]
-      : [];
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
   const sortedDropDownData = useMemo(
     () =>
-      availableServices
-        .filter((item) => !disallowedOauthConnectors.includes(Connector.id(item)))
+      availableConnectorDefinitions
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),
@@ -277,7 +262,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode}
+          isDisabled={isEditMode || disabled}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",

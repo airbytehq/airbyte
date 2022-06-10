@@ -43,7 +43,6 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -74,7 +73,6 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
-  private final FeatureFlags featureFlags;
   private final EventRunner eventRunner;
   private final ConfigRepository configRepository;
 
@@ -286,28 +284,13 @@ public class WebBackendConnectionsHandler {
 
     ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-    if (!featureFlags.usesNewScheduler()) {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-      if (needReset) {
-        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
-        // wait for this to execute
-        schedulerHandler.resetConnection(connectionId);
 
-        // just create the job
-        schedulerHandler.syncConnection(connectionId);
-      }
-    } else {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-      if (needReset) {
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-      }
+    if (needReset) {
+      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);

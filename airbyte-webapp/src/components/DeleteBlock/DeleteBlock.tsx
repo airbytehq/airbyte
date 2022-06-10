@@ -8,10 +8,10 @@ import ContentCard from "components/ContentCard";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
 
-type IProps = {
+interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
-};
+}
 
 const DeleteBlockComponent = styled(ContentCard)`
   margin-top: 12px;

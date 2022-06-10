@@ -19,12 +19,19 @@ from .abstract_test_parser import create_by_local_file, memory_limit
 LOGGER = AirbyteLogger()
 
 
+def mock_big_size_object():
+    mock = MagicMock()
+    mock.__sizeof__.return_value = 1000000001
+    return mock
+
+
 class TestIncrementalFileStream:
     @pytest.mark.parametrize(  # set return_schema to None for an expected fail
         "schema_string, return_schema",
         [
             (
-                '{"id": "integer", "name": "string", "valid": "boolean", "code": "integer", "degrees": "number", "birthday": "string", "last_seen": "string"}',
+                '{"id": "integer", "name": "string", "valid": "boolean", "code": "integer", "degrees": "number", "birthday": '
+                '"string", "last_seen": "string"}',
                 {
                     "id": "integer",
                     "name": "string",
@@ -328,6 +335,43 @@ class TestIncrementalFileStream:
         fs = IncrementalFileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
         file_infos = [create_by_local_file(filepath) for filepath in filepaths]
         assert set([p.key for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)
+
+    @pytest.mark.parametrize(
+        "latest_record, current_stream_state, expected",
+        [
+            (  # overwrite history file
+                {"id": 1, "_ab_source_file_last_modified": "2022-05-11T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2021-07-25T15:33:04+0000", "history": {"2021-07-25": {"old_test_file.csv"}}},
+                {"2022-05-11": {"new_test_file.csv"}},
+            ),
+            (  # add file to same day
+                {"id": 1, "_ab_source_file_last_modified": "2022-07-25T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2022-07-25T00:00:00+0000", "history": {"2022-07-25": {"old_test_file.csv"}}},
+                {"2022-07-25": {"new_test_file.csv", "old_test_file.csv"}},
+            ),
+            (  # add new day to history
+                {"id": 1, "_ab_source_file_last_modified": "2022-07-03T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2022-07-01T00:00:00+0000", "history": {"2022-07-01": {"old_test_file.csv"}}},
+                {"2022-07-01": {"old_test_file.csv"}, "2022-07-03": {"new_test_file.csv"}},
+            ),
+            (  # history size limit reached
+                {"_ab_source_file_url": "test.csv"},
+                {"_ab_source_file_last_modified": "2022-07-01T00:00:00+0000", "history": mock_big_size_object()},
+                None,
+            ),
+        ],
+        ids=["overwrite_history_file", "add_file_to_same_day ", "add_new_day_to_history", "history_size_limit_reached"],
+    )
+    @patch(
+        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
+    )  # patching abstractmethods to empty set so we can instantiate ABC to test
+    def test_get_updated_history(self, latest_record, current_stream_state, expected, request) -> None:
+        fs = IncrementalFileStream(dataset="dummy", provider={}, format={"filetype": "csv"}, path_pattern="**/prefix*.csv")
+        fs._get_schema_map = MagicMock(return_value={})
+        assert fs.get_updated_state(current_stream_state, latest_record).get("history") == expected
+
+        if request.node.callspec.id == "history_size_limit_reached":
+            assert fs.sync_all_files_always
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
         "stream_state, expected_error",

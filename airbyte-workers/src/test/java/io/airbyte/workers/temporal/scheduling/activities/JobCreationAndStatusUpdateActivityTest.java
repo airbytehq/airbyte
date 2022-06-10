@@ -56,6 +56,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -290,9 +291,11 @@ public class JobCreationAndStatusUpdateActivityTest {
     public void setJobCancelled() throws IOException {
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
-      Mockito.verify(mJobPersistence).cancelJob(JOB_ID);
-      Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      Mockito.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      // attempt must be failed before job is cancelled, or else job state machine is not respected
+      final InOrder orderVerifier = Mockito.inOrder(mJobPersistence);
+      orderVerifier.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      orderVerifier.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      orderVerifier.verify(mJobPersistence).cancelJob(JOB_ID);
     }
 
     @Test

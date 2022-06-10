@@ -47,6 +47,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       namespaceFormat: connection.namespaceFormat,
       prefix: connection.prefix,
       operations: connection.operations,
+      name: connection.name,
       status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
     });
 

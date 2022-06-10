@@ -6,10 +6,10 @@ import { equal } from "utils/objects";
 
 import { ConnectionSchedule } from "../../../core/request/AirbyteClient";
 
-type IProps = {
+interface IProps {
   value: ConnectionSchedule;
   enabled?: boolean;
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};

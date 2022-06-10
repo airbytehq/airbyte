@@ -65,6 +65,8 @@ assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.6.2" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
+otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
+otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
 
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
