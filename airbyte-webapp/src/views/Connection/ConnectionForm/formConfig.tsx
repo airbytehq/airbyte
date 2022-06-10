@@ -264,18 +264,9 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
         label: item.config
           ? formatMessage(
               {
-                id: "form.every",
+                id: `form.every.${item.config.timeUnit}`,
               },
-              {
-                value: formatMessage(
-                  {
-                    id: `frequency.${
-                      item.config.timeUnit === "hours" && item.config.units === 1 ? "hour" : item.config.timeUnit
-                    }`,
-                  },
-                  { value: item.config?.units }
-                ),
-              }
+              { value: item.config.units }
             )
           : formatMessage({ id: "frequency.manual" }),
       })),
