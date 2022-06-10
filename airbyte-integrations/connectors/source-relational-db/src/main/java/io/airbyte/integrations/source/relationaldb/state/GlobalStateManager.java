@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
@@ -16,26 +12,25 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Per-stream implementation of the {@link StateManager} interface.
+ * Global implementation of the {@link StateManager} interface.
  *
- * This implementation generates a state object for each stream detected in catalog/map of known
- * streams to cursor information stored in this manager.
+ * This implementation generates a single, global state object for the state
+ * tracked by this manager.
  */
-public class PerStreamStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
+public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   /**
-   * Constructs a new {@link PerStreamStateManager} that is seeded with the provided
+   * Constructs a new {@link GlobalStateManager} that is seeded with the provided
    * {@link AirbyteStateMessage}.
    *
    * @param airbyteStateMessage The initial state represented as an {@link AirbyteStateMessage}.
    * @param catalog The {@link ConfiguredAirbyteCatalog} for the connector associated with this state
    *        manager.
    */
-  public PerStreamStateManager(final AirbyteStateMessage airbyteStateMessage, final ConfiguredAirbyteCatalog catalog) {
+  public GlobalStateManager(final AirbyteStateMessage airbyteStateMessage, final ConfiguredAirbyteCatalog catalog) {
     super(catalog,
         () -> airbyteStateMessage.getStreams(),
         CURSOR_FUNCTION,
@@ -45,18 +40,18 @@ public class PerStreamStateManager extends AbstractStateManager<AirbyteStateMess
 
   @Override
   public CdcStateManager getCdcStateManager() {
-    return new CdcStateManager(null);
+    return null;
   }
 
   @Override
   public AirbyteStateMessage toState() {
-    final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage();
-    final List<AirbyteStreamState> airbyteStreamStates = StateGeneratorUtils.generatePerStreamState(pairToCursorInfoMap);
-    return airbyteStateMessage
-        .withStateType(AirbyteStateType.PER_STREAM)
-        // Temporarily include legacy state for backwards compatibility with the platform
-        .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
-        .withStreams(airbyteStreamStates);
-  }
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
+      final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage();
+      return airbyteStateMessage
+          .withStateType(AirbyteStateType.GLOBAL)
+          // Temporarily include legacy state for backwards compatibility with the platform
+          .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
+          // TODO generate global state
+          .withGlobal(null);
+    }
 }

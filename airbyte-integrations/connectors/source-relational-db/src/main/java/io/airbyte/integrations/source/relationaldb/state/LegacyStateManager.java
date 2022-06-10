@@ -95,11 +95,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         .withCdc(isCdc)
         .withStreams(getPairToCursorInfoMap().entrySet().stream()
             .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-            .map(e -> new DbStreamState()
-                .withStreamName(e.getKey().getName())
-                .withStreamNamespace(e.getKey().getNamespace())
-                .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : List.of(e.getValue().getCursorField()))
-                .withCursor(e.getValue().getCursor()))
+            .map(e -> StateGeneratorUtils.generateDbStreamState(e.getKey(), e.getValue()))
             .collect(Collectors.toList()))
         .withCdcState(getCdcStateManager().getCdcState());
 

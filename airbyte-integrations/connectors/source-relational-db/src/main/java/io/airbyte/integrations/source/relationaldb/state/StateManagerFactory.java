@@ -49,8 +49,7 @@ public class StateManagerFactory {
         return new PerStreamStateManager(airbyteStateMessage, catalog);
       } else {
         LOGGER.info("Global state manager selected to manage state object with type {}.", state.getClass().getName());
-        // TODO create proper Global state manager
-        return null;
+        return new GlobalStateManager(airbyteStateMessage, catalog);
       }
     } else if (state instanceof DbState dbState) {
       LOGGER.info("Legacy state manager selected to manage state object with type {}.", state.getClass().getName());
