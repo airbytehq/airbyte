@@ -106,7 +106,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    final StateManager stateManager = StateManagerFactory.createStateManager(serializeState(state), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(deserializeState(state), catalog, config);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabaseInternal(config);
@@ -511,12 +511,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
-   * Serializes the state represented as JSON into an object representation.
+   * Deserializes the state represented as JSON into an object representation.
    *
    * @param stateJson The state as JSON.
-   * @return The serialized object representation of the state.
+   * @return The deserialized object representation of the state.
    */
-  protected AirbyteStateMessage serializeState(final JsonNode stateJson) {
+  protected AirbyteStateMessage deserializeState(final JsonNode stateJson) {
     if (stateJson == null) {
       // For backwards compatibility with existing connectors
       return new AirbyteStateMessage().withData(Jsons.jsonNode(new DbState()));

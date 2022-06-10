@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -120,6 +121,20 @@ public class PerStreamStateManagerTest {
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withStateType(AirbyteStateType.PER_STREAM)
+        .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
+            new DbStreamState()
+                .withStreamName(STREAM_NAME1)
+                .withStreamNamespace(NAMESPACE)
+                .withCursorField(List.of(CURSOR_FIELD1))
+                .withCursor("a"),
+            new DbStreamState()
+                .withStreamName(STREAM_NAME2)
+                .withStreamNamespace(NAMESPACE)
+                .withCursorField(List.of(CURSOR_FIELD2)),
+            new DbStreamState()
+                .withStreamName(STREAM_NAME3)
+                .withStreamNamespace(NAMESPACE)
+        ).stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))))
         .withStreams(List.of(
             new AirbyteStreamState()
                 .withName(STREAM_NAME1)
@@ -153,6 +168,21 @@ public class PerStreamStateManagerTest {
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
         .withStateType(AirbyteStateType.PER_STREAM)
+        .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
+            new DbStreamState()
+                .withStreamName(STREAM_NAME1)
+                .withStreamNamespace(NAMESPACE)
+                .withCursorField(List.of(CURSOR_FIELD1))
+                .withCursor("a"),
+            new DbStreamState()
+                .withStreamName(STREAM_NAME2)
+                .withStreamNamespace(NAMESPACE)
+                .withCursorField(List.of(CURSOR_FIELD2))
+                .withCursor("b"),
+            new DbStreamState()
+                .withStreamName(STREAM_NAME3)
+                .withStreamNamespace(NAMESPACE)
+        ).stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))))
         .withStreams(List.of(
             new AirbyteStreamState()
                 .withName(STREAM_NAME1)
@@ -201,6 +231,16 @@ public class PerStreamStateManagerTest {
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withStateType(AirbyteStateType.PER_STREAM)
+        .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
+            new DbStreamState()
+                .withStreamName(STREAM_NAME1)
+                .withStreamNamespace(NAMESPACE)
+                .withCursorField(List.of(CURSOR_FIELD1))
+                .withCursor("a"),
+            new DbStreamState()
+                .withStreamName(STREAM_NAME2)
+                .withStreamNamespace(NAMESPACE)
+        ).stream().sorted(Comparator.comparing(DbStreamState::getStreamName)).collect(Collectors.toList()))))
         .withStreams(
             List.of(
                 new AirbyteStreamState()
