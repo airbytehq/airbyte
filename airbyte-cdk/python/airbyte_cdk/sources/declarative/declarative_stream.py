@@ -16,6 +16,7 @@ class DeclarativeStream(Stream):
     def expected_type(cls, name):
         return {
             "retriever": "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever",
+            "schema_loader": "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema",
         }.get(name)
 
     """

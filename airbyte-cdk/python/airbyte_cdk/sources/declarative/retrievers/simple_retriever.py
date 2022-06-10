@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
+from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -25,14 +26,20 @@ class SimpleRetriever(Retriever, HttpStream):
         }.get(name)
 
     def __init__(
-        self, name, requester: Requester, paginator: Paginator, extractor: HttpExtractor, stream_slicer: StreamSlicer, state: State = None
+        self,
+        name,
+        requester: Requester,
+        paginator: Paginator,
+        extractor: HttpExtractor,
+        stream_slicer: StreamSlicer = None,
+        state: State = None,
     ):
         self._name = name
         self._paginator = paginator
         self._requester = requester
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
-        self._iterator: StreamSlicer = stream_slicer
+        self._iterator: StreamSlicer = stream_slicer or SingleSlice()
         state = state or DictState()
         self._state: State = state
         state.deep_copy()

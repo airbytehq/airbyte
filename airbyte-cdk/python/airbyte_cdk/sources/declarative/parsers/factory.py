@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config
 class_registry = {
     "jq": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
     "NextPageUrlPaginator": "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator",
+    "TokenAuthenticator": "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator",
 }
 
 

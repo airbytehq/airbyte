@@ -1,40 +1,24 @@
-url_base: https://api.sendgrid.com
-
-lists_path: "/v3/marketing/lists"
-
-http_method: GET
-
-authenticator:
-  class_name: "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator"
-  token: "{{ config['apikey'] }}"
-
-extractor:
-  transform: ".result[]"
-  primary_key: id
-
-paginator:
-  type: "NextPageUrlPaginator"
-  next_page_url: "{{ decoded_response['_metadata']['next'] }}"
-
 lists_stream:
-  class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   options:
     name: "lists"
-    url_base: "*ref(url_base)"
+    url_base: "https://api.sendgrid.com"
   schema_loader:
-    class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"
     file_path: "./source_sendgrid/schemas/{{options['name']}}.yaml"
   retriever:
-    stream_slicer:
-      class_name: "airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice"
-    paginator: "*ref(paginator)"
+    paginator:
+      type: "NextPageUrlPaginator"
+      next_page_url: "{{ decoded_response['_metadata']['next'] }}"
     requester:
-      path: "*ref(lists_path)"
-      http_method: "*ref(http_method)"
-      authenticator: "*ref(authenticator)"
+      path: "/v3/marketing/lists"
+      http_method: GET
+      authenticator:
+        type: "TokenAuthenticator"
+        token: "{{ config['apikey'] }}"
       request_parameters:
         page_size: 10
-    extractor: "*ref(extractor)"
+    extractor:
+      transform: ".result[]"
+      primary_key: id
 
 streams:
   - "*ref(lists_stream)"
