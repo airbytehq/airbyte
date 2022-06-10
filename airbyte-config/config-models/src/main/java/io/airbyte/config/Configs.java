@@ -243,6 +243,17 @@ public interface Configs {
   String getJobMainContainerMemoryLimit();
 
   /**
+   * Get datadog or OTEL metric client for Airbyte to emit metrics. Allows empty value
+   */
+  String getMetricClient();
+
+  /**
+   * If choosing OTEL as the metric client, Airbyte will emit metrics and traces to this provided
+   * endpoint.
+   */
+  String getOtelCollectorEndpoint();
+
+  /**
    * Defines a default map of environment variables to use for any launched job containers. The
    * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
    * an empty map.

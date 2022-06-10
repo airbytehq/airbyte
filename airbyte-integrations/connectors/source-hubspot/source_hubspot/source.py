@@ -14,6 +14,7 @@ from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
 from source_hubspot.streams import (
     API,
@@ -174,7 +175,10 @@ class SourceHubspot(AbstractSource):
                         internal_config=internal_config,
                     )
                 except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                    display_message = stream_instance.get_error_display_message(e)
+                    if display_message:
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     logger.info(f"Finished syncing {self.name}")

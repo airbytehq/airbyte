@@ -126,7 +126,9 @@
                         "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
                         "title": "HMAC Key Secret",
                         "airbyte_secret": true,
-                        "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"],
+                        "examples": [
+                          "1234567890abcdefghij1234567890ABCDEFGHIJ"
+                        ],
                         "order": 2
                       }
                     }

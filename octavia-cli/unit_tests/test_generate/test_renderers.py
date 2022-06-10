@@ -303,6 +303,8 @@ class TestConnectionRenderer:
                 "source_id": mock_source.resource_id,
                 "destination_id": mock_destination.resource_id,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )
 
@@ -318,6 +320,8 @@ class TestConnectionRenderer:
                 "source_id": connection_renderer.source.resource_id,
                 "destination_id": connection_renderer.destination.resource_id,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )
         assert rendered == connection_renderer.TEMPLATE.render.return_value
