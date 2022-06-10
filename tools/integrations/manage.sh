@@ -241,11 +241,13 @@ cmd_publish() {
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
 
-  docker buildx create --name connector-buildx --driver docker-container --use
-
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
+
+    # We use a buildx docker continer when building multi-stage builds from one docker compose file
+    # This works because all the images depend only on already public images
+    docker buildx create --name connector-buildx --driver docker-container --use
 
     # Note: "buildx bake" needs to be run within the directory
     local original_pwd=$PWD
@@ -261,10 +263,13 @@ cmd_publish() {
       -f docker-compose.build.yaml                               \
       --push
 
+    docker buildx rm connector-buildx
+
     cd $original_pwd
   else
     # We have to go arch-by-arch locally (see https://github.com/docker/buildx/issues/59 for more info) due to our base images (e.g. airbyte-integrations/bases/base-java)
     # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
+    # We need to use the regular docker buildx driver (not docker container) because we need this intermediate contaiers to be available for later build steps
 
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
@@ -297,8 +302,6 @@ cmd_publish() {
     done
 
   fi
-
-  docker buildx rm connector-buildx
 
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
