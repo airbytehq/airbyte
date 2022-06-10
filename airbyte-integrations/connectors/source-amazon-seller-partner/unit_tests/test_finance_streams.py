@@ -171,9 +171,9 @@ def test_financial_event_groups_stream_request_params(list_financial_event_group
 
     # test 3 - for 180 days limit
     expected_params = {
-        "FinancialEventGroupStartedAfter": START_DATE_2,
+        "FinancialEventGroupStartedAfter": pendulum.parse(END_DATE_2).subtract(days=180).strftime(DATE_TIME_FORMAT),
         "MaxResultsPerPage": 100,
-        "FinancialEventGroupStartedBefore": pendulum.parse(START_DATE_2).add(days=180).strftime(DATE_TIME_FORMAT)
+        "FinancialEventGroupStartedBefore": END_DATE_2
     }
     assert expected_params == list_financial_event_groups_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
@@ -198,9 +198,9 @@ def test_financial_events_stream_request_params(list_financial_events_stream):
 
     # test 3 - for 180 days limit
     expected_params = {
-        "PostedAfter": START_DATE_2,
+        "PostedAfter": pendulum.parse(END_DATE_2).subtract(days=180).strftime(DATE_TIME_FORMAT),
         "MaxResultsPerPage": 100,
-        "PostedBefore": pendulum.parse(START_DATE_2).add(days=180).strftime(DATE_TIME_FORMAT)
+        "PostedBefore": END_DATE_2
     }
     assert expected_params == list_financial_events_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
