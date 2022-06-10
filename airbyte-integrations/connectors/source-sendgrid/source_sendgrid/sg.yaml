@@ -10,7 +10,6 @@ lists_stream:
       next_page_url: "{{ decoded_response['_metadata']['next'] }}"
     requester:
       path: "/v3/marketing/lists"
-      http_method: GET
       authenticator:
         type: "TokenAuthenticator"
         token: "{{ config['apikey'] }}"
@@ -22,8 +21,3 @@ lists_stream:
 
 streams:
   - "*ref(lists_stream)"
-
-check:
-  class_name: "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
-  stream_names:
-    - "lists_stream"

@@ -31,7 +31,7 @@ class HttpRequester(Requester):
         name: str,
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
-        http_method: Union[str, HttpMethod],
+        http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_parameters: RequestParameterProvider = None,
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
