@@ -17,7 +17,7 @@ module.exports = (app) => {
   app.use("/docs/integrations", express.static(`${__dirname}/../../docs/integrations`));
   //workaround for adblockers to serve google ads docs in development
   app.use(
-    "/docs/integrations/sources/ggl.md",
+    "/docs/integrations/sources/gglad.md",
     express.static(`${__dirname}/../../docs/integrations/sources/google-ads.md`)
   );
   app.use("/docs/.gitbook", express.static(`${__dirname}/../../docs/.gitbook`));

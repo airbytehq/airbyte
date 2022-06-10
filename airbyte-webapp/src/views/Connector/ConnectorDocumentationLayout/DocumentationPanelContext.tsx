@@ -16,7 +16,7 @@ export const useDocumentationPanelState = () => {
    */
 
   const setDocumentationUrl = useCallback((url: string) => {
-    setDocumentationUrlState(url.replace("google-ads", "ggl"));
+    setDocumentationUrlState(url.replace("google-ads", "gglad"));
   }, []);
 
   return {
