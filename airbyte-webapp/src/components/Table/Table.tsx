@@ -4,10 +4,10 @@ import styled from "styled-components";
 
 import { Card } from "components";
 
-type PaddingProps = {
+interface PaddingProps {
   left?: number;
   right?: number;
-};
+}
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
@@ -97,7 +97,7 @@ const Th = styled.th<IThProps>`
   }
 `;
 
-type IProps = {
+interface IProps {
   light?: boolean;
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
@@ -107,7 +107,7 @@ type IProps = {
   onClickRow?: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sortBy?: Array<SortingRule<any>>;
-};
+}
 
 const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {

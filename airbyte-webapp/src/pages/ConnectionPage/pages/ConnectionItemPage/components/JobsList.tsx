@@ -4,9 +4,9 @@ import { JobItem } from "components/JobItem/JobItem";
 
 import { JobWithAttemptsRead } from "../../../../../core/request/AirbyteClient";
 
-type JobsListProps = {
+interface JobsListProps {
   jobs: JobWithAttemptsRead[];
-};
+}
 
 export type JobsWithJobs = JobWithAttemptsRead & { job: Exclude<JobWithAttemptsRead["job"], undefined> };
 

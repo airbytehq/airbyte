@@ -4,12 +4,12 @@ import styled from "styled-components";
 
 import { Button, Spinner, StatusIcon } from "components";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
-};
+}
 
 const ButtonContainer = styled.div`
   margin-top: 34px;

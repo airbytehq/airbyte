@@ -3,10 +3,10 @@ import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 
-type IProps = {
+interface IProps {
   name: string;
   icon?: string;
-};
+}
 
 export const Content = styled.div`
   background: ${({ theme }) => theme.lightPrimaryColor};

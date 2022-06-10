@@ -144,6 +144,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
       syncCatalog: connection.syncCatalog,
       connectionId: connection.connectionId,
       status: connection.status,
+      name: connection.name,
       operations: operations,
     });
 
