@@ -19,7 +19,10 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class SimpleRetriever(Retriever, HttpStream):
     @classmethod
     def expected_type(cls, name):
-        return {"requester": "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester"}.get(name)
+        return {
+            "requester": "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester",
+            "extractor": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
+        }.get(name)
 
     def __init__(
         self, name, requester: Requester, paginator: Paginator, extractor: HttpExtractor, stream_slicer: StreamSlicer, state: State = None

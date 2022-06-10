@@ -9,7 +9,6 @@ authenticator:
   token: "{{ config['apikey'] }}"
 
 extractor:
-  type: "jq"
   transform: ".result[]"
   primary_key: id
 

@@ -14,7 +14,9 @@ from airbyte_cdk.sources.streams.core import Stream
 class DeclarativeStream(Stream):
     @classmethod
     def expected_type(cls, name):
-        return {"retriever": "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"}.get(name)
+        return {
+            "retriever": "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever",
+        }.get(name)
 
     """
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
