@@ -261,6 +261,11 @@ public interface Configs {
    */
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
+  /**
+   * Check if
+   */
+  boolean getCheckConnectionsDuringSync();
+
   // Jobs - Kube only
   /**
    * Define the check job container's minimum CPU request. Defaults to

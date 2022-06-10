@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -243,7 +244,7 @@ public class ConnectionManagerUtils {
         .attemptNumber(1)
         .workflowState(null)
         .resetConnection(false)
-        .runCheck(false)
+        .runCheck(new EnvConfigs().getCheckConnectionsDuringSync())
         .fromJobResetFailure(false)
         .build();
   }

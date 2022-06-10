@@ -197,7 +197,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         // inject check connection true/false here
         final SyncCheckConnectionFailure syncCheckConnectionFailure =
-            checkConnections(jobInputs, !connectionUpdaterInput.isRunCheck());
+            checkConnections(jobInputs, connectionUpdaterInput.isRunCheck());
         if (syncCheckConnectionFailure.isFailed()) {
           final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
@@ -323,7 +323,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs,
-                                                      boolean skipCheck) {
+                                                      boolean runCheck) {
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
     final StandardSyncInput syncInput = jobInputs.getSyncInput();
     final JsonNode sourceConfig = syncInput.getSourceConfiguration();
@@ -335,7 +335,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
 
-    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION || skipCheck) {
+    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION || !runCheck) {
       // return early if this instance of the workflow was created beforehand
       return checkFailure;
     }

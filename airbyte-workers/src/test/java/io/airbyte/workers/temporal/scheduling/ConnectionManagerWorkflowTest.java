@@ -917,7 +917,6 @@ public class ConnectionManagerWorkflowTest {
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that Source CHECK failures are recorded")
-    @Disabled
     public void testSourceCheckFailuresRecorded() throws InterruptedException {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenReturn(new JobCreationOutput(JOB_ID));
@@ -939,6 +938,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptNumber(1)
           .workflowState(workflowState)
           .resetConnection(false)
+          .runCheck(true)
           .fromJobResetFailure(false)
           .build();
 
@@ -957,7 +957,6 @@ public class ConnectionManagerWorkflowTest {
     @Test
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
-    @Disabled
     @DisplayName("Test that Destination CHECK failures are recorded")
     public void testDestinationCheckFailuresRecorded() throws InterruptedException {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
@@ -980,6 +979,7 @@ public class ConnectionManagerWorkflowTest {
           .fromFailure(false)
           .attemptNumber(1)
           .workflowState(workflowState)
+          .runCheck(true)
           .resetConnection(false)
           .fromJobResetFailure(false)
           .build();
@@ -1000,7 +1000,6 @@ public class ConnectionManagerWorkflowTest {
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that reset workflows do not CHECK the source")
-    @Disabled
     public void testSourceCheckSkippedWhenReset() throws InterruptedException {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenReturn(new JobCreationOutput(JOB_ID));
@@ -1024,6 +1023,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptNumber(1)
           .workflowState(workflowState)
           .resetConnection(true)
+          .runCheck(true)
           .fromJobResetFailure(false)
           .build();
 
