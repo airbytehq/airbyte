@@ -13,7 +13,6 @@ extractor:
   transform: ".result[]"
   primary_key: id
 
-
 paginator:
   type: "NextPageUrlPaginator"
   next_page_url: "{{ decoded_response['_metadata']['next'] }}"
@@ -28,13 +27,10 @@ lists_stream:
     file_path: "./source_sendgrid/schemas/{{options['name']}}.yaml"
   retriever:
     class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-    state:
-      class_name: "airbyte_cdk.sources.declarative.states.dict_state.DictState"
     stream_slicer:
       class_name: "airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice"
     paginator: "*ref(paginator)"
     requester:
-      class_name: "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester"
       path: "*ref(lists_path)"
       http_method: "*ref(http_method)"
       authenticator: "*ref(authenticator)"
