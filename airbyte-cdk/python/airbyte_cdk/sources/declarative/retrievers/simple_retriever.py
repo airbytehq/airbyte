@@ -19,7 +19,6 @@ class SimpleRetriever(Retriever, HttpStream):
     def __init__(
         self,
         name,
-        primary_key,
         requester: Requester,
         paginator: Paginator,
         extractor: HttpExtractor,
@@ -27,7 +26,6 @@ class SimpleRetriever(Retriever, HttpStream):
         state: State,
     ):
         self._name = name
-        self._primary_key = primary_key
         self._paginator = paginator
         self._requester = requester
         self._extractor = extractor
@@ -200,7 +198,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
+        return self._extractor.get_primary_id()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

@@ -11,8 +11,8 @@ authenticator:
 extractor:
   type: "jq"
   transform: ".result[]"
+  primary_key: id
 
-primary_key: id
 
 paginator:
   type: "NextPageUrlPaginator"
@@ -22,7 +22,6 @@ lists_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   options:
     name: "lists"
-    primary_key: "*ref(primary_key)"
     url_base: "*ref(url_base)"
   schema_loader:
     class_name: "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema"

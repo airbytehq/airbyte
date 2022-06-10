@@ -16,16 +16,15 @@ class DeclarativeStream(Stream):
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
 
-    def __init__(self, name, primary_key, schema_loader: SchemaLoader, retriever, cursor_field=None):
+    def __init__(self, name, schema_loader: SchemaLoader, retriever, cursor_field=None):
         self._name = name
-        self._primary_key = primary_key
         self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
         self._retriever: Retriever = retriever
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
+        return self._retriever.primary_key
 
     @property
     def name(self) -> str:
