@@ -34,6 +34,7 @@ const BottomBlock = styled.div`
 
 export const BottomBlockStatusMessage = styled.div`
   max-width: calc(100% - 100px);
+  color: ${(props) => props.theme.dangerColor};
 `;
 
 export { Form, FieldItem, BottomBlock, RowFieldItem };
