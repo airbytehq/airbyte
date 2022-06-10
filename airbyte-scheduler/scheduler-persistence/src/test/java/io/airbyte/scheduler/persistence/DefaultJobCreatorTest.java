@@ -25,11 +25,13 @@ import io.airbyte.config.JobTypeResourceLimit;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -57,6 +59,8 @@ public class DefaultJobCreatorTest {
   private static final StandardSync STANDARD_SYNC;
   private static final StandardSyncOperation STANDARD_SYNC_OPERATION;
   private static final long JOB_ID = 12L;
+  private static final StreamDescriptor STREAM_DESCRIPTOR1 = new StreamDescriptor().withName("stream 1").withNamespace("namespace 1");
+  private static final StreamDescriptor STREAM_DESCRIPTOR2 = new StreamDescriptor().withName("stream 2").withNamespace("namespace 2");
 
   private JobPersistence jobPersistence;
   private ConfigRepository configRepository;
@@ -337,7 +341,8 @@ public class DefaultJobCreatorTest {
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
-        .withResourceRequirements(workerResourceRequirements);
+        .withResourceRequirements(workerResourceRequirements)
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamDescriptors(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -350,7 +355,8 @@ public class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
+        List.of(STANDARD_SYNC_OPERATION),
+        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -371,7 +377,8 @@ public class DefaultJobCreatorTest {
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
-        .withResourceRequirements(workerResourceRequirements);
+        .withResourceRequirements(workerResourceRequirements)
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamDescriptors(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -384,7 +391,8 @@ public class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
+        List.of(STANDARD_SYNC_OPERATION),
+        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)).isEmpty());
   }
 
 }
