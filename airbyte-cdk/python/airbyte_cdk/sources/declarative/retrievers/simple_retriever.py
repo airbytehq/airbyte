@@ -152,7 +152,11 @@ class SimpleRetriever(Retriever, HttpStream):
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return self._requester.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        next_page_path = self._paginator.get_path()
+        if next_page_path:
+            return next_page_path
+        else:
+            return self._requester.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
         self,

@@ -1,9 +1,6 @@
 url_base: https://api.sendgrid.com
 
-lists_path:
-  class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
-  string: "{{ next_page_token['next_page_url'] }}"
-  default: "/v3/marketing/lists"
+lists_path: "/v3/marketing/lists"
 
 http_method: GET
 
@@ -24,10 +21,7 @@ primary_key: id
 
 paginator:
   class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
-  interpolated_paginator:
-    class_name: "airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator.InterpolatedPaginator"
-    next_page_token_template:
-      next_page_url: "{{ decoded_response['_metadata']['next'] }}"
+  next_page_url: "{{ decoded_response['_metadata']['next'] }}"
 
 lists_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
