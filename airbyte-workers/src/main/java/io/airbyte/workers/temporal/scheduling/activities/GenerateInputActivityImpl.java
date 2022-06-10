@@ -39,7 +39,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
-            // null check for backwards compatibility with reset jobs that did not have a resetSourceConfiguration
+            // null check for backwards compatibility with reset jobs that did not have a
+            // resetSourceConfiguration
             .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
