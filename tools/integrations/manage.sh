@@ -241,7 +241,7 @@ cmd_publish() {
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
 
-  docker buildx create --name connector-buildx --driver docker
+  docker buildx create --name connector-buildx --driver docker --use
 
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
