@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import pendulum
 import pytest
 import requests
@@ -91,6 +92,7 @@ END_DATE_1 = "2022-05-26T00:00:00Z"
 START_DATE_2 = "2021-01-01T00:00:00Z"
 END_DATE_2 = "2022-07-31T00:00:00Z"
 
+
 @pytest.fixture
 def list_financial_event_groups_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
@@ -173,7 +175,7 @@ def test_financial_event_groups_stream_request_params(list_financial_event_group
     expected_params = {
         "FinancialEventGroupStartedAfter": pendulum.parse(END_DATE_2).subtract(days=180).strftime(DATE_TIME_FORMAT),
         "MaxResultsPerPage": 100,
-        "FinancialEventGroupStartedBefore": END_DATE_2
+        "FinancialEventGroupStartedBefore": END_DATE_2,
     }
     assert expected_params == list_financial_event_groups_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
@@ -200,7 +202,7 @@ def test_financial_events_stream_request_params(list_financial_events_stream):
     expected_params = {
         "PostedAfter": pendulum.parse(END_DATE_2).subtract(days=180).strftime(DATE_TIME_FORMAT),
         "MaxResultsPerPage": 100,
-        "PostedBefore": END_DATE_2
+        "PostedBefore": END_DATE_2,
     }
     assert expected_params == list_financial_events_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
