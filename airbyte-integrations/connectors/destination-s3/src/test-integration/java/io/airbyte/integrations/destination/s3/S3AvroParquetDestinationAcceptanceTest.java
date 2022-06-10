@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
+import io.airbyte.integrations.standardtest.destination.NumberDataTypeTestArgumentProvider;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -15,13 +16,18 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData.Record;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3DestinationAcceptanceTest{
 
@@ -29,32 +35,52 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
     super(s3Format);
   }
 
-  @Test
-  public void testNumberDataType() throws Exception {
-    final AirbyteCatalog catalog = readCatalogFromFile("number_data_type_test_catalog.json");
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = readMessagesFromFile("number_data_type_test_messages.txt");
+  @ParameterizedTest
+  @ArgumentsSource(NumberDataTypeTestArgumentProvider.class)
+  public void testNumberDataType(String catalogFileName, String messagesFileName) throws Exception {
+    final AirbyteCatalog catalog = readCatalogFromFile(catalogFileName);
+    final List<AirbyteMessage> messages = readMessagesFromFile(messagesFileName);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
 
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
 
-      Set<Type> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
-      Optional<Type> actualSchemaTypesWithoutNull = actualSchemaTypes.stream().filter(type -> !type.equals(Type.NULL)).findAny();
+      Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
+      Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
 
-      JsonNode fieldDefinition = stream.getJsonSchema().get("properties").get("data");
-      List<Type> expectedTypeList = getExpectedSchemaType(fieldDefinition);
-      assertEquals(1, expectedTypeList.size(), "Several not null data types are not supported for single stream");
-      assertTrue(actualSchemaTypesWithoutNull.isPresent());
-      assertEquals(expectedTypeList.get(0), actualSchemaTypesWithoutNull.get());
+      assertEquals(expectedSchemaTypes, actualSchemaTypes);
     }
   }
 
-  private List<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
+  private Map<String, Set<Type>> retrieveExpectedDataTypes(AirbyteStream stream) {
+    Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
+    Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
+        .collect(Collectors.toMap(
+            Function.identity(),
+            name -> getJsonNode(stream, name)));
+
+    return nameToNode
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            entry -> getExpectedSchemaType(entry.getValue())));
+  }
+
+  private JsonNode getJsonNode(AirbyteStream stream, String name) {
+    JsonNode properties = stream.getJsonSchema().get("properties");
+    if(properties.size() == 1){
+      return properties.get("data");
+    }
+    return properties.get(name).get("items");
+  }
+
+  private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
     final JsonNode typeProperty = fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
@@ -62,7 +88,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
         .filter(
             value -> value.getJsonSchemaType().equals(typeProperty.asText()) && compareAirbyteTypes(airbyteTypePropertyText, value))
         .map(JsonSchemaType::getAvroType)
-        .toList();
+        .collect(Collectors.toSet());
   }
 
   private boolean compareAirbyteTypes(String airbyteTypePropertyText, JsonSchemaType value) {
@@ -81,19 +107,34 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
   }
 
-  protected abstract Set<Type> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception;
+  protected abstract Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception;
 
-  protected Set<Type> getTypes(Record record) {
-    List<Schema> listAvroTypes = record
+  protected Map<String, Set<Type>> getTypes(Record record) {
+
+    List<Field> fieldList = record
         .getSchema()
-        .getField("data")
-        .schema()
-        .getTypes();
-
-    return listAvroTypes
+        .getFields()
         .stream()
-        .map(Schema::getType)
-        .collect(Collectors.toSet());
+        .filter(field -> !field.name().startsWith("_airbyte"))
+        .toList();
+
+    if(fieldList.size() == 1){
+      return fieldList
+          .stream()
+          .collect(
+              Collectors.toMap(
+                  Field::name,
+                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
+    }else {
+      return fieldList
+          .stream()
+          .collect(
+              Collectors.toMap(
+                  Field::name,
+                  field -> field.schema().getTypes()
+                      .stream().filter(type -> !type.getType().equals(Type.NULL))
+                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
+    }
   }
 
 }

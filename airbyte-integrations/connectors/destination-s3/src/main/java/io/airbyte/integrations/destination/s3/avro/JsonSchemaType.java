@@ -60,11 +60,10 @@ public enum JsonSchemaType {
     }
 
     if (matchSchemaType.isEmpty()) {
-      throw new IllegalArgumentException("Unexpected json schema type: " + jsonSchemaType);
+      throw new IllegalArgumentException(String.format("Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s", jsonSchemaType, jsonSchemaAirbyteType));
     } else if (matchSchemaType.size() > 1) {
       throw new RuntimeException(
-          "Match with more than one json format! Matched formats : " + matchSchemaType + ", Inputs jsonSchemaFormat : " + jsonSchemaType
-              + ", jsonSchemaAirbyteType : " + jsonSchemaAirbyteType);
+          String.format("Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s", matchSchemaType, jsonSchemaType, jsonSchemaAirbyteType));
     } else {
       return matchSchemaType.get(0);
     }

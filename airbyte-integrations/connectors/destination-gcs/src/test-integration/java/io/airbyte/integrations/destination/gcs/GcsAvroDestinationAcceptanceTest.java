@@ -14,9 +14,11 @@ import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.file.DataFileReader;
@@ -75,10 +77,10 @@ public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationA
   }
 
   @Override
-  protected Set<Type> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    Set<Type> dataTypes = new HashSet<>();
+    Map<String, Set<Type>> resultDataTypes = new HashMap<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
@@ -87,12 +89,12 @@ public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationA
           new GenericDatumReader<>())) {
         while (dataFileReader.hasNext()) {
           final GenericData.Record record = dataFileReader.next();
-          Set<Type> actualDataTypes = getTypes(record);
-          dataTypes.addAll(actualDataTypes);
+          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          resultDataTypes.putAll(actualDataTypes);
         }
       }
     }
-    return dataTypes;
+    return resultDataTypes;
   }
 
 }

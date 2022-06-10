@@ -17,6 +17,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,10 +83,10 @@ public class S3ParquetDestinationAcceptanceTest extends S3AvroParquetDestination
   }
 
   @Override
-  protected Set<Type> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    final Set<Type> dataTypes = new HashSet<>();
+    final Map<String, Set<Type>> resultDataTypes = new HashMap<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
@@ -98,13 +99,13 @@ public class S3ParquetDestinationAcceptanceTest extends S3AvroParquetDestination
           .build()) {
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          Set<Type> actualDataTypes = getTypes(record);
-          dataTypes.addAll(actualDataTypes);
+          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          resultDataTypes.putAll(actualDataTypes);
         }
       }
     }
 
-    return dataTypes;
+    return resultDataTypes;
   }
 
 }
