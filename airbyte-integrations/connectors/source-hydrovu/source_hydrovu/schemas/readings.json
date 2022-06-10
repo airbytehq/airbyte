@@ -17,6 +17,9 @@
     "timestamp": {
       "type":  "integer"
     },
+    "time_utc_iso": {
+      "type":  "string"
+    },
     "value": {
       "type":  "number"
     }
