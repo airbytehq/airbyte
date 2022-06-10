@@ -35,7 +35,7 @@
 
   "login.selfhosting": "Interested in self-hosting?",
   "login.opensource": "Open-source",
-  "login.deployInfrastructure": "Deploy in your own infrastructure. Free forever.",
+  "login.deployInfrastructure": "Deploy the open-source version on your own infrastructure",
 
   "workspaces.title": "Select a workspace",
   "workspaces.subtitle": "Workspaces let you collaborate with team members and share sources across your team under a shared billing account.",

@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
+import { GitBlock } from "./GitBlock";
 import Header from "./Header";
 
 const MainBlock = styled.div`
@@ -31,6 +32,7 @@ const FormContent: React.FC<{ toLogin?: boolean }> = (props) => {
           {props.children}
         </FormContainer>
       </MainBlock>
+      <GitBlock />
     </>
   );
 };
