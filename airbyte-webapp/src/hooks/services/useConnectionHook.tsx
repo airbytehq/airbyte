@@ -10,7 +10,6 @@ import { useInitService } from "services/useInitService";
 import { useConfig } from "../../config";
 import {
   ConnectionSchedule,
-  ConnectionState,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
@@ -222,14 +221,6 @@ const useGetConnectionState = () => {
   return useMutation((connectionId: string) => service.getState(connectionId));
 };
 
-const useUpdateConnectionState = () => {
-  const service = useConnectionService();
-
-  return useMutation(({ connectionId, state }: { connectionId: string; state: ConnectionState }) =>
-    service.updateState(connectionId, state)
-  );
-};
-
 export {
   useConnectionList,
   useGetConnection,
@@ -238,5 +229,4 @@ export {
   useDeleteConnection,
   invalidateConnectionsList,
   useGetConnectionState,
-  useUpdateConnectionState,
 };

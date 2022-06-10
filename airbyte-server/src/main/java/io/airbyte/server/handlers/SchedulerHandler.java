@@ -14,8 +14,6 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
-import io.airbyte.api.model.generated.ConnectionUpdateStateBody;
-import io.airbyte.api.model.generated.ConnectionUpdateStateResponse;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -68,12 +66,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -328,38 +322,17 @@ public class SchedulerHandler {
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final UUID connectionId = connectionIdRequestBody.getConnectionId();
-    return getStateFromConnectionUUID(connectionId);
+    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
+    LOGGER.info("currentState server: {}", currentState);
+
+    final ConnectionState connectionState = new ConnectionState()
+        .connectionId(connectionIdRequestBody.getConnectionId());
+
+    currentState.ifPresent(state -> connectionState.state(state.getState()));
+
+    return connectionState;
   }
 
-  public ConnectionUpdateStateResponse updateState(final ConnectionUpdateStateBody connectionUpdateStateBody) throws IOException {
-    String errorMessage = null;
-    Boolean successful = false;
-    final UUID connectionId = connectionUpdateStateBody.getConnectionId();
-    final Set<ConfigType> configTypes = new HashSet();
-    configTypes.add(ConfigType.SYNC);
-    final List<Job> runningJobs = jobPersistence.listJobs(configTypes, connectionId.toString(), 2, 0)
-        .stream().filter(j -> !j.isJobInTerminalState())
-        .collect(Collectors.toList());
-
-    if (runningJobs.size() == 0) {
-      final State state = new State();
-      state.setState(connectionUpdateStateBody.getState());
-      configRepository.updateConnectionState(connectionId, state);
-      successful = true;
-    } else {
-      errorMessage = "Sync is running";
-    }
-
-    final ConnectionUpdateStateResponse response = new ConnectionUpdateStateResponse();
-    response.setState(getStateFromConnectionUUID(connectionId).getState());
-    response.setConnectionId(connectionId);
-    response.setErrorMessage(errorMessage);
-    response.setSuccessful(successful);
-    return response;
-  }
-
-  // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
@@ -425,16 +398,6 @@ public class SchedulerHandler {
     final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());
 
     return jobConverter.getJobInfoRead(job);
-  }
-
-  private ConnectionState getStateFromConnectionUUID(final UUID connectionId) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionId);
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState().connectionId(connectionId);
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-    return connectionState;
   }
 
 }

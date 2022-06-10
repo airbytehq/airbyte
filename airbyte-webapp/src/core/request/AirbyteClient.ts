@@ -182,6 +182,16 @@ export type CompleteDestinationOAuthRequestQueryParams = { [key: string]: any };
  */
 export type CompleteSourceOauthRequestQueryParams = { [key: string]: any };
 
+export interface CompleteSourceOauthRequest {
+  sourceDefinitionId: SourceDefinitionId;
+  workspaceId: WorkspaceId;
+  /** When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. */
+  redirectUrl?: string;
+  /** The query parameters present in the redirect URL after a user granted consent e.g auth code */
+  queryParams?: CompleteSourceOauthRequestQueryParams;
+  oAuthInputConfiguration?: OAuthInputConfiguration;
+}
+
 export interface OAuthConsentRead {
   consentUrl: string;
 }
@@ -318,16 +328,6 @@ export interface CompleteDestinationOAuthRequest {
   oAuthInputConfiguration?: OAuthInputConfiguration;
 }
 
-export interface CompleteSourceOauthRequest {
-  sourceDefinitionId: SourceDefinitionId;
-  workspaceId: WorkspaceId;
-  /** When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. */
-  redirectUrl?: string;
-  /** The query parameters present in the redirect URL after a user granted consent e.g auth code */
-  queryParams?: CompleteSourceOauthRequestQueryParams;
-  oAuthInputConfiguration?: OAuthInputConfiguration;
-}
-
 export type DbMigrationState = typeof DbMigrationState[keyof typeof DbMigrationState];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -415,13 +415,6 @@ export interface ActorDefinitionResourceRequirements {
 
 export interface ConnectionStateObject {
   [key: string]: any;
-}
-
-export interface ConnectionUpdateStateResponse {
-  connectionId: ConnectionId;
-  state: ConnectionStateObject;
-  successful: boolean;
-  errorMessage?: string;
 }
 
 export interface ConnectionState {
@@ -768,13 +761,6 @@ export interface OperationCreate {
 
 export type OperationId = string;
 
-export interface WebBackendOperationCreateOrUpdate {
-  operationId?: OperationId;
-  workspaceId: WorkspaceId;
-  name: string;
-  operatorConfiguration: OperatorConfiguration;
-}
-
 export interface OperationUpdate {
   operationId: OperationId;
   name: string;
@@ -832,9 +818,23 @@ export interface ConnectionReadList {
   connections: ConnectionRead[];
 }
 
-export interface ConnectionUpdateStateBody {
+export interface WebBackendConnectionUpdate {
+  /** Name that will be set to the connection */
+  name?: string;
   connectionId: ConnectionId;
-  state: ConnectionStateObject;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  operationIds?: OperationId[];
+  syncCatalog: AirbyteCatalog;
+  schedule?: ConnectionSchedule;
+  status: ConnectionStatus;
+  resourceRequirements?: ResourceRequirements;
+  withRefreshedCatalog?: boolean;
+  operations?: WebBackendOperationCreateOrUpdate[];
+  sourceCatalogId?: string;
 }
 
 export interface WebBackendConnectionCreate {
@@ -880,31 +880,6 @@ export interface DbMigrationRequestBody {
 
 export type ConnectionId = string;
 
-export interface SourceSearch {
-  sourceDefinitionId?: SourceDefinitionId;
-  sourceId?: SourceId;
-  workspaceId?: WorkspaceId;
-  connectionConfiguration?: SourceConfiguration;
-  name?: string;
-  sourceName?: string;
-}
-
-export interface WebBackendConnectionSearch {
-  connectionId?: ConnectionId;
-  name?: string;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  sourceId?: SourceId;
-  destinationId?: DestinationId;
-  schedule?: ConnectionSchedule;
-  status?: ConnectionStatus;
-  source?: SourceSearch;
-  destination?: DestinationSearch;
-}
-
 export interface ConnectionSearch {
   connectionId?: ConnectionId;
   name?: string;
@@ -919,43 +894,6 @@ export interface ConnectionSearch {
   status?: ConnectionStatus;
   source?: SourceSearch;
   destination?: DestinationSearch;
-}
-
-export interface ConnectionRead {
-  connectionId: ConnectionId;
-  name: string;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  sourceId: SourceId;
-  destinationId: DestinationId;
-  operationIds?: OperationId[];
-  syncCatalog: AirbyteCatalog;
-  schedule?: ConnectionSchedule;
-  status: ConnectionStatus;
-  resourceRequirements?: ResourceRequirements;
-  sourceCatalogId?: string | null;
-}
-
-export interface WebBackendConnectionUpdate {
-  /** Name that will be set to the connection */
-  name?: string;
-  connectionId: ConnectionId;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  operationIds?: OperationId[];
-  syncCatalog: AirbyteCatalog;
-  schedule?: ConnectionSchedule;
-  status: ConnectionStatus;
-  resourceRequirements?: ResourceRequirements;
-  withRefreshedCatalog?: boolean;
-  operations?: WebBackendOperationCreateOrUpdate[];
-  sourceCatalogId?: string;
 }
 
 export interface ConnectionUpdate {
@@ -1041,6 +979,40 @@ export interface DestinationCoreConfig {
 
 export type DestinationId = string;
 
+export interface WebBackendConnectionSearch {
+  connectionId?: ConnectionId;
+  name?: string;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  sourceId?: SourceId;
+  destinationId?: DestinationId;
+  schedule?: ConnectionSchedule;
+  status?: ConnectionStatus;
+  source?: SourceSearch;
+  destination?: DestinationSearch;
+}
+
+export interface ConnectionRead {
+  connectionId: ConnectionId;
+  name: string;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  sourceId: SourceId;
+  destinationId: DestinationId;
+  operationIds?: OperationId[];
+  syncCatalog: AirbyteCatalog;
+  schedule?: ConnectionSchedule;
+  status: ConnectionStatus;
+  resourceRequirements?: ResourceRequirements;
+  sourceCatalogId?: string | null;
+}
+
 export interface DestinationIdRequestBody {
   destinationId: DestinationId;
 }
@@ -1062,9 +1034,28 @@ export interface DestinationDefinitionSpecificationRead {
   supportsNormalization?: boolean;
 }
 
+export interface PrivateDestinationDefinitionRead {
+  destinationDefinition: DestinationDefinitionRead;
+  granted: boolean;
+}
+
+export interface PrivateDestinationDefinitionReadList {
+  destinationDefinitions: PrivateDestinationDefinitionRead[];
+}
+
 export interface DestinationDefinitionIdWithWorkspaceId {
   destinationDefinitionId: DestinationDefinitionId;
   workspaceId: WorkspaceId;
+}
+
+export interface CustomDestinationDefinitionUpdate {
+  workspaceId: WorkspaceId;
+  destinationDefinition: DestinationDefinitionUpdate;
+}
+
+export interface CustomDestinationDefinitionCreate {
+  workspaceId: WorkspaceId;
+  destinationDefinition: DestinationDefinitionCreate;
 }
 
 export interface DestinationDefinitionRead {
@@ -1080,15 +1071,6 @@ export interface DestinationDefinitionRead {
   resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
-export interface PrivateDestinationDefinitionRead {
-  destinationDefinition: DestinationDefinitionRead;
-  granted: boolean;
-}
-
-export interface PrivateDestinationDefinitionReadList {
-  destinationDefinitions: PrivateDestinationDefinitionRead[];
-}
-
 export interface DestinationDefinitionReadList {
   destinationDefinitions: DestinationDefinitionRead[];
 }
@@ -1099,11 +1081,6 @@ export interface DestinationDefinitionUpdate {
   resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
-export interface CustomDestinationDefinitionUpdate {
-  workspaceId: WorkspaceId;
-  destinationDefinition: DestinationDefinitionUpdate;
-}
-
 export interface DestinationDefinitionCreate {
   name: string;
   dockerRepository: string;
@@ -1111,11 +1088,6 @@ export interface DestinationDefinitionCreate {
   documentationUrl: string;
   icon?: string;
   resourceRequirements?: ActorDefinitionResourceRequirements;
-}
-
-export interface CustomDestinationDefinitionCreate {
-  workspaceId: WorkspaceId;
-  destinationDefinition: DestinationDefinitionCreate;
 }
 
 export interface DestinationDefinitionIdRequestBody {
@@ -1397,6 +1369,22 @@ export interface WorkspaceCreate {
 export type CustomerId = string;
 
 export type WorkspaceId = string;
+
+export interface WebBackendOperationCreateOrUpdate {
+  operationId?: OperationId;
+  workspaceId: WorkspaceId;
+  name: string;
+  operatorConfiguration: OperatorConfiguration;
+}
+
+export interface SourceSearch {
+  sourceDefinitionId?: SourceDefinitionId;
+  sourceId?: SourceId;
+  workspaceId?: WorkspaceId;
+  connectionConfiguration?: SourceConfiguration;
+  name?: string;
+  sourceName?: string;
+}
 
 // eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
@@ -2465,24 +2453,6 @@ export const getState = (
 };
 
 /**
- * @summary Set the current state for a connection.
- */
-export const updateState = (
-  connectionUpdateStateBody: ConnectionUpdateStateBody,
-  options?: SecondParameter<typeof apiOverride>
-) => {
-  return apiOverride<ConnectionUpdateStateResponse>(
-    {
-      url: `/v1/state/update`,
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      data: connectionUpdateStateBody,
-    },
-    options
-  );
-};
-
-/**
  * @summary Search connections
  */
 export const searchConnections = (
@@ -3239,7 +3209,6 @@ export type ListAllConnectionsForWorkspaceResult = NonNullable<
 >;
 export type GetConnectionResult = NonNullable<Awaited<ReturnType<typeof getConnection>>>;
 export type GetStateResult = NonNullable<Awaited<ReturnType<typeof getState>>>;
-export type UpdateStateResult = NonNullable<Awaited<ReturnType<typeof updateState>>>;
 export type SearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof searchConnections>>>;
 export type DeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>;
 export type SyncConnectionResult = NonNullable<Awaited<ReturnType<typeof syncConnection>>>;

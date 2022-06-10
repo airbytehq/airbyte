@@ -401,9 +401,6 @@
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
   "tables.connectionState.title": "Connection State",
   "tables.connectionState.p1": "The connection's current state",
-  "tables.connectionState.confirmModalTitle": "Update connection State?",
-  "tables.connectionState.confirmModalText": "Be extremely careful when modifying state - mistakes can lead to unrecoverable syncs!",
-  "tables.connectionState.save": "Save connection state",
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",

@@ -53,35 +53,38 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
     setCode(newCode);
   };
 
-  const onClick = async () => {
-    let valid = true;
-    if (validate) {
-      const validationResponse = validate(code);
-      setValidation(validationResponse);
-      valid = validationResponse.valid;
-    }
-    if (onSave && valid) {
-      if (useModal) {
-        openConfirmationModal({
-          text: modalTextKey ?? "",
-          title: modalTitleKey ?? "",
-          submitButtonText: "form.saveChanges",
-          onSubmit: async () => {
-            const updateResponse = await onSave(code);
-            if (updateResponse) {
-              setValidation(updateResponse);
+  const onClick =
+    onSave || validate
+      ? async () => {
+          let valid = true;
+          if (validate) {
+            const validationResponse = validate(code);
+            setValidation(validationResponse);
+            valid = validationResponse.valid;
+          }
+          if (onSave && valid) {
+            if (useModal) {
+              openConfirmationModal({
+                text: modalTextKey ?? "",
+                title: modalTitleKey ?? "",
+                submitButtonText: "form.saveChanges",
+                onSubmit: async () => {
+                  const updateResponse = await onSave(code);
+                  if (updateResponse) {
+                    setValidation(updateResponse);
+                  }
+                  closeConfirmationModal();
+                },
+              });
+            } else {
+              const updateResponse = await onSave(code);
+              if (updateResponse) {
+                setValidation(updateResponse);
+              }
             }
-            closeConfirmationModal();
-          },
-        });
-      } else {
-        const updateResponse = await onSave(code);
-        if (updateResponse) {
-          setValidation(updateResponse);
+          }
         }
-      }
-    }
-  };
+      : undefined;
 
   return (
     <>
@@ -99,11 +102,13 @@ const CodeEditor: React.FC<AirbyteCodeEditorProps> = ({
         }}
       />
       {validation.valid === false && <div className={styles.errorText}>{validation.errorMessage || "Invalid"}</div>}
-      <div style={{ paddingLeft: 19, paddingTop: 10 }}>
-        <LoadingButton type="submit" onClick={onClick} isLoading={loading} disabled={!validation?.valid}>
-          {saveButtonCTA || "Save"}
-        </LoadingButton>
-      </div>
+      {onClick && (
+        <div style={{ paddingLeft: 19, paddingTop: 10 }}>
+          <LoadingButton type="submit" onClick={onClick} isLoading={loading} disabled={!validation?.valid}>
+            {saveButtonCTA || "Save"}
+          </LoadingButton>
+        </div>
+      )}
     </>
   );
 };
