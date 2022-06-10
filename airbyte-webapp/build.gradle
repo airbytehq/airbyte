@@ -66,6 +66,8 @@ task copyDocs(type: Copy) {
 
     from "${project.rootProject.projectDir}/docs/integrations"
     into "build/docker/bin/docs/integrations"
+    //google-ads.md is blocked by Ad Blockers
+    rename ('google-ads.md', 'gglad.md')
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
