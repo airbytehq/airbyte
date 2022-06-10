@@ -28,7 +28,7 @@ class DelightedStream(HttpStream, ABC):
     # Define primary key to all streams as primary key
     primary_key = "id"
 
-    def __init__(self, since: pendulum.datetime.DateTime, **kwargs):
+    def __init__(self, since: pendulum.datetime, **kwargs):
         super().__init__(**kwargs)
         self.since = since
 
