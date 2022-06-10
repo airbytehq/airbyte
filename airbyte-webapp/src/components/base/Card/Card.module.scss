@@ -1,10 +1,10 @@
-@import "../../../scss/colors";
-@import "../../../scss/variables";
+@use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .card {
-  background-color: $white;
-  box-shadow: $shadow-2;
-  border-radius: $rounded-4;
+  background-color: colors.$white;
+  box-shadow: variables.$shadow-2;
+  border-radius: variables.$rounded-4;
 
   &.full {
     width: 100%;

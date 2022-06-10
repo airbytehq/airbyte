@@ -1,4 +1,4 @@
-@import "./colors";
+@use "./colors";
 
 $transition: 0.3s;
 $defaultBottomMargin: 150px;
@@ -25,8 +25,8 @@ $spacing-xl: 20px;
 $spacing-2xl: 40px;
 
 // ON buttons
-$shadow-1: 0px 3px 4px -2px rgba($dark-blue, 0.21);
+$shadow-1: 0px 3px 4px -2px rgba(colors.$dark-blue, 0.21);
 // Card normal "box/default"
-$shadow-2: 0px 2px 4px rgba($dark-blue, 0.12);
+$shadow-2: 0px 2px 4px rgba(colors.$dark-blue, 0.12);
 // Card hover
-$shadow-3: 0px 4px 8px rgba($dark-blue, 0.12), 0px 27px 12px -17px rgba(26, 25, 77, 0.2);
+$shadow-3: 0px 4px 8px rgba(colors.$dark-blue, 0.12), 0px 27px 12px -17px rgba(colors.$dark-blue-900, 0.2);

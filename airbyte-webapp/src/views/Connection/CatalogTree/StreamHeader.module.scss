@@ -3,7 +3,7 @@
 @forward "./CatalogTree.module.scss";
 
 .removedStream {
-  color: colors.$dangerColor;
+  color: colors.$red;
 }
 
 .icon {
@@ -13,7 +13,7 @@
     color: colors.$successColor;
   }
   &.minus {
-    color: colors.$dangerColor;
+    color: colors.$red;
   }
 }
 
@@ -56,7 +56,7 @@
 }
 
 .redBorder {
-  border: 1px solid colors.$dangerColor;
+  border: 1px solid colors.$red;
 }
 
 .purpleBackground {
