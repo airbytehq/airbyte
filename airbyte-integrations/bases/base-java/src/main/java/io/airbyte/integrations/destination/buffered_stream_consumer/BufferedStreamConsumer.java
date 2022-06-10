@@ -193,9 +193,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
-      if (!lastFlushedState.isEmpty()) {
-        lastFlushedState.forEach(outputRecordCollector);
-      }
+      lastFlushedState.forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;
