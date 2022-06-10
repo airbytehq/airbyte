@@ -76,8 +76,8 @@ public class StateManagerFactoryTest {
 
     final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
 
-    // TODO replace with non-null assertion and type assertion once the Global state manager exists
-    Assertions.assertNull(stateManager);
+    Assertions.assertNotNull(stateManager);
+    Assertions.assertEquals(GlobalStateManager.class, stateManager.getClass());
   }
 
   @Test
