@@ -31,15 +31,17 @@ class HttpRequester(Requester):
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
         http_method: Union[str, HttpMethod],
-        request_parameters_provider: RequestParameterProvider = None,
+        request_parameters: RequestParameterProvider = None,
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
         decoder: Decoder = JsonDecoder(),
         retrier: Retrier,
         config: Config,
     ):
-        if request_parameters_provider is None:
+        if request_parameters is None:
             request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_headers={})
+        elif isinstance(request_parameters, dict):
+            request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_parameters=request_parameters)
         if request_headers_provider is None:
             request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
         self._name = name

@@ -7,12 +7,7 @@ http_method: GET
 authenticator:
   class_name: "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator"
   token: "{{ config['apikey'] }}"
-
-request_parameters_provider:
-  class_name: "airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider"
-  request_parameters:
-    page_size: 10
-
+  
 extractor:
   type: "jq"
   transform: ".result[]"
@@ -44,7 +39,8 @@ lists_stream:
       path: "*ref(lists_path)"
       http_method: "*ref(http_method)"
       authenticator: "*ref(authenticator)"
-      request_parameters_provider: "*ref(request_parameters_provider)"
+      request_parameters:
+        page_size: 10
       retrier:
         class_name: "airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier"
     extractor: "*ref(extractor)"
