@@ -11,6 +11,11 @@ from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
 
+class_registry = {
+    "jq": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
+    "NextPageUrlPaginator": "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator",
+}
+
 
 class DeclarativeComponentFactory:
     def __init__(self):
@@ -50,6 +55,12 @@ class DeclarativeComponentFactory:
             # propagate kwargs to inner objects
             v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
 
+            return self.create_component(v, config)()
+        elif isinstance(v, dict) and "type" in v:
+            v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
+            object_type = v.pop("type")
+            class_name = class_registry[object_type]
+            v["class_name"] = class_name
             return self.create_component(v, config)()
         elif isinstance(v, list):
             return [

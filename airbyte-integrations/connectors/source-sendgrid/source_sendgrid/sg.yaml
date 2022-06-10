@@ -14,18 +14,17 @@ request_parameters_provider:
     page_size: 10
 
 extractor:
-  class_name: "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor"
+  type: "jq"
   transform: ".result[]"
 
 primary_key: id
 
 paginator:
-  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
+  type: "NextPageUrlPaginator"
   next_page_url: "{{ decoded_response['_metadata']['next'] }}"
 
 lists_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
-  cursor_field: [ ]
   options:
     name: "lists"
     primary_key: "*ref(primary_key)"
