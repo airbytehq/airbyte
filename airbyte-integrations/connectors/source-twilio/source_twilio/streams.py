@@ -120,7 +120,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = max(value[self.cursor_field], self._cursor_value)
+      self._cursor_value = value[self.cursor_field]
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
