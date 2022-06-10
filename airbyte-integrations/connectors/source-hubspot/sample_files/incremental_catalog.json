@@ -232,7 +232,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "default_cursor_field": ["timestamp"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["timestamp"],
       "destination_sync_mode": "overwrite"
     },

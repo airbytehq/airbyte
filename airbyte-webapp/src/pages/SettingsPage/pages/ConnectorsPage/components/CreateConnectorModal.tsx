@@ -101,7 +101,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
             id="admin.learnMore"
             values={{
               lnk: (lnk: React.ReactNode) => (
-                <DocLink target="_blank" href={config.ui.docsLink} as="a">
+                <DocLink target="_blank" href={config.links.docsLink} as="a">
                   {lnk}
                 </DocLink>
               ),
