@@ -162,8 +162,7 @@ class SourceDelighted(AbstractSource):
 
         try:
             auth = self._get_authenticator(config)
-            args = {"authenticator": auth, "since": pendulum.parse(config["since"])}
-            stream = SurveyResponses(**args)
+            stream = SurveyResponses(authenticator=auth, since=pendulum.parse(config["since"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -172,10 +171,10 @@ class SourceDelighted(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
-        args = {"authenticator": auth, "since": pendulum.parse(config["since"])}
+        stream_kwargs = {"authenticator": auth, "since": pendulum.parse(config["since"])}
         return [
-            Bounces(**args),
-            People(**args),
-            SurveyResponses(**args),
-            Unsubscribes(**args),
+            Bounces(**stream_kwargs),
+            People(**stream_kwargs),
+            SurveyResponses(**stream_kwargs),
+            Unsubscribes(**stream_kwargs),
         ]
