@@ -44,7 +44,7 @@
         "default": 0,
         "type": "integer",
         "order": 4
-      },
+      }
     }
   },
   "supportsIncremental": true,
