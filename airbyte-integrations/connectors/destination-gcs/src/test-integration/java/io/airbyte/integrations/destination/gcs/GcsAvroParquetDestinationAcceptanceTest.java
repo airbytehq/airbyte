@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -19,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,7 +30,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData.Record;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -59,6 +60,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
       assertEquals(expectedSchemaTypes, actualSchemaTypes);
     }
   }
+
   private Map<String, Set<Type>> retrieveExpectedDataTypes(AirbyteStream stream) {
     Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
     Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
@@ -76,7 +78,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
 
   private JsonNode getJsonNode(AirbyteStream stream, String name) {
     JsonNode properties = stream.getJsonSchema().get("properties");
-    if(properties.size() == 1){
+    if (properties.size() == 1) {
       return properties.get("data");
     }
     return properties.get(name).get("items");
@@ -94,7 +96,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
   }
 
   private boolean compareAirbyteTypes(String airbyteTypePropertyText, JsonSchemaType value) {
-    if (airbyteTypePropertyText == null){
+    if (airbyteTypePropertyText == null) {
       return value.getJsonSchemaAirbyteType() == null;
     }
     return airbyteTypePropertyText.equals(value.getJsonSchemaAirbyteType());
@@ -120,14 +122,15 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
         .filter(field -> !field.name().startsWith("_airbyte"))
         .toList();
 
-    if(fieldList.size() == 1){
+    if (fieldList.size() == 1) {
       return fieldList
           .stream()
           .collect(
               Collectors.toMap(
                   Field::name,
-                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
-    }else {
+                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL))
+                      .collect(Collectors.toSet())));
+    } else {
       return fieldList
           .stream()
           .collect(
@@ -135,7 +138,8 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
                   Field::name,
                   field -> field.schema().getTypes()
                       .stream().filter(type -> !type.getType().equals(Type.NULL))
-                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
+                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL))
+                      .collect(Collectors.toSet())));
     }
   }
 

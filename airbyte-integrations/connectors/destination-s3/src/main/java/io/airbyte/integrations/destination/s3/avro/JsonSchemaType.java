@@ -60,10 +60,12 @@ public enum JsonSchemaType {
     }
 
     if (matchSchemaType.isEmpty()) {
-      throw new IllegalArgumentException(String.format("Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s", jsonSchemaType, jsonSchemaAirbyteType));
+      throw new IllegalArgumentException(
+          String.format("Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s", jsonSchemaType, jsonSchemaAirbyteType));
     } else if (matchSchemaType.size() > 1) {
       throw new RuntimeException(
-          String.format("Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s", matchSchemaType, jsonSchemaType, jsonSchemaAirbyteType));
+          String.format("Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s",
+              matchSchemaType, jsonSchemaType, jsonSchemaAirbyteType));
     } else {
       return matchSchemaType.get(0);
     }
@@ -89,4 +91,5 @@ public enum JsonSchemaType {
   public String getJsonSchemaAirbyteType() {
     return jsonSchemaAirbyteType;
   }
+
 }

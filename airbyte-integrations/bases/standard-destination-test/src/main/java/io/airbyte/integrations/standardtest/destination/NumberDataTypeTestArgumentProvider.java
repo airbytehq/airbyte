@@ -20,8 +20,7 @@ public class NumberDataTypeTestArgumentProvider implements ArgumentsProvider {
   public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
     return Stream.of(
         Arguments.of(NUMBER_DATA_TYPE_TEST_CATALOG, NUMBER_DATA_TYPE_TEST_MESSAGES),
-        Arguments.of(NUMBER_DATA_TYPE_ARRAY_TEST_CATALOG, NUMBER_DATA_TYPE_ARRAY_TEST_MESSAGES)
-    );
+        Arguments.of(NUMBER_DATA_TYPE_ARRAY_TEST_CATALOG, NUMBER_DATA_TYPE_ARRAY_TEST_MESSAGES));
   }
 
 }

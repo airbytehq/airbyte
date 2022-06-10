@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -29,7 +32,7 @@ import org.apache.avro.generic.GenericData.Record;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3DestinationAcceptanceTest{
+public abstract class S3AvroParquetDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
   protected S3AvroParquetDestinationAcceptanceTest(S3Format s3Format) {
     super(s3Format);
@@ -74,7 +77,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
 
   private JsonNode getJsonNode(AirbyteStream stream, String name) {
     JsonNode properties = stream.getJsonSchema().get("properties");
-    if(properties.size() == 1){
+    if (properties.size() == 1) {
       return properties.get("data");
     }
     return properties.get(name).get("items");
@@ -92,7 +95,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
   }
 
   private boolean compareAirbyteTypes(String airbyteTypePropertyText, JsonSchemaType value) {
-    if (airbyteTypePropertyText == null){
+    if (airbyteTypePropertyText == null) {
       return value.getJsonSchemaAirbyteType() == null;
     }
     return airbyteTypePropertyText.equals(value.getJsonSchemaAirbyteType());
@@ -118,14 +121,15 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
         .filter(field -> !field.name().startsWith("_airbyte"))
         .toList();
 
-    if(fieldList.size() == 1){
+    if (fieldList.size() == 1) {
       return fieldList
           .stream()
           .collect(
               Collectors.toMap(
                   Field::name,
-                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
-    }else {
+                  field -> field.schema().getTypes().stream().map(Schema::getType).filter(type -> !type.equals(Type.NULL))
+                      .collect(Collectors.toSet())));
+    } else {
       return fieldList
           .stream()
           .collect(
@@ -133,7 +137,8 @@ public abstract class S3AvroParquetDestinationAcceptanceTest  extends S3Destinat
                   Field::name,
                   field -> field.schema().getTypes()
                       .stream().filter(type -> !type.getType().equals(Type.NULL))
-                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL)).collect(Collectors.toSet())));
+                      .flatMap(type -> type.getElementType().getTypes().stream()).map(Schema::getType).filter(type -> !type.equals(Type.NULL))
+                      .collect(Collectors.toSet())));
     }
   }
 
