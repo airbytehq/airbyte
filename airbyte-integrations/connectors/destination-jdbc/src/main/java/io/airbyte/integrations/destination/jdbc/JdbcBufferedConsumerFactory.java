@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
-import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -49,11 +48,11 @@ public class JdbcBufferedConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final JdbcDatabase database,
-                                              final SqlOperations sqlOperations,
-                                              final NamingConventionTransformer namingResolver,
-                                              final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog) {
+      final JdbcDatabase database,
+      final SqlOperations sqlOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
@@ -66,9 +65,9 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final boolean schemaRequired) {
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final boolean schemaRequired) {
     if (schemaRequired) {
       Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
     }
@@ -77,10 +76,10 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-                                                                              final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config,
-                                                                              final Instant now,
-                                                                              final boolean schemaRequired) {
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final Instant now,
+      final boolean schemaRequired) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
@@ -102,23 +101,21 @@ public class JdbcBufferedConsumerFactory {
   }
 
   /**
-   * Defer to the {@link AirbyteStream}'s namespace. If this is not set, use the destination's default
-   * schema. This namespace is source-provided, and can be potentially empty.
-   *
-   * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications
-   * need to be reflected there and vice versa.
+   * Defer to the {@link AirbyteStream}'s namespace. If this is not set, use the destination's default schema. This namespace is source-provided, and can be potentially empty.
+   * <p>
+   * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications need to be reflected there and vice versa.
    */
   private static String getOutputSchema(final AirbyteStream stream,
-                                        final String defaultDestSchema,
-                                        final NamingConventionTransformer namingResolver) {
+      final String defaultDestSchema,
+      final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
         ? namingResolver.getNamespace(stream.getNamespace())
         : namingResolver.getNamespace(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
-                                                 final SqlOperations sqlOperations,
-                                                 final List<WriteConfig> writeConfigs) {
+      final SqlOperations sqlOperations,
+      final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -135,9 +132,9 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
-                                                                         final SqlOperations sqlOperations,
-                                                                         final List<WriteConfig> writeConfigs,
-                                                                         final ConfiguredAirbyteCatalog catalog) {
+      final SqlOperations sqlOperations,
+      final List<WriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
@@ -153,13 +150,13 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static OnCloseFunction onCloseFunction(final JdbcDatabase database,
-                                                 final SqlOperations sqlOperations,
-                                                 final List<WriteConfig> writeConfigs) {
+      final SqlOperations sqlOperations,
+      final List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
-        sqlOperations.onDestinationCloseOperations(database, writeConfigs.stream().map(WriteConfig::getOutputSchemaName).collect(toSet()));
+        sqlOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();
@@ -178,23 +175,25 @@ public class JdbcBufferedConsumerFactory {
           queryList.add(sqlOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
         }
 
-        LOGGER.info("Executing finalization of tables.");
-        sqlOperations.executeTransaction(database, queryList);
-        LOGGER.info("Finalizing tables in destination completed.");
-      }
-      // clean up
-      LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
-      for (final WriteConfig writeConfig : writeConfigs) {
-        final String schemaName = writeConfig.getOutputSchemaName();
-        final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
-            tmpTableName);
+      LOGGER.info("Executing finalization of tables.");
+      sqlOperations.executeTransaction(database, queryList);
+      LOGGER.info("Finalizing tables in destination completed.");
+    }
+    // clean up
+    LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
+    for (final WriteConfig writeConfig : writeConfigs) {
+      final String schemaName = writeConfig.getOutputSchemaName();
+      final String tmpTableName = writeConfig.getTmpTableName();
+      LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
+          tmpTableName);
 
-        sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
-      }
-      LOGGER.info("Cleaning tmp tables in destination completed.");
-    };
+      sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
+    }
+    LOGGER.info("Cleaning tmp tables in destination completed.");
   }
+
+  ;
+}
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());

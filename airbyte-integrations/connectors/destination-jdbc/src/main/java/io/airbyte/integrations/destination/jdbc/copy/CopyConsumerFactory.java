@@ -162,8 +162,6 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
-        sqlOperations.onDestinationCloseOperations(db,
-            pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {
