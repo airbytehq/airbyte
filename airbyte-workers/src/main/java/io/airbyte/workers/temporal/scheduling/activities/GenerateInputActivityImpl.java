@@ -31,7 +31,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final Job job = jobPersistence.getJob(jobId);
       JobSyncConfig config = job.getConfig().getSync();
       if (input.isReset()) {
-        // fetch the streams to reset
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
         config = new JobSyncConfig()
@@ -40,6 +39,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            // null check for backwards compatibility with reset jobs that did not have a resetSourceConfiguration
             .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
