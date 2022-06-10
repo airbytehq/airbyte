@@ -22,8 +22,8 @@ metadata_path = record_path + "metadata-catalog/"
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
-    def __init__(self, auth: OAuth1, name: str, base_url: str, start_datetime: str, concurrency_limit: int = 1):
-        self.obj_name = name
+    def __init__(self, auth: OAuth1, obj_name: str, base_url: str, start_datetime: str, concurrency_limit: int = 1):
+        self.obj_name = obj_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.concurrency_limit = concurrency_limit
@@ -105,11 +105,7 @@ class NetsuiteStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        query = {}
-        if self.start_datetime:
-            fmt_date = self.format_date(self.start_datetime)
-            query = {"q": f"lastModifiedDate AFTER {fmt_date}"}
-        return {**query, **next_page_token}
+        return next_page_token
 
     def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         url = record["links"][0]["href"]
@@ -142,21 +138,24 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs: Optional[Mapping[str, Any]]
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # Netsuite cannot order records returned by the API, so we need stream slices
-        # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
-        ranges = []
-        start_str = (
-            (stream_state.get(self.cursor_field) or self.start_datetime) if sync_mode == SyncMode.incremental else self.start_datetime
-        )
-        first = datetime.strptime(start_str, self.output_datetime_format)
-        start = first.date() + timedelta(days=1)
-        # we want the first slice to be after the datetime of the last cursor
-        ranges.append([self.format_date(start_str), start.isoformat()])
-        while start <= date.today():
-            next_day = start + timedelta(days=1)
-            ranges.append([start.isoformat(), next_day.isoformat()])
-            start = next_day
-        return [{"q": f'{self.cursor_field} AFTER "{r[0]}" AND {self.cursor_field} BEFORE {r[1]}'} for r in ranges]
+        if sync_mode == SyncMode.incremental:
+            # Netsuite cannot order records returned by the API, so we need stream slices
+            # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
+            ranges = []
+            start_str = (
+                (stream_state.get(self.cursor_field) or self.start_datetime) if sync_mode == SyncMode.incremental else self.start_datetime
+            )
+            first = datetime.strptime(start_str, self.output_datetime_format)
+            start = first.date() + timedelta(days=1)
+            # we want the first slice to be after the datetime of the last cursor
+            ranges.append([self.format_date(start_str), start.isoformat()])
+            while start <= date.today():
+                next_day = start + timedelta(days=1)
+                ranges.append([start.isoformat(), next_day.isoformat()])
+                start = next_day
+            return [{"q": f'{self.cursor_field} AFTER "{r[0]}" AND {self.cursor_field} BEFORE {r[1]}'} for r in ranges]
+        else:
+            return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field) or ""
@@ -201,16 +200,20 @@ class SourceNetsuite(AbstractSource):
             requests.options(url, auth=auth).raise_for_status()
         return True, None
 
-    def record_types(self, base_url: str, auth: OAuth1) -> List[str]:
-        # get the names of all the record types in an org
-        url = base_url + metadata_path
-        records = requests.get(url, auth=auth).json().get("items")
-        return [r["name"] for r in records]
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         base_url = self.base_url(config)
         auth = self.auth(config)
         start_datetime = config["start_datetime"]
         concurrency_limit = config.get("concurrency_limit")
-        record_types = config.get("record_types") or self.record_types(base_url, auth)
-        return [IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in record_types]
+
+        metadata_url = base_url + metadata_path
+        record_names = config.get("record_types") or [r["name"] for r in requests.get(metadata_url, auth=auth).json().get("items")]
+
+        # streams must have a lastModifiedDate property to be incremental
+        incremental_record_names = [n for n in record_names if requests.get(metadata_url + n, auth=auth).json().get("lastModifiedDate")]
+        standard_record_names = [n for n in record_names if n not in incremental_record_names]
+
+        streams = [NetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in standard_record_names]
+        incremental_streams = [IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in incremental_record_names]
+
+        return streams + incremental_streams
