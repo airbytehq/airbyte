@@ -54,7 +54,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
       return new AirbyteConnectionStatus()
