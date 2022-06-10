@@ -87,7 +87,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   // represents the last state message for which all of it records have been flushed to tmp storage in
   // the destination.
   private AirbyteMessage lastFlushedToTmpDstState;
-  // presents the last state message whose state is waitint to be flushed to tmp storage in the
+  // presents the last state message whose state is waiting to be flushed to tmp storage in the
   // destination.
   private AirbyteMessage pendingState;
 
