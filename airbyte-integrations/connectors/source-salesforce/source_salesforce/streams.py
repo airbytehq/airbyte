@@ -99,7 +99,7 @@ class SalesforceStream(HttpStream, ABC):
         """
         if next_page_token:
             """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
+            If `next_page_token` is set , subsequent requests use `nextRecordsUrl`, and do not include any parameters.
             """
             return {}
 

@@ -6,6 +6,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_request_header_provider import (
     InterpolatedRequestHeaderProvider,
@@ -33,7 +34,7 @@ class HttpRequester(Requester):
         request_parameters_provider: RequestParameterProvider = None,
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
-        decoder: Decoder,
+        decoder: Decoder = JsonDecoder(),
         retrier: Retrier,
         config: Config,
     ):
