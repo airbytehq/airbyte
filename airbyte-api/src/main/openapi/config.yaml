@@ -4017,33 +4017,33 @@ components:
     ConnectionState:
       type: object
       required:
-        - connectionId
+        - connection_id
       properties:
-        connectionId:
+        connection_id:
           $ref: "#/components/schemas/ConnectionId"
         state:
           $ref: "#/components/schemas/ConnectionStateObject"
-        globalState:
+        global_state:
           $ref: "#/components/schemas/ConnectionStateObject"
-        streamStates:
+        stream_states:
           type: array
           $ref: "#/components/schemas/StreamStateObject"
     ConnectionStateObject:
       type: object
       required:
-        - streamStates
+        - stream_states
       properties:
         shared:
           $ref: "#/components/schemas/ConnectionStateObject"
-        streamStates:
+        stream_states:
           type: array
           $ref: "#/components/schemas/StreamStateObject"
     StreamStateObject:
       type: object
       required:
-        - streamDescriptor
+        - stream_descriptor
       properties:
-        streamKey:
+        stream_descriptor:
           $ref: "#/components/schemas/StreamDescriptor"
         state:
           $ref: "#/components/schemas/ConnectionStateObject"
@@ -4057,21 +4057,21 @@ components:
       type: object
       description: "Describe what has changed between the result of a schema discovery and the stored catalog"
       required:
-        - streamsRemoved
-        - streamsAdded
-        - streamsUpdated
+        - streams_removed
+        - streams_added
+        - streams_updated
       properties:
-        streamsRemoved:
+        streams_removed:
           description: "Streams being removed"
           type: array
           items:
             $ref: "#/components/schemas/StreamDescriptor"
-        streamsAdded:
+        streams_added:
           description: "Streams being added"
           type: array
           items:
             type: string
-        streamsUpdated:
+        streams_updated:
           description: "Streams being updated"
           type: array
           items:
@@ -4080,21 +4080,21 @@ components:
       type: object
       description: "Contains how the field changed within a stream"
       required:
-        - fieldsRemoved
-        - fieldsAdded
-        - fieldsUpdated
+        - fields_removed
+        - fields_added
+        - fields_updated
       properties:
-        fieldsRemoved:
+        fields_removed:
           description: "Streams being removed"
           type: array
           items:
             $ref: "#/components/schemas/FieldSchema"
-        fieldsAdded:
+        fields_added:
           description: "Streams being added"
           type: array
           items:
             $ref: "#/components/schemas/FieldSchema"
-        fieldsUpdated:
+        fields_updated:
           description: "Streams being updated"
           type: array
           items:
@@ -4102,8 +4102,8 @@ components:
     FieldSchema:
       type: object
       required:
-        - fieldType
         - name
+        - schema
       properties:
         name:
           type: string
@@ -4113,16 +4113,16 @@ components:
     FieldSchemaTypeUpdate:
       type: object
       required:
-        - fromFieldType
-        - toFieldType
+        - from_schema
+        - to_schema
         - name
       properties:
         name:
           type: string
-        fromSchema:
+        from_schema:
           type: object
           additionalProperties: true
-        toSchema:
+        to_schema:
           type: object
           additionalProperties: true
     ActorDefinitionResourceRequirements:
