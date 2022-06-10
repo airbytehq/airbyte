@@ -6,15 +6,15 @@ import json
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.jq import JqExtractor
+from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 
 config = {"field": "record_array"}
 decoder = JsonDecoder()
 
 
 def test():
-    transform = ".data[]"
-    extractor = JqExtractor(transform, decoder, config)
+    transform = "_.data"
+    extractor = JelloExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"data": records}
@@ -25,8 +25,8 @@ def test():
 
 
 def test_field_in_config():
-    transform = ".{{ config['field'] }}[]"
-    extractor = JqExtractor(transform, decoder, config)
+    transform = "_.{{ config['field'] }}"
+    extractor = JelloExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"record_array": records}
@@ -37,9 +37,9 @@ def test_field_in_config():
 
 
 def test_field_in_kwargs():
-    transform = ".{{ kwargs['data_field'] }}[]"
+    transform = "_.{{ kwargs['data_field'] }}"
     kwargs = {"data_field": "records"}
-    extractor = JqExtractor(transform, decoder, config, kwargs=kwargs)
+    extractor = JelloExtractor(transform, decoder, config, kwargs=kwargs)
 
     records = [{"id": 1}, {"id": 2}]
     body = {"records": records}
@@ -56,8 +56,8 @@ def create_response(body):
 
 
 def test_default():
-    transform = ".{{kwargs['field']}}[]"
-    extractor = JqExtractor(transform, decoder, config)
+    transform = "_{{kwargs['field']}}"
+    extractor = JelloExtractor(transform, decoder, config)
 
     records = [{"id": 1}, {"id": 2}]
     response = create_response(records)

@@ -10,14 +10,26 @@ import TransformationForm from "views/Connection/TransformationForm";
 
 import { ConnectionFormMode } from "../ConnectionForm";
 
-const TransformationField: React.FC<
-  ArrayHelpers & {
-    form: FormikProps<{ transformations: OperationRead[] }>;
-    defaultTransformation: OperationCreate;
-    mode?: ConnectionFormMode;
-  }
-> = ({ remove, push, replace, form, defaultTransformation, mode }) => {
+interface TransformationFieldProps extends ArrayHelpers {
+  form: FormikProps<{ transformations: OperationRead[] }>;
+  defaultTransformation: OperationCreate;
+  mode?: ConnectionFormMode;
+  onStartEdit?: () => void;
+  onEndEdit?: () => void;
+}
+
+const TransformationField: React.FC<TransformationFieldProps> = ({
+  remove,
+  push,
+  replace,
+  form,
+  defaultTransformation,
+  mode,
+  onStartEdit,
+  onEndEdit,
+}) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
+
   return (
     <ArrayOfObjectsEditor
       items={form.values.transformations}
@@ -27,20 +39,27 @@ const TransformationField: React.FC<
       }
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}
-      onStartEdit={(idx) => setEditableItem(idx)}
+      onStartEdit={(idx) => {
+        setEditableItem(idx);
+        onStartEdit?.();
+      }}
       mode={mode}
     >
       {(editableItem) => (
         <TransformationForm
           transformation={editableItem ?? defaultTransformation}
           isNewTransformation={!editableItem}
-          onCancel={() => setEditableItem(null)}
+          onCancel={() => {
+            setEditableItem(null);
+            onEndEdit?.();
+          }}
           onDone={(transformation) => {
             if (isDefined(editableItemIdx)) {
               editableItemIdx >= form.values.transformations.length
                 ? push(transformation)
                 : replace(editableItemIdx, transformation);
               setEditableItem(null);
+              onEndEdit?.();
             }
           }}
         />
