@@ -176,7 +176,7 @@ class AirbyteStreamState(BaseModel):
         extra = Extra.allow
 
     stream_descriptor: StreamDescriptor
-    stream_state: AirbyteStateBlob
+    stream_state: Optional[AirbyteStateBlob] = None
 
 
 class AirbyteGlobalState(BaseModel):
