@@ -21,8 +21,8 @@ dependencies {
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation libs.postgresql
-    testImplementation libs.testcontainers
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers
+    testImplementation libs.platform.testcontainers.postgresql
 
     testImplementation project(':airbyte-commons-docker')
 }
