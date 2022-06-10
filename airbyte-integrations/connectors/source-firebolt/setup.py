@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=0.6.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=0.8.0"]
 
 TEST_REQUIREMENTS = [
     "pytest>=6.2.5",  # 6.2.5 has python10 compatibility fixes
