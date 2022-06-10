@@ -66,7 +66,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
-   kubectl delete deployments airbyte-db airbyte-scheduler airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
+   kubectl delete deployments airbyte-db airbyte-scheduler airbyte-worker airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
    ```
 
 2. Upgrade the kube deployment to new version.
@@ -103,7 +103,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.39.5-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.39.17-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

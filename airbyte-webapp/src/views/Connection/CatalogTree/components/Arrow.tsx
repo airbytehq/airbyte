@@ -3,12 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
 
-type ArrowProps = {
+interface ArrowProps {
   isItemHasChildren?: boolean;
   depth?: number;
   isItemOpen?: boolean;
   onExpand?: () => void;
-};
+}
 
 const ArrowContainer = styled.span`
   padding: 0 12px;

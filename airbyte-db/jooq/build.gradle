@@ -8,7 +8,7 @@ dependencies {
     implementation libs.jooq
     implementation libs.postgresql
     implementation libs.flyway.core
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
 
     // jOOQ code generation
     implementation libs.jooq.codegen
@@ -20,7 +20,7 @@ dependencies {
     implementation 'net.java.dev.jna:jna-platform:5.8.0'
 
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
-    jooqGenerator project(':airbyte-db:lib')
+    jooqGenerator project(':airbyte-db:db-lib')
 }
 
 jooq {
@@ -88,3 +88,5 @@ tasks.named('generateJobsDatabaseJooq').configure {
     allInputsDeclared = true
     outputs.cacheIf { true }
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -32,13 +32,13 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-type CreateConnectionContentProps = {
+interface CreateConnectionContentProps {
   additionBottomControls?: React.ReactNode;
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
   noTitles?: boolean;
-};
+}
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,

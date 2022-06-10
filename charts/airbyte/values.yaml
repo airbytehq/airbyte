@@ -41,7 +41,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.5-alpha
+    tag: 0.39.17-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -197,131 +197,6 @@ webapp:
   ##
   extraVolumes: []
 
-## @section Scheduler Parameters
-
-scheduler:
-  ## @param scheduler.replicaCount Number of scheduler replicas
-  replicaCount: 1
-
-  ## @param scheduler.image.repository The repository to use for the airbyte scheduler image.
-  ## @param scheduler.image.pullPolicy the pull policy to use for the airbyte scheduler image
-  ## @param scheduler.image.tag The airbyte scheduler image tag. Defaults to the chart's AppVersion
-  image:
-    repository: airbyte/scheduler
-    pullPolicy: IfNotPresent
-    tag: 0.39.5-alpha
-
-  ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
-  ##
-  podAnnotations: {}
-
-  ## @param scheduler.containerSecurityContext Security context for the container
-  ## Examples:
-  ## containerSecurityContext:
-  ##    runAsNonRoot: true
-  ##    runAsUser: 1000
-  ##    readOnlyRootFilesystem: true
-  containerSecurityContext: {}
-
-  ## Configure extra options for the scheduler containers' liveness and readiness probes
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-  ## @param scheduler.livenessProbe.enabled Enable livenessProbe on the scheduler
-  ## @param scheduler.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-  ## @param scheduler.livenessProbe.periodSeconds Period seconds for livenessProbe
-  ## @param scheduler.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-  ## @param scheduler.livenessProbe.failureThreshold Failure threshold for livenessProbe
-  ## @param scheduler.livenessProbe.successThreshold Success threshold for livenessProbe
-  ##
-  livenessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  ## @param scheduler.readinessProbe.enabled Enable readinessProbe on the scheduler
-  ## @param scheduler.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-  ## @param scheduler.readinessProbe.periodSeconds Period seconds for readinessProbe
-  ## @param scheduler.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-  ## @param scheduler.readinessProbe.failureThreshold Failure threshold for readinessProbe
-  ## @param scheduler.readinessProbe.successThreshold Success threshold for readinessProbe
-  ##
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  ## Scheduler resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ## We usually recommend not to specify default resources and to leave this as a conscious
-  ## choice for the user. This also increases chances charts run on environments with little
-  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
-  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ## @param scheduler.resources.limits [object] The resources limits for the scheduler container
-  ## @param scheduler.resources.requests [object] The requested resources for the scheduler container
-  resources:
-    ## Example:
-    ## limits:
-    ##    cpu: 200m
-    ##    memory: 1Gi
-    limits: {}
-    ## Examples:
-    ## requests:
-    ##    memory: 256Mi
-    ##    cpu: 250m
-    requests: {}
-
-  ## @param scheduler.nodeSelector [object] Node labels for pod assignment
-  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
-  ##
-  nodeSelector: {}
-
-  ## @param scheduler.tolerations [array] Tolerations for scheduler pod assignment.
-  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  ##
-  tolerations: []
-
-  ## @param scheduler.affinity [object] Affinity and anti-affinity for scheduler pod assignment.
-  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-  ##
-  affinity: {}
-
-  ## @param scheduler.log.level The log level to log at.
-  log:
-    level: "INFO"
-
-  ## @param scheduler.extraEnv [array] Additional env vars for scheduler pod(s).
-  ## Example:
-  ##
-  ## extraEnv:
-  ## - name: SAMPLE_ENV_VAR
-  ##   value: "key=sample-value"
-  extraEnv: []
-
-  ## @param scheduler.extraVolumeMounts [array] Additional volumeMounts for scheduler container(s).
-  ## Examples:
-  ## extraVolumeMounts:
-  ##   - name: tmpdir
-  ##     mountPath: /tmp
-  ##   - mountPath: /workspace
-  ##     name: workspace
-  ##
-  extraVolumeMounts: []
-
-  ## @param scheduler.extraVolumes [array] Additional volumes for scheduler pod(s).
-  ## Examples:
-  ## extraVolumes:
-  ##   - name: tmpdir
-  ##     emptyDir: {}
-  ##   - name: workspace
-  ##     emptyDir: {}
-  ##
-  extraVolumes: []
-
 ## @section Pod Sweeper parameters
 
 podSweeper:
@@ -440,7 +315,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.5-alpha
+    tag: 0.39.17-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -567,7 +442,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.5-alpha
+    tag: 0.39.17-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -685,7 +560,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.5-alpha
+    tag: 0.39.17-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -700,6 +575,31 @@ bootloader:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## Bootloader resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+  ## @param bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+
+  ## @param bootloader.affinity [object] Affinity and anti-affinity for bootloader pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -823,6 +723,26 @@ temporal:
   ##    emptyDir: {}
   ##
   extraVolumes: []
+
+  ## Temporal resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param temporal.resources.limits [object] The resources limits for temporal pod(s)
+  ## @param temporal.resources.requests [object] The requested resources for temporal pod(s)
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
 
 ## @section Airbyte Database parameters
 
@@ -968,3 +888,8 @@ jobs:
     ##   value: "true"
     ##   effect: NoSchedule
     tolerations: []
+
+    ## JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+    ## image pull secret to use for job pod
+    ## @param jobs.kube.main_container_image_pull_secret [string]  image pull secret to use for job pod
+    main_container_image_pull_secret: ""

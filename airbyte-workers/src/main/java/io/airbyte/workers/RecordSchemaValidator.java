@@ -10,8 +10,12 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -21,6 +25,7 @@ import java.util.Objects;
 public class RecordSchemaValidator {
 
   private final Map<String, JsonNode> streams;
+  private static final Logger LOGGER = LoggerFactory.getLogger(RecordSchemaValidator.class);
 
   public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema
@@ -35,9 +40,7 @@ public class RecordSchemaValidator {
    * @param message
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message) throws RecordSchemaValidationException {
-    // the stream this message corresponds to, including the stream namespace
-    final String messageStream = String.format("%s" + message.getStream(), Objects.toString(message.getNamespace(), ""));
+  public void validateSchema(final AirbyteRecordMessage message, final String messageStream) throws RecordSchemaValidationException {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
@@ -50,9 +53,26 @@ public class RecordSchemaValidator {
     try {
       validator.ensure(matchingSchema, messageData);
     } catch (final JsonValidationException e) {
-      final String streamWithNamespace = message.getNamespace() == null ? message.getStream() : message.getNamespace() + "-" + message.getStream();
-      throw new RecordSchemaValidationException(streamWithNamespace,
-          String.format("Record schema validation failed for %s. Expected schema: %s", streamWithNamespace, matchingSchema));
+      final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
+      final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
+
+      final Set<String> validationMessagesToDisplay = new HashSet<>();
+      for (int i = 0; i < invalidFields.size(); i++) {
+        final StringBuilder expectedType = new StringBuilder();
+        if (invalidRecordDataAndType.size() > i && invalidRecordDataAndType.get(i).length > 1) {
+          expectedType.append(invalidRecordDataAndType.get(i)[1]);
+        }
+        final StringBuilder newMessage = new StringBuilder();
+        newMessage.append(invalidFields.get(i));
+        newMessage.append(" is of an incorrect type.");
+        if (expectedType.length() > 0) {
+          newMessage.append(" Expected it to be " + expectedType);
+        }
+        validationMessagesToDisplay.add(newMessage.toString());
+      }
+
+      throw new RecordSchemaValidationException(validationMessagesToDisplay,
+          String.format("Record schema validation failed for %s", messageStream));
     }
   }
 

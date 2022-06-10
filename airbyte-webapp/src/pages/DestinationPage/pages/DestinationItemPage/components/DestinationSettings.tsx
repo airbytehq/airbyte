@@ -18,10 +18,10 @@ const Content = styled.div`
   margin: 19px auto;
 `;
 
-type DestinationsSettingsProps = {
+interface DestinationsSettingsProps {
   currentDestination: DestinationRead;
   connectionsWithDestination: WebBackendConnectionRead[];
-};
+}
 
 const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   currentDestination,

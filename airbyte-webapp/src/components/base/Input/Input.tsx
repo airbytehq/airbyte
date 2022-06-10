@@ -33,10 +33,14 @@ const InputContainer = styled.div<InputProps>`
   border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
   border-radius: 4px;
 
-  &:hover {
-    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.greyColor20)};
-    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
-  }
+  ${({ disabled, theme, light, error }) =>
+    !disabled &&
+    `
+      &:hover {
+        background: ${light ? theme.whiteColor : theme.greyColor20};
+        border-color: ${error ? theme.dangerColor : theme.greyColor20};
+      }
+    `}
 
   &.input-container--focused {
     background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
@@ -46,7 +50,7 @@ const InputContainer = styled.div<InputProps>`
 
 const InputComponent = styled.input<InputProps & { isPassword?: boolean }>`
   outline: none;
-  width: ${({ isPassword }) => (isPassword ? "calc(100% - 22px)" : "100%")};
+  width: ${({ isPassword, disabled }) => (isPassword && !disabled ? "calc(100% - 22px)" : "100%")};
   padding: 7px 8px 7px 8px;
   font-size: 14px;
   line-height: 20px;

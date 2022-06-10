@@ -9,13 +9,13 @@ import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
 import { FormContent } from "./PageComponents";
 
-type IProps = {
+interface IProps {
   version: string;
   currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
-};
+}
 
 const VersionInput = styled(Input)`
   max-width: 145px;

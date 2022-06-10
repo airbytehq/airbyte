@@ -15,6 +15,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.workers.*;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -294,7 +297,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
-      final Map<String, ImmutablePair<String, Integer>> validationErrors = new HashMap<String, ImmutablePair<String, Integer>>();
+      final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -305,18 +308,25 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
           if (messageOptional.isPresent()) {
             if (messageOptional.get().getRecord() != null) {
-              try {
-                recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
-              } catch (final RecordSchemaValidationException e) {
-                final ImmutablePair<String, Integer> exceptionWithCount = validationErrors.get(e.stream);
-                if (exceptionWithCount == null) {
-                  if (validationErrors.size() < 100) {
-                    validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), 1));
+              final AirbyteRecordMessage message = messageOptional.get().getRecord();
+              final String messageStream = WorkerUtils.streamNameWithNamespace(message.getNamespace(), message.getStream());
+              // validate a record's schema if there are less than 10 records with validation errors
+              if (validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10) {
+                try {
+                  recordSchemaValidator.validateSchema(messageOptional.get().getRecord(), messageStream);
+                } catch (final RecordSchemaValidationException e) {
+                  final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
+                  if (exceptionWithCount == null) {
+                    validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
+                  } else {
+                    final Integer currentCount = exceptionWithCount.getRight();
+                    final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
+                    final Set<String> updatedErrorMessages =
+                        Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
+                    validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
                   }
-                } else {
-                  final Integer currentCount = exceptionWithCount.getRight();
-                  validationErrors.put(e.stream, new ImmutablePair<>(e.getMessage(), currentCount + 1));
                 }
+
               }
             }
 
@@ -345,7 +355,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
-            LOGGER.warn("{} schema validation errors found for stream {}. Error message: {}", errorPair.getRight(), stream, errorPair.getLeft());
+            LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
           });
         }
 

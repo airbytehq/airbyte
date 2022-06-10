@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
 
     implementation libs.testcontainers.jdbc
     implementation libs.testcontainers.postgresql

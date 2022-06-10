@@ -1,0 +1,26 @@
+import org.jsonschema2pojo.SourceType
+
+plugins {
+    id 'com.github.eirnym.js2p' version '1.0'
+}
+
+dependencies {
+    implementation 'javax.validation:validation-api:1.1.0.Final'
+    implementation 'org.apache.commons:commons-lang3:3.11'
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/airbyte_protocol")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.protocol.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

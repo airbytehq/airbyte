@@ -31,7 +31,7 @@ export const connectionsKeys = {
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
 };
 
-export type ValuesProps = {
+export interface ValuesProps {
   name?: string;
   schedule: ConnectionSchedule | null;
   prefix: string;
@@ -39,18 +39,20 @@ export type ValuesProps = {
   namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat?: string;
   operations?: OperationCreate[];
-};
+}
 
-type CreateConnectionProps = {
+interface CreateConnectionProps {
   values: ValuesProps;
   source: SourceRead;
   destination: DestinationRead;
   sourceDefinition?: Pick<SourceDefinitionRead, "sourceDefinitionId">;
   destinationDefinition?: { name: string; destinationDefinitionId: string };
   sourceCatalogId: string | undefined;
-};
+}
 
-export type ListConnection = { connections: WebBackendConnectionRead[] };
+export interface ListConnection {
+  connections: WebBackendConnectionRead[];
+}
 
 function useWebConnectionService() {
   const config = useConfig();

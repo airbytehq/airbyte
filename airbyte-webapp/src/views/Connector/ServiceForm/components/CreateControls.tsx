@@ -8,7 +8,7 @@ import { TestingConnectionError, FetchingConnectorError } from "./TestingConnect
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
-type IProps = {
+interface IProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
@@ -18,7 +18,7 @@ type IProps = {
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
-};
+}
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
