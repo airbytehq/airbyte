@@ -24,12 +24,16 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
+import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -49,11 +53,18 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
+    if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(
+              "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
+    }
     S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
-        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config);
+        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -107,10 +118,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
-        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
+        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
