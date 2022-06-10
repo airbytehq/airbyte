@@ -9,7 +9,7 @@
   OPTIONS()
   as (
     
--- depends on: `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_scd_new_data`
+-- depends on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (

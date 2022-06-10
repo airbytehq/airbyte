@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."nested_stream_with_c__lting_into_long_names_scd"
   as (
     
--- depends on: "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_scd_new_data"
+-- depends on: ref('nested_stream_with_c__lting_into_long_names_stg')
 with
 
 input_data as (

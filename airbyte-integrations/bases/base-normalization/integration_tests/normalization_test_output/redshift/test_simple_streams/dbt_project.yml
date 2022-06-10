@@ -58,12 +58,10 @@ vars:
     dedup_exchange_rate_ab1: test_normalization._airbyte_raw_dedup_exchange_rate
     dedup_exchange_rate_ab2: test_normalization._airbyte_raw_dedup_exchange_rate
     dedup_exchange_rate_stg: test_normalization._airbyte_raw_dedup_exchange_rate
-    dedup_exchange_rate_scd_new_data: test_normalization._airbyte_raw_dedup_exchange_rate
     dedup_exchange_rate_scd: test_normalization._airbyte_raw_dedup_exchange_rate
     dedup_exchange_rate: test_normalization._airbyte_raw_dedup_exchange_rate
     renamed_dedup_cdc_excluded_ab1: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
     renamed_dedup_cdc_excluded_ab2: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
     renamed_dedup_cdc_excluded_stg: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    renamed_dedup_cdc_excluded_scd_new_data: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
     renamed_dedup_cdc_excluded_scd: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
     renamed_dedup_cdc_excluded: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded

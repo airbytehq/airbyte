@@ -9,7 +9,7 @@
   OPTIONS()
   as (
     
--- depends on: `dataline-integration-testing`._airbyte_test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_scd_new_data`
+-- depends on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
 with
 
 input_data as (

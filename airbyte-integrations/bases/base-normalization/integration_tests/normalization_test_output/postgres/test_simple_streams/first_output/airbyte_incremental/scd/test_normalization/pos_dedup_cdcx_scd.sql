@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."pos_dedup_cdcx_scd"
   as (
     
--- depends on: "postgres"._airbyte_test_normalization."pos_dedup_cdcx_scd_new_data"
+-- depends on: ref('pos_dedup_cdcx_stg')
 with
 
 input_data as (

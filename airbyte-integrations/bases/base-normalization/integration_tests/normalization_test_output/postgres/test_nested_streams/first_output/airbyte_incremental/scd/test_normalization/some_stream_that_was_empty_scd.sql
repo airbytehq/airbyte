@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."some_stream_that_was_empty_scd"
   as (
     
--- depends on: "postgres"._airbyte_test_normalization."some_stream_that_was_empty_scd_new_data"
+-- depends on: ref('some_stream_that_was_empty_stg')
 with
 
 input_data as (
