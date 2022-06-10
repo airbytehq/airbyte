@@ -22,7 +22,7 @@
 }
 
 .container > *:last-child {
-  padding-bottom: variables.$defaultBottomMargin;
+  padding-bottom: variables.$spacing-page-bottom;
 }
 
 .noScroll {

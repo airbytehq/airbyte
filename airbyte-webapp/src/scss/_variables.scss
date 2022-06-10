@@ -1,7 +1,6 @@
 @use "./colors";
 
 $transition: 0.3s;
-$defaultBottomMargin: 150px;
 
 $rounded-0: 0;
 $rounded-1: 2px;
@@ -23,6 +22,7 @@ $spacing-m: 10px;
 $spacing-l: 15px;
 $spacing-xl: 20px;
 $spacing-2xl: 40px;
+$spacing-page-bottom: 150px;
 
 // ON buttons
 $shadow-1: 0px 3px 4px -2px rgba(colors.$dark-blue, 0.21);
