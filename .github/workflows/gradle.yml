@@ -195,7 +195,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - uses: actions/setup-python@v2
         with:
@@ -306,7 +306,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -345,7 +345,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -443,7 +443,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -571,7 +571,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Fix EC-2 Runner
         run: |

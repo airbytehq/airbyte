@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: 'lts/gallium'
 
       - name: Build
         id: run-specific-test
