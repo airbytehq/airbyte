@@ -8,7 +8,7 @@
 
 :export {
   // Colors
-  primaryColor: colors.$primaryColor;
+  primaryColor: colors.$blue;
   primaryColor25: colors.$primaryColor25;
   primaryColor12: colors.$primaryColor12;
   mediumPrimaryColor: colors.$mediumPrimaryColor;
@@ -20,7 +20,7 @@
 
   brightColor: colors.$brightColor;
 
-  dangerColor: colors.$dangerColor;
+  dangerColor: colors.$red;
   dangerColor25: colors.$dangerColor25;
   warningColor: colors.$warningColor;
   warningBackgroundColor: colors.$warningBackgroundColor;
@@ -28,31 +28,31 @@
   dangerTransparentColor: colors.$dangerTransparentColor;
   successColor: colors.$successColor;
   successColor20: colors.$successColor20;
-  backgroundColor: colors.$backgroundColor;
+  backgroundColor: colors.$beige;
   shadowColor: colors.$shadowColor;
   cardShadowColor: colors.$cardShadowColor;
 
-  textColor: colors.$textColor;
-  lightTextColor: colors.$lightTextColor;
+  textColor: colors.$darkBlue;
+  lightTextColor: colors.$grey;
   textColor90: colors.$textColor90;
   darkBlue90: colors.$darkBlue90;
   greyColor70: colors.$greyColor70;
   greyColor60: colors.$greyColor60;
   greyColor55: colors.$greyColor55;
   greyColor40: colors.$greyColor40;
-  greyColor30: colors.$greyColor30;
-  greyColor20: colors.$greyColor20;
+  greyColor30: colors.$grey-200;
+  greyColor20: colors.$grey-100;
   greyColor10: colors.$greyColor10;
   greyColor0: colors.$greyColor0;
 
-  whiteColor: colors.$whiteColor;
-  blackColor: colors.$blackColor;
-  beigeColor: colors.$beigeColor;
-  darkBeigeColor: colors.$darkBeigeColor;
+  whiteColor: colors.$white;
+  blackColor: colors.$black;
+  beigeColor: colors.$beige;
+  darkBeigeColor: colors.$beige-100;
   borderTableColor: colors.$borderTableColor;
   lightTableColor: colors.$lightTableColor;
-  darkGreyColor: colors.$darkGreyColor;
-  redColor: colors.$redColor;
+  darkGreyColor: colors.$grey-400;
+  redColor: colors.$orange;
   lightRedColor: colors.$lightRedColor;
   redTransparentColor: colors.$redTransparentColor;
   transparentColor: colors.$transparentColor;
