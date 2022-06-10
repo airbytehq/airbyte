@@ -1,8 +1,8 @@
-# Databricks
+# Databricks Delta Lake
 
 ## Overview
 
-This destination syncs data to Databricks cluster. Each stream is written to its own table.
+This destination syncs data to Databricks Delta Lake. Each stream is written to its own delta table.
 
 This connector requires a JDBC driver to connect to Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
@@ -19,7 +19,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
 ## Data Source
 
-Databricks supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 is supported.
+Databricks Delta Lake supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 is supported by this connector.
 
 ## Configuration
 
@@ -103,6 +103,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.1 | 2022-06-08 | [\#13630](https://github.com/airbytehq/airbyte/pull/13630) | Rename to "Databricks Delta Lake" and add field orders in the spec. |
 | 0.2.0 | 2022-05-15 | [\#12861](https://github.com/airbytehq/airbyte/pull/12861) | Use new public Databricks JDBC driver, and open source the connector. |
 | 0.1.5 | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 0.1.4 | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |

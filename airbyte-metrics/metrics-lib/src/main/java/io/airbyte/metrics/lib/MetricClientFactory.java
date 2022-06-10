@@ -16,6 +16,11 @@ public class MetricClientFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricClientFactory.class);
 
+  private static final String DATADOG_METRIC_CLIENT = "datadog";
+  private static final String OTEL_METRIC_CLIENT = "otel";
+
+  private static final Configs configs = new EnvConfigs();
+
   private MetricClientFactory() {
     // no explicit implementation
   }
@@ -30,7 +35,7 @@ public class MetricClientFactory {
    * @return previously created metric client which has been properly initialized, or an instance of
    *         the empty NotImplementedMetricClient.
    */
-  public static MetricClient getMetricClient() {
+  public synchronized static MetricClient getMetricClient() {
     if (metricClient != null) {
       return metricClient;
     }
@@ -50,24 +55,40 @@ public class MetricClientFactory {
     if (metricClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
-    initializeDatadogStatsDMetricClient(metricEmittingApp);
+
+    if (configs.getMetricClient().equals(DATADOG_METRIC_CLIENT)) {
+      initializeDatadogMetricClient(metricEmittingApp);
+    } else if (configs.getMetricClient().equals(OTEL_METRIC_CLIENT)) {
+      initializeOpenTelemetryMetricClient(metricEmittingApp);
+    } else {
+      metricClient = new NotImplementedMetricClient();
+      LOGGER.warn(
+          "MetricClient was not recognized or not provided. Accepted values are `datadog` or `otel`. ");
+    }
   }
 
-  private static DogStatsDMetricClient initializeDatadogStatsDMetricClient(
-                                                                           MetricEmittingApp metricEmittingApp) {
+  private static DogStatsDMetricClient initializeDatadogMetricClient(
+                                                                     MetricEmittingApp metricEmittingApp) {
     DogStatsDMetricClient client = new DogStatsDMetricClient();
-    final Configs configs = new EnvConfigs();
 
     client.initialize(metricEmittingApp, new DatadogClientConfiguration(configs));
     metricClient = client;
     return client;
   }
 
-  static void flush() {
+  private static OpenTelemetryMetricClient initializeOpenTelemetryMetricClient(
+                                                                               MetricEmittingApp metricEmittingApp) {
+    OpenTelemetryMetricClient client = new OpenTelemetryMetricClient();
+    client.initialize(metricEmittingApp, configs.getOtelCollectorEndpoint());
+    metricClient = client;
+    return client;
+  }
+
+  synchronized static void flush() {
     if (metricClient != null) {
       metricClient.shutdown();
+      metricClient = null;
     }
-    metricClient = null;
   }
 
 }
