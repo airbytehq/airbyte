@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from pytest import fixture, mark
+from source_firebolt.database import parse_config
 from source_firebolt.source import (
     SUPPORTED_SYNC_MODES,
     SourceFirebolt,
@@ -100,6 +101,18 @@ def async_connection_cursor_mock():
     cursor = AsyncMock()
     connection.cursor.return_value = cursor
     return connection, cursor
+
+
+def test_parse_config(config, logger):
+    config["engine"] = "override_engine"
+    result = parse_config(config, logger)
+    assert result["database"] == "my_database"
+    assert result["engine_name"] == "override_engine"
+    assert result["auth"].username == "my_username"
+    assert result["auth"].password == "my_password"
+    config["engine"] = "override_engine.api.firebolt.io"
+    result = parse_config(config, logger)
+    assert result["engine_url"] == "override_engine.api.firebolt.io"
 
 
 @patch("source_firebolt.database.connect")

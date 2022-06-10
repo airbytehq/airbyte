@@ -10,6 +10,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from firebolt.async_db import Connection as AsyncConnection
 from firebolt.async_db import connect as async_connect
 from firebolt.client import DEFAULT_API_URL
+from firebolt.client.auth import UsernamePassword
 from firebolt.db import Connection, connect
 
 
@@ -24,8 +25,7 @@ def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
     """
     connection_args = {
         "database": config["database"],
-        "username": config["username"],
-        "password": config["password"],
+        "auth": UsernamePassword(config["username"], config["password"]),
         "api_endpoint": config.get("host", DEFAULT_API_URL),
         "account_name": config.get("account"),
     }

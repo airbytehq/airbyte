@@ -194,12 +194,8 @@ def test_read(stream, endpoint, response, expected, requests_mock):
     assert records == expected
 
 
-def build_conversations_response_body(conversations, next_url = None):
-    return {
-        "type": "conversation.list",
-        "pages": {"next": next_url} if next_url else {},
-        "conversations": conversations
-    }
+def build_conversations_response_body(conversations, next_url=None):
+    return {"type": "conversation.list", "pages": {"next": next_url} if next_url else {}, "conversations": conversations}
 
 
 def build_conversation_response_body(conversation_id, conversation_parts):
@@ -236,51 +232,41 @@ def single_conversation_response():
 def conversation_parts_responses():
     return [
         (
-            "https://api.intercom.io/conversations", 
+            "https://api.intercom.io/conversations",
             build_conversations_response_body(
-                conversations=[
-                    {"id":"151272900026677","updated_at":1650988600},
-                    {"id":"151272900026666","updated_at":1650988500}
-                ],
-                next_url="https://api.intercom.io/conversations?per_page=2&page=2"
-            )
+                conversations=[{"id": "151272900026677", "updated_at": 1650988600}, {"id": "151272900026666", "updated_at": 1650988500}],
+                next_url="https://api.intercom.io/conversations?per_page=2&page=2",
+            ),
         ),
         (
             "https://api.intercom.io/conversations?per_page=2&page=2",
             build_conversations_response_body(
                 conversations=[
-                    {"id":"151272900026466","updated_at":1650988450},
-                    {"id":"151272900026680","updated_at":1650988100}, # Older than state, won't be processed
+                    {"id": "151272900026466", "updated_at": 1650988450},
+                    {"id": "151272900026680", "updated_at": 1650988100},  # Older than state, won't be processed
                 ]
-            )
+            ),
         ),
         (
             "https://api.intercom.io/conversations/151272900026677",
             build_conversation_response_body(
                 conversation_id="151272900026677",
-                conversation_parts=[
-                    {"id": "13740311961","updated_at":1650988300},
-                    {"id": "13740311962","updated_at":1650988450}
-                ]
-            )
+                conversation_parts=[{"id": "13740311961", "updated_at": 1650988300}, {"id": "13740311962", "updated_at": 1650988450}],
+            ),
         ),
         (
             "https://api.intercom.io/conversations/151272900026666",
             build_conversation_response_body(
                 conversation_id="151272900026666",
-                conversation_parts=[
-                    {"id": "13740311955","updated_at":1650988150},
-                    {"id": "13740312056","updated_at":1650988500}
-                ]
-            )
+                conversation_parts=[{"id": "13740311955", "updated_at": 1650988150}, {"id": "13740312056", "updated_at": 1650988500}],
+            ),
         ),
         (
             "https://api.intercom.io/conversations/151272900026466",
             build_conversation_response_body(
-                conversation_id="151272900026466",
-                conversation_parts=[{"id": "13740311970","updated_at":1650988600}]
-            )
-        )
+                conversation_id="151272900026466", conversation_parts=[{"id": "13740311970", "updated_at": 1650988600}]
+            ),
+        ),
     ]
 
 
@@ -310,7 +296,7 @@ def test_conversation_part_filtering_based_on_conversation(requests_mock, conver
     state = {"updated_at": updated_at}
     expected_record_ids = set()
     for response_tuple in conversation_parts_responses:
-        requests_mock.register_uri('GET', response_tuple[0], json=response_tuple[1])
+        requests_mock.register_uri("GET", response_tuple[0], json=response_tuple[1])
         if "conversation_parts" in response_tuple[1]:
             expected_record_ids.update([cp["id"] for cp in response_tuple[1]["conversation_parts"]["conversation_parts"]])
 
