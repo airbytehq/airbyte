@@ -101,7 +101,6 @@ definitions:
     additionalProperties: true
     required:
       - stream_descriptor
-      - stream_state
     properties:
       stream_descriptor:
         "$ref": "#/definitions/StreamDescriptor"
