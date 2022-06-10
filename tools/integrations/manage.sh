@@ -241,6 +241,8 @@ cmd_publish() {
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
 
+  docker buildx create --name connector-buildx --driver docker
+
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
@@ -295,6 +297,8 @@ cmd_publish() {
     done
 
   fi
+
+  docker buildx rm connector-buildx
 
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
