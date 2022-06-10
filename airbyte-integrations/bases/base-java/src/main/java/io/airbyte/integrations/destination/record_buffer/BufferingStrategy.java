@@ -24,7 +24,7 @@ public interface BufferingStrategy extends AutoCloseable {
    *
    * @param stream - stream associated with record
    * @param message - message to buffer
-   * @return true if this record cause the buffer to flush, otherwise false.
+   * @return true if this record cause ALL records in the buffer to flush, otherwise false.
    * @throws Exception throw on failure
    */
   boolean addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
