@@ -299,7 +299,6 @@ class StreamProcessor(object):
                 subdir="scd",
                 unique_key=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
                 partition_by=PartitionScheme.ACTIVE_ROW,
-                do_deletions=True,
             )
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
@@ -1094,7 +1093,6 @@ where 1 = 1
         unique_key: str = "",
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
-        do_deletions: bool = False,
     ) -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -1120,75 +1118,73 @@ where 1 = 1
             if suffix == "scd":
                 hooks = []
 
-                # This delete query depends on the _stg model, so run it before we drop/update the _stg view
-                if do_deletions:
-                    final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
-                    active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
-                    if self.destination_type == DestinationType.CLICKHOUSE:
-                        # Clickhouse has special delete syntax
-                        delete_statement = "alter table {{ final_table_relation }} delete"
-                        unique_key_reference = self.get_unique_key(in_jinja=False)
-                        noop_delete_statement = "alter table {{ this }} delete where 1=0"
-                    elif self.destination_type == DestinationType.BIGQUERY:
-                        # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
-                        # it requires "delete from project.schema.table table_alias where table_alias.column in"
-                        delete_statement = "delete from {{ final_table_relation }} final_table"
-                        unique_key_reference = "final_table." + self.get_unique_key(in_jinja=False)
-                        noop_delete_statement = "delete from {{ this }} where 1=0"
-                    else:
-                        delete_statement = "delete from {{ final_table_relation }}"
-                        unique_key_reference = "{{ final_table_relation }}." + self.get_unique_key(in_jinja=False)
-                        noop_delete_statement = "delete from {{ this }} where 1=0"
-                    deletion_hook = Template(
-                        """
-                        {{ '{%' }}
-                        set final_table_relation = adapter.get_relation(
-                                database=this.database,
-                                schema=this.schema,
-                                identifier='{{ final_table_name }}'
-                            )
-                        {{ '%}' }}
-                        {{ '{#' }}
-                        If the final table doesn't exist, then obviously we can't delete anything from it.
-                        Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
-                        So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
-                        {{ '#}' }}
-                        {{ '{%' }}
-                        if final_table_relation is not none and {{ quoted_unique_key }} in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
-                        {{ '%}' }}
-
-                        -- Delete records which are no longer active:
-                        -- The first subquery finds the most recent increment to the SCD table
-                        -- The second subquery finds, within that increment, the records which are still active
-                        -- We want to delete rows which are in that increment, but are not active
-                        {{ delete_statement }} where {{ unique_key_reference }} in (
-                            select {{ unique_key }}
-                            from {{ '{{ this }}' }}
-                            where 1 = 1 {{ normalized_at_incremental_clause }}
-                        ) and {{ unique_key_reference }} not in (
-                            select {{ unique_key }}
-                            from {{ '{{ this }}' }}
-                            where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
+                final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
+                active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
+                if self.destination_type == DestinationType.CLICKHOUSE:
+                    # Clickhouse has special delete syntax
+                    delete_statement = "alter table {{ final_table_relation }} delete"
+                    unique_key_reference = self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                elif self.destination_type == DestinationType.BIGQUERY:
+                    # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
+                    # it requires "delete from project.schema.table table_alias where table_alias.column in"
+                    delete_statement = "delete from {{ final_table_relation }} final_table"
+                    unique_key_reference = "final_table." + self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "delete from {{ this }} where 1=0"
+                else:
+                    delete_statement = "delete from {{ final_table_relation }}"
+                    unique_key_reference = "{{ final_table_relation }}." + self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "delete from {{ this }} where 1=0"
+                deletion_hook = Template(
+                    """
+                    {{ '{%' }}
+                    set final_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='{{ final_table_name }}'
                         )
-                        {{ '{% else %}' }}
-                        -- We have to have a non-empty query, so just do a noop delete
-                        {{ noop_delete_statement }}
-                        {{ '{% endif %}' }}
-                        """
-                    ).render(
-                        delete_statement=delete_statement,
-                        noop_delete_statement=noop_delete_statement,
-                        final_table_name=final_table_name,
-                        unique_key=self.get_unique_key(in_jinja=False),
-                        quoted_unique_key=self.get_unique_key(in_jinja=True),
-                        active_row_column_name=active_row_column_name,
-                        normalized_at_incremental_clause=self.get_incremental_clause_for_column(
-                            "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name),
-                            self.get_normalized_at(in_jinja=True),
-                        ),
-                        unique_key_reference=unique_key_reference,
+                    {{ '%}' }}
+                    {{ '{#' }}
+                    If the final table doesn't exist, then obviously we can't delete anything from it.
+                    Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
+                    So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
+                    {{ '#}' }}
+                    {{ '{%' }}
+                    if final_table_relation is not none and {{ quoted_unique_key }} in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
+                    {{ '%}' }}
+
+                    -- Delete records which are no longer active:
+                    -- The first subquery finds the most recent increment to the SCD table
+                    -- The second subquery finds, within that increment, the records which are still active
+                    -- We want to delete rows which are in that increment, but are not active
+                    {{ delete_statement }} where {{ unique_key_reference }} in (
+                        select {{ unique_key }}
+                        from {{ '{{ this }}' }}
+                        where 1 = 1 {{ normalized_at_incremental_clause }}
+                    ) and {{ unique_key_reference }} not in (
+                        select {{ unique_key }}
+                        from {{ '{{ this }}' }}
+                        where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
                     )
-                    hooks.append(deletion_hook)
+                    {{ '{% else %}' }}
+                    -- We have to have a non-empty query, so just do a noop delete
+                    {{ noop_delete_statement }}
+                    {{ '{% endif %}' }}
+                    """
+                ).render(
+                    delete_statement=delete_statement,
+                    noop_delete_statement=noop_delete_statement,
+                    final_table_name=final_table_name,
+                    unique_key=self.get_unique_key(in_jinja=False),
+                    quoted_unique_key=self.get_unique_key(in_jinja=True),
+                    active_row_column_name=active_row_column_name,
+                    normalized_at_incremental_clause=self.get_incremental_clause_for_column(
+                        "this.schema + '.' + " + self.name_transformer.apply_quote(final_table_name),
+                        self.get_normalized_at(in_jinja=True),
+                    ),
+                    unique_key_reference=unique_key_reference,
+                )
+                hooks.append(deletion_hook)
 
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
