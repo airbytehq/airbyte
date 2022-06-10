@@ -16,9 +16,17 @@ const SectionTitle = styled.div`
   line-height: 17px;
 `;
 
-export const OperationsSection: React.FC<{
+interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
-}> = ({ destDefinition }) => {
+  onStartEditTransformation?: () => void;
+  onEndEditTransformation?: () => void;
+}
+
+export const OperationsSection: React.FC<OperationsSectionProps> = ({
+  destDefinition,
+  onStartEditTransformation,
+  onEndEditTransformation,
+}) => {
   const formatMessage = useIntl().formatMessage;
   const { hasFeature } = useFeatureService();
 
@@ -42,7 +50,14 @@ export const OperationsSection: React.FC<{
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
         <FieldArray name="transformations">
-          {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              onStartEdit={onStartEditTransformation}
+              onEndEdit={onEndEditTransformation}
+              {...formProps}
+            />
+          )}
         </FieldArray>
       )}
     </>

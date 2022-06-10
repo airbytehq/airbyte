@@ -6,11 +6,11 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import styled from "styled-components";
 
-type Props = {
+interface Props {
   content?: string;
   className?: string;
   rehypePlugins?: PluggableList;
-};
+}
 
 const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
   return (

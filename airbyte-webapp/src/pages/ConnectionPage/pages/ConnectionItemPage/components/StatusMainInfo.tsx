@@ -6,13 +6,12 @@ import styled from "styled-components";
 
 import ConnectorCard from "components/ConnectorCard";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { equal } from "utils/objects";
 
 import EnabledControl from "./EnabledControl";
 
@@ -55,7 +54,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   const allowSync = hasFeature(FeatureItem.AllowSync);
-  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
+  const frequency = getFrequencyConfig(connection.schedule);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
@@ -84,7 +83,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
           onStatusUpdating={onStatusUpdating}
           disabled={!allowSync}
           connection={connection}
-          frequencyText={frequency?.text}
+          frequencyType={frequency?.type}
         />
       )}
     </MainContainer>

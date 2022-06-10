@@ -6,7 +6,7 @@ import copy
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_mixpanel.source import TokenAuthenticatorBase64, SourceMixpanel
+from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
 from source_mixpanel.streams import FunnelsList
 
 from .utils import get_url_to_mock, setup_response

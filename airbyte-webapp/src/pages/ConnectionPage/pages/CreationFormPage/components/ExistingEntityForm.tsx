@@ -14,10 +14,10 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 
-type IProps = {
+interface IProps {
   type: "source" | "destination";
   onSubmit: (id: string) => void;
-};
+}
 
 const FormContent = styled(Form)`
   padding: 22px 27px 23px 24px;

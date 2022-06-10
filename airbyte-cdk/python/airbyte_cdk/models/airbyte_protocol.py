@@ -166,8 +166,9 @@ class AirbyteStreamState(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    name: Optional[str] = Field(None, description="Stream name")
-    state: Optional[AirbyteStateBlob] = None
+    name: str = Field(..., description="Stream name")
+    state: AirbyteStateBlob
+    namespace: Optional[str] = Field(None, description="Optional Source-defined namespace.")
 
 
 class AirbyteTraceMessage(BaseModel):

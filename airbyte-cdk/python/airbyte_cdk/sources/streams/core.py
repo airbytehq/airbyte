@@ -216,7 +216,7 @@ class Stream(ABC):
                 elif isinstance(component, list):
                     wrapped_keys.append(component)
                 else:
-                    raise ValueError("Element must be either list or str.")
+                    raise ValueError(f"Element must be either list or str. Got: {type(component)}")
             return wrapped_keys
         else:
-            raise ValueError("Element must be either list or str.")
+            raise ValueError(f"Element must be either list or str. Got: {type(keys)}")

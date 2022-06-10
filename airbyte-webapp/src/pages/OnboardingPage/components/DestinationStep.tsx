@@ -10,10 +10,10 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type Props = {
+interface Props {
   onNextStep: () => void;
   onSuccess: () => void;
-};
+}
 
 const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
