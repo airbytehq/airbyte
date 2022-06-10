@@ -37,7 +37,7 @@
       },
       "lookback_window": {
         "title": "Lookback window",
-        "description": "Any data between sync time and sync time minus lookback window setting in minutes will be replicated (in minutes).",
+        "description": "How far into the past to look for records. (in minutes)",
         "examples": [
           60
         ],
