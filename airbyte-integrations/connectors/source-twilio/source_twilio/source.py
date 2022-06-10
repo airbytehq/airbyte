@@ -64,7 +64,7 @@ class SourceTwilio(AbstractSource):
         incremental_stream_kwargs = {
             "authenticator": auth,
             "start_date": config["start_date"],
-            "lookback": config["lookback"],
+            "lookback_window": config["lookback_window"],
         }
 
         streams = [
