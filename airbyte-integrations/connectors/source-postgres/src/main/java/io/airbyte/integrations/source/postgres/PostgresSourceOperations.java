@@ -84,7 +84,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
                                 final int parameterIndex,
                                 final JDBCType cursorFieldType,
                                 final String value)
-          throws SQLException {
+      throws SQLException {
     switch (cursorFieldType) {
 
       case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
