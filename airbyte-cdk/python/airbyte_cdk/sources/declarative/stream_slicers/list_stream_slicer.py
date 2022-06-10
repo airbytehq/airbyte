@@ -12,6 +12,10 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class ListStreamSlicer(StreamSlicer):
+    """
+    Stream slicer that iterates over the values of a list
+    """
+
     def __init__(self, slice_values: List[str], slice_definition: Mapping[str, Any], config: Config):
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
         self._slice_values = slice_values
