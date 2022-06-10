@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
+import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,6 +53,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
+    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
@@ -117,7 +119,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     return new StagingConsumerFactory().create(
         outputRecordCollector,

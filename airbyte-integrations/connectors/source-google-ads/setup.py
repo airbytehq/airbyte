@@ -5,9 +5,9 @@
 
 from setuptools import find_packages, setup
 
-# grpcio-status is required by google ads but is not listed in its dependencies.
-# this package must be of the same version range that grpcio is.
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads==14.1.0", "grpcio-status >= 1.38.1, < 2.0.0", "pendulum"]
+# pin protobuf==3.20.0 as other versions may cause problems on different architectures
+# (see https://github.com/airbytehq/airbyte/issues/13580)
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads==15.1.1", "protobuf==3.20.0", "pendulum"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "freezegun", "requests-mock"]
 
