@@ -64,3 +64,32 @@ def test_default():
     actual_records = extractor.extract_records(response)
 
     assert actual_records == records
+
+
+def test_remove_fields_from_records():
+    transform = "[{k:v for k,v in d.items() if k != 'value_to_remove'} for d in _.data]"
+    extractor = JelloExtractor(transform, decoder, config)
+
+    records = [{"id": 1, "value": "HELLO", "value_to_remove": "fail"}, {"id": 2, "value": "WORLD", "value_to_remove": "fail"}]
+    expected_records = [{"id": 1, "value": "HELLO"}, {"id": 2, "value": "WORLD"}]
+    body = {"data": records}
+    response = create_response(body)
+    actual_records = extractor.extract_records(response)
+
+    assert expected_records == actual_records
+
+
+def test_add_fields_from_records():
+    transform = "[{**{k:v for k,v in d.items()}, **{'project_id': d['project']['id']}} for d in _.data]"
+    extractor = JelloExtractor(transform, decoder, config)
+
+    records = [{"id": 1, "value": "HELLO", "project": {"id": 8}}, {"id": 2, "value": "WORLD", "project": {"id": 9}}]
+
+    expected_records = [
+        {"id": 1, "value": "HELLO", "project_id": 8, "project": {"id": 8}},
+        {"id": 2, "value": "WORLD", "project_id": 9, "project": {"id": 9}},
+    ]
+    body = {"data": records}
+    response = create_response(body)
+    actual_records = extractor.extract_records(response)
+    assert expected_records == actual_records
