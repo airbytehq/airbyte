@@ -18,7 +18,8 @@ public enum ConnectionErrorType {
   INCORRECT_CLUSTER("Invalid credentials: incorrect cluster."),
   INCORRECT_DB_NAME("Invalid credentials: incorrect database name."),
   INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED("Invalid credentials: incorrect database name or user access denied."),
-  INCORRECT_ACCESS_PERMISSION("Invalid credentials: user access denied.");
+  INCORRECT_ACCESS_PERMISSION("Invalid credentials: user access denied."),
+  INCORRECT_USERNAME_ACCOUNT_IS_LOCKED("Invalid credentials: the account is locked");
 
   private final String value;
 
