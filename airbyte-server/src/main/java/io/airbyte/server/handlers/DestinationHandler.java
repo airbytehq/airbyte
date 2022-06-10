@@ -190,10 +190,6 @@ public class DestinationHandler {
         destinationCreate.name(destinationCloneConfiguration.getName());
       }
 
-      if (destinationCloneConfiguration.getWorkspaceId() != null) {
-        destinationCreate.workspaceId(destinationCloneConfiguration.getWorkspaceId());
-      }
-
       if (destinationCloneConfiguration.getConnectionConfiguration() != null) {
         destinationCreate.connectionConfiguration(destinationCloneConfiguration.getConnectionConfiguration());
       }

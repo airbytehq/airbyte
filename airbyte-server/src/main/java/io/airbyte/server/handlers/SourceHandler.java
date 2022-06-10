@@ -152,10 +152,6 @@ public class SourceHandler {
         sourceCreate.name(sourceCloneConfiguration.getName());
       }
 
-      if (sourceCloneConfiguration.getWorkspaceId() != null) {
-        sourceCreate.workspaceId(sourceCloneConfiguration.getWorkspaceId());
-      }
-
       if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
         sourceCreate.connectionConfiguration(sourceCloneConfiguration.getConnectionConfiguration());
       }

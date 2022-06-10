@@ -2729,8 +2729,6 @@ components:
       properties:
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
     SourceConfiguration:
@@ -3075,8 +3073,6 @@ components:
       properties:
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
     DestinationRead:
