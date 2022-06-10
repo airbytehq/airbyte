@@ -245,7 +245,7 @@ cmd_publish() {
     echo "Publishing normalization images (version: $versioned_image)"
     GIT_REVISION=$(git rev-parse HEAD)
 
-    # We use a buildx docker continer when building multi-stage builds from one docker compose file
+    # We use a buildx docker container when building multi-stage builds from one docker compose file
     # This works because all the images depend only on already public images
     docker buildx create --name connector-buildx --driver docker-container --use
 
