@@ -87,40 +87,41 @@ definitions:
     type: string
     description: >
       The type of state the other fields represent.
-      If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
+      Is set to LEGACY, the state data should be read from the `data` field for backwards compatibility.
       GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams. It contains one shared
       state and individual stream states.
       PER_STREAM means that the state should be read from `stream`. The state present in this field correspond to the isolated state of the
       associated stream description.
     enum:
       - GLOBAL
-      - PER_STREAM
+      - STREAM
+      - LEGACY
   AirbyteStreamState:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
-      - streamDescriptor
-      - state
+      - stream_descriptor
+      - stream_state
     properties:
-      streamDescriptor:
+      stream_descriptor:
         "$ref": "#/definitions/StreamDescriptor"
-      state:
+      stream_state:
         "$ref": "#/definitions/AirbyteStateBlob"
   AirbyteGlobalState:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
-      - sharedState
+      - stream_states
     properties:
-      sharedState:
+      shared_state:
         "$ref": "#/definitions/AirbyteStateBlob"
-      streamStates:
+      stream_states:
         type: array
         items:
           "$ref": "#/definitions/AirbyteStreamState"
   StreamDescriptor:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - name
     properties:
@@ -131,7 +132,7 @@ definitions:
   AirbyteStateBlob:
     type: object
     description: "the state data"
-    additionalProperties: false
+    additionalProperties: true
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
 
   AirbyteLogMessage:
