@@ -575,11 +575,11 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testIncrementalTimestampCheckCursor() throws Exception {
-    incrementalTimestampCheck();
+  void testIncrementalDateCheckCursor() throws Exception {
+    incrementalDateCheck();
   }
 
-  protected void incrementalTimestampCheck() throws Exception {
+  protected void incrementalDateCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
         "2005-10-18T00:00:00Z",

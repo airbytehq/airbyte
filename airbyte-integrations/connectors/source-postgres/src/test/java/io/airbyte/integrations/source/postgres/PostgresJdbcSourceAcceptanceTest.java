@@ -51,8 +51,9 @@ import org.testcontainers.utility.MountableFile;
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
-  public static String COL_WAKEUP = "wakeup";
-  public static String COL_BIRTH = "birth";
+  public static String COL_WAKEUP_AT = "wakeup_at";
+  public static String COL_LAST_VISITED_AT = "last_visited_at";
+  public static String COL_LAST_COMMENT_AT = "last_comment_at";
 
   @BeforeAll
   static void init() {
@@ -63,9 +64,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-    COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup TIMETZ, birth TIMESTAMPTZ";
-    COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup TIMETZ, birth TIMESTAMPTZ";
-    COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup TIMETZ, birth TIMESTAMPTZ";
+    COLUMN_CLAUSE_WITH_PK =
+        "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
+    COLUMN_CLAUSE_WITHOUT_PK =
+        "id INTEGER, name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
+    COLUMN_CLAUSE_WITH_COMPOSITE_PK =
+        "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
@@ -106,15 +110,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
               primaryKeyClause(Collections.singletonList("id"))));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME)));
 
       connection.createStatement().execute(
@@ -122,15 +126,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
               COLUMN_CLAUSE_WITHOUT_PK, ""));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (1,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (3, 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
 
       connection.createStatement().execute(
@@ -139,15 +143,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
               primaryKeyClause(ImmutableList.of("first_name", "last_name"))));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup, birth) VALUES ('first' ,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('first' ,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup, birth) VALUES ('second', 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('second', 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup, birth) VALUES  ('third', 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES  ('third', 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
 
     });
@@ -161,8 +165,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .peek(m -> {
           ((ObjectNode) m.getRecord().getData()).remove(COL_NAME);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_BIRTH);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
               Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
         })
@@ -174,16 +179,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final AirbyteMessage firstMessage = getTestMessages().get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
-    ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_WAKEUP);
-    ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_BIRTH);
+    ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_WAKEUP_AT);
+    ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+    ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
     ((ObjectNode) firstMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
         ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_NAME));
 
     final AirbyteMessage secondMessage = getTestMessages().get(2);
     secondMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_UPDATED_AT);
-    ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_WAKEUP);
-    ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_BIRTH);
+    ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_WAKEUP_AT);
+    ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+    ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
     ((ObjectNode) secondMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
         ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_NAME));
 
@@ -201,8 +208,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           m.getRecord().setStream(streamName2);
           m.getRecord().setNamespace(getDefaultNamespace());
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_BIRTH);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
               Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
         })
@@ -216,8 +224,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .peek(m -> {
           m.getRecord().setStream(streamName2);
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_BIRTH);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
               Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
         })
@@ -233,8 +242,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
               ((ObjectNode) m.getRecord().getData()).remove(COL_NAME));
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_BIRTH);
-          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
+          ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
               Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
         })
@@ -283,35 +293,38 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19",
-                        COL_WAKEUP, "10:10:10.123456-05:00",
-                        COL_BIRTH, "2004-10-19T17:23:54.123456Z")))),
+                        COL_WAKEUP_AT, "10:10:10.123456-05:00",
+                        COL_LAST_VISITED_AT, "2004-10-19T17:23:54.123456Z",
+                        COL_LAST_COMMENT_AT, "2004-01-01T17:23:54.123456")))),
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT, "2005-10-19",
-                        COL_WAKEUP, "11:11:11.123456-05:00",
-                        COL_BIRTH, "2005-10-19T17:23:54.123456Z")))),
+                        COL_WAKEUP_AT, "11:11:11.123456-05:00",
+                        COL_LAST_VISITED_AT, "2005-10-19T17:23:54.123456Z",
+                        COL_LAST_COMMENT_AT, "2005-01-01T17:23:54.123456")))),
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19",
-                        COL_WAKEUP, "12:12:12.123456-05:00",
-                        COL_BIRTH, "2006-10-19T17:23:54.123456Z")))));
+                        COL_WAKEUP_AT, "12:12:12.123456-05:00",
+                        COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
+                        COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
   }
 
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (4,'riker', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (4,'riker', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup, birth) VALUES (5, 'data', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z')",
+              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (5, 'data', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
               getFullyQualifiedTableName(TABLE_NAME)));
     });
   }
@@ -325,8 +338,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             Field.of(COL_ID, JsonSchemaType.NUMBER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_BIRTH, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
@@ -335,8 +349,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             Field.of(COL_ID, JsonSchemaType.NUMBER),
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_BIRTH, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
@@ -345,15 +360,16 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
             Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_BIRTH, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
   @Override
-  protected void incrementalTimestampCheck() throws Exception {
+  protected void incrementalDateCheck() throws Exception {
     super.incrementalCursorCheck(COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
@@ -363,7 +379,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void incrementalTimeTzCheck() throws Exception {
-    super.incrementalCursorCheck(COL_WAKEUP,
+    super.incrementalCursorCheck(COL_WAKEUP_AT,
         "11:09:11.123456-05:00",
         "12:12:12.123456-05:00",
         Lists.newArrayList(getTestMessages().get(1),
@@ -372,9 +388,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void incrementalTimestampTzCheck() throws Exception {
-    super.incrementalCursorCheck(COL_BIRTH,
+    super.incrementalCursorCheck(COL_LAST_VISITED_AT,
         "2005-10-18T17:23:54.123456Z",
         "2006-10-19T17:23:54.123456Z",
+        Lists.newArrayList(getTestMessages().get(1),
+            getTestMessages().get(2)));
+  }
+
+  @Test
+  void incrementalTimestampCheck() throws Exception {
+    super.incrementalCursorCheck(COL_LAST_COMMENT_AT,
+        "2004-12-12T17:23:54.123456",
+        "2006-01-01T17:23:54.123456",
         Lists.newArrayList(getTestMessages().get(1),
             getTestMessages().get(2)));
   }
@@ -393,16 +418,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
                     COL_UPDATED_AT, "2006-10-19",
-                    COL_WAKEUP, "12:12:12.123456-05:00",
-                    COL_BIRTH, "2006-10-19T17:23:54.123456Z")))));
+                    COL_WAKEUP_AT, "12:12:12.123456-05:00",
+                    COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
+                    COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
                     COL_UPDATED_AT, "2006-10-19",
-                    COL_WAKEUP, "12:12:12.123456-05:00",
-                    COL_BIRTH, "2006-10-19T17:23:54.123456Z")))));
+                    COL_WAKEUP_AT, "12:12:12.123456-05:00",
+                    COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
+                    COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
         .withState(new AirbyteStateMessage()
