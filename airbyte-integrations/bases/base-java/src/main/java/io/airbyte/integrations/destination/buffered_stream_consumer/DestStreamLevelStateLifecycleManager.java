@@ -14,17 +14,17 @@ import java.util.Map;
 import java.util.Queue;
 
 /**
- * This {@link DestinationStateManager} handles any state where the state messages are scoped by
+ * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by
  * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
  * stream.
  */
-public class DestinationStreamLevelStateManager implements DestinationStateManager {
+public class DestStreamLevelStateLifecycleManager implements DestStateLifecycleManager {
 
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
 
-  public DestinationStreamLevelStateManager() {
+  public DestStreamLevelStateLifecycleManager() {
     this.streamToLastPendingState = new HashMap<>();
     this.streamToLastFlushedState = new HashMap<>();
     this.streamToLastCommittedState = new HashMap<>();
@@ -37,12 +37,7 @@ public class DestinationStreamLevelStateManager implements DestinationStateManag
   }
 
   @Override
-  public Queue<AirbyteMessage> listAllPendingState() {
-    return new LinkedList<>(streamToLastPendingState.values());
-  }
-
-  @Override
-  public void markAllReceivedMessagesAsFlushedToTmpDestination() {
+  public void markPendingAsFlushed() {
     if (!streamToLastPendingState.isEmpty()) {
       streamToLastFlushedState.putAll(streamToLastPendingState);
       streamToLastPendingState.clear();
@@ -50,12 +45,12 @@ public class DestinationStreamLevelStateManager implements DestinationStateManag
   }
 
   @Override
-  public Queue<AirbyteMessage> listAllFlushedButNotCommittedState() {
+  public Queue<AirbyteMessage> listFlushed() {
     return new LinkedList<>(streamToLastFlushedState.values());
   }
 
   @Override
-  public void markAllFlushedMessageAsCommitted() {
+  public void markFlushedAsCommitted() {
     if (!streamToLastFlushedState.isEmpty()) {
       streamToLastCommittedState.putAll(streamToLastFlushedState);
       streamToLastFlushedState.clear();
@@ -63,7 +58,7 @@ public class DestinationStreamLevelStateManager implements DestinationStateManag
   }
 
   @Override
-  public Queue<AirbyteMessage> listAllCommittedState() {
+  public Queue<AirbyteMessage> listCommitted() {
     return new LinkedList<>(streamToLastCommittedState.values());
   }
 

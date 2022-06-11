@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -18,20 +19,21 @@ import java.util.function.Supplier;
  *
  * Per the protocol, if state type is not set, assumes the LEGACY state type.
  */
-public class DefaultDestinationStateManager implements DestinationStateManager {
+public class DefaultDestStateLifecycleManager implements DestStateLifecycleManager {
 
   private AirbyteStateType stateType;
-  private final DestinationSingleStateManager legacyStateManager;
-  private final DestinationStreamLevelStateManager streamStateManager;
-  private final Supplier<DestinationStateManager> internalStateManagerSupplier;
+  private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
-  public DefaultDestinationStateManager() {
+  public DefaultDestStateLifecycleManager() {
+    this(new DestSingleStateLifecycleManager(), new DestStreamLevelStateLifecycleManager());
+  }
+
+  @VisibleForTesting
+  DefaultDestStateLifecycleManager(final DestStateLifecycleManager singleStateManager, final DestStateLifecycleManager streamStateManager) {
     stateType = null;
-    legacyStateManager = new DestinationSingleStateManager();
-    streamStateManager = new DestinationStreamLevelStateManager();
     internalStateManagerSupplier = () -> {
-      if (stateType == AirbyteStateType.GLOBAL || stateType == AirbyteStateType.LEGACY) {
-        return legacyStateManager;
+      if (stateType == AirbyteStateType.GLOBAL || stateType == AirbyteStateType.LEGACY || stateType == null) {
+        return singleStateManager;
       } else if (stateType == AirbyteStateType.STREAM) {
         return streamStateManager;
       } else {
@@ -43,7 +45,7 @@ public class DefaultDestinationStateManager implements DestinationStateManager {
   @Override
   public void addState(final AirbyteMessage message) {
     Preconditions.checkArgument(message.getType() == Type.STATE, "Messages passed to State Manager must be of type STATE.");
-    Preconditions.checkArgument(stateType == null || stateType == message.getState().getStateType());
+    Preconditions.checkArgument(isStateTypeCompatible(stateType, message.getState().getStateType()));
     if (stateType == null) {
       if (message.getState().getStateType() == null) {
         stateType = AirbyteStateType.LEGACY;
@@ -55,29 +57,28 @@ public class DefaultDestinationStateManager implements DestinationStateManager {
     internalStateManagerSupplier.get().addState(message);
   }
 
-  @Override
-  public Queue<AirbyteMessage> listAllPendingState() {
-    return internalStateManagerSupplier.get().listAllPendingState();
+  private boolean isStateTypeCompatible(final AirbyteStateType previousStateType, final AirbyteStateType newStateType) {
+    return previousStateType == null || previousStateType == AirbyteStateType.LEGACY && newStateType == null || previousStateType == newStateType;
   }
 
   @Override
-  public void markAllReceivedMessagesAsFlushedToTmpDestination() {
-    internalStateManagerSupplier.get().markAllReceivedMessagesAsFlushedToTmpDestination();
+  public void markPendingAsFlushed() {
+    internalStateManagerSupplier.get().markPendingAsFlushed();
   }
 
   @Override
-  public Queue<AirbyteMessage> listAllFlushedButNotCommittedState() {
-    return internalStateManagerSupplier.get().listAllFlushedButNotCommittedState();
+  public Queue<AirbyteMessage> listFlushed() {
+    return internalStateManagerSupplier.get().listFlushed();
   }
 
   @Override
-  public void markAllFlushedMessageAsCommitted() {
-    internalStateManagerSupplier.get().markAllFlushedMessageAsCommitted();
+  public void markFlushedAsCommitted() {
+    internalStateManagerSupplier.get().markFlushedAsCommitted();
   }
 
   @Override
-  public Queue<AirbyteMessage> listAllCommittedState() {
-    return internalStateManagerSupplier.get().listAllCommittedState();
+  public Queue<AirbyteMessage> listCommitted() {
+    return internalStateManagerSupplier.get().listCommitted();
   }
 
 }

@@ -80,7 +80,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
-  private final DestinationStateManager stateManager;
+  private final DestStateLifecycleManager stateManager;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -101,7 +101,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestinationStateManager(); // todo (cgardens) - dependency inject.
+    this.stateManager = new DefaultDestStateLifecycleManager();
   }
 
   @Override
@@ -146,7 +146,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void markStatesAsFlushedToTmpDestination() {
-    stateManager.markAllReceivedMessagesAsFlushedToTmpDestination();
+    stateManager.markPendingAsFlushed();
   }
 
   private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
@@ -175,7 +175,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     try {
       // if no state was emitted (i.e. full refresh) and if there were still no failures, we claim
       // success. this is the full refresh case. if there was no state AND a failure, we assume failure.
-      if (stateManager.listAllFlushedButNotCommittedState().isEmpty()) {
+      if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
         // if any state message flushed that means we can still go for at least a partial success.
@@ -184,8 +184,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
-      stateManager.markAllFlushedMessageAsCommitted();
-      stateManager.listAllCommittedState().forEach(outputRecordCollector);
+      stateManager.markFlushedAsCommitted();
+      stateManager.listCommitted().forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;
