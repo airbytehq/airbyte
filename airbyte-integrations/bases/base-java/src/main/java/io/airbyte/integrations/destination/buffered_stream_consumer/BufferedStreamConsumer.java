@@ -101,13 +101,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-<<<<<<< HEAD
-    this.lastFlushedState = new LinkedList<>();
-    this.pendingState = new LinkedList<>();
-=======
     this.stateManager = new DefaultDestinationStateManager(); // todo (cgardens) - dependency inject.
-    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
->>>>>>> 82ca1d4258 (state iface)
   }
 
   @Override

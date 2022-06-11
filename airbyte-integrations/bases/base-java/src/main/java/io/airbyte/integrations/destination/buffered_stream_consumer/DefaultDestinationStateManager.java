@@ -57,7 +57,7 @@ public class DefaultDestinationStateManager implements DestinationStateManager {
 
   @Override
   public Queue<AirbyteMessage> listAllPendingState() {
-    internalStateManagerSupplier.get().listAllPendingState();
+    return internalStateManagerSupplier.get().listAllPendingState();
   }
 
   @Override

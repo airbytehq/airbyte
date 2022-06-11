@@ -5,9 +5,9 @@
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
