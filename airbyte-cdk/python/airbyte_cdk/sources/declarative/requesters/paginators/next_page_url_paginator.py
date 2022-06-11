@@ -10,12 +10,15 @@ from airbyte_cdk.sources.declarative.response import Response
 
 
 class NextPageUrlPaginator(Paginator):
-    def __init__(self, url_base: str, next_page_url: str, config=None, kwargs=None):
+    def __init__(self, url_base: str, next_page_url: str, extract_from: str, config=None, kwargs=None):
         if kwargs is None:
             kwargs = dict()
 
+        if extract_from == "response":
+            extract_from = "decoded_response"
+
         self._url_base = url_base or kwargs.get("url_base")
-        self._interpolated_paginator = InterpolatedPaginator({"next_page_url": next_page_url}, config)
+        self._interpolated_paginator = InterpolatedPaginator({"next_page_url": "{{" + extract_from + next_page_url + "}}"}, config)
         self._next_page_token = {}
 
     def get_headers(self) -> Mapping[str, Any]:

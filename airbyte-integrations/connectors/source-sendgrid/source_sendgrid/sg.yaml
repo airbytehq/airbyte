@@ -7,7 +7,8 @@ lists_stream:
   retriever:
     paginator:
       type: "NextPageUrlPaginator"
-      next_page_url: "{{ decoded_response._metadata.next }}"
+      next_page_url: "._metadata.next"
+      extract_from: "response"
     requester:
       path: "/v3/marketing/lists"
       authenticator:
