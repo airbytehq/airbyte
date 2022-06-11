@@ -191,7 +191,7 @@ class SemiIncrementalMixin:
     # records we can just stop and not process other record. This will increase speed of each incremental stream
     # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
     # supporting this.
-    is_sorted_descending = False
+    is_sorted = False
 
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
@@ -211,9 +211,8 @@ class SemiIncrementalMixin:
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        if not self.is_sorted_descending:
+        if self.is_sorted == "asc":
             return self.page_size
-        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -256,7 +255,7 @@ class SemiIncrementalMixin:
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if cursor_value > start_point:
                 yield record
-            elif self.is_sorted_descending and cursor_value < start_point:
+            elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -353,7 +352,7 @@ class Repositories(SemiIncrementalMixin, Organizations):
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
-    is_sorted_descending = True
+    is_sorted = "desc"
     stream_base_params = {
         "sort": "updated",
         "direction": "desc",
@@ -471,16 +470,18 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         base_params = super().request_params(**kwargs)
         # The very first time we read this stream we want to read ascending so we can save state in case of
         # a halfway failure. But if there is state, we read descending to allow incremental behavior.
-        params = {"state": "all", "sort": "updated", "direction": "desc" if self.is_sorted_descending else "asc"}
+        params = {"state": "all", "sort": "updated", "direction": self.is_sorted}
 
         return {**base_params, **params}
 
     @property
-    def is_sorted_descending(self) -> bool:
+    def is_sorted(self) -> bool:
         """
         Depending if there any state we read stream in ascending or descending order.
         """
-        return not self._first_read
+        if self._first_read:
+            return "asc"
+        return "desc"
 
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
@@ -499,7 +500,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
-    is_sorted_descending = True
+    is_sorted = "desc"
     stream_base_params = {
         "state": "all",
         "sort": "updated",
