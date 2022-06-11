@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;

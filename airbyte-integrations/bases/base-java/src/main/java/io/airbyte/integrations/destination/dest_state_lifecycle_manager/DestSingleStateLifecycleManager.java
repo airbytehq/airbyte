@@ -2,8 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -24,6 +25,11 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public void addState(final AirbyteMessage message) {
     lastPendingState = message;
+  }
+
+  @VisibleForTesting
+  Queue<AirbyteMessage> listPending() {
+    return new LinkedList<>(lastPendingState == null ? Collections.emptyList() : List.of(lastPendingState));
   }
 
   @Override
