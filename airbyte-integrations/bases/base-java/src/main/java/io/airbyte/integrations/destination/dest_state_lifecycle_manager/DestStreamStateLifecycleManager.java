@@ -45,20 +45,6 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     streamToLastPendingState.put(message.getState().getStream().getStreamDescriptor(), message);
   }
 
-  private static Queue<AirbyteMessage> listStatesInOrder(final Map<StreamDescriptor, AirbyteMessage> streamToState) {
-    return streamToState
-        .entrySet()
-        .stream()
-        // typically, we support by namespace and then stream name, so we retain that pattern here.
-        .sorted(Comparator
-            .comparing(
-                (Function<Entry<StreamDescriptor, AirbyteMessage>, String>) entry -> entry.getKey().getNamespace(),
-                Comparator.nullsFirst(Comparator.naturalOrder())) // namespace is allowed to be null
-            .thenComparing(entry -> entry.getKey().getName()))
-        .map(Entry::getValue)
-        .collect(Collectors.toCollection(LinkedList::new));
-  }
-
   @VisibleForTesting
   Queue<AirbyteMessage> listPending() {
     return listStatesInOrder(streamToLastPendingState);
@@ -88,6 +74,29 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public Queue<AirbyteMessage> listCommitted() {
     return listStatesInOrder(streamToLastCommittedState);
+  }
+
+  /**
+   * Lists out the states in the stream to state maps. Guarantees a deterministic sort order, which is
+   * handy because we are going from a map (unsorted) to a queue. The sort order primary sort on
+   * namespace (with null at the top) followed by secondary sort on name. This maps onto the pretty
+   * common order that we list streams elsewhere.
+   *
+   * @param streamToState - map of stream descriptor to its last state
+   * @return queue with the states ordered per the sort mentioned above
+   */
+  private static Queue<AirbyteMessage> listStatesInOrder(final Map<StreamDescriptor, AirbyteMessage> streamToState) {
+    return streamToState
+        .entrySet()
+        .stream()
+        // typically, we support by namespace and then stream name, so we retain that pattern here.
+        .sorted(Comparator
+            .comparing(
+                (Function<Entry<StreamDescriptor, AirbyteMessage>, String>) entry -> entry.getKey().getNamespace(),
+                Comparator.nullsFirst(Comparator.naturalOrder())) // namespace is allowed to be null
+            .thenComparing(entry -> entry.getKey().getName()))
+        .map(Entry::getValue)
+        .collect(Collectors.toCollection(LinkedList::new));
   }
 
 }
