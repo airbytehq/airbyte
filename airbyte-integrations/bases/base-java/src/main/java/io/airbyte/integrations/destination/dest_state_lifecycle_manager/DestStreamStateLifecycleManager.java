@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by
  * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
- * stream.
+ * stream (no duplicates!).
  *
  * Guaranteed to output state messages in order relative to other messages of the SAME state. Does
  * NOT guarantee that state messages of different streams will be output in the order in which they

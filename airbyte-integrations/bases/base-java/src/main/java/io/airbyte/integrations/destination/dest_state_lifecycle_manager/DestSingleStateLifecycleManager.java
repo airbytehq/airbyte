@@ -15,6 +15,9 @@ import java.util.Queue;
  * This {@link DestStateLifecycleManager} handles any state where there is a guarantee that any
  * single state message represents the state for the ENTIRE connection. At the time of writing,
  * GLOBAL and LEGACY state types are the state type that match this pattern.
+ *
+ * Does NOT store duplicates. Because each state message represents the entire state for the
+ * connection, it only stores (and emits) the LAST state it received.
  */
 public class DestSingleStateLifecycleManager implements DestStateLifecycleManager {
 
