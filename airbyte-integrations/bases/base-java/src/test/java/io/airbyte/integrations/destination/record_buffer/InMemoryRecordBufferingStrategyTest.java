@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,6 +26,7 @@ public class InMemoryRecordBufferingStrategyTest {
   // instances
   private static final int MAX_QUEUE_SIZE_IN_BYTES = 130;
 
+  @SuppressWarnings("unchecked")
   private final RecordWriter<AirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
 
   @Test
@@ -36,10 +39,10 @@ public class InMemoryRecordBufferingStrategyTest {
     final AirbyteMessage message3 = generateMessage(stream2);
     final AirbyteMessage message4 = generateMessage(stream2);
 
-    buffering.addRecord(stream1, message1);
-    buffering.addRecord(stream2, message2);
+    assertFalse(buffering.addRecord(stream1, message1));
+    assertFalse(buffering.addRecord(stream2, message2));
     // Buffer still has room
-    buffering.addRecord(stream2, message3);
+    assertTrue(buffering.addRecord(stream2, message3));
     // Buffer limit reach, flushing all messages so far before adding the new incoming one
     verify(recordWriter, times(1)).accept(stream1, List.of(message1.getRecord()));
     verify(recordWriter, times(1)).accept(stream2, List.of(message2.getRecord()));

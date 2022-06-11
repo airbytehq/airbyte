@@ -139,7 +139,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       // if the buffer flushes, update the states appropriately.
       if (bufferingStrategy.addRecord(stream, message)) {
-        markStatesAsFlushesToTmpDestination();
+        markStatesAsFlushedToTmpDestination();
       }
 
     } else if (message.getType() == Type.STATE) {
@@ -150,7 +150,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void markStatesAsFlushesToTmpDestination() {
+  private void markStatesAsFlushedToTmpDestination() {
     if (pendingState != null) {
       lastFlushedToTmpDstState = pendingState;
       pendingState = null;
@@ -176,7 +176,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     } else {
       LOGGER.info("executing on success close procedure.");
       bufferingStrategy.flushAll();
-      markStatesAsFlushesToTmpDestination();
+      markStatesAsFlushedToTmpDestination();
     }
     bufferingStrategy.close();
 
