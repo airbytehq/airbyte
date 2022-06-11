@@ -161,15 +161,13 @@ class Events(IncrementalAmplitudeStream):
         start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
         end = pendulum.now()
         while start <= end:
-            next_start = start.add(**self.time_interval)
-            slice_end = next_start.subtract(hours=1)
             slices.append(
                 {
                     "start": start.strftime(self.date_template),
-                    "end": slice_end.strftime(self.date_template)
+                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template)
                 }
             )
-            start = next_start
+            start = start.add(**self.time_interval)
         return slices
 
     def read_records(
