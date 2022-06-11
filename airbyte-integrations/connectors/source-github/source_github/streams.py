@@ -237,9 +237,10 @@ class SemiIncrementalMixin:
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if self.__slice_key not in self._starting_point_cache:
-            self._starting_point_cache[self.__slice_key] = self._get_starting_point(stream_state, stream_slice)
-        return self._starting_point_cache[self.__slice_key]
+        slice_value = stream_slice[self.__slice_key]
+        if slice_value not in self._starting_point_cache:
+            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[slice_value]
 
     def read_records(
         self,
