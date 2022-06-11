@@ -25,7 +25,7 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
   public DefaultDestStateLifecycleManager() {
-    this(new DestSingleStateLifecycleManager(), new DestStreamLevelStateLifecycleManager());
+    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager());
   }
 
   @VisibleForTesting
@@ -57,7 +57,7 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
     internalStateManagerSupplier.get().addState(message);
   }
 
-  private boolean isStateTypeCompatible(final AirbyteStateType previousStateType, final AirbyteStateType newStateType) {
+  private static boolean isStateTypeCompatible(final AirbyteStateType previousStateType, final AirbyteStateType newStateType) {
     return previousStateType == null || previousStateType == AirbyteStateType.LEGACY && newStateType == null || previousStateType == newStateType;
   }
 
