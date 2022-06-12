@@ -475,7 +475,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         return {**base_params, **params}
 
     @property
-    def is_sorted(self) -> bool:
+    def is_sorted(self) -> str:
         """
         Depending if there any state we read stream in ascending or descending order.
         """
@@ -657,11 +657,12 @@ class Commits(IncrementalMixin, GithubStream):
 
 class Issues(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
+    API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
     """
 
     use_cache = True
     large_stream = True
+    is_sorted = "asc"
 
     stream_base_params = {
         "state": "all",
@@ -908,7 +909,7 @@ class PullRequestCommentReactions(ReactionStream):
 
 class Deployments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/deployments#list-deployments
+    API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
