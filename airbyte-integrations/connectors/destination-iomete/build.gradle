@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.iomete.IometeDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:connectors:destination-s3')
+
+    implementation group: 'org.apache.hive', name: 'hive-jdbc', version: '2.3.9'
+
+    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iomete')
+}
