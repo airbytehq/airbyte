@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
  *
  * Guaranteed to output state messages in order relative to other messages of the SAME state. Does
  * NOT guarantee that state messages of different streams will be output in the order in which they
- * were received.
+ * were received. State messages across streams will be emitted in alphabetical order (primary sort
+ * on namespace, secondary on name).
  */
 public class DestStreamStateLifecycleManager implements DestStateLifecycleManager {
 
@@ -52,10 +53,7 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markPendingAsFlushed() {
-    if (!streamToLastPendingState.isEmpty()) {
-      streamToLastFlushedState.putAll(streamToLastPendingState);
-      streamToLastPendingState.clear();
-    }
+    moveToNextPhase(streamToLastPendingState, streamToLastFlushedState);
   }
 
   @Override
@@ -65,10 +63,7 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markFlushedAsCommitted() {
-    if (!streamToLastFlushedState.isEmpty()) {
-      streamToLastCommittedState.putAll(streamToLastFlushedState);
-      streamToLastFlushedState.clear();
-    }
+    moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);
   }
 
   @Override
@@ -97,6 +92,20 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
             .thenComparing(entry -> entry.getKey().getName()))
         .map(Entry::getValue)
         .collect(Collectors.toCollection(LinkedList::new));
+  }
+
+  /**
+   * Moves all state messages from previous phase into next phase.
+   *
+   * @param prevPhase - map of stream to state messages for previous phase that will be moved to next
+   *        phase. when this method returns this map will be empty.
+   * @param nextPhase - map into which state messages from prevPhase will be added.
+   */
+  private static void moveToNextPhase(final Map<StreamDescriptor, AirbyteMessage> prevPhase, final Map<StreamDescriptor, AirbyteMessage> nextPhase) {
+    if (!prevPhase.isEmpty()) {
+      nextPhase.putAll(prevPhase);
+      prevPhase.clear();
+    }
   }
 
 }

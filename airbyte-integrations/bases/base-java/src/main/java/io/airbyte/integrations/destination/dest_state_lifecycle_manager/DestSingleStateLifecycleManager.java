@@ -17,7 +17,7 @@ import java.util.Queue;
  * GLOBAL and LEGACY state types are the state type that match this pattern.
  *
  * Does NOT store duplicates. Because each state message represents the entire state for the
- * connection, it only stores (and emits) the LAST state it received.
+ * connection, it only stores (and emits) the LAST state it received at each phase.
  */
 public class DestSingleStateLifecycleManager implements DestStateLifecycleManager {
 
