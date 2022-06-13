@@ -12,7 +12,10 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config:config-models')
     implementation libs.flyway.core
-    implementation libs.testcontainers.postgresql
+
+    // Mark as compile only to avoid leaking transitively to connectors
+    compileOnly libs.platform.testcontainers.postgresql
+
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
     // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
@@ -21,6 +24,7 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation libs.platform.testcontainers.postgresql
 
     // Big Query
     implementation('com.google.cloud:google-cloud-bigquery:1.133.1')

@@ -2,11 +2,11 @@
 
 ## Overview
 
-This destination syncs data to Databricks Delta Lake. Each stream is written to its own delta table.
+This destination syncs data to Databricks Delta Lake. Each stream is written to its own [delta-table](https://delta.io/).
 
-This connector requires a JDBC driver to connect to Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
+This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connect third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync almost infinite number of streams with less than 500MB of memory.
+Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into an out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync an almost infinite number of streams with less than 500MB of memory.
 
 ## Sync Mode
 
@@ -30,18 +30,18 @@ Databricks Delta Lake supports various cloud storage as the [data source](https:
 |  | Port | string | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
 |  | Personal Access Token | string | Required. Example: `dapi0123456789abcdefghij0123456789AB`. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html). |
 | General | Database schema | string | Optional. Default to "public". Each data stream will be written to a table under this database schema. |
-|  | Purge Staging Data | boolean | The connector creates staging files and tables on S3. By default they will be purged when the data sync is complete. Set it to `false` for debugging purpose. |
+|  | Purge Staging Data | boolean | The connector creates staging files and tables on S3. By default, they will be purged when the data sync is complete. Set it to `false` for debugging purposes. |
 | Data Source - S3 | Bucket Name | string | Name of the bucket to sync data into. |
 |  | Bucket Path | string | Subdirectory under the above bucket to sync the data into. |
 |  | Region | string | See [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes. |
 |  | Access Key ID | string | AWS/Minio credential. |
 |  | Secret Access Key | string | AWS/Minio credential. |
 
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
+⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
-## Staging Parquet Files
+## Staging Parquet Files (Delta Format)
 
-Data streams are first written as staging Parquet files on S3, and then loaded into Databricks tables. All the staging files will be deleted after the sync is done. For debugging purposes, here is the full path for a staging file:
+Data streams are first written as staging delta-table ([Parquet](https://parquet.apache.org/) + [Transaction Log](https://databricks.com/blog/2019/08/21/diving-into-delta-lake-unpacking-the-transaction-log.html)) files on S3, and then loaded into Databricks delta-tables. All the staging files will be deleted after the sync is done. For debugging purposes, here is the full path for a staging file:
 
 ```text
 s3://<bucket-name>/<bucket-path>/<uuid>/<stream-name>
@@ -50,8 +50,9 @@ s3://<bucket-name>/<bucket-path>/<uuid>/<stream-name>
 For example:
 
 ```text
-s3://testing_bucket/data_output_path/98c450be-5b1c-422d-b8b5-6ca9903727d9/users
-     ↑              ↑                ↑                                    ↑
+s3://testing_bucket/data_output_path/98c450be-5b1c-422d-b8b5-6ca9903727d9/users/_delta_log
+     ↑              ↑                ↑                                    ↑     ↑
+     |              |                |                                    |     transaction log
      |              |                |                                    stream name
      |              |                database schema
      |              bucket path
