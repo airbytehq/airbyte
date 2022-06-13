@@ -18,7 +18,6 @@ import org.jooq.impl.SchemaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: update migration description in the class name
 public class V0_39_17_001__AddStreamDescriptorsToStateTable extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_39_17_001__AddStreamDescriptorsToStateTable.class);
