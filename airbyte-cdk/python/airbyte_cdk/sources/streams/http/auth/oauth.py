@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
@@ -26,8 +26,8 @@ class Oauth2Authenticator(HttpAuthenticator):
         client_secret: str,
         refresh_token: str,
         scopes: List[str] = None,
-        refresh_access_token_headers: Mapping[str, Any] = None,
-        refresh_access_token_authenticator=None,
+        refresh_access_token_headers: Optional[Mapping[str, Any]] = None,
+        refresh_access_token_authenticator: Optional[HttpAuthenticator] = None,
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
