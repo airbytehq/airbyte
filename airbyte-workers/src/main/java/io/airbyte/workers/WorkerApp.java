@@ -38,9 +38,11 @@ import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
+import io.airbyte.scheduler.persistence.JobErrorReporter;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.error_reporting.ErrorReportingClient;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -134,6 +136,7 @@ public class WorkerApp {
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
+  private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
 
   public void start() {
@@ -193,7 +196,8 @@ public class WorkerApp {
             jobTracker,
             configRepository,
             jobCreator,
-            streamResetPersistence),
+            streamResetPersistence,
+            jobErrorReporter),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         new CheckConnectionActivityImpl(
@@ -439,6 +443,9 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy()); // we'll take inspo from trackingclient for metadata to include
+    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configPersistence, workspaceHelper, client);
+
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
     new WorkerApp(
@@ -468,7 +475,8 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence).start();
+        streamResetPersistence,
+        jobErrorReporter).start();
   }
 
   public static void main(final String[] args) {
