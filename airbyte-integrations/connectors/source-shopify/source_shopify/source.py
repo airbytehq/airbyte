@@ -112,8 +112,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             if "no_of_days_to_fetch" in self.config.keys() and self.config["no_of_days_to_fetch"] is not None:
                 end_date = start_date + timedelta(days=int(self.config["no_of_days_to_fetch"]))
                 params[self.filter_field_max] = end_date.strftime("%Y-%m-%d")
-        
-        LOGGER.info('params {}'.format(params))
+
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
@@ -123,7 +122,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field) > stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -148,7 +147,6 @@ class Orders(IncrementalShopifyStream):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
-        LOGGER.info('params {}'.format(params))
         return params
 
 class LineItems(Orders):
@@ -165,7 +163,6 @@ class LineItems(Orders):
         if not next_page_token:
             params["status"] = "any"
         params['fields'] = self.fields
-        LOGGER.info('params {}'.format(params))
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
