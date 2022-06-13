@@ -88,7 +88,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       }
 
     } catch (final Exception e) {
-      LOGGER.error("Error while getting checking connection.", e);
+      LOGGER.error("Error while checking connection: ", e);
       return new StandardCheckConnectionOutput()
           .withStatus(Status.FAILED)
           .withMessage("Error while getting checking connection, because of: " + e.getMessage());
