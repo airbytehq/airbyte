@@ -294,7 +294,7 @@
             }
           },
           {
-            "title": "GCS Staging",
+            "title": "Google Cloud Storage Staging",
             "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
