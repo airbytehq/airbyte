@@ -47,6 +47,12 @@ def test_no_auth():
     assert {} == no_auth.get_auth_header()
 
 
+def test_basic_authenticator():
+    token = BasicHttpAuthenticator("client_id", "client_secret")
+    header = token.get_auth_header()
+    assert {"Authorization": "Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="} == header
+
+
 class TestOauth2Authenticator:
     """
     Test class for OAuth2Authenticator.
