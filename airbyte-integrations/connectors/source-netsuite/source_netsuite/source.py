@@ -19,6 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 rest_path = "/services/rest/"
 record_path = rest_path + "record/v1/"
 metadata_path = record_path + "metadata-catalog/"
+schema_headers = {"Accept": "application/schema+json"}
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
@@ -48,8 +49,7 @@ class NetsuiteStream(HttpStream, ABC):
         schema = self.schemas.get(ref)
         if not schema:
             url = self.url_base + ref
-            headers = {"Accept": "application/schema+json"}
-            resp = requests.get(url, headers=headers, auth=self._session.auth)
+            resp = requests.get(url, headers=schema_headers, auth=self._session.auth)
             # some schemas, like transaction, do not exist because they refer to multiple
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
@@ -224,7 +224,7 @@ class SourceNetsuite(AbstractSource):
             record_names = [r["name"] for r in metadata]
 
         # streams must have a lastModifiedDate property to be incremental
-        schemas = {n: session.get(metadata_url + n).json() for n in record_names}
+        schemas = {n: session.get(metadata_url + n, headers=schema_headers).json() for n in record_names}
 
         incremental_record_names = [n for n in record_names if schemas[n]["properties"].get("lastModifiedDate")]
         standard_record_names = [n for n in record_names if n not in incremental_record_names]
