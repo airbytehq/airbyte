@@ -2,19 +2,19 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import requests
-from typing import Optional, Mapping, Any, Iterable
 from abc import ABC
+from typing import Any, Iterable, Mapping, Optional
+
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MetabaseStream(HttpStream, ABC):
-
     def __init__(self, instance_api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.instance_api_url = instance_api_url
 
-    primary_key = "id"
+    primary_key = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -31,12 +31,12 @@ class MetabaseStream(HttpStream, ABC):
         return self.instance_api_url
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json

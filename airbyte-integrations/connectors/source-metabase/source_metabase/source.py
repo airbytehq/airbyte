@@ -9,13 +9,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from source_metabase.streams import (
-    Cards
-)
+from source_metabase.streams import Cards
 
 
 class MetabaseAuth(HttpAuthenticator):
-
     def __init__(self, session_token: str):
         self.session_token = session_token
 
@@ -24,7 +21,6 @@ class MetabaseAuth(HttpAuthenticator):
 
 
 class SourceMetabase(AbstractSource):
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = MetabaseAuth(config["session_token"])

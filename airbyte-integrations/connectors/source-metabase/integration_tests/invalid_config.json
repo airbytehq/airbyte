@@ -1,5 +1,6 @@
 {
-  "client_secret": "sk_test_wrongClientSecret",
-  "account_id": "wrong-account-id",
-  "start_date": "2020-05-01T00:00:00Z"
+  "instance_api_url": "localhost:3000",
+  "username": "wrong-account-id",
+  "password": "2020-05-01T00:00:00Z",
+  "session_token": "invalid"
 }
