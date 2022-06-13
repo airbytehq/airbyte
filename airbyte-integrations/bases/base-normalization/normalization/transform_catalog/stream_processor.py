@@ -849,7 +849,7 @@ input_data_with_active_row_num as (
             jinja_variables["scd_columns_sql"] = scd_columns_sql
         sql = Template(
             """
--- depends on: {{ from_table }}
+-- depends_on: {{ from_table }}
 with
 {{ '{% if is_incremental() %}' }}
 new_data as (
@@ -1120,11 +1120,15 @@ where 1 = 1
 
                 final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
                 active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
+                clickhouse_nullable_join_setting = ""
                 if self.destination_type == DestinationType.CLICKHOUSE:
                     # Clickhouse has special delete syntax
                     delete_statement = "alter table {{ final_table_relation }} delete"
                     unique_key_reference = self.get_unique_key(in_jinja=False)
                     noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                    # Without this, our LEFT JOIN would return empty string for non-matching rows, so our COUNT would include those rows.
+                    # We want to exclude them (this is the default behavior in other DBs) so we have to set join_use_nulls=1
+                    clickhouse_nullable_join_setting = "SETTINGS join_use_nulls=1"
                 elif self.destination_type == DestinationType.BIGQUERY:
                     # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
                     # it requires "delete from project.schema.table table_alias where table_alias.column in"
@@ -1154,17 +1158,24 @@ where 1 = 1
                     {{ '%}' }}
 
                     -- Delete records which are no longer active:
-                    -- The first subquery finds the most recent increment to the SCD table
-                    -- The second subquery finds, within that increment, the records which are still active
-                    -- We want to delete rows which are in that increment, but are not active
+                    -- This query is equivalent, but the left join version is more performant:
+                    -- delete from final_table where unique_key in (
+                    --     select unique_key from scd_table where 1 = 1 <incremental_clause(normalized_at, final_table)>
+                    -- ) and unique_key not in (
+                    --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
+                    -- )
                     {{ delete_statement }} where {{ unique_key_reference }} in (
-                        select {{ unique_key }}
+                        select distinct {{ unique_key }}
                         from {{ '{{ this }}' }}
-                        where 1 = 1 {{ normalized_at_incremental_clause }}
-                    ) and {{ unique_key_reference }} not in (
-                        select {{ unique_key }}
-                        from {{ '{{ this }}' }}
-                        where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
+                        left join (
+                            select {{ unique_key }} as active_unique_key
+                            from {{ '{{ this }}' }}
+                            where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
+                        ) active_recent_scd_rows on {{ unique_key }} = active_unique_key
+                        where 1=1 {{ normalized_at_incremental_clause }}
+                        group by {{ unique_key }}
+                        having count(active_unique_key) = 0
+                        {{ clickhouse_nullable_join_setting }}
                     )
                     {{ '{% else %}' }}
                     -- We have to have a non-empty query, so just do a noop delete
@@ -1183,6 +1194,7 @@ where 1 = 1
                         self.get_normalized_at(in_jinja=True),
                     ),
                     unique_key_reference=unique_key_reference,
+                    clickhouse_nullable_join_setting=clickhouse_nullable_join_setting,
                 )
                 hooks.append(deletion_hook)
 
