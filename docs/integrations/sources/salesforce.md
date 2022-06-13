@@ -40,7 +40,7 @@ To set up Salesforce as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Salesforce** from the Source type dropdown. 
+3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown. 
 4. For Name, enter a name for the Salesforce connector.
 5. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.

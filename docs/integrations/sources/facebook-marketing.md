@@ -15,7 +15,7 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Facebook Marketing** from the Source type dropdown.
+3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
 4. For Name, enter a name for the Facebook Marketing connector.
 5. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
 6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. 

@@ -14,7 +14,7 @@ To set up Google Sheets as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Google Sheets** from the Source type dropdown. 
+3. On the Set up the source page, select **Google Sheets** from the **Source type** dropdown. 
 4. For Name, enter a name for the Google Sheets connector. 
 5. Authenticate your Google account via OAuth or Service Account Key Authentication. 
     - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
