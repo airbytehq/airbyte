@@ -55,6 +55,7 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 | Version | Date       | Pull Request                                           | Subject                                           |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------|
+| 0.1.8   | 2022-05-20 | [13046](https://github.com/airbytehq/airbyte/pull/13046) | Fix incremental streams          |
 | 0.1.7   | 2022-02-24 | [8768](https://github.com/airbytehq/airbyte/pull/8768) | Add custom survey IDs to limit API calls          |
 | 0.1.6   | 2022-01-14 | [9508](https://github.com/airbytehq/airbyte/pull/9508) | Scopes change                                     |
 | 0.1.5   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |

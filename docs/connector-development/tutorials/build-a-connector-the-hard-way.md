@@ -13,7 +13,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
-**This tutorial is meant for those interested in learning how the Airbyte Specification works in detail, not for creating production connectors**. We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, you'll want to use the helper modules such as the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md).
+**This tutorial is meant for those interested in learning how the Airbyte Specification works in detail, not for creating production connectors**. We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, you'll want to use the helper modules such as the [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
 
 This tutorial can be done entirely on your local workstation.
 
@@ -1160,7 +1160,7 @@ This section is not yet complete and will be completed soon. Please reach out to
 Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync.
 
 ### Connector Development Kit
-Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors.
+Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials) for the frameworks you should use to build production-ready connectors.
 
 ### Language specific helpers
  * [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source)

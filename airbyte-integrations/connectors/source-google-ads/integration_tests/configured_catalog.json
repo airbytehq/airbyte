@@ -35,7 +35,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"]
+      "cursor_field": ["segments.date"],
+      "primary_key": [["click_view.gclid"], ["segments.date"]]
     },
     {
       "stream": {
@@ -111,7 +112,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"]
+      "cursor_field": ["segments.date"],
+      "primary_key": [["ad_group_ad.ad.id"], ["segments.date"]]
     },
     {
       "stream": {
@@ -124,7 +126,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"]
+      "cursor_field": ["segments.date"],
+      "primary_key": [["ad_group.id"], ["segments.date"]]
     },
     {
       "stream": {
@@ -137,7 +140,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"]
+      "cursor_field": ["segments.date"],
+      "primary_key": [["customer.id"], ["segments.date"]]
     },
     {
       "stream": {
@@ -150,7 +154,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"]
+      "cursor_field": ["segments.date"],
+      "primary_key": [["campaign.id"], ["segments.date"]]
     },
     {
       "stream": {

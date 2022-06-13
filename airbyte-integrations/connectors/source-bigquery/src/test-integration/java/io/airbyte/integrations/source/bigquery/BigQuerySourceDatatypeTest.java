@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -284,7 +284,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("['a', 'b']")
-            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
+            .addExpectedValues("[\"a\",\"b\"]")
             .build());
 
     addDataTypeTestData(

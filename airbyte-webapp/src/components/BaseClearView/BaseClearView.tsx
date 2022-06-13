@@ -22,21 +22,18 @@ const LogoImg = styled.img`
 `;
 
 const MainInfo = styled.div`
+  min-width: 550px;
   display: flex;
   align-items: center;
   flex-direction: column;
 `;
 
-interface BaseClearViewProps {
-  onBackClick?: React.MouseEventHandler;
-}
-
-const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onBackClick }) => {
+const BaseClearView: React.FC = ({ children }) => {
   const { formatMessage } = useIntl();
   return (
     <Content>
       <MainInfo>
-        <Link to=".." onClick={onBackClick}>
+        <Link to="..">
           <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
         </Link>
         {children}

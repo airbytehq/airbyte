@@ -7,6 +7,7 @@ import { AirbyteJSONSchema } from "core/jsonSchema";
 import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ConnectorDocumentationWrapper } from "../ConnectorDocumentationLayout";
 import { ServiceFormValues } from "./types";
 
@@ -120,11 +121,14 @@ describe("Service Form", () => {
           <ServiceForm
             formType="source"
             onSubmit={handleSubmit}
-            selectedConnectorDefinitionSpecification={{
-              connectionSpecification: schema,
-              sourceDefinitionId: "1",
-              documentationUrl: "",
-            }}
+            selectedConnectorDefinitionSpecification={
+              // @ts-expect-error Partial objects for testing
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "1",
+                documentationUrl: "",
+              } as DestinationDefinitionSpecificationRead
+            }
             availableServices={[]}
           />
         </ConnectorDocumentationWrapper>
@@ -203,11 +207,14 @@ describe("Service Form", () => {
             formType="source"
             formValues={{ name: "test-name", serviceType: "test-service-type" }}
             onSubmit={(values) => (result = values)}
-            selectedConnectorDefinitionSpecification={{
-              connectionSpecification: schema,
-              sourceDefinitionId: "test-service-type",
-              documentationUrl: "",
-            }}
+            selectedConnectorDefinitionSpecification={
+              // @ts-expect-error Partial objects for testing
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "test-service-type",
+                documentationUrl: "",
+              } as DestinationDefinitionSpecificationRead
+            }
             availableServices={[]}
           />
         </ConnectorDocumentationWrapper>

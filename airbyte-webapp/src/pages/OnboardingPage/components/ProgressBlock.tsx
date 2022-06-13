@@ -7,9 +7,9 @@ import styled, { keyframes } from "styled-components";
 import { Button, H1 } from "components/base";
 import Link from "components/Link";
 
-import { Connection } from "core/domain/connection";
 import Status from "core/statuses";
 
+import { JobStatus, WebBackendConnectionRead } from "../../../core/request/AirbyteClient";
 import { RoutePaths } from "../../routePaths";
 
 const run = keyframes`
@@ -57,14 +57,14 @@ const PaddedButton = styled(Button)`
   margin-left: 10px;
 `;
 
-type ProgressBlockProps = {
-  connection: Connection;
+interface ProgressBlockProps {
+  connection: WebBackendConnectionRead;
   onSync: () => void;
-};
+}
 
 const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => {
-  const showMessage = (status: string | null) => {
-    if (status === null || !status) {
+  const showMessage = (status: JobStatus | undefined) => {
+    if (!status) {
       return <FormattedMessage id="onboarding.firstSync" />;
     }
     if (status === Status.FAILED) {

@@ -119,7 +119,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests, publish the connector and bump the connector version
+   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```

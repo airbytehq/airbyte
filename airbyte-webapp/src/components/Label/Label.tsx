@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-type IProps = {
+interface IProps {
   error?: boolean;
   nextLine?: boolean;
   success?: boolean;
@@ -9,7 +9,7 @@ type IProps = {
   additionLength?: number;
   className?: string;
   onClick?: (data: unknown) => void;
-};
+}
 
 const Content = styled.label<{ additionLength?: number | string }>`
   display: block;

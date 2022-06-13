@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.airbyte_test_container;
@@ -7,9 +7,9 @@ package io.airbyte.test.airbyte_test_container;
 import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Maps;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.HealthApi;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.generated.HealthApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.concurrency.WaitingUtils;
 import java.io.File;
 import java.io.FileInputStream;

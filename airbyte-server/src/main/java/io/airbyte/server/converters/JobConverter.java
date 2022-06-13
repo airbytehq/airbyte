@@ -1,28 +1,28 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.model.AttemptFailureOrigin;
-import io.airbyte.api.model.AttemptFailureReason;
-import io.airbyte.api.model.AttemptFailureSummary;
-import io.airbyte.api.model.AttemptFailureType;
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStats;
-import io.airbyte.api.model.AttemptStatus;
-import io.airbyte.api.model.AttemptStreamStats;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobDebugRead;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobStatus;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SynchronousJobRead;
+import io.airbyte.api.model.generated.AttemptFailureOrigin;
+import io.airbyte.api.model.generated.AttemptFailureReason;
+import io.airbyte.api.model.generated.AttemptFailureSummary;
+import io.airbyte.api.model.generated.AttemptFailureType;
+import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStatus;
+import io.airbyte.api.model.generated.AttemptStreamStats;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobStatus;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -166,6 +166,7 @@ public class JobConverter {
             .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
             .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
             .externalMessage(failure.getExternalMessage())
+            .internalMessage(failure.getInternalMessage())
             .stacktrace(failure.getStacktrace())
             .timestamp(failure.getTimestamp())
             .retryable(failure.getRetryable()))

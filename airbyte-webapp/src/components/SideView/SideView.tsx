@@ -6,10 +6,10 @@ import { useClickAway, useKey } from "react-use";
 
 import { Actions, Body, Close, Container, Content, Header } from "./styled";
 
-type Props = {
+interface Props {
   headerLink?: React.ReactNode | string;
   onClose: () => void;
-};
+}
 
 const EXIT_KEY = "Escape";
 

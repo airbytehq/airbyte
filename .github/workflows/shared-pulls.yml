@@ -1,7 +1,7 @@
 name: "Shared Pull Requests"
 on:
   pull_request_target:
-    types: [opened]
+    types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
 jobs:
   shared-pulls:
