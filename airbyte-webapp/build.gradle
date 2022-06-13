@@ -72,14 +72,14 @@ task buildStorybook(type: NpmTask) {
 }
 
 task copyBuildOutput(type: Copy) {
-    dependsOn npm_run_build
+    dependsOn copyDocker, npm_run_build
 
-    from 'build/app'
+    from "${project.projectDir}/build/app"
     into 'build/docker/bin/build'
 }
 
 task copyDocs(type: Copy) {
-    dependsOn copyBuildOutput
+    dependsOn copyDocker, copyBuildOutput
 
     from "${project.rootProject.projectDir}/docs/integrations"
     into "build/docker/bin/build/docs/integrations"
@@ -90,7 +90,7 @@ task copyDocs(type: Copy) {
 
 // Copy images that are used in .md integration documentation docs
 task copyDocAssets(type: Copy) {
-    dependsOn copyBuildOutput
+    dependsOn copyDocker, copyBuildOutput
 
     from "${project.rootProject.projectDir}/docs/.gitbook"
     into "build/docker/bin/build/docs/.gitbook"
@@ -98,6 +98,8 @@ task copyDocAssets(type: Copy) {
 }
 
 task copyNginx(type: Copy) {
+    dependsOn copyDocker
+
     from "${project.projectDir}/nginx"
     into "build/docker/bin/nginx"
 }
