@@ -24,17 +24,23 @@
                     -- ) and unique_key not in (
                     --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
                     -- )
+                    -- We're incremental against normalized_at rather than emitted_at because we need to fetch the SCD
+                    -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
+                    -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     delete from {{ final_table_relation }} where {{ final_table_relation }}.{{ quote('_AIRBYTE_UNIQUE_KEY') }} in (
-                        select distinct {{ quote('_AIRBYTE_UNIQUE_KEY') }}
-                        from {{ this }}
-                        left join (
-                            select {{ quote('_AIRBYTE_UNIQUE_KEY') }} as active_unique_key
+                        select inactive_counts.unique_key
+                        from (
+                            select {{ quote('_AIRBYTE_UNIQUE_KEY') }} as unique_key, count({{ quote('_AIRBYTE_UNIQUE_KEY') }}) as inactive_count
+                            from {{ this }}
+                            where {{ quote('_AIRBYTE_ACTIVE_ROW') }} = 0 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
+                            group by {{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                        ) inactive_counts left join (
+                            select {{ quote('_AIRBYTE_UNIQUE_KEY') }} as unique_key, count({{ quote('_AIRBYTE_UNIQUE_KEY') }}) as active_count
                             from {{ this }}
                             where {{ quote('_AIRBYTE_ACTIVE_ROW') }} = 1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
-                        ) active_recent_scd_rows on {{ quote('_AIRBYTE_UNIQUE_KEY') }} = active_unique_key
-                        where 1=1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
-                        group by {{ quote('_AIRBYTE_UNIQUE_KEY') }}
-                        having count(active_unique_key) = 0
+                            group by {{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                        where active_count is null or active_count = 0
                     )
                     {% else %}
                     -- We have to have a non-empty query, so just do a noop delete

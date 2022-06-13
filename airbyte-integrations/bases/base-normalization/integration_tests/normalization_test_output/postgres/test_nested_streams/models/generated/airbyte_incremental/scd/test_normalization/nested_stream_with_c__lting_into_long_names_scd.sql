@@ -25,17 +25,23 @@
                     -- ) and unique_key not in (
                     --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
                     -- )
+                    -- We're incremental against normalized_at rather than emitted_at because we need to fetch the SCD
+                    -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
+                    -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     delete from {{ final_table_relation }} where {{ final_table_relation }}._airbyte_unique_key in (
-                        select distinct _airbyte_unique_key
-                        from {{ this }}
-                        left join (
-                            select _airbyte_unique_key as active_unique_key
+                        select inactive_counts.unique_key
+                        from (
+                            select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as inactive_count
+                            from {{ this }}
+                            where _airbyte_active_row = 0 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('nested_stream_with_c__lting_into_long_names')) }}
+                            group by _airbyte_unique_key
+                        ) inactive_counts left join (
+                            select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as active_count
                             from {{ this }}
                             where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('nested_stream_with_c__lting_into_long_names')) }}
-                        ) active_recent_scd_rows on _airbyte_unique_key = active_unique_key
-                        where 1=1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('nested_stream_with_c__lting_into_long_names')) }}
-                        group by _airbyte_unique_key
-                        having count(active_unique_key) = 0
+                            group by _airbyte_unique_key
+                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                        where active_count is null or active_count = 0
                     )
                     {% else %}
                     -- We have to have a non-empty query, so just do a noop delete

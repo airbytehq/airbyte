@@ -25,17 +25,23 @@
                     -- ) and unique_key not in (
                     --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
                     -- )
+                    -- We're incremental against normalized_at rather than emitted_at because we need to fetch the SCD
+                    -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
+                    -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     delete from {{ final_table_relation }} where {{ final_table_relation }}._AIRBYTE_UNIQUE_KEY in (
-                        select distinct _AIRBYTE_UNIQUE_KEY
-                        from {{ this }}
-                        left join (
-                            select _AIRBYTE_UNIQUE_KEY as active_unique_key
+                        select inactive_counts.unique_key
+                        from (
+                            select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as inactive_count
+                            from {{ this }}
+                            where _AIRBYTE_ACTIVE_ROW = 0 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
+                            group by _AIRBYTE_UNIQUE_KEY
+                        ) inactive_counts left join (
+                            select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as active_count
                             from {{ this }}
                             where _AIRBYTE_ACTIVE_ROW = 1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
-                        ) active_recent_scd_rows on _AIRBYTE_UNIQUE_KEY = active_unique_key
-                        where 1=1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
-                        group by _AIRBYTE_UNIQUE_KEY
-                        having count(active_unique_key) = 0
+                            group by _AIRBYTE_UNIQUE_KEY
+                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                        where active_count is null or active_count = 0
                     )
                     {% else %}
                     -- We have to have a non-empty query, so just do a noop delete
