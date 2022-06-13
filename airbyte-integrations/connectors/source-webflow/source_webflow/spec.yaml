@@ -9,15 +9,17 @@ connectionSpecification:
     - accept_version
   additionalProperties: false
   properties:
+    site_id:
+      title: Site id
+      type: string
+      description: "The id of the Webflow site you are requesting data from. See https://developers.webflow.com/#sites"
+      order: 0
     api_key:
       title: API token
       type: string
       description: "The API token for authenticating to Webflow. See https://university.webflow.com/lesson/intro-to-the-webflow-api"
       example: "Bearer <a long hex sequence>"
-    site_id:
-      title: Site id
-      type: string
-      description: "The id of the Webflow site you are requesting data from. See https://developers.webflow.com/#sites"
+      order: 1
     accept_version:
       type: string
       description: "Webflow expects a 'accept-version' header with a value of '1.0.0' (as of May 2022)"
