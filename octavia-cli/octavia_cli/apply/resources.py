@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Set, Type, Union
 
 import airbyte_api_client
+import click
 import yaml
 from airbyte_api_client.api import (
     destination_api,
@@ -51,30 +52,35 @@ from airbyte_api_client.model.web_backend_connection_create import WebBackendCon
 from airbyte_api_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
 from airbyte_api_client.model.web_backend_connection_update import WebBackendConnectionUpdate
 from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
-from click import ClickException
 
 from .diff_helpers import compute_diff, hash_config
 from .yaml_loaders import EnvVarLoader
 
 
-class DuplicateResourceError(ClickException):
+class DuplicateResourceError(click.ClickException):
     pass
 
 
-class NonExistingResourceError(ClickException):
+class NonExistingResourceError(click.ClickException):
     pass
 
 
-class InvalidConfigurationError(ClickException):
+class InvalidConfigurationError(click.ClickException):
     pass
 
 
-class InvalidStateError(ClickException):
+class InvalidStateError(click.ClickException):
+    pass
+
+
+class MissingStateError(click.ClickException):
     pass
 
 
 class ResourceState:
-    def __init__(self, configuration_path: str, workspace_id: str, resource_id: str, generation_timestamp: int, configuration_hash: str):
+    def __init__(
+        self, configuration_path: str, workspace_id: Optional[str], resource_id: str, generation_timestamp: int, configuration_hash: str
+    ):
         """This constructor is meant to be private. Construction shall be made with create or from_file class methods.
 
         Args:
@@ -104,6 +110,10 @@ class ResourceState:
         """Save the state as a YAML file."""
         with open(self.path, "w") as state_file:
             yaml.dump(self.as_dict(), state_file)
+
+    def delete(self) -> None:
+        """Delete the state file"""
+        os.remove(self.path)
 
     @classmethod
     def create(cls, configuration_path: str, configuration_hash: str, workspace_id: str, resource_id: str) -> "ResourceState":
@@ -136,7 +146,7 @@ class ResourceState:
             raw_state = yaml.safe_load(f)
         return ResourceState(
             raw_state["configuration_path"],
-            raw_state["workspace_id"],
+            raw_state.get("workspace_id"),  # TODO: workspace id should not be nullable after the user base has upgraded to >= 0.39.18
             raw_state["resource_id"],
             raw_state["generation_timestamp"],
             raw_state["configuration_hash"],
@@ -149,7 +159,18 @@ class ResourceState:
     @classmethod
     def from_configuration_path_and_workspace(cls, configuration_path, workspace_id):
         state_path = cls._get_path_from_configuration_and_workspace_id(configuration_path, workspace_id)
-        return cls.from_file(state_path)
+        state = cls.from_file(state_path)
+
+        return state
+
+    @classmethod
+    def migrate(self, state_to_migrate_path, workspace_id):
+        state_to_migrate = ResourceState.from_file(state_to_migrate_path)
+        new_state = ResourceState.create(
+            state_to_migrate.configuration_path, state_to_migrate.configuration_path, workspace_id, state_to_migrate.resource_id
+        )
+        state_to_migrate.delete()
+        return new_state
 
 
 class BaseResource(abc.ABC):
@@ -271,7 +292,7 @@ class BaseResource(abc.ABC):
         """
         invalid_keys = list(set(dict_to_check.keys()) & invalid_keys)
         if invalid_keys:
-            raise InvalidConfigurationError(f"{error_message}: {', '.join(invalid_keys)}")
+            raise InvalidConfigurationError(f"Invalid configuration keys: {', '.join(invalid_keys)}. {error_message}. ")
 
     @property
     def remote_resource(self):
@@ -306,12 +327,23 @@ class BaseResource(abc.ABC):
             Optional[ResourceState]: the deserialized resource state if YAML file found.
         """
         expected_state_path = Path(os.path.join(os.path.dirname(configuration_file), f"state_{workspace_id}.yaml"))
+        legacy_state_path = Path(os.path.join(os.path.dirname(configuration_file), "state.yaml"))
         if expected_state_path.is_file():
             return ResourceState.from_file(expected_state_path)
+        elif legacy_state_path.is_file():  # TODO: remove condition after user base has upgraded to >= 0.39.18
+            if click.confirm(
+                click.style(
+                    f"⚠️  - State files are now saved on a workspace basis. Do you want octavia to rename and update {legacy_state_path}? ",
+                    fg="red",
+                )
+            ):
+                return ResourceState.migrate(legacy_state_path, workspace_id)
+            else:
+                raise InvalidStateError(
+                    f"Octavia expects the state file to be located at {expected_state_path} with a workspace_id key. Please update {legacy_state_path}."
+                )
         else:
-            raise InvalidStateError(
-                "Octavia expects the state file to be located at the following path, please check our breaking change documentation if your state path is named state.yaml"
-            )
+            return None
 
     def get_diff_with_remote_resource(self) -> str:
         """Compute the diff between current resource and the remote resource.
@@ -351,9 +383,10 @@ class BaseResource(abc.ABC):
         """
         try:
             result = operation_fn(self.api_instance, payload)
-            return result, ResourceState.create(
+            new_state = ResourceState.create(
                 self.configuration_path, self.configuration_hash, self.workspace_id, result[self.resource_id_field]
             )
+            return result, new_state
         except airbyte_api_client.ApiException as api_error:
             if api_error.status == 422:
                 # This  API response error is really verbose, but it embodies all the details about why the config is not valid.
@@ -568,14 +601,26 @@ class Connection(BaseResource):
 
     @property
     def source_id(self):
-        source_state = ResourceState.from_configuration_path_and_workspace(self.raw_configuration["source_path"], self.workspace_id)
+        try:
+            source_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["source_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the source state file for configuration {self.raw_configuration['source_configuration_path']}."
+            )
         return source_state.resource_id
 
     @property
     def destination_id(self):
-        destination_state = ResourceState.from_configuration_path_and_workspace(
-            self.raw_configuration["destination_path"], self.workspace_id
-        )
+        try:
+            destination_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["destination_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the destination state file for configuration {self.raw_configuration['destination_configuration_path']}."
+            )
         return destination_state.resource_id
 
     @property
@@ -693,9 +738,7 @@ class Connection(BaseResource):
         Args:
             configuration_to_check (dict): Configuration to validate
         """
-        error_message = (
-            "The following keys should be in snake_case since version 0.36.10, please edit or regenerate your connection configuration"
-        )
+        error_message = "These keys should be in snake_case since version 0.36.10, please edit or regenerate your connection configuration"
         self._check_for_invalid_configuration_keys(
             configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message
         )
@@ -715,7 +758,7 @@ class Connection(BaseResource):
         self._check_for_invalid_configuration_keys(
             raw_configuration,
             {"source_id", "destination_id"},
-            "source_id and destination_id fields changed to source_path and destination_path in version > 0.39.1, please check our breaking changes documentation page.",
+            "These keys changed to source_configuration_path and destination_configuration_path in version > 0.39.18, please update your connection configuration to give path to source and destination configuration files or regenerate the connection",
         )
 
     def _get_remote_comparable_configuration(self) -> dict:
