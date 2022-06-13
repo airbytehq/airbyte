@@ -164,7 +164,7 @@ class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptance
   }
 
   @Override
-  protected void incrementalTimestampCheck() throws Exception {
+  protected void incrementalDateCheck() throws Exception {
     super.incrementalCursorCheck(COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
