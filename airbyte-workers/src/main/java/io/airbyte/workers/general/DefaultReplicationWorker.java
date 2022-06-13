@@ -375,8 +375,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
     final AirbyteRecordMessage record = message.getRecord();
     final String messageStream = WorkerUtils.streamNameWithNamespace(record.getNamespace(), record.getStream());
-    // validate a record's schema if there are less than 10 records with validation errors
-    if (validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10) {
+    // avoid noise by validating only if the stream has less than 10 records with validation errors
+    final boolean streamHasLessThenTenErrs =
+            validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
+    if (streamHasLessThenTenErrs) {
       try {
         recordSchemaValidator.validateSchema(record, messageStream);
       } catch (final RecordSchemaValidationException e) {
