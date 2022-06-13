@@ -91,5 +91,6 @@ class Oauth2Authenticator(HttpAuthenticator):
         if self.refresh_access_token_headers:
             headers = self.refresh_access_token_headers
         if self.refresh_access_token_authenticator:
-            headers = headers.update(self.refresh_access_token_authenticator.get_auth_header())
+            refresh_auth_headers = self.refresh_access_token_authenticator.get_auth_header()
+            headers.update(refresh_auth_headers)
         return headers
