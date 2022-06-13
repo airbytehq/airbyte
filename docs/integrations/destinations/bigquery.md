@@ -1,14 +1,16 @@
 # BigQuery
 
-Setting up the BigQuery destination connector involves setting up setting up the data loading method (GigQuery Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector using the Airbyte UI.
+Setting up the BigQuery destination connector involves setting up the data loading method (GigQuery Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector using the Airbyte UI.
 
-This page guides you through the process of setting up the BigQuery destination connector.
+This page guides you through setting up the BigQuery destination connector.
 
 ## Prerequisites
 
 - [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
 - [BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to sync data to. 
-    Note: Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+    :::note
+    Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+    :::
 - (Required for Airbyte Cloud; Optional for Airbyte OSS) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 ## Connector modes
@@ -35,7 +37,7 @@ To use a Google Cloud Storage bucket:
 
 #### Using `INSERT`
 
-You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax) statement to upload data directly from your source to BigQuery. While this is faster to setup initially, we strongly recommend not using this option for anything other than a quick demo. It is 10x slower than the using a Google Cloud Storage bucket and you may see some failures for big datasets and slow sources (example: if reading from source takes more than 10-12 hours). This is caused by the Google BigQuery SDK client limitations. For more details, refer to https://github.com/airbytehq/airbyte/issues/3549
+You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax) statement to upload data directly from your source to BigQuery. While this is faster to set up initially, we strongly recommend not using this option for anything other than a quick demo. Due to the Google BigQuery SDK client limitations, using `INSERT` is 10x slower than using a Google Cloud Storage bucket, and you may see some failures for big datasets and slow sources (For example, if reading from a source takes more than 10-12 hours). For more details, refer to https://github.com/airbytehq/airbyte/issues/3549
 
 ### Step 2: Set up the BigQuery connector
 
@@ -57,7 +59,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 10. For **Transformation Query Run Type (Optional)**, select **interactive** to have [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries) or **batch** to have [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch). 
 
     :::note
-    Interactive queries are executed as soon as possible and count towards daily concurrent quotas and limits while batch queries are executed as soon as idle resources are available in the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours, BigQuery changes the job priority to interactive. Batch queries don't count towards your concurrent rate limit, which can make it easier to start many queries at once.
+    Interactive queries are executed as soon as possible and count towards daily concurrent quotas and limits, while batch queries are executed as soon as idle resources are available in the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours, BigQuery changes the job priority to interactive. Batch queries don't count towards your concurrent rate limit, making it easier to start many queries at once.
     :::
     
 11. For **Google BigQuery Client Chunk Size (Optional)**, use the default value of 15 MiB. Later, if you see networking or memory management problems with the sync (specifically on the destination), try decreasing the chunk size. In that case, the sync will be slower but more likely to succeed. 
@@ -72,11 +74,11 @@ The BigQuery destination connector supports the following[ sync modes](https://d
 
 ## Output schema
 
-Airbyte outputs each stream into its own table in BigQuery. Each table contains 3 columns:
+Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
 
 * `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
 * `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-* `_airbyte_data`: A JSON blob representing with the event data. The column type in BigQuery is `String`.
+* `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
 
 The output tables in BigQuery are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
@@ -108,16 +110,12 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 
 The service account does not have the proper permissions.
 
-- Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles, or
-  equivalent permissions as those two roles.
-- If the GCS staging mode is selected, make sure the BigQuery service account has the right
-  permissions to the GCS bucket and path, or the `Cloud Storage Admin` role, which includes a super
-  set of the required permissions.
+- Make sure the BigQuery service account has `BigQuery User` and `BigQuery Data Editor` roles or equivalent permissions as those two roles.
+- If the GCS staging mode is selected, ensure the BigQuery service account has the right permissions to the GCS bucket and path or the `Cloud Storage Admin` role, which includes a superset of the required permissions.
 
 The HMAC key is wrong.
 
-- Make sure the HMAC key is created for the BigQuery service account, and the service account has
-  the permission to access the GCS bucket and path.
+- Make sure the HMAC key is created for the BigQuery service account, and the service account has permission to access the GCS bucket and path.
 
 ## Tutorials 
     
