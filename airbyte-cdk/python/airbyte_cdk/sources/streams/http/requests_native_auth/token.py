@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 from itertools import cycle
 from typing import Any, List, Mapping
 
@@ -22,11 +23,14 @@ class MultipleTokenAuthenticator(AuthBase):
         self._tokens_iter = cycle(self._tokens)
 
     def __call__(self, request):
+        print("__call__")
         request.headers.update(self.get_auth_header())
         return request
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
+        header = {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
+        print(header)
+        return header
 
 
 class TokenAuthenticator(MultipleTokenAuthenticator):
@@ -37,3 +41,12 @@ class TokenAuthenticator(MultipleTokenAuthenticator):
 
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         super().__init__([token], auth_method, auth_header)
+
+
+class BasicHttpAuthenticator(TokenAuthenticator):
+    """ """
+
+    def __init__(self, username: str, password: str, auth_method: str = "Basic", auth_header: str = "Authorization"):
+        auth_string = f"{username}:{password}".encode("utf8")
+        b64_encoded = base64.b64encode(auth_string).decode("utf8")
+        super().__init__(b64_encoded, auth_method, auth_header)
