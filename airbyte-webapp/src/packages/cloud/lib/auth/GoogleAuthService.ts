@@ -169,9 +169,6 @@ export class GoogleAuthService implements AuthService {
         case AuthErrorCodes.EXPIRED_OOB_CODE:
           // The link expired
           throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
-
-        default:
-          break;
       }
 
       throw e;
