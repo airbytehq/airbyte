@@ -9,6 +9,7 @@ module.exports = {
     "@storybook/preset-create-react-app",
     "storybook-addon-mock/register",
   ],
+  staticDirs: ["../public"],
   webpackFinal: (config) => {
     config.resolve.modules.push(process.cwd() + "/node_modules");
     config.resolve.modules.push(process.cwd() + "/src");

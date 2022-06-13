@@ -11,10 +11,12 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -93,7 +95,8 @@ public class DefaultJobCreator implements JobCreator {
   public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
                                                  final StandardSync standardSync,
                                                  final String destinationDockerImage,
-                                                 final List<StandardSyncOperation> standardSyncOperations)
+                                                 final List<StandardSyncOperation> standardSyncOperations,
+                                                 final List<StreamDescriptor> streamsToReset)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
@@ -110,7 +113,8 @@ public class DefaultJobCreator implements JobCreator {
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
-            workerResourceRequirements));
+            workerResourceRequirements))
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
