@@ -41,7 +41,11 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
-    final AirbyteStateMessage stateMessage = stateManager.emit();
+    /*
+     * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
+     * Therefore, it doesn't matter what we pass here, as it will be ignored.
+     */
+    final AirbyteStateMessage stateMessage = stateManager.emit(null);
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
