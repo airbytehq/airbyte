@@ -75,6 +75,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
       sourceCatalogId: connection?.catalogId,
+      name: connection?.name,
     });
 
     setSaved(true);

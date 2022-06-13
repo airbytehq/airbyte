@@ -13,7 +13,6 @@ projectDir=(
   "bootloader"
   "metrics/reporter"
   "db/db-lib"
-  "scheduler/app"
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.

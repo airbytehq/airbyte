@@ -100,7 +100,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     val mockedSecretMigrator = mock(SecretMigrator.class);
 
@@ -157,7 +156,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .copySecrets(true)
@@ -302,7 +300,6 @@ public class BootloaderAppTest {
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
 
     val mockedFeatureFlags = mock(FeatureFlags.class);
-    when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
     val mockedSecretMigrator = mock(SecretMigrator.class);
 

@@ -7,16 +7,16 @@ package io.airbyte.test.acceptance;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.test.acceptance.AcceptanceTests.Type;
+import io.airbyte.test.acceptance.AdvancedAcceptanceTests.Type;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.SQLDialect;
 
 /**
  * This class is used to provide information related to the test databases for running the
- * {@link AcceptanceTests} on GKE. We launch 2 postgres databases in GKE as pods which act as source
- * and destination and the tests run against them. In order to allow the test instance to connect to
- * these databases we use port forwarding Refer
+ * {@link AdvancedAcceptanceTests} on GKE. We launch 2 postgres databases in GKE as pods which act
+ * as source and destination and the tests run against them. In order to allow the test instance to
+ * connect to these databases we use port forwarding Refer
  * tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh for more info
  */
 public class GKEPostgresConfig {

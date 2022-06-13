@@ -243,6 +243,17 @@ public interface Configs {
   String getJobMainContainerMemoryLimit();
 
   /**
+   * Get datadog or OTEL metric client for Airbyte to emit metrics. Allows empty value
+   */
+  String getMetricClient();
+
+  /**
+   * If choosing OTEL as the metric client, Airbyte will emit metrics and traces to this provided
+   * endpoint.
+   */
+  String getOtelCollectorEndpoint();
+
+  /**
    * Defines a default map of environment variables to use for any launched job containers. The
    * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
    * an empty map.
@@ -448,18 +459,6 @@ public interface Configs {
    * Define the local ports the Airbyte Worker pod uses to connect to the various Job pods.
    */
   Set<Integer> getTemporalWorkerPorts();
-
-  // Scheduler
-  /**
-   * Define how and how often the Scheduler sweeps its local disk for old configs. Multiple variables
-   * are involved here. Please see {@link WorkspaceRetentionConfig} for more info.
-   */
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  /**
-   * Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
-   */
-  String getSubmitterNumThreads();
 
   // Container Orchestrator
   /**

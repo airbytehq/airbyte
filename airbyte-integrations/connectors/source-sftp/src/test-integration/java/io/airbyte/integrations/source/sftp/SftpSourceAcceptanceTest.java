@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -42,8 +43,6 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    String host = sftp.getHost();
-    Integer port = sftp.getFirstMappedPort();
     String privateKey = sftp.execInContainer("cat", "var/sftp/id_rsa").getStdout();
     JsonNode credentials = Jsons.jsonNode(ImmutableMap.builder()
         .put("auth_method", "SSH_KEY_AUTH")
@@ -51,8 +50,8 @@ public class SftpSourceAcceptanceTest extends SourceAcceptanceTest {
         .build());
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("user", USER)
-        .put("host", host)
-        .put("port", port)
+        .put("host", HostPortResolver.resolveHost(sftp))
+        .put("port", HostPortResolver.resolvePort(sftp))
         .put("credentials", credentials)
         .put("file_types", "csv,json")
         .put("folder_path", FOLDER_PATH)
