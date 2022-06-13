@@ -17,6 +17,7 @@ TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 
+
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
@@ -25,6 +26,7 @@ class TwilioStream(HttpStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
     @property
     def data_field(self):
         return self.name
@@ -120,16 +122,16 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-      self._cursor_value = value[self.cursor_field]
+        self._cursor_value = value[self.cursor_field]
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self._start_date
         if start_date:
             start_date_with_lookback_window = pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
-            params[self.incremental_filter_field] =  start_date_with_lookback_window.strftime(self.time_filter_template)
+            params[self.incremental_filter_field] = start_date_with_lookback_window.strftime(self.time_filter_template)
         return params
-            
+
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = pendulum.parse(record[self.cursor_field], strict=False)
@@ -348,6 +350,24 @@ class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
     media_exist_validation = {"num_media": "0"}
     incremental_filter_field = "DateCreated>"
     cursor_field = "date_created"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_instance = self.parent_stream(
+            authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window
+        )
+        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
+        for stream_slice in stream_slices:
+            for item in stream_instance.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
+            ):
+                if item.get("subresource_uris", {}).get(self.subresource_uri_key):
+                    validated = True
+                    for key, value in self.media_exist_validation.items():
+                        validated = item.get(key) and item.get(key) != value
+                        if not validated:
+                            break
+                    if validated:
+                        yield {"subresource_uri": item["subresource_uris"][self.subresource_uri_key]}
 
 
 class UsageNestedStream(TwilioNestedStream):
