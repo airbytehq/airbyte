@@ -104,6 +104,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.2 | 2022-06-13 | [\#13722](https://github.com/airbytehq/airbyte/pull/13722) | Rename to "Databricks Lakehouse". |
 | 0.2.1 | 2022-06-08 | [\#13630](https://github.com/airbytehq/airbyte/pull/13630) | Rename to "Databricks Delta Lake" and add field orders in the spec. |
 | 0.2.0 | 2022-05-15 | [\#12861](https://github.com/airbytehq/airbyte/pull/12861) | Use new public Databricks JDBC driver, and open source the connector. |
 | 0.1.5 | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
