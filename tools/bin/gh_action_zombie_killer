@@ -25,7 +25,7 @@ repo_list="airbyte airbyte-cloud"
 
 
 for repo in $repo_list; do
-  # Start the while loop
+  # Start the while loop to check for all runners
   runner_for_page_count=1
   page_count=0
   all_runner_ids=""
@@ -55,6 +55,7 @@ for repo in $repo_list; do
   done
 
   echo -e "$blue_text""Total ids returned: $all_runner_ids_count""$default_text"
+  # DELETE THEM ALL!
   cursor=0
   for this_runner in $all_runner_ids; do
     cursor=$(($cursor+1))
@@ -64,7 +65,7 @@ for repo in $repo_list; do
       --request DELETE \
       --header "Accept: application/vnd.github.v3+json" \
       --header "Authorization: token $token" \
-      https://api.github.com/orgs/$org/actions/runners/$this_runner && \
+      https://api.github.com/repos/$org/$repo/actions/runners/$this_runner && \
       echo -e "$blue_text""OK    ID $this_runner""$default_text" || \
       echo -e "$red_text""FAIL! ID $this_runner""$default_text"
   done
