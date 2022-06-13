@@ -53,6 +53,7 @@ export class UserService extends AirbyteRequestService {
   public async resendWithSignInLink({ email }: { email: string }): Promise<void> {
     this.fetch(`v1/web_backend/cloud_workspaces/resend_with_signin_link`, {
       email,
+      // `continueUrl` is rquired to have a valid URL, but it's currently not used by the Frontend.
       continueUrl: window.location.href,
     });
   }
