@@ -35,7 +35,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     try {
       ResetSourceConfiguration sourceConfiguration = Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
-      streamDescriptors.addAll(sourceConfiguration.getStreamDescriptors());
+      streamDescriptors.addAll(sourceConfiguration.getStreamsToReset());
       if (streamDescriptors.isEmpty()) {
         isPartialReset = false;
       } else {
