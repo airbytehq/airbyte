@@ -32,9 +32,11 @@ def test_check_connection_record_types(mocker, requests_mock):
     assert source.check_connection(logger_mock, record_types_config) == (True, None)
 
 
-def test_streams(mocker):
+def test_streams(mocker, requests_mock):
     source = SourceNetsuite()
-    source.record_types = MagicMock(return_value=["salesorder", "customer"])
+    requests_mock.get("https://12345.suitetalk.api.netsuite.com/services/rest/record/v1/metadata-catalog/", json={"items": [{"name": "salesorder"}, {"name": "account"}]})
+    requests_mock.get("https://12345.suitetalk.api.netsuite.com/services/rest/record/v1/metadata-catalog/salesorder", json={"lastModifiedDate": {}})
+    requests_mock.get("https://12345.suitetalk.api.netsuite.com/services/rest/record/v1/metadata-catalog/account", json={})
     streams = source.streams(config)
     expected_streams_number = 2
     assert len(streams) == expected_streams_number

@@ -38,9 +38,8 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = make_stream()
-    stream.start_datetime = "2022-01-01T00:00:00Z"
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}}
-    expected_params = {"offset": 1000, "q": "lastModifiedDate AFTER 2022-01-01 12:00:00 AM"}
+    expected_params = {"offset": 1000 }
     assert stream.request_params(**inputs) == expected_params
 
 

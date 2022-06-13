@@ -206,11 +206,22 @@ class SourceNetsuite(AbstractSource):
         start_datetime = config["start_datetime"]
         concurrency_limit = config.get("concurrency_limit")
 
+        session = requests.Session()
+        session.auth = auth
+        # automatically raise an error on failed requests
+        session.hooks = { 'response': lambda r, *args, **kwargs: r.raise_for_status() }
+
         metadata_url = base_url + metadata_path
-        record_names = config.get("record_types") or [r["name"] for r in requests.get(metadata_url, auth=auth).json().get("items")]
+        record_names = config.get("record_types")
+        if not record_names:
+            # retrieve all record types
+            metadata = session.get(metadata_url, auth=auth).json().get("items")
+            record_names = [r["name"] for r in metadata]
 
         # streams must have a lastModifiedDate property to be incremental
-        incremental_record_names = [n for n in record_names if requests.get(metadata_url + n, auth=auth).json().get("lastModifiedDate")]
+        schemas = {n: session.get(metadata_url + n, auth=auth).json() for n in record_names}
+
+        incremental_record_names = [n for n in record_names if schemas[n].get("lastModifiedDate")]
         standard_record_names = [n for n in record_names if n not in incremental_record_names]
 
         streams = [NetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in standard_record_names]
