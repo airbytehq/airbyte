@@ -4,12 +4,12 @@ import styled, { keyframes } from "styled-components";
 
 import ContentCard from "components/ContentCard";
 
-export type IProps = {
+export interface IProps {
   title?: string | React.ReactNode;
   onClose?: () => void;
   clear?: boolean;
   closeOnBackground?: boolean;
-};
+}
 
 const fadeIn = keyframes`
   from { opacity: 0; }

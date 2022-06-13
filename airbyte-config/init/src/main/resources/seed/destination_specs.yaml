@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.6"
+- dockerImage: "airbyte/destination-bigquery:1.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -298,32 +298,20 @@
       - "dataset_id"
       additionalProperties: true
       properties:
-        big_query_client_buffer_size_mb:
-          title: "Google BigQuery Client Chunk Size (Optional)"
-          description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
-            \ 15) for each table. The size that will be written by a single RPC. Written\
-            \ data will be buffered and only flushed upon reaching this size or closing\
-            \ the channel. The default 15MB value is used if not set explicitly. Read\
-            \ more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
-            >here</a>."
-          type: "integer"
-          minimum: 1
-          maximum: 15
-          default: 15
-          examples:
-          - "15"
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
             \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
+          order: 0
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
             \ will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
             >here</a>."
           title: "Dataset Location"
+          order: 1
           enum:
           - "US"
           - "EU"
@@ -362,6 +350,119 @@
             \ to if the source does not specify a namespace. Read more <a href=\"\
             https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
           title: "Default Dataset ID"
+          order: 2
+        loading_method:
+          type: "object"
+          title: "Loading Method"
+          description: "Loading method used to send select the way data will be uploaded\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ INSERT statements. This method is extremely inefficient and provided\
+            \ only for quick testing. In almost all cases, you should use staging.\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
+            \ the file. Recommended for most workloads for better speed and scalability.\
+            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
+            >here</a>."
+          order: 3
+          oneOf:
+          - title: "Standard Inserts"
+            additionalProperties: false
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "Standard"
+          - title: "GCS Staging"
+            additionalProperties: false
+            required:
+            - "method"
+            - "gcs_bucket_name"
+            - "gcs_bucket_path"
+            - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "GCS Staging"
+                order: 0
+              credential:
+                title: "Credential"
+                description: "An HMAC key is a type of credential and can be associated\
+                  \ with a service account or a user account in Cloud Storage. Read\
+                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
+                  >here</a>."
+                type: "object"
+                order: 1
+                oneOf:
+                - title: "HMAC key"
+                  required:
+                  - "credential_type"
+                  - "hmac_key_access_id"
+                  - "hmac_key_secret"
+                  properties:
+                    credential_type:
+                      type: "string"
+                      const: "HMAC_KEY"
+                      order: 0
+                    hmac_key_access_id:
+                      type: "string"
+                      description: "HMAC key access ID. When linked to a service account,\
+                        \ this ID is 61 characters long; when linked to a user account,\
+                        \ it is 24 characters long."
+                      title: "HMAC Key Access ID"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234"
+                      order: 1
+                    hmac_key_secret:
+                      type: "string"
+                      description: "The corresponding secret for the access ID. It\
+                        \ is a 40-character base-64 encoded string."
+                      title: "HMAC Key Secret"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
+                      order: 2
+              gcs_bucket_name:
+                title: "GCS Bucket Name"
+                type: "string"
+                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
+                  >here</a>."
+                examples:
+                - "airbyte_sync"
+                order: 2
+              gcs_bucket_path:
+                title: "GCS Bucket Path"
+                description: "Directory under the GCS bucket where data will be written."
+                type: "string"
+                examples:
+                - "data_sync/test"
+                order: 3
+              part_size_mb:
+                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes more\
+                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                minimum: 5
+                maximum: 525
+                examples:
+                - 5
+                order: 4
+              keep_files_in_gcs-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records\
+                  \ in GCS bucket. By this select you can chose if these records should\
+                  \ be removed from GCS when migration has finished. The default \"\
+                  Delete all tmp files from GCS\" value is used if not set explicitly."
+                title: "GCS Tmp Files Afterward Processing (Optional)"
+                default: "Delete all tmp files from GCS"
+                enum:
+                - "Delete all tmp files from GCS"
+                - "Keep all tmp files in GCS"
+                order: 5
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -370,6 +471,7 @@
             \ be used if this field is left empty."
           title: "Service Account Key JSON (Required for cloud, optional for open-source)"
           airbyte_secret: true
+          order: 4
         transformation_priority:
           type: "string"
           description: "Interactive run type means that the query is executed as soon\
@@ -385,127 +487,7 @@
           enum:
           - "interactive"
           - "batch"
-        loading_method:
-          type: "object"
-          title: "Loading Method"
-          description: "Loading method used to send select the way data will be uploaded\
-            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
-            \ INSERT statements. This method is extremely inefficient and provided\
-            \ only for quick testing. In almost all cases, you should use staging.\
-            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
-            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
-            \ the file. Recommended for most workloads for better speed and scalability.\
-            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
-            >here</a>."
-          oneOf:
-          - title: "Standard Inserts"
-            additionalProperties: false
-            required:
-            - "method"
-            properties:
-              method:
-                type: "string"
-                const: "Standard"
-          - title: "GCS Staging"
-            additionalProperties: false
-            required:
-            - "method"
-            - "gcs_bucket_name"
-            - "gcs_bucket_path"
-            - "credential"
-            properties:
-              method:
-                type: "string"
-                const: "GCS Staging"
-              gcs_bucket_name:
-                title: "GCS Bucket Name"
-                type: "string"
-                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
-                  >here</a>."
-                examples:
-                - "airbyte_sync"
-              gcs_bucket_path:
-                title: "GCS Bucket Path"
-                description: "Directory under the GCS bucket where data will be written."
-                type: "string"
-                examples:
-                - "data_sync/test"
-              part_size_mb:
-                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes more\
-                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                minimum: 5
-                maximum: 525
-                examples:
-                - 5
-              keep_files_in_gcs-bucket:
-                type: "string"
-                description: "This upload method is supposed to temporary store records\
-                  \ in GCS bucket. What do you want to do with data in GCS bucket\
-                  \ when migration has finished? The default \"Delete all tmp files\
-                  \ from GCS\" value is used if not set explicitly."
-                title: "GCS Tmp Files Afterward Processing (Optional)"
-                default: "Delete all tmp files from GCS"
-                enum:
-                - "Delete all tmp files from GCS"
-                - "Keep all tmp files in GCS"
-              credential:
-                title: "Credential"
-                description: "An HMAC key is a type of credential and can be associated\
-                  \ with a service account or a user account in Cloud Storage. Read\
-                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
-                  >here</a>."
-                type: "object"
-                oneOf:
-                - title: "HMAC key"
-                  required:
-                  - "credential_type"
-                  - "hmac_key_access_id"
-                  - "hmac_key_secret"
-                  properties:
-                    credential_type:
-                      type: "string"
-                      const: "HMAC_KEY"
-                    hmac_key_access_id:
-                      type: "string"
-                      description: "HMAC key access ID. When linked to a service account,\
-                        \ this ID is 61 characters long; when linked to a user account,\
-                        \ it is 24 characters long."
-                      title: "HMAC Key Access ID"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234"
-                    hmac_key_secret:
-                      type: "string"
-                      description: "The corresponding secret for the access ID. It\
-                        \ is a 40-character base-64 encoded string."
-                      title: "HMAC Key Secret"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
-    supportsIncremental: true
-    supportsNormalization: true
-    supportsDBT: true
-    supported_destination_sync_modes:
-    - "overwrite"
-    - "append"
-    - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.6"
-  spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
-    connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
-      title: "BigQuery Denormalized Typed Struct Destination Spec"
-      type: "object"
-      required:
-      - "project_id"
-      - "dataset_id"
-      additionalProperties: true
-      properties:
+          order: 5
         big_query_client_buffer_size_mb:
           title: "Google BigQuery Client Chunk Size (Optional)"
           description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
@@ -520,18 +502,165 @@
           default: 15
           examples:
           - "15"
+          order: 6
+    supportsIncremental: true
+    supportsNormalization: true
+    supportsDBT: true
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+    - "append_dedup"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.8"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "BigQuery Denormalized Typed Struct Destination Spec"
+      type: "object"
+      required:
+      - "project_id"
+      - "dataset_id"
+      additionalProperties: true
+      properties:
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
             \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
+          order: 0
         dataset_id:
           type: "string"
           description: "The default BigQuery Dataset ID that tables are replicated\
             \ to if the source does not specify a namespace. Read more <a href=\"\
             https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
           title: "Default Dataset ID"
+          order: 1
+        loading_method:
+          type: "object"
+          title: "Loading Method *"
+          description: "Loading method used to send select the way data will be uploaded\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ INSERT statements. This method is extremely inefficient and provided\
+            \ only for quick testing. In almost all cases, you should use staging.\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
+            \ the file. Recommended for most workloads for better speed and scalability.\
+            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
+            >here</a>."
+          order: 2
+          oneOf:
+          - title: "Standard Inserts"
+            additionalProperties: false
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "Standard"
+          - title: "GCS Staging"
+            additionalProperties: false
+            type: "object"
+            required:
+            - "method"
+            - "gcs_bucket_name"
+            - "gcs_bucket_path"
+            - "credential"
+            properties:
+              method:
+                type: "string"
+                const: "GCS Staging"
+                order: 0
+              credential:
+                title: "Credential"
+                description: "An HMAC key is a type of credential and can be associated\
+                  \ with a service account or a user account in Cloud Storage. Read\
+                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
+                  >here</a>."
+                type: "object"
+                order: 1
+                oneOf:
+                - title: "HMAC key"
+                  order: 0
+                  required:
+                  - "credential_type"
+                  - "hmac_key_access_id"
+                  - "hmac_key_secret"
+                  properties:
+                    credential_type:
+                      type: "string"
+                      const: "HMAC_KEY"
+                      order: 0
+                    hmac_key_access_id:
+                      type: "string"
+                      description: "HMAC key access ID. When linked to a service account,\
+                        \ this ID is 61 characters long; when linked to a user account,\
+                        \ it is 24 characters long."
+                      title: "HMAC Key Access ID"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234"
+                      order: 1
+                    hmac_key_secret:
+                      type: "string"
+                      description: "The corresponding secret for the access ID. It\
+                        \ is a 40-character base-64 encoded string."
+                      title: "HMAC Key Secret"
+                      airbyte_secret: true
+                      examples:
+                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
+                      order: 2
+              gcs_bucket_name:
+                title: "GCS Bucket Name"
+                type: "string"
+                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
+                  >here</a>."
+                examples:
+                - "airbyte_sync"
+                order: 2
+              gcs_bucket_path:
+                title: "GCS Bucket Path"
+                description: "Directory under the GCS bucket where data will be written.\
+                  \ Read more <a href=\"https://cloud.google.com/storage/docs/locations\"\
+                  >here</a>."
+                type: "string"
+                examples:
+                - "data_sync/test"
+                order: 3
+              part_size_mb:
+                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
+                description: "This is the size of a \"Part\" being buffered in memory.\
+                  \ It limits the memory usage when writing. Larger values will allow\
+                  \ to upload a bigger files and improve the speed, but consumes more\
+                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                type: "integer"
+                default: 5
+                minimum: 5
+                maximum: 525
+                examples:
+                - 5
+                order: 4
+              keep_files_in_gcs-bucket:
+                type: "string"
+                description: "This upload method is supposed to temporary store records\
+                  \ in GCS bucket. By this select you can chose if these records should\
+                  \ be removed from GCS when migration has finished. The default \"\
+                  Delete all tmp files from GCS\" value is used if not set explicitly."
+                title: "GCS Tmp Files Afterward Processing (Optional)"
+                default: "Delete all tmp files from GCS"
+                enum:
+                - "Delete all tmp files from GCS"
+                - "Keep all tmp files in GCS"
+                order: 5
+        credentials_json:
+          type: "string"
+          description: "The contents of the JSON service account key. Check out the\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
+            >docs</a> if you need help generating this key. Default credentials will\
+            \ be used if this field is left empty."
+          title: "Service Account Key JSON (Required for cloud, optional for open-source)"
+          airbyte_secret: true
+          order: 3
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
@@ -540,6 +669,7 @@
             >here</a>."
           title: "Dataset Location (Optional)"
           default: "US"
+          order: 4
           enum:
           - "US"
           - "EU"
@@ -572,116 +702,21 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
-        credentials_json:
-          type: "string"
-          description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
-            >docs</a> if you need help generating this key. Default credentials will\
-            \ be used if this field is left empty."
-          title: "Service Account Key JSON (Required for cloud, optional for open-source)"
-          airbyte_secret: true
-        loading_method:
-          type: "object"
-          title: "Loading Method *"
-          description: "Loading method used to send select the way data will be uploaded\
-            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
-            \ INSERT statements. This method is extremely inefficient and provided\
-            \ only for quick testing. In almost all cases, you should use staging.\
-            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
-            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
-            \ the file. Recommended for most workloads for better speed and scalability.\
-            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
+        big_query_client_buffer_size_mb:
+          title: "Google BigQuery Client Chunk Size (Optional)"
+          description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
+            \ 15) for each table. The size that will be written by a single RPC. Written\
+            \ data will be buffered and only flushed upon reaching this size or closing\
+            \ the channel. The default 15MB value is used if not set explicitly. Read\
+            \ more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
             >here</a>."
-          oneOf:
-          - title: "Standard Inserts"
-            additionalProperties: false
-            required:
-            - "method"
-            properties:
-              method:
-                type: "string"
-                const: "Standard"
-          - title: "GCS Staging"
-            additionalProperties: false
-            required:
-            - "method"
-            - "gcs_bucket_name"
-            - "gcs_bucket_path"
-            - "credential"
-            properties:
-              method:
-                type: "string"
-                const: "GCS Staging"
-              gcs_bucket_name:
-                title: "GCS Bucket Name"
-                type: "string"
-                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
-                  >here</a>."
-                examples:
-                - "airbyte_sync"
-              gcs_bucket_path:
-                title: "GCS Bucket Path"
-                description: "Directory under the GCS bucket where data will be written."
-                type: "string"
-                examples:
-                - "data_sync/test"
-              part_size_mb:
-                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes more\
-                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                minimum: 5
-                maximum: 525
-                examples:
-                - 5
-              keep_files_in_gcs-bucket:
-                type: "string"
-                description: "This upload method is supposed to temporary store records\
-                  \ in GCS bucket. What do you want to do with data in GCS bucket\
-                  \ when migration has finished? The default \"Delete all tmp files\
-                  \ from GCS\" value is used if not set explicitly."
-                title: "GCS Tmp Files Afterward Processing (Optional)"
-                default: "Delete all tmp files from GCS"
-                enum:
-                - "Delete all tmp files from GCS"
-                - "Keep all tmp files in GCS"
-              credential:
-                title: "Credential"
-                description: "An HMAC key is a type of credential and can be associated\
-                  \ with a service account or a user account in Cloud Storage. Read\
-                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
-                  >here</a>."
-                type: "object"
-                oneOf:
-                - title: "HMAC key"
-                  required:
-                  - "credential_type"
-                  - "hmac_key_access_id"
-                  - "hmac_key_secret"
-                  properties:
-                    credential_type:
-                      type: "string"
-                      const: "HMAC_KEY"
-                    hmac_key_access_id:
-                      type: "string"
-                      description: "HMAC key access ID. When linked to a service account,\
-                        \ this ID is 61 characters long; when linked to a user account,\
-                        \ it is 24 characters long."
-                      title: "HMAC Key Access ID"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234"
-                    hmac_key_secret:
-                      type: "string"
-                      description: "The corresponding secret for the access ID. It\
-                        \ is a 40-character base-64 encoded string."
-                      title: "HMAC Key Secret"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
+          type: "integer"
+          minimum: 1
+          maximum: 15
+          default: 15
+          examples:
+          - "15"
+          order: 5
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: true
@@ -961,12 +996,12 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.0"
+- dockerImage: "airbyte/destination-databricks:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Databricks Destination Spec"
+      title: "Databricks Delta Lake Destination Spec"
       type: "object"
       required:
       - "accept_terms"
@@ -982,18 +1017,21 @@
           description: "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\"\
             >Terms & Conditions</a> to use this connector."
           default: false
+          order: 1
         databricks_server_hostname:
           title: "Server Hostname"
           type: "string"
           description: "Databricks Cluster Server Hostname."
           examples:
           - "abc-12345678-wxyz.cloud.databricks.com"
+          order: 2
         databricks_http_path:
           title: "HTTP Path"
           type: "string"
           description: "Databricks Cluster HTTP Path."
           examples:
           - "sql/protocolvx/o/1234567489/0000-1111111-abcd90"
+          order: 3
         databricks_port:
           title: "Port"
           type: "string"
@@ -1001,6 +1039,7 @@
           default: "443"
           examples:
           - "443"
+          order: 4
         databricks_personal_access_token:
           title: "Access Token"
           type: "string"
@@ -1009,6 +1048,7 @@
           examples:
           - "dapi0123456789abcdefghij0123456789AB"
           airbyte_secret: true
+          order: 5
         database_schema:
           title: "Database Schema"
           type: "string"
@@ -1018,6 +1058,7 @@
           default: "public"
           examples:
           - "public"
+          order: 6
         data_source:
           title: "Data Source"
           type: "object"
@@ -1037,6 +1078,7 @@
                 enum:
                 - "S3"
                 default: "S3"
+                order: 1
               s3_bucket_name:
                 title: "S3 Bucket Name"
                 type: "string"
@@ -1044,6 +1086,7 @@
                   \ of the data."
                 examples:
                 - "airbyte.staging"
+                order: 2
               s3_bucket_path:
                 title: "S3 Bucket Path"
                 type: "string"
@@ -1051,6 +1094,7 @@
                   \ written."
                 examples:
                 - "data_sync/test"
+                order: 3
               s3_bucket_region:
                 title: "S3 Bucket Region"
                 type: "string"
@@ -1084,6 +1128,7 @@
                 - "me-south-1"
                 - "us-gov-east-1"
                 - "us-gov-west-1"
+                order: 4
               s3_access_key_id:
                 type: "string"
                 description: "The Access Key Id granting allow one to access the above\
@@ -1093,6 +1138,7 @@
                 examples:
                 - "A012345678910EXAMPLE"
                 airbyte_secret: true
+                order: 5
               s3_secret_access_key:
                 title: "S3 Secret Access Key"
                 type: "string"
@@ -1100,11 +1146,14 @@
                 examples:
                 - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
                 airbyte_secret: true
+                order: 6
+          order: 7
         purge_staging_data:
           title: "Purge Staging Files and Tables"
           type: "boolean"
           description: "Default to 'true'. Switch it to 'false' for debugging purpose."
           default: true
+          order: 8
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -2417,7 +2466,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.18"
+- dockerImage: "airbyte/destination-mssql:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -3629,7 +3678,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.37"
+- dockerImage: "airbyte/destination-redshift:0.3.39"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -3681,94 +3730,121 @@
           - "public"
           default: "public"
           title: "Default Schema"
-        s3_bucket_name:
-          title: "S3 Bucket Name (Optional)"
-          type: "string"
-          description: "The name of the staging S3 bucket to use if utilising a COPY\
-            \ strategy. COPY is recommended for production workloads for better speed\
-            \ and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\"\
-            >AWS docs</a> for more details."
-          examples:
-          - "airbyte.staging"
-        s3_bucket_path:
-          title: "S3 Bucket Path (Optional)"
-          type: "string"
-          description: "The directory under the S3 bucket where data will be written.\
-            \ If not provided, then defaults to the root directory. See <a href=\"\
-            https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\"\
-            >path's name recommendations</a> for more details."
-          examples:
-          - "data_sync/test"
-        s3_bucket_region:
-          title: "S3 Bucket Region (Optional)"
-          type: "string"
-          default: ""
-          description: "The region of the S3 staging bucket to use if utilising a\
-            \ COPY strategy. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html#:~:text=In-,Region,-%2C%20choose%20the%20AWS\"\
-            >AWS docs</a> for details."
-          enum:
-          - ""
-          - "us-east-1"
-          - "us-east-2"
-          - "us-west-1"
-          - "us-west-2"
-          - "af-south-1"
-          - "ap-east-1"
-          - "ap-south-1"
-          - "ap-northeast-1"
-          - "ap-northeast-2"
-          - "ap-northeast-3"
-          - "ap-southeast-1"
-          - "ap-southeast-2"
-          - "ca-central-1"
-          - "cn-north-1"
-          - "cn-northwest-1"
-          - "eu-central-1"
-          - "eu-north-1"
-          - "eu-south-1"
-          - "eu-west-1"
-          - "eu-west-2"
-          - "eu-west-3"
-          - "sa-east-1"
-          - "me-south-1"
-        access_key_id:
-          type: "string"
-          description: "This ID grants access to the above S3 staging bucket. Airbyte\
-            \ requires Read and Write permissions to the given bucket. See <a href=\"\
-            https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
-            >AWS docs</a> on how to generate an access key ID and secret access key."
-          title: "S3 Key Id (Optional)"
-          airbyte_secret: true
-        secret_access_key:
-          type: "string"
-          description: "The corresponding secret to the above access key id. See <a\
-            \ href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
-            >AWS docs</a> on how to generate an access key ID and secret access key."
-          title: "S3 Access Key (Optional)"
-          airbyte_secret: true
-        part_size:
-          type: "integer"
-          minimum: 10
-          maximum: 100
-          examples:
-          - "10"
-          description: "Increase this if syncing tables larger than 100GB. Only relevant\
-            \ for COPY. Files are streamed to S3 in parts. This determines the size\
-            \ of each part, in MBs. As S3 has a limit of 10,000 parts per file, part\
-            \ size affects the table size. This is 10MB by default, resulting in a\
-            \ default limit of 100GB tables. Note: a larger part size will result\
-            \ in larger memory requirements. A rule of thumb is to multiply the part\
-            \ size by 10 to get the memory requirement. Modify this with care. See\
-            \ <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=above%20key%20id.-,Part%20Size,-Affects%20the%20size\"\
-            ,> docs</a> for details."
-          title: "Stream Part Size (Optional)"
-        purge_staging_data:
-          title: "Purge Staging Files and Tables (Optional)"
-          type: "boolean"
-          description: "Whether to delete the staging files from S3 after completing\
-            \ the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"\
-            > docs</a> for details."
-          default: true
+        uploading_method:
+          title: "Uploading Method"
+          type: "object"
+          description: "The method how the data will be uploaded to the database."
+          oneOf:
+          - title: "Standard"
+            additionalProperties: false
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "Standard"
+          - title: "S3 Staging"
+            additionalProperties: false
+            required:
+            - "method"
+            - "s3_bucket_name"
+            - "s3_bucket_region"
+            - "access_key_id"
+            - "secret_access_key"
+            properties:
+              method:
+                type: "string"
+                const: "S3 Staging"
+              s3_bucket_name:
+                title: "S3 Bucket Name"
+                type: "string"
+                description: "The name of the staging S3 bucket to use if utilising\
+                  \ a COPY strategy. COPY is recommended for production workloads\
+                  \ for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\"\
+                  >AWS docs</a> for more details."
+                examples:
+                - "airbyte.staging"
+              s3_bucket_path:
+                title: "S3 Bucket Path (Optional)"
+                type: "string"
+                description: "The directory under the S3 bucket where data will be\
+                  \ written. If not provided, then defaults to the root directory.\
+                  \ See <a href=\"https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\"\
+                  >path's name recommendations</a> for more details."
+                examples:
+                - "data_sync/test"
+              s3_bucket_region:
+                title: "S3 Bucket Region"
+                type: "string"
+                default: ""
+                description: "The region of the S3 staging bucket to use if utilising\
+                  \ a COPY strategy. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html#:~:text=In-,Region,-%2C%20choose%20the%20AWS\"\
+                  >AWS docs</a> for details."
+                enum:
+                - ""
+                - "us-east-1"
+                - "us-east-2"
+                - "us-west-1"
+                - "us-west-2"
+                - "af-south-1"
+                - "ap-east-1"
+                - "ap-south-1"
+                - "ap-northeast-1"
+                - "ap-northeast-2"
+                - "ap-northeast-3"
+                - "ap-southeast-1"
+                - "ap-southeast-2"
+                - "ca-central-1"
+                - "cn-north-1"
+                - "cn-northwest-1"
+                - "eu-central-1"
+                - "eu-north-1"
+                - "eu-south-1"
+                - "eu-west-1"
+                - "eu-west-2"
+                - "eu-west-3"
+                - "sa-east-1"
+                - "me-south-1"
+              access_key_id:
+                type: "string"
+                description: "This ID grants access to the above S3 staging bucket.\
+                  \ Airbyte requires Read and Write permissions to the given bucket.\
+                  \ See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+                  >AWS docs</a> on how to generate an access key ID and secret access\
+                  \ key."
+                title: "S3 Key Id"
+                airbyte_secret: true
+              secret_access_key:
+                type: "string"
+                description: "The corresponding secret to the above access key id.\
+                  \ See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\"\
+                  >AWS docs</a> on how to generate an access key ID and secret access\
+                  \ key."
+                title: "S3 Access Key"
+                airbyte_secret: true
+              part_size:
+                type: "integer"
+                minimum: 10
+                maximum: 100
+                examples:
+                - "10"
+                description: "Increase this if syncing tables larger than 100GB. Only\
+                  \ relevant for COPY. Files are streamed to S3 in parts. This determines\
+                  \ the size of each part, in MBs. As S3 has a limit of 10,000 parts\
+                  \ per file, part size affects the table size. This is 10MB by default,\
+                  \ resulting in a default limit of 100GB tables. Note: a larger part\
+                  \ size will result in larger memory requirements. A rule of thumb\
+                  \ is to multiply the part size by 10 to get the memory requirement.\
+                  \ Modify this with care. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=above%20key%20id.-,Part%20Size,-Affects%20the%20size\"\
+                  ,> docs</a> for details."
+                title: "Stream Part Size (Optional)"
+              purge_staging_data:
+                title: "Purge Staging Files and Tables (Optional)"
+                type: "boolean"
+                description: "Whether to delete the staging files from S3 after completing\
+                  \ the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"\
+                  > docs</a> for details."
+                default: true
     supportsIncremental: true
     supportsNormalization: true
     supportsDBT: true
@@ -4238,7 +4314,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.26"
+- dockerImage: "airbyte/destination-snowflake:0.4.28"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:

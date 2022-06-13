@@ -5,12 +5,12 @@ import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-type Props = {
+interface Props {
   connectionName: string;
   icon?: string;
   connectorName: string;
   releaseStage?: ReleaseStage;
-};
+}
 
 const MainComponent = styled.div`
   display: flex;

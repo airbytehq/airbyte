@@ -133,11 +133,13 @@ spec:
               name: airbyte-env
               key: JOB_KUBE_TOLERATIONS
         {{- end }}
-        - name: SUBMITTER_NUM_THREADS
+        {{- if $.Values.jobs.kube.main_container_image_pull_secret }}
+        - name: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
           valueFrom:
             configMapKeyRef:
-              name: {{ include "common.names.fullname" . }}-env
-              key: SUBMITTER_NUM_THREADS
+              name: airbyte-env
+              key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+        {{- end }}
         - name: JOB_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:

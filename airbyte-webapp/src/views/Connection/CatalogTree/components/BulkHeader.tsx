@@ -32,9 +32,9 @@ const ActionButton = styled(Button).attrs({
   white-space: nowrap;
 `;
 
-type BulkHeaderProps = {
+interface BulkHeaderProps {
   destinationSupportedSyncModes: DestinationSyncMode[];
-};
+}
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {

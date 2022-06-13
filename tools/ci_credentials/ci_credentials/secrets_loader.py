@@ -131,7 +131,9 @@ class SecretsLoader:
 
     def mask_secrets_from_action_log(self, key, value):
         # recursive masking of json based on leaf key
-        if isinstance(value, dict):
+        if not value:
+            return
+        elif isinstance(value, dict):
             for child, item in value.items():
                 self.mask_secrets_from_action_log(child, item)
         elif isinstance(value, list):
@@ -146,7 +148,7 @@ class SecretsLoader:
                         for line in value.splitlines():
                             line = str(line).strip()
                             # don't output } and such
-                            if len(line) > 1:
+                            if len(line) > 1 and not os.getenv("VERSION") == "dev":
                                 # has to be at the beginning of line for Github to notice it
                                 print(f"::add-mask::{line}")
                         break

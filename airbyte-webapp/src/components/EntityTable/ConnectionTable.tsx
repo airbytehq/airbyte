@@ -22,13 +22,13 @@ const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
 
-type IProps = {
+interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
-};
+}
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
   const { query, push } = useRouter();

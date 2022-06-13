@@ -10,8 +10,6 @@ package io.airbyte.commons.features;
  */
 public interface FeatureFlags {
 
-  boolean usesNewScheduler();
-
   boolean autoDisablesFailingConnections();
 
   boolean exposeSecretsInExport();
