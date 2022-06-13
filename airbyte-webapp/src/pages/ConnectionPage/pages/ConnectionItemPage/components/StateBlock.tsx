@@ -5,8 +5,6 @@ import { H5, Card, CodeEditor } from "components";
 
 import { useGetConnectionState } from "hooks/services/useConnectionHook";
 
-import styles from "./StateBlock.module.scss";
-
 interface StateBlockProps {
   connectionId: string;
 }
@@ -22,7 +20,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   }, [formatMessage, state.state]);
 
   return (
-    <Card className={styles.stateBlock}>
+    <Card $withPadding>
       <H5 bold>
         <FormattedMessage id={"tables.connectionState.title"} />
       </H5>
