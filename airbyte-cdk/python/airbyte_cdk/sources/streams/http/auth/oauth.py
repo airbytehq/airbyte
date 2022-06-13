@@ -27,6 +27,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         refresh_token: str,
         scopes: List[str] = None,
         refresh_access_token_headers: Mapping[str, Any] = None,
+        refresh_access_token_authenticator=None,
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
@@ -34,6 +35,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         self.refresh_token = refresh_token
         self.scopes = scopes
         self.refresh_access_token_headers = refresh_access_token_headers
+        self.refresh_access_token_authenticator = refresh_access_token_authenticator
 
         self._token_expiry_date = pendulum.now().subtract(days=1)
         self._access_token = None
@@ -76,10 +78,18 @@ class Oauth2Authenticator(HttpAuthenticator):
                 method="POST",
                 url=self.token_refresh_endpoint,
                 data=self.get_refresh_request_body(),
-                headers=self.refresh_access_token_headers,
+                headers=self.get_refresh_access_token_headers(),
             )
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
+    def get_refresh_access_token_headers(self):
+        headers = {}
+        if self.refresh_access_token_headers:
+            headers = self.refresh_access_token_headers
+        if self.refresh_access_token_authenticator:
+            headers = headers.update(self.refresh_access_token_authenticator.get_auth_header())
+        return headers
