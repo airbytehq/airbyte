@@ -114,7 +114,7 @@ public class DefaultJobCreator implements JobCreator {
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
             workerResourceRequirements))
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamDescriptors(streamsToReset));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

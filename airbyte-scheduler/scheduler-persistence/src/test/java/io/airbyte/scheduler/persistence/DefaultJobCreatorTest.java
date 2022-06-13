@@ -342,7 +342,7 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamDescriptors(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -378,7 +378,7 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamDescriptors(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
