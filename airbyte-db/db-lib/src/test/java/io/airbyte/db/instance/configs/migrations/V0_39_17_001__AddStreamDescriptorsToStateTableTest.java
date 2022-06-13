@@ -60,27 +60,18 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
     System.out.println(context.selectFrom("connection").fetch());
     System.out.println(context.selectFrom(STATE_TABLE).fetch());
 
-    // Our two initial rows should be LEGACY
-    Assertions.assertEquals(2,
+    // Our two initial rows and the new row should be LEGACY
+    Assertions.assertEquals(3,
         context.select()
             .from(STATE_TABLE)
             .where(DSL.field("type").equal(StateType.LEGACY))
             .execute());
 
-    // The new row should be GLOBAL
-    Assertions.assertEquals(1,
-        context.select()
-            .from(STATE_TABLE)
-            .where(
-                DSL.field("id").equal(newState),
-                DSL.field("type").equal(StateType.GLOBAL))
-            .execute());
-
-    // There should be no STREAM
+    // There should be no STREAM or GLOBAL
     Assertions.assertEquals(0,
         context.select()
             .from(STATE_TABLE)
-            .where(DSL.field("type").equal(StateType.STREAM))
+            .where(DSL.field("type").in(StateType.GLOBAL, StateType.STREAM))
             .execute());
   }
 

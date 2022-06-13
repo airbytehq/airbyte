@@ -59,12 +59,6 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTable extends BaseJavaMigr
             DSL.constraint("state__connection_id__stream_name__namespace__uq")
                 .unique(DSL.field("connection_id"), DSL.field("stream_name"), DSL.field("namespace"))))
         .execute();
-
-    // Set the actual default to GLOBAL
-    ctx.alterTable(STATE_TABLE)
-        .alterColumn("type")
-        .defaultValue(StateType.GLOBAL)
-        .execute();
   }
 
   public enum StateType implements EnumType {
