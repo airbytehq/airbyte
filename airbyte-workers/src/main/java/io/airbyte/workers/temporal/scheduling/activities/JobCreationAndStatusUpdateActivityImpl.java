@@ -26,6 +26,7 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
+import io.airbyte.scheduler.persistence.JobErrorReporter;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -58,6 +59,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final JobTracker jobTracker;
   private final ConfigRepository configRepository;
   private final JobCreator jobCreator;
+  private final JobErrorReporter jobErrorReporter;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -220,7 +222,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
-    } catch (final IOException e) {
+
+      final Job job = jobPersistence.getJob(jobId);
+      final UUID connectionId = UUID.fromString(job.getScope());
+      jobErrorReporter.reportSyncJobFailure(failureSummary, connectionId, job.getConfig().getSync()); // TODO how can we do this also for discover and check?
+
+    } catch (final IOException e) { // TODO is throwing retryable exception the right response?
       throw new RetryableException(e);
     }
   }

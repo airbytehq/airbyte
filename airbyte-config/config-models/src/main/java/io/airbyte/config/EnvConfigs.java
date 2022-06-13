@@ -50,6 +50,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String ERROR_REPORTING_STRATEGY = "ERROR_REPORTING_STRATEGY";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
@@ -747,6 +748,18 @@ public class EnvConfigs implements Configs {
       } catch (final IllegalArgumentException e) {
         LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
         return TrackingStrategy.LOGGING;
+      }
+    });
+  }
+
+  @Override
+  public ErrorReportingStrategy getErrorReportingStrategy() {
+    return getEnvOrDefault(ERROR_REPORTING_STRATEGY, ErrorReportingStrategy.LOGGING, s -> {
+      try {
+        return ErrorReportingStrategy.valueOf(s.toUpperCase());
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + ErrorReportingStrategy.LOGGING);
+        return ErrorReportingStrategy.LOGGING;
       }
     });
   }
