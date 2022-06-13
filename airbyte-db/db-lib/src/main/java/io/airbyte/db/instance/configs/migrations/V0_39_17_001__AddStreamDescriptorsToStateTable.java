@@ -51,8 +51,8 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTable extends BaseJavaMigr
 
     ctx.alterTable(STATE_TABLE)
         .add(Arrays.asList(
-            DSL.field("stream_name", SQLDataType.VARCHAR),
-            DSL.field("namespace", SQLDataType.VARCHAR),
+            DSL.field("stream_name", SQLDataType.CLOB.nullable(true)),
+            DSL.field("namespace", SQLDataType.CLOB.nullable(true)),
             // type defaults to LEGACY to first set the expected type of all existing states
             DSL.field("type", SQLDataType.VARCHAR.asEnumDataType(StateType.class).defaultValue(StateType.LEGACY)),
             DSL.constraint("state__connection_id__stream_name__namespace__uq")

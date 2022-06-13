@@ -138,8 +138,8 @@ create table "public"."state"(
   "state" jsonb null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
-  "stream_name" varchar(2147483647) null,
-  "namespace" varchar(2147483647) null,
+  "stream_name" text null,
+  "namespace" text null,
   "type" state_type null default null,
   constraint "state_pkey"
     primary key (
