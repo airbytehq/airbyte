@@ -12,13 +12,11 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,17 +88,13 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   }
 
   @Override
-  public AirbyteStateMessage toState() {
-    final DbState DbState = new DbState()
+  public AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair) {
+    final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(isCdc)
-        .withStreams(getPairToCursorInfoMap().entrySet().stream()
-            .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-            .map(e -> StateGeneratorUtils.generateDbStreamState(e.getKey(), e.getValue()))
-            .collect(Collectors.toList()))
         .withCdcState(getCdcStateManager().getCdcState());
 
-    LOGGER.info("Generated legacy state for {} streams");
-    return new AirbyteStateMessage().withData(Jsons.jsonNode(DbState));
+    LOGGER.info("Generated legacy state for {} streams", dbState.getStreams().size());
+    return new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
   }
 
   @Override
@@ -112,7 +106,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
       cursorInfo.get().setCursor(cursor);
     }
 
-    return toState();
+    return toState(pair);
   }
 
 }

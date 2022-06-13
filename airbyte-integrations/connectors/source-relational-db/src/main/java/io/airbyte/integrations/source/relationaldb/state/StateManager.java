@@ -25,10 +25,7 @@ public interface StateManager<T, S> {
    * Retrieves the {@link CdcStateManager} associated with the state manager.
    *
    * @return The {@link CdcStateManager}
-   * @deprecated This method will be removed in the future in favor of a state manager that supports
-   *             CDC-related state.
    */
-  @Deprecated(forRemoval = true)
   CdcStateManager getCdcStateManager();
 
   /**
@@ -44,10 +41,12 @@ public interface StateManager<T, S> {
    * Generates an {@link AirbyteStateMessage} that represents the current state contained in the state
    * manager.
    *
+   * @param pair The {@link AirbyteStreamNameNamespacePair} that represents a stream managed by the
+   *        state manager.
    * @return The {@link AirbyteStateMessage} that represents the current state contained in the state
    *         manager.
    */
-  AirbyteStateMessage toState();
+  AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair);
 
   /**
    * Retrieves an {@link Optional} possibly containing the cursor value tracked in the state
@@ -113,11 +112,13 @@ public interface StateManager<T, S> {
   /**
    * Emits the current state maintained by the manager as an {@link AirbyteStateMessage}.
    *
+   * @param pair The {@link AirbyteStreamNameNamespacePair} that represents a stream managed by the
+   *        state manager.
    * @return An {@link AirbyteStateMessage} that represents the current state maintained by the state
    *         manager.
    */
-  default AirbyteStateMessage emit() {
-    return toState();
+  default AirbyteStateMessage emit(final AirbyteStreamNameNamespacePair pair) {
+    return toState(pair);
   }
 
   /**
@@ -136,7 +137,7 @@ public interface StateManager<T, S> {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
     cursorInfo.get().setCursor(cursor);
-    return emit();
+    return emit(pair);
   }
 
 }

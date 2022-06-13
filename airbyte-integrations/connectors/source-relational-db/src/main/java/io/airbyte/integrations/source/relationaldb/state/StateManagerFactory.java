@@ -11,6 +11,7 @@ import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,28 +36,23 @@ public class StateManagerFactory {
    * @param config The connector configuration.
    * @return A newly created {@link StateManager} implementation based on the provided state.
    */
-  public static StateManager createStateManager(final Object state, final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
-    if (state instanceof AirbyteStateMessage airbyteStateMessage) {
-      if (airbyteStateMessage.getData() != null) {
-        LOGGER.info("Legacy adapter state manager selected to manage state object with type {}.", state.getClass().getName());
-        return new LegacyAdapterStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
-      } else if (isCdc(config)) {
-        LOGGER.info("CDC state manager selected to manage state object with type {}.", state.getClass().getName());
-        // TODO create proper CDC state manager
-        return null;
-      } else if (airbyteStateMessage.getStateType() == AirbyteStateType.PER_STREAM) {
-        LOGGER.info("Per stream state manager selected to manage state object with type {}.", state.getClass().getName());
-        return new PerStreamStateManager(airbyteStateMessage, catalog);
-      } else {
-        LOGGER.info("Global state manager selected to manage state object with type {}.", state.getClass().getName());
+  public static StateManager createStateManager(final List<AirbyteStateMessage> state,
+                                                final ConfiguredAirbyteCatalog catalog,
+                                                final JsonNode config) {
+    if (state != null && !state.isEmpty()) {
+      final AirbyteStateMessage airbyteStateMessage = state.get(0);
+      if (isCdc(config) || airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
+        LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
         return new GlobalStateManager(airbyteStateMessage, catalog);
+      } else if (airbyteStateMessage.getData() != null) {
+        LOGGER.info("Legacy adapter state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+        return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
+      } else {
+        LOGGER.info("Per stream state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+        return new StreamStateManager(state, catalog);
       }
-    } else if (state instanceof DbState dbState) {
-      LOGGER.info("Legacy state manager selected to manage state object with type {}.", state.getClass().getName());
-      return new LegacyStateManager(dbState, catalog);
     } else {
-      throw new IllegalArgumentException(
-          "Failed to create state manager due to detection of unsupported state object type: " + state.getClass().getName());
+      throw new IllegalArgumentException("Failed to create state manager due to empty state list.");
     }
   }
 

@@ -11,10 +11,16 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,16 +29,24 @@ import org.junit.jupiter.api.Test;
  */
 public class StateManagerFactoryTest {
 
+  private static final String NAMESPACE = "namespace";
+  private static final String NAME = "name";
+  private static final String REPLICATION_SLOT = "replication_slot";
+  private static final String PUBLICATION = "publication";
+  private static final String REPLICATION_METHOD = "replication_method";
+
   @Test
-  void testLegacyStateManagerCreationFromDbState() {
+  void testNullOrEmptyState() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final DbState state = mock(DbState.class);
     final JsonNode config = mock(JsonNode.class);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(state, catalog, config);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      StateManagerFactory.createStateManager(null, catalog, config);
+    });
 
-    Assertions.assertNotNull(stateManager);
-    Assertions.assertEquals(LegacyStateManager.class, stateManager.getClass());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      StateManagerFactory.createStateManager(List.of(), catalog, config);
+    });
   }
 
   @Test
@@ -42,39 +56,30 @@ public class StateManagerFactoryTest {
     final JsonNode config = mock(JsonNode.class);
     when(airbyteStateMessage.getData()).thenReturn(Jsons.jsonNode(new DbState()));
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
 
     Assertions.assertNotNull(stateManager);
-    Assertions.assertEquals(LegacyAdapterStateManager.class, stateManager.getClass());
-  }
-
-  @Test
-  void testCdcStateManagerCreation() {
-    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
-    final JsonNode config = mock(JsonNode.class);
-    final JsonNode replicationConfig = mock(JsonNode.class);
-
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
-    when(replicationConfig.hasNonNull("publication")).thenReturn(true);
-
-    when(config.hasNonNull("replication_method")).thenReturn(true);
-    when(config.get("replication_method")).thenReturn(replicationConfig);
-
-    final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
-
-    // TODO replace with non-null assertion and type assertion once the CDC state manager exists
-    Assertions.assertNull(stateManager);
+    Assertions.assertEquals(LegacyStateManager.class, stateManager.getClass());
   }
 
   @Test
   void testGlobalStateManagerCreation() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
+    final AirbyteGlobalState globalState =
+        new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(new DbState())))))
+            .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace(NAMESPACE).withName(NAME))
+                .withStreamState(Jsons.jsonNode(new DbStreamState()))));
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
     final JsonNode config = mock(JsonNode.class);
-    when(airbyteStateMessage.getStateType()).thenReturn(AirbyteStateType.GLOBAL);
+    final JsonNode replicationConfig = mock(JsonNode.class);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
+    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
+
+    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(true);
+    when(config.get(REPLICATION_METHOD)).thenReturn(replicationConfig);
+
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(GlobalStateManager.class, stateManager.getClass());
@@ -83,23 +88,15 @@ public class StateManagerFactoryTest {
   @Test
   void testPerStreamStateManagerCreation() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+        .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
+            NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())));
     final JsonNode config = mock(JsonNode.class);
-    when(airbyteStateMessage.getData()).thenReturn(null);
-    when(airbyteStateMessage.getStateType()).thenReturn(AirbyteStateType.PER_STREAM);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(airbyteStateMessage, catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
 
     Assertions.assertNotNull(stateManager);
-    Assertions.assertEquals(PerStreamStateManager.class, stateManager.getClass());
-  }
-
-  @Test
-  void testStateManagerCreationForUnknownStateObject() {
-    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = mock(JsonNode.class);
-
-    Assertions.assertThrows(IllegalArgumentException.class, () -> StateManagerFactory.createStateManager("Not Valid", catalog, config));
+    Assertions.assertEquals(StreamStateManager.class, stateManager.getClass());
   }
 
   @Test
@@ -107,27 +104,27 @@ public class StateManagerFactoryTest {
     final JsonNode config = mock(JsonNode.class);
     final JsonNode replicationConfig = mock(JsonNode.class);
 
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
-    when(replicationConfig.hasNonNull("publication")).thenReturn(true);
-    when(config.hasNonNull("replication_method")).thenReturn(true);
-    when(config.get("replication_method")).thenReturn(replicationConfig);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
+    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
+    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(true);
+    when(config.get(REPLICATION_METHOD)).thenReturn(replicationConfig);
     assertTrue(StateManagerFactory.isCdc(config));
 
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(false);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(false);
     assertFalse(StateManagerFactory.isCdc(config));
 
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
-    when(replicationConfig.hasNonNull("publication")).thenReturn(false);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
+    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(false);
     assertFalse(StateManagerFactory.isCdc(config));
 
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(true);
-    when(replicationConfig.hasNonNull("publication")).thenReturn(true);
-    when(config.hasNonNull("replication_method")).thenReturn(false);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
+    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
+    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(false);
     assertFalse(StateManagerFactory.isCdc(config));
 
-    when(replicationConfig.hasNonNull("replication_slot")).thenReturn(false);
-    when(replicationConfig.hasNonNull("publication")).thenReturn(false);
-    when(config.hasNonNull("replication_method")).thenReturn(false);
+    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(false);
+    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(false);
+    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(false);
     assertFalse(StateManagerFactory.isCdc(config));
   }
 

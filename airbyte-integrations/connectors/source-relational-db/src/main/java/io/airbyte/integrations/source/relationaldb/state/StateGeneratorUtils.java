@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.google.common.collect.Lists;
@@ -7,6 +11,7 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +34,7 @@ public class StateGeneratorUtils {
    */
   public static final Function<AirbyteStreamState, String> CURSOR_FUNCTION = stream -> {
     final Optional<DbStreamState> dbStreamState = StateGeneratorUtils.extractState(stream);
-    if (dbStreamState.isPresent()) {
-      return dbStreamState.get().getCursor();
-    } else {
-      return null;
-    }
+    return dbStreamState.map(DbStreamState::getCursor).orElse(null);
   };
 
   /**
@@ -52,34 +53,53 @@ public class StateGeneratorUtils {
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
   public static final Function<AirbyteStreamState, AirbyteStreamNameNamespacePair> NAME_NAMESPACE_PAIR_FUNCTION =
-      s -> new AirbyteStreamNameNamespacePair(s.getName(), s.getNamespace());
+      s -> isValidStreamDescriptor(s.getStreamDescriptor())
+          ? new AirbyteStreamNameNamespacePair(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace())
+          : null;
 
   private StateGeneratorUtils() {}
 
   /**
-   * Generates the per-stream state for each stream.
+   * Generates the stream state for the given stream and cursor information.
    *
-   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor information for that stream
-   * @return The list of per-stream state.
+   * @param airbyteStreamNameNamespacePair The stream.
+   * @param cursorInfo The current cursor.
+   * @return The {@link AirbyteStreamState} representing the current state of the stream.
    */
-  public static List<AirbyteStreamState> generatePerStreamState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+  public static AirbyteStreamState generateStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+                                                       final CursorInfo cursorInfo) {
+    return new AirbyteStreamState()
+        .withStreamDescriptor(
+            new StreamDescriptor().withName(airbyteStreamNameNamespacePair.getName()).withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
+        .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
+  }
+
+  /**
+   * Generates a list of valid stream states from the provided stream and cursor information. A stream
+   * state is considered to be valid if the stream has a valid descriptor (see
+   * {@link #isValidStreamDescriptor(StreamDescriptor)} for more details).
+   *
+   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor
+   *        information for that stream
+   * @return The list of stream states derived from the state information extracted from the provided
+   *         map.
+   */
+  public static List<AirbyteStreamState> generateStreamStateList(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return pairToCursorInfoMap.entrySet().stream()
-        .filter(s -> s.getKey().getName() != null && s.getKey().getNamespace() != null)
-        .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-        .map(e -> new AirbyteStreamState()
-            .withName(e.getKey().getName())
-            .withNamespace(e.getKey().getNamespace())
-            .withState(Jsons.jsonNode(generateDbStreamState(e.getKey(), e.getValue()))))
+        .sorted(Entry.comparingByKey())
+        .map(e -> generateStreamState(e.getKey(), e.getValue()))
+        .filter(s -> isValidStreamDescriptor(s.getStreamDescriptor()))
         .collect(Collectors.toList());
   }
 
   /**
    * Generates the legacy global state for backwards compatibility.
    *
-   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor information for that stream
+   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor
+   *        information for that stream
    * @return The legacy {@link DbState}.
    */
-  public static  DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+  public static DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return new DbState().withStreams(pairToCursorInfoMap.entrySet().stream()
         .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
         .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
@@ -93,7 +113,8 @@ public class StateGeneratorUtils {
    * @param cursorInfo The current cursor.
    * @return The {@link DbStreamState}.
    */
-  public static  DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair, final CursorInfo cursorInfo) {
+  public static DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+                                                    final CursorInfo cursorInfo) {
     return new DbStreamState()
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
@@ -111,10 +132,27 @@ public class StateGeneratorUtils {
    */
   public static Optional<DbStreamState> extractState(final AirbyteStreamState state) {
     try {
-      return Optional.ofNullable(Jsons.object(state.getState(), DbStreamState.class));
+      return Optional.ofNullable(Jsons.object(state.getStreamState(), DbStreamState.class));
     } catch (final IllegalArgumentException e) {
       LOGGER.error("Unable to extract state.", e);
       return Optional.empty();
     }
   }
+
+  /**
+   * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
+   * one that has both a non-{@code null} name and non-{@code null} namespace.
+   *
+   * @param streamDescriptor A {@link StreamDescriptor} to be validated.
+   * @return {@code true} if the provided {@link StreamDescriptor} is valid or {@code false} if it is
+   *         invalid.
+   */
+  public static boolean isValidStreamDescriptor(final StreamDescriptor streamDescriptor) {
+    if (streamDescriptor != null) {
+      return streamDescriptor.getName() != null && streamDescriptor.getNamespace() != null;
+    } else {
+      return false;
+    }
+  }
+
 }
