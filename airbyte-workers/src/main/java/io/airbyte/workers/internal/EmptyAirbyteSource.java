@@ -36,7 +36,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
     try {
       ResetSourceConfiguration sourceConfiguration = Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
       streamDescriptors.addAll(sourceConfiguration.getStreamDescriptors());
-      isPartialReset = true;
+      if (streamDescriptors.isEmpty()) {
+        isPartialReset = false;
+      } else {
+        isPartialReset = true;
+      }
     } catch (IllegalArgumentException e) {
       // No op, the new format is not supported
       isPartialReset = false;
