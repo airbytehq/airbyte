@@ -1,0 +1,69 @@
+// This module is only meant to be imported in TypeScript to give access to all SCSS variables
+// that TS needs access to while we're migrating from styled components to SCSS.
+// New variables won't need to be added here, unless there would be any reason we need to access
+// its value from TypeScript.
+
+@use "./colors";
+@use "./fonts";
+
+:export {
+  // Colors
+  primaryColor: colors.$primaryColor;
+  primaryColor25: colors.$primaryColor25;
+  primaryColor12: colors.$primaryColor12;
+  mediumPrimaryColor: colors.$mediumPrimaryColor;
+  mediumPrimaryColor20: colors.$mediumPrimaryColor20;
+  darkPrimaryColor: colors.$darkPrimaryColor;
+  darkPrimaryColor60: colors.$darkPrimaryColor60;
+  brightPrimaryColor: colors.$brightPrimaryColor;
+  lightPrimaryColor: colors.$lightPrimaryColor;
+
+  brightColor: colors.$brightColor;
+
+  dangerColor: colors.$dangerColor;
+  dangerColor25: colors.$dangerColor25;
+  warningColor: colors.$warningColor;
+  warningBackgroundColor: colors.$warningBackgroundColor;
+  lightDangerColor: colors.$lightDangerColor;
+  dangerTransparentColor: colors.$dangerTransparentColor;
+  attentionColor: colors.$attentionColor;
+  successColor: colors.$successColor;
+  successColor10: colors.$successColor10;
+  successColor20: colors.$successColor20;
+  backgroundColor: colors.$backgroundColor;
+  shadowColor: colors.$shadowColor;
+  cardShadowColor: colors.$cardShadowColor;
+
+  textColor: colors.$textColor;
+  lightTextColor: colors.$lightTextColor;
+  textColor90: colors.$textColor90;
+  darkBlue90: colors.$darkBlue90;
+  greyColor80: colors.$greyColor80;
+  greyColor70: colors.$greyColor70;
+  greyColor60: colors.$greyColor60;
+  greyColor55: colors.$greyColor55;
+  greyColor40: colors.$greyColor40;
+  greyColor30: colors.$greyColor30;
+  greyColor20: colors.$greyColor20;
+  greyColor10: colors.$greyColor10;
+  greyColor0: colors.$greyColor0;
+
+  whiteColor: colors.$whiteColor;
+  blackColor: colors.$blackColor;
+  beigeColor: colors.$beigeColor;
+  darkBeigeColor: colors.$darkBeigeColor;
+  borderTableColor: colors.$borderTableColor;
+  lightTableColor: colors.$lightTableColor;
+  darkGreyColor: colors.$darkGreyColor;
+  redColor: colors.$redColor;
+  lightRedColor: colors.$lightRedColor;
+  redTransparentColor: colors.$redTransparentColor;
+  whiteColor5: colors.$whiteColor5;
+  transparentColor: colors.$transparentColor;
+
+  // Fonts
+  regularFont: fonts.$regularFont;
+  highlightFont: fonts.$highlightFont;
+  codeFont: fonts.$codeFont;
+  italicFont: fonts.$italicFont;
+}

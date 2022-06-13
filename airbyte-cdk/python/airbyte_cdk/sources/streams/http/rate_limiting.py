@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -12,7 +12,13 @@ from requests import codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
-TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
+TRANSIENT_EXCEPTIONS = (
+    DefaultBackoffException,
+    exceptions.ConnectTimeout,
+    exceptions.ReadTimeout,
+    exceptions.ConnectionError,
+    exceptions.ChunkedEncodingError,
+)
 
 logger = logging.getLogger("airbyte")
 

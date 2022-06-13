@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -33,6 +33,7 @@ public class S3DestinationConfig {
   private final String bucketRegion;
   private final String pathFormat;
   private final S3CredentialConfig credentialConfig;
+  @Deprecated
   private final Integer partSize;
   private final S3FormatConfig formatConfig;
 
@@ -204,13 +205,12 @@ public class S3DestinationConfig {
     return Objects.equals(endpoint, that.endpoint) && Objects.equals(bucketName, that.bucketName) && Objects.equals(
         bucketPath, that.bucketPath) && Objects.equals(bucketRegion, that.bucketRegion)
         && Objects.equals(credentialConfig, that.credentialConfig)
-        && Objects.equals(partSize, that.partSize)
         && Objects.equals(formatConfig, that.formatConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, partSize, formatConfig);
+    return Objects.hash(endpoint, bucketName, bucketPath, bucketRegion, credentialConfig, formatConfig);
   }
 
   public static class Builder {

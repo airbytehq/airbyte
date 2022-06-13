@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -126,8 +125,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
         config.get("username").asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
-        jdbcUrl
-    );
+        jdbcUrl);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

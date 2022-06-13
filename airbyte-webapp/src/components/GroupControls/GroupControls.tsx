@@ -24,11 +24,11 @@ const FormGroup = styled.div`
   padding: 0 20px;
 `;
 
-type GroupControlsProps = {
+interface GroupControlsProps {
   title: React.ReactNode;
   description?: string;
   name?: string;
-};
+}
 
 const GroupControls: React.FC<GroupControlsProps> = ({ title, description, children, name }) => {
   return (

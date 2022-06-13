@@ -41,7 +41,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 6. Submit the form
 
 **For Airbyte OSS:**
-1. Navigate to the Airbute Open Source dashboard
+1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter the API access token from Prerequisites
 4. Enter the ID of the spreadsheet you want to sync

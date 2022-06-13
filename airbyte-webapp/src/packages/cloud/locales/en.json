@@ -6,7 +6,7 @@
   "login.loginTitle": "Sign in to Airbyte",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
-  "login.yourEmail.placeholder": "christophersmith@gmail.com",
+  "login.yourEmail.placeholder": "work.email@example.com",
   "login.yourEmail.notFound": "User not found",
   "login.unknownError": "An unknown error has occurred",
   "login.password": "Enter your password*",
@@ -118,5 +118,7 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "verifyEmail.notification": "You successfully verified your email. Thank you."
+  "verifyEmail.notification": "You successfully verified your email. Thank you.",
+
+  "webapp.cannotReachServer": "Cannot reach server."
 }

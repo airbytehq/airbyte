@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -84,7 +84,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasStarted;
   private boolean hasClosed;
 
-  private AirbyteMessage lastFlushedState;
+  // represents the last state message for which all of it records have been flushed to tmp storage in
+  // the destination.
+  private AirbyteMessage lastFlushedToTmpDstState;
+  // presents the last state message whose state is waiting to be flushed to tmp storage in the
+  // destination.
   private AirbyteMessage pendingState;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -103,7 +107,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
   }
 
   @Override
@@ -134,7 +137,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      bufferingStrategy.addRecord(stream, message);
+      // if the buffer flushes, update the states appropriately.
+      if (bufferingStrategy.addRecord(stream, message)) {
+        markStatesAsFlushedToTmpDestination();
+      }
+
     } else if (message.getType() == Type.STATE) {
       pendingState = message;
     } else {
@@ -143,9 +150,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void flushQueueToDestination() {
+  private void markStatesAsFlushedToTmpDestination() {
     if (pendingState != null) {
-      lastFlushedState = pendingState;
+      lastFlushedToTmpDstState = pendingState;
       pendingState = null;
     }
   }
@@ -169,13 +176,14 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     } else {
       LOGGER.info("executing on success close procedure.");
       bufferingStrategy.flushAll();
+      markStatesAsFlushedToTmpDestination();
     }
     bufferingStrategy.close();
 
     try {
       // if no state was emitted (i.e. full refresh), if there were still no failures, then we can
       // still succeed.
-      if (lastFlushedState == null) {
+      if (lastFlushedToTmpDstState == null) {
         onClose.accept(hasFailed);
       } else {
         // if any state message flushed that means we can still go for at least a partial success.
@@ -184,8 +192,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
-      if (lastFlushedState != null) {
-        outputRecordCollector.accept(lastFlushedState);
+      if (lastFlushedToTmpDstState != null) {
+        outputRecordCollector.accept(lastFlushedToTmpDstState);
       }
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);

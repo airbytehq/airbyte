@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -23,7 +23,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] BIT_TYPES = {"BIT", "VARBIT"};
   private final String[] MONEY_ITEM_TYPE = {"MONEY"};
   private final String[] GEOMETRICS_TYPES = {"BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH"};
-  private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR"};
+  private final String[] TEXT_TYPES =
+      {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR", "TSQUERY"};
 
   @Override
   public void configure(final Properties props) {}
@@ -42,7 +43,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerText(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
@@ -56,7 +57,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof PGInterval) {
@@ -78,7 +79,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private void registerMoney(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
+    registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof Double) {

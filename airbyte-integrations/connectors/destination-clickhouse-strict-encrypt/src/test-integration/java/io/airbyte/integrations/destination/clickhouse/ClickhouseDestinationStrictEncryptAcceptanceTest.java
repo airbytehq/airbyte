@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -137,9 +137,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         config.get("username").asText(),
         config.has("password") ? config.get("password").asText() : null,
         ClickhouseDestination.DRIVER_CLASS,
-        jdbcStr
-      )
-    );
+        jdbcStr));
   }
 
   @Override

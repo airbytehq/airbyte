@@ -1,12 +1,12 @@
 import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
-import { IntlProvider } from "react-intl";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
+import { I18nProvider } from "core/i18n";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
@@ -23,19 +23,7 @@ import { AppServicesProvider } from "./services/AppServicesProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
-const messages = Object.assign({}, en, cloudLocales);
-
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider
-    locale="en"
-    messages={messages}
-    defaultRichTextElements={{
-      b: (chunk) => <strong>{chunk}</strong>,
-    }}
-  >
-    {children}
-  </IntlProvider>
-);
+const messages = { ...en, ...cloudLocales };
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -68,7 +56,7 @@ const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
               <ConfigProvider>
@@ -80,7 +68,7 @@ const App: React.FC = () => {
               </ConfigProvider>
             </Suspense>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );

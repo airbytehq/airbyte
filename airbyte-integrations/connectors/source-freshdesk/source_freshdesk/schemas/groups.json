@@ -30,7 +30,7 @@
       "type": "string"
     },
     "auto_ticket_assign": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     }
   }
 }

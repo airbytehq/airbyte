@@ -59,6 +59,10 @@
     String
 {%- endmacro -%}
 
+{#-- TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/dbt-labs/dbt-core/issues/5238) and we've upgraded to the latest version of dbt --#}
+{%- macro postgres__type_string() -%}
+    text
+{%- endmacro -%}
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}

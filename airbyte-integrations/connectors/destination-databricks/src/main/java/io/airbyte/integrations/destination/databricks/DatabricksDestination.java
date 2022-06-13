@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -86,7 +86,7 @@ public class DatabricksDestination extends CopyDestination {
   static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
     return String.format(DatabaseDriver.DATABRICKS.getUrlFormatString(),
         databricksConfig.getDatabricksServerHostname(),
-        databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
   }
+
 }

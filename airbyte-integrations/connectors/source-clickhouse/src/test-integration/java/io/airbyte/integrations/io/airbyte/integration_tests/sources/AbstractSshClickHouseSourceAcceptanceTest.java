@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -26,8 +26,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
@@ -112,8 +110,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText())
-    );
+            config.get("database").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

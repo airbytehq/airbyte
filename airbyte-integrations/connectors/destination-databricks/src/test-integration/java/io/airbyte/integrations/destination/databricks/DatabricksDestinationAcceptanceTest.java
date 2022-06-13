@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -149,4 +149,5 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
   }
+
 }

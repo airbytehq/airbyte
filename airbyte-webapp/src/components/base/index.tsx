@@ -7,6 +7,6 @@ export * from "./Input";
 export * from "./Multiselect";
 export * from "./RadioButton";
 export * from "./TagInput";
-export * from "./Toggle";
+export * from "./Switch";
 export * from "./TextArea";
 export * from "./Titles";

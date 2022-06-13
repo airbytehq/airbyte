@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -10,22 +10,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.AttemptFailureOrigin;
-import io.airbyte.api.model.AttemptFailureReason;
-import io.airbyte.api.model.AttemptFailureSummary;
-import io.airbyte.api.model.AttemptFailureType;
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStats;
-import io.airbyte.api.model.AttemptStreamStats;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobDebugRead;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.SourceDefinitionRead;
+import io.airbyte.api.model.generated.AttemptFailureOrigin;
+import io.airbyte.api.model.generated.AttemptFailureReason;
+import io.airbyte.api.model.generated.AttemptFailureSummary;
+import io.airbyte.api.model.generated.AttemptFailureType;
+import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStreamStats;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -103,14 +103,14 @@ class JobConverterTest {
           .job(new JobRead()
               .id(JOB_ID)
               .configId(JOB_CONFIG_ID)
-              .status(io.airbyte.api.model.JobStatus.RUNNING)
+              .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
               .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
               .createdAt(CREATED_AT)
               .updatedAt(CREATED_AT))
           .attempts(Lists.newArrayList(new AttemptInfoRead()
               .attempt(new AttemptRead()
                   .id(ATTEMPT_ID)
-                  .status(io.airbyte.api.model.AttemptStatus.RUNNING)
+                  .status(io.airbyte.api.model.generated.AttemptStatus.RUNNING)
                   .recordsSynced(RECORDS_EMITTED)
                   .bytesSynced(BYTES_EMITTED)
                   .totalStats(new AttemptStats()
@@ -148,7 +148,7 @@ class JobConverterTest {
       new JobDebugRead()
           .id(JOB_ID)
           .configId(JOB_CONFIG_ID)
-          .status(io.airbyte.api.model.JobStatus.RUNNING)
+          .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
           .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
           .airbyteVersion(airbyteVersion.serialize())
           .sourceDefinition(sourceDefinitionRead)
@@ -215,8 +215,8 @@ class JobConverterTest {
   @Test
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
-    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
-    assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
+    assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.generated.AttemptStatus.class));
   }
 
 }

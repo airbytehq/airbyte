@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -78,6 +78,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
+
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
+    }
 
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {

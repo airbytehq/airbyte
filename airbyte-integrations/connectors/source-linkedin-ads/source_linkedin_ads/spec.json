@@ -74,7 +74,7 @@
           "type": "integer"
         },
         "default": []
-      }        
+      }
     }
   },
   "authSpecification": {
