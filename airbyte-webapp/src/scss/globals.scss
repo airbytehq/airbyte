@@ -1,0 +1,52 @@
+@use "./colors";
+@use "./fonts";
+@use "./text";
+
+.with-text-styles {
+  * {
+    font-family: fonts.$regularFont;
+    font-style: normal;
+    font-weight: fonts.$weight-normal;
+    color: colors.$black;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  strong {
+    font-weight: fonts.$weight-bold;
+  }
+
+  h1 {
+    @include text.with-size-height(32px, 39px);
+  }
+
+  h2 {
+    @include text.with-size-height(24px, 29px);
+  }
+
+  h3 {
+    @include text.with-size-height(20px, 24px);
+  }
+
+  h4 {
+    @include text.with-size-height(16px, 28px);
+  }
+
+  .txt-1 {
+    @include text.txt-1;
+  }
+
+  .txt-2 {
+    @include text.txt-2;
+  }
+
+  .txt-info {
+    @include text.txt-info;
+  }
+
+  .txt-billing-line {
+    @include text.txt-billing-line;
+  }
+}

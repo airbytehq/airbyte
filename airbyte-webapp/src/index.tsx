@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom";
 
 import "react-reflex/styles.css";
+import "scss/globals.scss";
 import { isCloudApp } from "utils/app";
 
 import "./globals";

@@ -1,0 +1,31 @@
+@use "./fonts";
+@use "./colors";
+
+@mixin with-size-height($font-size, $line-height) {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+@mixin txt-1 {
+  @include with-size-height(14px, 17px);
+}
+
+@mixin txt-input {
+  @include with-size-height(14px, 17px);
+  font-weight: fonts.$weight-light;
+}
+
+@mixin txt-2 {
+  @include with-size-height(13px, 16px);
+  font-weight: fonts.$weight-light;
+}
+
+@mixin txt-info {
+  @include with-size-height(12px, 15px);
+  font-weight: fonts.$weight-light;
+}
+
+@mixin txt-billing-line {
+  @include with-size-height(13px, 16px);
+  letter-spacing: 0.03em;
+}

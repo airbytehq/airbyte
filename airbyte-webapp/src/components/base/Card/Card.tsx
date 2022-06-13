@@ -6,7 +6,7 @@ interface CardProps {
   full?: boolean;
 }
 
-export const Card = classy("div", ({ full }: CardProps) => [
+export const Card = classy<CardProps>("div", ({ full }) => [
   styles.card,
   {
     [styles.full]: full,
