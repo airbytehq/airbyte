@@ -185,19 +185,27 @@ class SourceNetsuite(AbstractSource):
         subdomain = realm.lower().replace("_", "-")
         return f"https://{subdomain}.suitetalk.api.netsuite.com"
 
+    def get_session(self, auth: OAuth1) -> requests.Session:
+        session = requests.Session()
+        session.auth = auth
+        # automatically raise an error on failed requests
+        session.hooks = { 'response': lambda r, *args, **kwargs: r.raise_for_status() }
+        return session
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth = self.auth(config)
         record_types = config.get("record_types")
         base_url = self.base_url(config)
+        session = self.get_session(auth)
         # if record types are specified make sure they are valid
         if record_types:
             params = {"select": ",".join(record_types)}
             url = base_url + metadata_path
-            requests.get(url, auth=auth, params=params)
+            session.get(url, params=params)
         else:
             # we could request the entire metadata catalog here, but this request returns much faster
             url = base_url + rest_path + "*"
-            requests.options(url, auth=auth).raise_for_status()
+            session.options(url)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -206,22 +214,19 @@ class SourceNetsuite(AbstractSource):
         start_datetime = config["start_datetime"]
         concurrency_limit = config.get("concurrency_limit")
 
-        session = requests.Session()
-        session.auth = auth
-        # automatically raise an error on failed requests
-        session.hooks = { 'response': lambda r, *args, **kwargs: r.raise_for_status() }
+        session = self.get_session(auth)
 
         metadata_url = base_url + metadata_path
         record_names = config.get("record_types")
         if not record_names:
             # retrieve all record types
-            metadata = session.get(metadata_url, auth=auth).json().get("items")
+            metadata = session.get(metadata_url).json().get("items")
             record_names = [r["name"] for r in metadata]
 
         # streams must have a lastModifiedDate property to be incremental
-        schemas = {n: session.get(metadata_url + n, auth=auth).json() for n in record_names}
+        schemas = {n: session.get(metadata_url + n).json() for n in record_names}
 
-        incremental_record_names = [n for n in record_names if schemas[n].get("lastModifiedDate")]
+        incremental_record_names = [n for n in record_names if schemas[n]["properties"].get("lastModifiedDate")]
         standard_record_names = [n for n in record_names if n not in incremental_record_names]
 
         streams = [NetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in standard_record_names]
