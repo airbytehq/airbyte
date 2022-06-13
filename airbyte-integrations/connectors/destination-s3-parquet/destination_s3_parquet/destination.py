@@ -313,8 +313,8 @@ class DestinationS3Parquet(Destination):
         filename = os.path.expanduser(filename)
         #LOGGER.info(" persist_messages file name = {}" + filename)
         
-        in_process_records[stream_name] = in_process_records[stream_name] + 1 
-        total_stream_records[stream_name] = total_stream_records[stream_name] + 1
+        in_process_records[stream_name] = in_process_records[stream_name] + 1 if stream_name in in_process_records.keys() else 1
+        total_stream_records[stream_name] = total_stream_records[stream_name] + 1 if stream_name in total_stream_records.keys() else 1
         
         # Fetch old file name.
         old_file = stream_file_name[stream_name] if stream_name in stream_file_name.keys() else filename
