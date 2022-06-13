@@ -85,7 +85,7 @@ class ResourceState:
 
         Args:
             configuration_path (str): Path to the configuration this state relates to.
-            workspace_id (str): Id of the workspace the state relates to.
+            workspace_id Optional(str): Id of the workspace the state relates to. #TODO mark this a not optional after the user base has upgraded to >= 0.39.18
             resource_id (str): Id of the resource the state relates to.
             generation_timestamp (int): State generation timestamp.
             configuration_hash (str): Hash of the loaded configuration file.
