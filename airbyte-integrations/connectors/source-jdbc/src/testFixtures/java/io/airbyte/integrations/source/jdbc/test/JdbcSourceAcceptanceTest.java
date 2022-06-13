@@ -45,6 +45,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -1000,9 +1001,9 @@ public abstract class JdbcSourceAcceptanceTest {
   protected JsonNode createEmptyState(final String streamName, final String streamNamespace) {
     if (supportsPerStream()) {
       final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.PER_STREAM)
-          .withStreams(List.of(new AirbyteStreamState().withName(streamName).withNamespace(streamNamespace)));
-      return Jsons.jsonNode(airbyteStateMessage);
+          .withStateType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
+      return Jsons.jsonNode(List.of(airbyteStateMessage));
     } else {
       final DbState dbState = new DbState()
           .withStreams(List.of(new DbStreamState().withStreamName(streamName).withStreamNamespace(streamNamespace)));
@@ -1018,13 +1019,13 @@ public abstract class JdbcSourceAcceptanceTest {
    */
   protected JsonNode createState(final List<DbStreamState> streams) {
     if (supportsPerStream()) {
-      final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.PER_STREAM)
-          .withStreams(streams.stream()
-              .map(s -> new AirbyteStreamState().withName(s.getStreamName()).withNamespace(s.getStreamNamespace()).withState(Jsons.jsonNode(s)))
-              .collect(Collectors.toList()));
-
-      return Jsons.jsonNode(airbyteStateMessage);
+      final List<AirbyteStateMessage> messages = streams.stream()
+          .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+              .withStream(new AirbyteStreamState()
+                  .withStreamDescriptor(new StreamDescriptor().withName(s.getStreamName()).withNamespace(s.getStreamNamespace()))
+                  .withStreamState(Jsons.jsonNode(s))))
+          .collect(Collectors.toList());
+      return Jsons.jsonNode(messages);
     } else {
       final DbState dbState = new DbState()
           .withStreams(streams.stream().collect(Collectors.toList()));
