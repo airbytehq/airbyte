@@ -41,17 +41,17 @@ for repo in $repo_list; do
       --header "Authorization: token $token" \
       --request GET  https://api.github.com/repos/$org/$repo/actions/runners?page=$page_count&per_page=100)
     runner_response_wc=$(echo $runner_response | wc -w)
-    # For auth errors
+    # For auth errors because auth errors are short
     if test $runner_response_wc -lt 100; then
       echo -e "$blue_text""\$runner_response is \n\n$runner_response\n\n""$default_text"
     fi
 
     runner_ids_for_page=$(echo $runner_response | \
-         jq  '.runners[] | select(.status!="online") | .id')
+         jq  '.runners[] | select(.status=="offline") | .id')
 
     runner_for_page_count=$(echo $runner_ids_for_page | wc -w)
     echo -e "$blue_text""jq returned $runner_for_page_count runners for page $page_count""$default_text"
-    all_runner_ids=$runner_ids_for_page\n$all_runner_ids
+    all_runner_ids="$runner_ids_for_page $all_runner_ids"
     all_runner_ids_count=$(echo $all_runner_ids | wc -w)
     echo -e "$blue_text""Total count is now $all_runner_ids_count""$default_text"
   done
