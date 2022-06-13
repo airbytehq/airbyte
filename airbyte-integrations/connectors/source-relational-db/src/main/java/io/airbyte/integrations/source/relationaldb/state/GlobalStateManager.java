@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -110,12 +111,19 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
      * we can look for streams in the "global" field of the message. Otherwise, the message is still
      * storing state in the legacy "data" field.
      */
-    return () -> airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL ? airbyteStateMessage.getGlobal().getStreamStates()
-        : Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
+    return () -> {
+      if (airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
+        return airbyteStateMessage.getGlobal().getStreamStates();
+      } else if (airbyteStateMessage.getData() != null) {
+        return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
             .map(s -> new AirbyteStreamState().withStreamState(Jsons.jsonNode(s))
                 .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName())))
             .collect(
                 Collectors.toList());
+      } else {
+        return List.of();
+      }
+    };
   }
 
 }
