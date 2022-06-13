@@ -1,8 +1,8 @@
 {
 	"definitions": {},
 	"$schema": "http://json-schema.org/draft-07/schema#", 
-	"$id": "https://example.com/object1654600594.json", 
-	"title": "Root", 
+	"$id": "https://example.com/object1654615239.json", 
+	"title": "list_exclusions", 
 	"type": "object",
 	"properties": {
 		"id": {
@@ -15,6 +15,27 @@
 		"email": {
 			"$id": "#root/email", 
 			"title": "Email", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"reason": {
+			"$id": "#root/reason", 
+			"title": "Reason", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"created": {
+			"$id": "#root/created", 
+			"title": "Created", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"phone_number": {
+			"$id": "#root/phone_number", 
+			"title": "Phone_number", 
 			"type": "string",
 			"default": "",
 			"pattern": "^.*$"

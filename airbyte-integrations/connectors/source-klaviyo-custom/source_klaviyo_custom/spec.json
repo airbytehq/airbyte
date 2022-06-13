@@ -4,12 +4,17 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Klaviyo Custom Spec",
     "type": "object",
-    "required": ["api_key"],
+    "required": ["api_key","list_id"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "Klaviyo Private API Key to authenticate"
+        "description": "Klaviyo Private API Key to authenticate",
+        "airbyte_secret": true
+      },
+      "list_id": {
+        "type": "string",
+        "description": "ID of the List to get members"
       }
     }
   }
