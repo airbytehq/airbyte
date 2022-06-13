@@ -2,9 +2,10 @@ import React from "react";
 import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
-import StateBlock from "components/StateBlock";
 
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
+
+import { StateBlock } from "./StateBlock";
 
 interface IProps {
   connectionId: string;

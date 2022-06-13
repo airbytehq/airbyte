@@ -400,7 +400,7 @@
   "tables.destinationDeleteModalText": "This can not be un-done. Note that:\n  - All connections with this destination will be deleted, including their past logs and configurations.\n  - No existing data in the destination will be altered.",
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
   "tables.connectionState.title": "Connection State",
-  "tables.connectionState.p1": "The connection's current state",
+  "tables.connectionState.noConnectionState": "This connection doesn't have a state (yet).",
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
