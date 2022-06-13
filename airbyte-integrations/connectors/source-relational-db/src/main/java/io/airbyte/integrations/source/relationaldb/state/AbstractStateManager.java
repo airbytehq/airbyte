@@ -57,6 +57,6 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
   }
 
   @Override
-  public abstract AirbyteStateMessage toState();
+  public abstract AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair);
 
 }

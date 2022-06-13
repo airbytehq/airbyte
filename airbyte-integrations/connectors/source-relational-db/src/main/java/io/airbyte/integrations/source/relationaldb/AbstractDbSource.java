@@ -20,6 +20,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.state.AirbyteStateMessageListTypeReference;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -29,6 +30,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.CommonField;
@@ -516,16 +518,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param stateJson The state as JSON.
    * @return The deserialized object representation of the state.
    */
-  protected AirbyteStateMessage deserializeState(final JsonNode stateJson) {
+  protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson) {
     if (stateJson == null) {
       // For backwards compatibility with existing connectors
-      return new AirbyteStateMessage().withData(Jsons.jsonNode(new DbState()));
+      return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
     } else {
       try {
-        return Jsons.object(stateJson, AirbyteStateMessage.class);
+        return Jsons.object(stateJson, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
         LOGGER.warn("Defaulting to legacy state object...");
-        return new AirbyteStateMessage().withData(stateJson);
+        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(stateJson));
       }
     }
   }

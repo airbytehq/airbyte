@@ -7,24 +7,17 @@ package io.airbyte.integrations.source.relationaldb.state;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAMESPACE;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME1;
-import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getCatalog;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getState;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStreamState;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -120,27 +113,6 @@ public class CursorManagerTest {
 
   @Test
   void testGetters() {
-    final AirbyteStateMessage state = new AirbyteStateMessage()
-        .withStreams(List.of(
-            new AirbyteStreamState()
-                .withName(STREAM_NAME1)
-                .withNamespace(NAMESPACE)
-                .withState(
-                    Jsons.jsonNode(
-                        new DbStreamState()
-                            .withStreamName(STREAM_NAME1)
-                            .withStreamNamespace(NAMESPACE)
-                            .withCursorField(List.of(CURSOR_FIELD1))
-                            .withCursor(CURSOR))),
-            new AirbyteStreamState()
-                .withName(STREAM_NAME2)
-                .withNamespace(NAMESPACE)
-                .withState(
-                    Jsons.jsonNode(
-                        new DbStreamState()
-                            .withStreamName(STREAM_NAME2)
-                            .withStreamNamespace(NAMESPACE)))));
-
     final CursorManager cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actualCursorInfo = new CursorInfo(CURSOR_FIELD1, CURSOR, null, null);
 
