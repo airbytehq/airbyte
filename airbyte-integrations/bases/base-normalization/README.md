@@ -1,11 +1,35 @@
 # Normalization
 
+* [Normalization](#normalization)
+    * [Testing normalization](#testing-normalization)
+        * [Build & Activate Virtual Environment and install dependencies](#build--activate-virtual-environment-and-install-dependencies)
+        * [Unit Tests](#unit-tests)
+            * [test_transform_config.py:](#test_transform_configpy)
+            * [test_stream_processor.py and test_table_name_registry.py:](#test_stream_processorpy-and-test_table_name_registrypy)
+            * [test_destination_name_transformer.py:](#test_destination_name_transformerpy)
+        * [Integration Tests](#integration-tests)
+            * [Integration Tests Definitions for test_ephemeral.py:](#integration-tests-definitions-for-test_ephemeralpy)
+            * [Integration Tests Definitions for test_normalization.py:](#integration-tests-definitions-for-test_normalizationpy)
+                * [README.md:](#readmemd)
+            * [Integration Test Data Input:](#integration-test-data-input)
+                * [data_input/catalog.json:](#data_inputcatalogjson)
+                * [data_input/messages.txt:](#data_inputmessagestxt)
+                * [data_input/replace_identifiers.json:](#data_inputreplace_identifiersjson)
+            * [Integration Test Execution Flow:](#integration-test-execution-flow)
+            * [Integration Test Checks:](#integration-test-checks)
+                * [dbt schema tests:](#dbt-schema-tests)
+                * [dbt data tests:](#dbt-data-tests)
+                * [Notes using dbt seeds:](#notes-using-dbt-seeds)
+            * [Debug dbt operations with local database](#debug-dbt-operations-with-local-database)
+        * [Standard Destination Tests](#standard-destination-tests)
+        * [Acceptance Tests](#acceptance-tests)
+
 Related documentation on normalization is available here:
 
-- [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
+* [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
 * [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
 
-# Testing normalization
+## Testing normalization
 
 Below are short descriptions of the kind of tests that may be affected by changes to the normalization code.
 
@@ -28,7 +52,7 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
-## Unit Tests
+### Unit Tests
 
 Unit tests are automatically included when building the normalization project.
 But you could invoke them explicitly by running the following commands for example:
@@ -69,22 +93,22 @@ These Unit tests checks implementation of specific rules of SQL identifier namin
 The specifications rules of each destinations are detailed in the corresponding docs, especially on the
 allowed characters, if quotes are needed or not, and the length limitations:
 
-- [bigquery](../../../docs/integrations/destinations/bigquery.md)
-- [postgres](../../../docs/integrations/destinations/postgres.md)
-- [redshift](../../../docs/integrations/destinations/redshift.md)
-- [snowflake](../../../docs/integrations/destinations/snowflake.md)
-- [mysql](../../../docs/integrations/destinations/mysql.md)
-- [oracle](../../../docs/integrations/destinations/oracle.md)
-- [mssql](../../../docs/integrations/destinations/mssql.md)
+* [bigquery](../../../docs/integrations/destinations/bigquery.md)
+* [postgres](../../../docs/integrations/destinations/postgres.md)
+* [redshift](../../../docs/integrations/destinations/redshift.md)
+* [snowflake](../../../docs/integrations/destinations/snowflake.md)
+* [mysql](../../../docs/integrations/destinations/mysql.md)
+* [oracle](../../../docs/integrations/destinations/oracle.md)
+* [mssql](../../../docs/integrations/destinations/mssql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
-- `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
-- `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
+* `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
+* `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
 
 Deciding on how to truncate (in the middle) are being verified in these tests.
 In this instance, both strings ends up as:
 
-- `Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
+* `Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
 
 The truncate operation gets rid of characters in the middle of the string to preserve the start
 and end characters as it may contain more useful information in table naming. However the final
@@ -94,7 +118,7 @@ Note that dealing with such collisions is not part of `destination_name_transfor
 `stream_processor` since one is focused on destination conventions and the other on putting together
 identifier names from streams and catalogs.
 
-## Integration Tests
+### Integration Tests
 
 Look at the `./setup/*.md` (e.g. `./setup/snowflake.md`) for how to set up integration environments.
 
@@ -123,25 +147,25 @@ Note that these tests are connecting and processing data on top of real data war
 Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run
 (not included in git repository).
 
-This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
+This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can
 re-use the `destination_config.json` passed to destination connectors.
 
-As normalization supports more and more destinations, tests are relying on an increasing number of destinations. 
-As a result, it is possible that the docker garbage collector is triggered to wipe "unused" docker images while the 
-integration tests for normalization are running. Thus, if you encounter errors about a connector's docker image not being 
+As normalization supports more and more destinations, tests are relying on an increasing number of destinations.
+As a result, it is possible that the docker garbage collector is triggered to wipe "unused" docker images while the
+integration tests for normalization are running. Thus, if you encounter errors about a connector's docker image not being
 present locally (even though it was built beforehand), make sure to increase the docker image storage size of your docker engine ("defaultKeepStorage" for mac for example).
 
-### Integration Tests Definitions for test_ephemeral.py:
+#### Integration Tests Definitions for test_ephemeral.py:
 The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
 columns in a catalog, this may throw exceptions and fail. This test ensures that we support reasonable number of columns in destination tables.
 
 For example, known limitations that are now supported were:
-- Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
-- The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
+* Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
+* The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
 
 However, limits on the destination still exists and can break for higher number of columns...
 
-### Integration Tests Definitions for test_normalization.py:
+#### Integration Tests Definitions for test_normalization.py:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
@@ -175,33 +199,33 @@ For example, below, we would have 2 different tests "suites" with this hierarchy
           ├── dbt_schema_tests/
           └── README.md
 
-#### README.md:
+##### README.md:
 
 Each test suite should have an optional `README.md` to include further details and descriptions of what the test is trying to verify and
 how it is specifically built.
 
-### Integration Test Data Input:
+#### Integration Test Data Input:
 
-#### data_input/catalog.json:
+##### data_input/catalog.json:
 
 The `catalog.json` is the main input for normalization from which the dbt models files are being
 generated from as it describes in JSON Schema format what the data structure is.
 
-#### data_input/messages.txt:
+##### data_input/messages.txt:
 
 The `messages.txt` are serialized Airbyte JSON records that should be sent to the destination as if they were
 transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
 
-#### data_input/replace_identifiers.json:
+##### data_input/replace_identifiers.json:
 The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
 and `dbt_data_tests` files to handle cross database compatibility.
 
 Note that an additional step is added before replacing identifiers to change capitalization of identifiers in those
 tests files. (to uppercase on snowflake and lowercase on redshift).
 
-### Integration Test Execution Flow:
+#### Integration Test Execution Flow:
 
 These integration tests are run against all destinations that dbt can be executed on.
 So, for each target destination, the steps run by the tests are:
@@ -212,9 +236,9 @@ So, for each target destination, the steps run by the tests are:
    `messages.txt` file as data input.
 4. Run Normalization step to generate dbt models files from `catalog.json` input file.
 5. Execute dbt cli command: `dbt run` from the test workspace folder to compile generated models files
-   - from `models/generated/` folder
-   - into `../build/(compiled|run)/airbyte_utils/models/generated/` folder
-   - The final "run" SQL files are also copied (for archiving) to `final/` folder by the test script.
+   * from `models/generated/` folder
+   * into `../build/(compiled|run)/airbyte_utils/models/generated/` folder
+   * The final "run" SQL files are also copied (for archiving) to `final/` folder by the test script.
 6. Deploy the `schema_tests` and `data_tests` files into the test workspace folder.
 7. Execute dbt cli command: `dbt tests` from the test workspace folder to run verifications and checks with dbt.
 8. Optional checks (nothing for the moment)
@@ -222,51 +246,51 @@ So, for each target destination, the steps run by the tests are:
 Note that the tests are using the normalization code from the python files directly, so it is not necessary to rebuild the docker images
 in between when iterating on the code base. However, dbt cli and destination connectors are invoked thanks to the dev docker images.
 
-### Integration Test Checks:
+#### Integration Test Checks:
 
-#### dbt schema tests:
+##### dbt schema tests:
 
 dbt allows out of the box to configure some tests as properties for an existing model (or source, seed, or snapshot).
 This can be done in yaml format as described in the following documentation pages:
 
-- [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
-- [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
-- [dbt expectations](https://github.com/calogica/dbt-expectations)
+* [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
+* [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
+* [dbt expectations](https://github.com/calogica/dbt-expectations)
 
 We are leveraging these capabilities in these integration tests to verify some relationships in our
 generated tables on the destinations.
 
-#### dbt data tests:
+##### dbt data tests:
 
 Additionally, dbt also supports "data tests" which are specified as SQL queries.
 A data test is a select statement that returns 0 records when the test is successful.
 
-- [dbt data-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests)
+* [dbt data-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests)
 
-#### Notes using dbt seeds:
+##### Notes using dbt seeds:
 
 Because some functionalities are not stable enough on dbt side, it is difficult to properly use
 `dbt seed` commands to populate a set of expected data tables at the moment. Hopefully, this can be
 more easily be done in the future...
 
 Related issues to watch on dbt progress to improve this aspects:
-- https://github.com/fishtown-analytics/dbt/issues/2959#issuecomment-747509782
-- https://medium.com/hashmapinc/unit-testing-on-dbt-models-using-a-static-test-dataset-in-snowflake-dfd35549b5e2
+* <https://github.com/fishtown-analytics/dbt/issues/2959#issuecomment-747509782>
+* <https://medium.com/hashmapinc/unit-testing-on-dbt-models-using-a-static-test-dataset-in-snowflake-dfd35549b5e2>
 
 A nice improvement would be to add csv/json seed files as expected output data from tables.
 The integration tests would verify that the content of such tables in the destination would match
 these seed files or fail.
 
-### Debug dbt operations with local database
+#### Debug dbt operations with local database
 This only works for testing databases launched in local containers (e.g. postgres and mysql).
 
-- In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
-- Find the name of the database container in the logs (e.g. by searching `Executing`).
-- Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
-- Connect to the database inside the container (e.g. `mysql -u root` for mysql).
-- Test the generated dbt operations directly in the database.
+* In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
+* Find the name of the database container in the logs (e.g. by searching `Executing`).
+* Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
+* Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+* Test the generated dbt operations directly in the database.
 
-## Standard Destination Tests
+### Standard Destination Tests
 
 Generally, to invoke standard destination tests, you run with gradle using:
 
@@ -274,6 +298,6 @@ Generally, to invoke standard destination tests, you run with gradle using:
 
 For more details and options, you can also refer to the [testing connectors docs](../../../docs/connector-development/testing-connectors/README.md).
 
-## Acceptance Tests
+### Acceptance Tests
 
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
