@@ -1168,18 +1168,19 @@ where 1 = 1
                     -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
                     -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     {{ delete_statement }} where {{ unique_key_reference }} in (
-                        select inactive_counts.unique_key
+                        select recent_records.unique_key
                         from (
-                            select {{ unique_key }} as unique_key, count({{ unique_key }}) as inactive_count
-                            from {{ '{{ this }}' }}
-                            where {{ active_row_column_name }} = 0 {{ normalized_at_incremental_clause }}
-                            group by {{ unique_key }}
-                        ) inactive_counts left join (
-                            select {{ unique_key }} as unique_key, count({{ unique_key }}) as active_count
-                            from {{ '{{ this }}' }}
-                            where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
-                            group by {{ unique_key }}
-                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                                select distinct {{ unique_key }} as unique_key
+                                from {{ '{{ this }}' }}
+                                where 1=1 {{ normalized_at_incremental_clause }}
+                            ) recent_records
+                            left join (
+                                select {{ unique_key }} as unique_key, count({{ unique_key }}) as active_count
+                                from {{ '{{ this }}' }}
+                                where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
+                                group by {{ unique_key }}
+                            ) active_counts
+                            on recent_records.unique_key = active_counts.unique_key
                         where active_count is null or active_count = 0
                     )
                     {{ '{% else %}' }}
