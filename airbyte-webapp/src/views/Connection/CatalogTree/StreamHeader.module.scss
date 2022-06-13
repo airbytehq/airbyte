@@ -10,7 +10,7 @@
   margin-right: 7px;
   margin-top: -1px;
   &.plus {
-    color: colors.$successColor;
+    color: colors.$green;
   }
   &.minus {
     color: colors.$red;
@@ -25,7 +25,7 @@
 }
 
 .streamHeaderContent {
-  background: colors.$greyColor0;
+  background: colors.$grey-50;
   transition: background-color variables.$transition;
   width: 100%;
   padding: 2px;
@@ -48,11 +48,11 @@
 }
 
 .redBackground {
-  background-color: colors.$dangerColor14;
+  background-color: colors.$red-50;
 }
 
 .greenBackground {
-  background-color: colors.$successColor14;
+  background-color: colors.$green-50;
 }
 
 .redBorder {
@@ -60,5 +60,5 @@
 }
 
 .purpleBackground {
-  background-color: colors.$primaryColor10;
+  background-color: colors.$blue-transparent;
 }

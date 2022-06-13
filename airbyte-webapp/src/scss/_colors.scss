@@ -9,6 +9,7 @@ $blue-700: #3622e1;
 $blue-800: #2e0ad7;
 $blue-900: #2800bd;
 $blue: $blue-400;
+$blue-transparent: rgba($blue, 0.1);
 
 $dark-blue-50: #e6e7ef;
 $dark-blue-100: #c0c3d9;
@@ -29,6 +30,10 @@ $grey-200: #d9d9e0;
 $grey-300: #afafc1;
 $grey-400: #8b8ba0;
 $grey-500: #717189;
+$grey-600: #595971;
+$grey-700: #494961;
+$grey-800: #35354A;
+$grey-900: #252536;
 $grey: $grey-300;
 
 $orange-50: #fae9e8;
@@ -45,7 +50,7 @@ $orange: $orange-400;
 
 $green-50: #dcf6f8;
 $green-100: #a7e9ec;
-$green-200: #a7e9ec;
+$green-200: #67dae1;
 $green-300: #00cbd6;
 $green-400: #00c0cd;
 $green-500: #00b5c7;
@@ -88,41 +93,11 @@ $yellow: $yellow-500;
 
 // LEGACY - DEPRECATED
 
-$primaryColor10: rgba(98, 94, 255, 0.1);
 $primaryColor12: rgba(103, 87, 255, 0.12);
-$primaryColor25: rgba(98, 94, 255, 0.25);
-$mediumPrimaryColor: #36348f;
-$mediumPrimaryColor20: rgba(73, 68, 193, 0.2);
-$darkPrimaryColor: #010047;
-$darkPrimaryColor60: rgba(1, 0, 71, 0.6);
-$brightPrimaryColor: #c5c4ff;
-$lightPrimaryColor: #edebff;
 
-$brightColor: #f7f6ff;
-
-$dangerColor14: rgba(255, 94, 123, 0.14);
-$dangerColor25: rgba(255, 94, 123, 0.25);
-$warningColor: #ffbf00;
-$warningBackgroundColor: rgba(255, 191, 0, 0.2);
-$lightDangerColor: #feedee;
-$dangerTransparentColor: rgba(247, 77, 88, 0.1);
-$successColor: #67dae1;
-$successColor14: rgb(103, 218, 225, 0.14);
-$successColor20: rgba(69, 230, 152, 0.2);
 $shadowColor: rgba(0, 0, 0, 0.25);
 $cardShadowColor: rgba(26, 25, 77, 0.12);
 
-$textColor90: rgba(26, 26, 33, 0.9);
-$darkBlue90: rgba(26, 25, 77, 0.9);
-$greyColor70: #555461;
-$greyColor60: #6b6b75;
-$greyColor55: #868696;
-$greyColor40: #b3b3bd;
-$greyColor10: #f0f0f5;
-$greyColor0: #f7f7fa;
-
-$borderTableColor: #d3dce4;
-$lightTableColor: #f5f7f9;
 $lightRedColor: #ff8870;
-$redTransparentColor: rgba(255, 118, 94, 0.1);
+
 $transparentColor: rgba(255, 255, 255, 0);
