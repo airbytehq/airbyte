@@ -9,7 +9,12 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
+from datetime import datetime
+import time
+import logging
+import traceback
 
+LOGGER = logging.getLogger()
 
 # Basic full refresh stream
 class XolaStream(HttpStream, ABC):
@@ -106,8 +111,6 @@ class IncrementalXolaStream(XolaStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        print(self.cursor_field)
-        print(latest_record)
         latest_record_date = latest_record[self.cursor_field]
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
@@ -252,11 +255,12 @@ class Users(IncrementalXolaStream):
                 
                 user_resp = {}
                 
-                if "id" in data.keys(): user_resp["order_id"] = data["id"]
-                if "createdAt" in data.keys(): user_resp["waiver_createdAt"] = data["createdAt"]
-                if "updatedAt" in data.keys(): user_resp["waiver_updatedAt"] = data["updatedAt"]
-                if "createdAt" in data.keys(): user_resp["order_createdAt"] = data["createdAt"]
-                if "updatedAt" in data.keys(): user_resp["order_updatedAt"] = data["updatedAt"]
+                user_resp["order_id"] = data["id"]
+                user_resp["waiver_createdAt"] = data["createdAt"]
+                user_resp["waiver_updatedAt"] = data["updatedAt"]
+                user_resp["order_createdAt"] = data["createdAt"]
+                user_resp["order_updatedAt"] = data["updatedAt"]
+                
                 if "customerName" in data.keys(): user_resp["customerName"] = data["customerName"]
                 if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
                 if "phone" in data.keys(): user_resp["phone"] = data["phone"]
@@ -270,14 +274,27 @@ class Users(IncrementalXolaStream):
                         if "participants" in waiver.keys():   
                             for participant in waiver["participants"]:
                                 resp = {}
+
+                                resp["order_id"] = data["id"]
+                                try:
+                                    if isinstance(waiver["createdAt"], dict):
+                                        resp["waiver_createdAt"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(waiver["createdAt"]["sec"])) + "+00:00"
+                                    else:
+                                        resp["waiver_createdAt"] = waiver["createdAt"]
+                                    
+                                    if isinstance(waiver["updatedAt"], dict):
+                                        resp["waiver_updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(waiver["updatedAt"]["sec"])) + "+00:00"
+                                    else:
+                                        resp["waiver_updatedAt"] = waiver["updatedAt"] 
+                                except Exception as e:
+                                    traceback.print_exc()
+                                    LOGGER.info("Error occurred while parsing waiver createdAt and updatedAt", e)
                                 
-                                if "id" in data.keys(): resp["order_id"] = data["id"]
-                                if "createdAt" in waiver.keys(): resp["waiver_createdAt"] = waiver["createdAt"]
-                                if "updatedAt" in waiver.keys(): resp["waiver_updatedAt"] = waiver["updatedAt"]
-                                if "updatedAt" in waiver.keys(): resp["order_updatedAt"] = data["updatedAt"]
-                                if "createdAt" in waiver.keys(): resp["order_createdAt"] = data["createdAt"]
+                                resp["order_updatedAt"] = data["updatedAt"]
+                                resp["order_createdAt"] = data["createdAt"]
+
                                 if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
-                                resp["customerEmail"] = participant["customerEmail"] if "customerEmail" in participant.keys() and participant["customerEmail"] else waiver["customerEmail"]
+                                if "customerEmail" in participant.keys() and participant["customerEmail"]: resp["customerEmail"] = participant["customerEmail"]
                                 if "phone" in participant.keys(): resp["phone"] = participant["phone"]
                                 if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
                                 
@@ -290,7 +307,7 @@ class Users(IncrementalXolaStream):
                                         modified_response.append(resp)
                                 else:
                                     modified_response.append(resp)
-                                
+                                    
                 if organiserAdded == False:
                     modified_response.append(user_resp)
             except:
