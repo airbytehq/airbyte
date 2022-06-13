@@ -354,12 +354,15 @@ public abstract class JdbcSourceAcceptanceTest {
     final AirbyteCatalog actual = source.discover(config);
 
     final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
-    expected.getStreams().add(CatalogHelpers
+    final List<AirbyteStream> catalogStreams = new ArrayList<>();
+    catalogStreams.addAll(expected.getStreams());
+    catalogStreams.add(CatalogHelpers
         .createAirbyteStream(TABLE_NAME,
             SCHEMA_NAME2,
             Field.of(COL_ID, JsonSchemaType.STRING),
             Field.of(COL_NAME, JsonSchemaType.STRING))
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
+    expected.setStreams(catalogStreams);
     // sort streams by name so that we are comparing lists with the same order.
     final Comparator<AirbyteStream> schemaTableCompare = Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
     expected.getStreams().sort(schemaTableCompare);
@@ -661,9 +664,7 @@ public abstract class JdbcSourceAcceptanceTest {
         .withStreamNamespace(namespace)
         .withCursorField(List.of(COL_ID))
         .withCursor("5");
-    expectedMessages.add(new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(Jsons.object(createState(List.of(state)), AirbyteStateMessage.class)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }
 
@@ -734,9 +735,9 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursor("3"));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
-    expectedMessagesFirstSync.add(createExpectedTestMessage(expectedStateStreams1));
+    expectedMessagesFirstSync.addAll(createExpectedTestMessages(expectedStateStreams1));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
-    expectedMessagesFirstSync.add(createExpectedTestMessage(expectedStateStreams2));
+    expectedMessagesFirstSync.addAll(createExpectedTestMessages(expectedStateStreams2));
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
@@ -803,7 +804,7 @@ public abstract class JdbcSourceAcceptanceTest {
         .withCursor(initialCursorValue);
 
     final List<AirbyteMessage> actualMessages = MoreIterators
-        .toList(source.read(config, configuredCatalog, createState(List.of(dbStreamState))));
+        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
 
     setEmittedAtToNull(actualMessages);
 
@@ -814,7 +815,7 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursorField(List.of(cursorField))
             .withCursor(endCursorValue));
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
-    expectedMessages.add(createExpectedTestMessage(expectedStreams));
+    expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
     assertEquals(actualMessages.size(), expectedMessages.size());
     assertEquals(actualMessages, expectedMessages);
@@ -883,10 +884,30 @@ public abstract class JdbcSourceAcceptanceTest {
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
-  protected AirbyteMessage createExpectedTestMessage(final List<DbStreamState> states) {
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(Jsons.object(createState(states), AirbyteStateMessage.class));
+  protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
+    return supportsPerStream()
+        ? states.stream()
+            .map(s -> new AirbyteMessage().withType(Type.STATE)
+                .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+                    .withStream(new AirbyteStreamState()
+                        .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                        .withStreamState(Jsons.jsonNode(s)))))
+            .collect(
+                Collectors.toList())
+        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+            .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))));
+  }
+
+  protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
+    return supportsPerStream()
+        ? states.stream()
+            .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                    .withStreamState(Jsons.jsonNode(s))))
+            .collect(
+                Collectors.toList())
+        : List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
   }
 
   protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -1007,28 +1028,6 @@ public abstract class JdbcSourceAcceptanceTest {
     } else {
       final DbState dbState = new DbState()
           .withStreams(List.of(new DbStreamState().withStreamName(streamName).withStreamNamespace(streamNamespace)));
-      return Jsons.jsonNode(dbState);
-    }
-  }
-
-  /**
-   * Creates state with the provided stream(s).
-   *
-   * @param streams A list of streams.
-   * @return A {@link JsonNode} representation of the state with the provided stream state.
-   */
-  protected JsonNode createState(final List<DbStreamState> streams) {
-    if (supportsPerStream()) {
-      final List<AirbyteStateMessage> messages = streams.stream()
-          .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
-              .withStream(new AirbyteStreamState()
-                  .withStreamDescriptor(new StreamDescriptor().withName(s.getStreamName()).withNamespace(s.getStreamNamespace()))
-                  .withStreamState(Jsons.jsonNode(s))))
-          .collect(Collectors.toList());
-      return Jsons.jsonNode(messages);
-    } else {
-      final DbState dbState = new DbState()
-          .withStreams(streams.stream().collect(Collectors.toList()));
       return Jsons.jsonNode(dbState);
     }
   }
