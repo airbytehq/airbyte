@@ -26,7 +26,6 @@ import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -435,9 +434,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withStreamNamespace(namespace)
         .withCursorField(ImmutableList.of(COL_ID))
         .withCursor("5");
-    expectedMessages.add(new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(Jsons.object(createState(List.of(state)), AirbyteStateMessage.class)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }
 
