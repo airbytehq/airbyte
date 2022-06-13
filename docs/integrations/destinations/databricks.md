@@ -1,8 +1,8 @@
-# Databricks Delta Lake
+# Databricks Lakehouse
 
 ## Overview
 
-This destination syncs data to Databricks Delta Lake. Each stream is written to its own [delta-table](https://delta.io/).
+This destination syncs data to Delta Lake on Databricks Lakehouse. Each stream is written to its own [delta-table](https://delta.io/).
 
 This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connect third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
