@@ -135,8 +135,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: resources are closed in the opposite order in which they are declared. thus source will be
       // closed first (which is what we want).
       try (destination; source) {
-        destination.start(destinationConfig, jobRoot);
-        source.start(sourceConfig, jobRoot);
+        final var sourceStart = CompletableFuture.runAsync(() -> {
+          try {
+            destination.start(destinationConfig, jobRoot);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+        final var dstStart = CompletableFuture.runAsync(() -> {
+          try {
+            source.start(sourceConfig, jobRoot);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
+        CompletableFuture.allOf(sourceStart, dstStart).get();
 
         // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
         // thrown
