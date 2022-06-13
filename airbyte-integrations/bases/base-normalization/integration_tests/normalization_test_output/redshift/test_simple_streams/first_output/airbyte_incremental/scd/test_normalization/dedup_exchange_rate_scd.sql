@@ -9,7 +9,7 @@
     
   as (
     
--- depends on: ref('dedup_exchange_rate_stg')
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (

@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."dedup_exchange_rate_scd"
   as (
     
--- depends on: ref('dedup_exchange_rate_stg')
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (

@@ -9,7 +9,7 @@
     
   as (
     
--- depends on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
+-- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
 with
 
 input_data as (

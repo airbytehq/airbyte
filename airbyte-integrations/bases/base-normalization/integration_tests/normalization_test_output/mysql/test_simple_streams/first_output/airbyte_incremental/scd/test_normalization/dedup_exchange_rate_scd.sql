@@ -4,7 +4,7 @@
     test_normalization.`dedup_exchange_rate_scd__dbt_tmp`
   as (
     
--- depends on: ref('dedup_exchange_rate_stg')
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (

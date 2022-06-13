@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."1_prefix_startwith_number_scd"
   as (
     
--- depends on: ref('1_prefix_startwith_number_stg')
+-- depends_on: ref('1_prefix_startwith_number_stg')
 with
 
 input_data as (

@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."renamed_dedup_cdc_excluded_scd"
   as (
     
--- depends on: ref('renamed_dedup_cdc_excluded_stg')
+-- depends_on: ref('renamed_dedup_cdc_excluded_stg')
 with
 
 input_data as (

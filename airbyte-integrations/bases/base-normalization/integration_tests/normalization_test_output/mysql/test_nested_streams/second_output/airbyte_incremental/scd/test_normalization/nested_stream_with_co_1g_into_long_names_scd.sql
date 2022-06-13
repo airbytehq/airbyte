@@ -4,7 +4,7 @@
     test_normalization.`nested_stream_with_co_1g_into_long_names_scd__dbt_tmp`
   as (
     
--- depends on: ref('nested_stream_with_co_1g_into_long_names_stg')
+-- depends_on: ref('nested_stream_with_co_1g_into_long_names_stg')
 with
 
 input_data as (

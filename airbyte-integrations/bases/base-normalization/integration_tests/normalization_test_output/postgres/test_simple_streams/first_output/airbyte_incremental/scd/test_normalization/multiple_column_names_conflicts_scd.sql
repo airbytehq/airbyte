@@ -4,7 +4,7 @@
   create  table "postgres".test_normalization."multiple_column_names_conflicts_scd"
   as (
     
--- depends on: ref('multiple_column_names_conflicts_stg')
+-- depends_on: ref('multiple_column_names_conflicts_stg')
 with
 
 input_data as (

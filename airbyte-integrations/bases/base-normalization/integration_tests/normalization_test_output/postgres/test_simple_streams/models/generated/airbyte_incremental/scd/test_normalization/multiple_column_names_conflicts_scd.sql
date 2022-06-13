@@ -19,17 +19,23 @@
                     if final_table_relation is not none and '_airbyte_unique_key' in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
                     %}
                     -- Delete records which are no longer active:
-                    -- The first subquery finds the most recent increment to the SCD table
-                    -- The second subquery finds, within that increment, the records which are still active
-                    -- We want to delete rows which are in that increment, but are not active
+                    -- This query is equivalent, but the left join version is more performant:
+                    -- delete from final_table where unique_key in (
+                    --     select unique_key from scd_table where 1 = 1 <incremental_clause(normalized_at, final_table)>
+                    -- ) and unique_key not in (
+                    --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
+                    -- )
                     delete from {{ final_table_relation }} where {{ final_table_relation }}._airbyte_unique_key in (
-                        select _airbyte_unique_key
+                        select distinct _airbyte_unique_key
                         from {{ this }}
-                        where 1 = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('multiple_column_names_conflicts')) }}
-                    ) and {{ final_table_relation }}._airbyte_unique_key not in (
-                        select _airbyte_unique_key
-                        from {{ this }}
-                        where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('multiple_column_names_conflicts')) }}
+                        left join (
+                            select _airbyte_unique_key as active_unique_key
+                            from {{ this }}
+                            where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('multiple_column_names_conflicts')) }}
+                        ) active_recent_scd_rows on _airbyte_unique_key = active_unique_key
+                        where 1=1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('multiple_column_names_conflicts')) }}
+                        group by _airbyte_unique_key
+                        having count(active_unique_key) = 0
                     )
                     {% else %}
                     -- We have to have a non-empty query, so just do a noop delete
@@ -38,7 +44,7 @@
                     ","delete from _airbyte_test_normalization.multiple_column_names_conflicts_stg where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.multiple_column_names_conflicts_stg)"],
     tags = [ "top-level" ]
 ) }}
--- depends on: ref('multiple_column_names_conflicts_stg')
+-- depends_on: ref('multiple_column_names_conflicts_stg')
 with
 {% if is_incremental() %}
 new_data as (

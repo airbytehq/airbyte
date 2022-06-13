@@ -3,7 +3,7 @@
       create or replace  table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
       (select * from(
             
--- depends on: ref('DEDUP_EXCHANGE_RATE_STG')
+-- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
 with
 
 input_data as (

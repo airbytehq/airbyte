@@ -18,17 +18,23 @@
                     if final_table_relation is not none and quote('_AIRBYTE_UNIQUE_KEY') in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
                     %}
                     -- Delete records which are no longer active:
-                    -- The first subquery finds the most recent increment to the SCD table
-                    -- The second subquery finds, within that increment, the records which are still active
-                    -- We want to delete rows which are in that increment, but are not active
+                    -- This query is equivalent, but the left join version is more performant:
+                    -- delete from final_table where unique_key in (
+                    --     select unique_key from scd_table where 1 = 1 <incremental_clause(normalized_at, final_table)>
+                    -- ) and unique_key not in (
+                    --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
+                    -- )
                     delete from {{ final_table_relation }} where {{ final_table_relation }}.{{ quote('_AIRBYTE_UNIQUE_KEY') }} in (
-                        select {{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                        select distinct {{ quote('_AIRBYTE_UNIQUE_KEY') }}
                         from {{ this }}
-                        where 1 = 1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
-                    ) and {{ final_table_relation }}.{{ quote('_AIRBYTE_UNIQUE_KEY') }} not in (
-                        select {{ quote('_AIRBYTE_UNIQUE_KEY') }}
-                        from {{ this }}
-                        where {{ quote('_AIRBYTE_ACTIVE_ROW') }} = 1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
+                        left join (
+                            select {{ quote('_AIRBYTE_UNIQUE_KEY') }} as active_unique_key
+                            from {{ this }}
+                            where {{ quote('_AIRBYTE_ACTIVE_ROW') }} = 1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
+                        ) active_recent_scd_rows on {{ quote('_AIRBYTE_UNIQUE_KEY') }} = active_unique_key
+                        where 1=1 {{ incremental_clause(quote('_AIRBYTE_NORMALIZED_AT'), this.schema + '.' + quote('dedup_exchange_rate')) }}
+                        group by {{ quote('_AIRBYTE_UNIQUE_KEY') }}
+                        having count(active_unique_key) = 0
                     )
                     {% else %}
                     -- We have to have a non-empty query, so just do a noop delete
@@ -37,7 +43,7 @@
                     ","drop view test_normalization.dedup_exchange_rate_stg"],
     tags = [ "top-level" ]
 ) }}
--- depends on: ref('dedup_exchange_rate_stg')
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 {% if is_incremental() %}
 new_data as (

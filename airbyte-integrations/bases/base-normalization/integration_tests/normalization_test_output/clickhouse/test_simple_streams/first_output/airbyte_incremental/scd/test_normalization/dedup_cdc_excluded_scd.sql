@@ -12,7 +12,7 @@
     
   as (
     
--- depends on: ref('dedup_cdc_excluded_stg')
+-- depends_on: ref('dedup_cdc_excluded_stg')
 with
 
 input_data as (
