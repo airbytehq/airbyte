@@ -23,14 +23,11 @@ class MultipleTokenAuthenticator(AuthBase):
         self._tokens_iter = cycle(self._tokens)
 
     def __call__(self, request):
-        print("__call__")
         request.headers.update(self.get_auth_header())
         return request
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        header = {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
-        print(header)
-        return header
+        return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
 
 
 class TokenAuthenticator(MultipleTokenAuthenticator):
