@@ -15,10 +15,12 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
@@ -58,6 +60,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final JobTracker jobTracker;
   private final ConfigRepository configRepository;
   private final JobCreator jobCreator;
+  private final StreamResetPersistence streamResetPersistence;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -83,8 +86,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           standardSyncOperations.add(standardSyncOperation);
         }
 
+        final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
         final Optional<Long> jobIdOptional =
-            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
+            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
 
         final long jobId = jobIdOptional.isEmpty()
             ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
