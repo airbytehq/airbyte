@@ -72,7 +72,6 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
-    print(f"slice_values: {stream_slicer._slice_values}")
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
 
 
