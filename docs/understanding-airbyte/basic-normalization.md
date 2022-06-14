@@ -103,7 +103,8 @@ In Airbyte, the current normalization option is implemented using a dbt Transfor
 * [Redshift](../integrations/destinations/redshift.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 
-Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
+Basic Normalization can be configured when you're creating the connection between your Connection Setup and after in the Transformation Tab.
+Select the option: **Normalized tabular data**.
 
 ## Rules
 
