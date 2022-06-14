@@ -31,4 +31,5 @@ class ProductStreamSlicer(StreamSlicer):
         self._stream_slicers = stream_slicers
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        return (ChainMap(*a) for a in itertools.product(*(s.stream_slices(sync_mode, stream_state) for s in self._stream_slicers)))
+        sub_slices = (s.stream_slices(sync_mode, stream_state) for s in self._stream_slicers)
+        return (ChainMap(*a) for a in itertools.product(*sub_slices))
