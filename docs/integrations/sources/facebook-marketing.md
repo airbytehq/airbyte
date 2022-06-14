@@ -51,7 +51,7 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
     7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
     8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     9. Click **Done**.
-12. For *Page Size of Requests*, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
+12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
 
@@ -69,7 +69,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
     * Ads_management
 
     See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
-5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud](#for-airbyte-cloud)
+5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud](#for-airbyte-cloud).
 
 ## Supported sync modes
 
@@ -120,7 +120,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.52  | 2022-06-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix the `not syncing any data` issue                                                                                                                                                                                                                                                              |
+| 0.2.52  | 2022-06-14 | [13749](https://github.com/airbytehq/airbyte/pull/13749) | Fix the `not syncing any data` issue                                                                                                                                                                                                                                                              |
 | 0.2.51  | 2022-05-30 | [13317](https://github.com/airbytehq/airbyte/pull/13317) | Change tax_id to string (Canadian has letter in tax_id)                                                                                                                                                                                                                                           |
 | 0.2.50  | 2022-04-27 | [12402](https://github.com/airbytehq/airbyte/pull/12402) | Add lookback window to insights streams                                                                                                                                                                                                                                                           |
 | 0.2.49  | 2022-05-20 | [13047](https://github.com/airbytehq/airbyte/pull/13047) | Fix duplicating records during insights lookback period                                                                                                                                                                                                                                           |
