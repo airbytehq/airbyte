@@ -510,7 +510,12 @@ public interface Configs {
   /**
    * Get the duration in second between 2 activity attempts
    */
-  int getDelayBetweenActivityAttempts();
+  int getInitialDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get the maximum interval between retries of an activity
+   */
+  int getMaxDelayBetweenActivityAttemptsSeconds();
 
   /**
    * Get number of attempts of the non long running activities
