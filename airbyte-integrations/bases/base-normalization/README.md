@@ -218,6 +218,8 @@ transmitted by a source. In this integration test, the files is read and "cat" t
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
 
+Note that `test_simple_streams` has additional message files, each representing a separate sync (`messages_incremental.txt` and `messages_schema_change.txt`).
+
 ##### data_input/replace_identifiers.json:
 The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
 and `dbt_data_tests` files to handle cross database compatibility.
@@ -244,7 +246,9 @@ So, for each target destination, the steps run by the tests are:
 8. Optional checks (nothing for the moment)
 
 Note that the tests are using the normalization code from the python files directly, so it is not necessary to rebuild the docker images
-in between when iterating on the code base. However, dbt cli and destination connectors are invoked thanks to the dev docker images.
+in between when iterating on the code base. However, dbt cli and destination connectors are invoked via the dev docker images. This means that if your
+`airbyte/normalization:dev` image doesn't have a working dbt installation, tests _will_ fail. Similarly, if your `destination-xyz:dev` image doesn't
+work, then the base-normalization integration tests will fail.
 
 #### Integration Test Checks:
 
