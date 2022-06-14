@@ -1,6 +1,6 @@
 # Connector Development Kit Concepts
 
-This concepts section serves as a general introduction to the Python CDK. Readers will certainly benefit from a deeper understanding of the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding, but we do a quick overview of it in our basic concepts guide below.
+This concepts section serves as a general introduction to the Python CDK. Readers will certainly benefit from a deeper understanding of the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding, but we do a quick overview of it in our basic concepts guide below.
 
 ### Basic Concepts
 If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](basic-concepts.md).
