@@ -14,6 +14,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+from .graphql import get_query
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -719,26 +720,52 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, AB
         )
 
 
-class PullRequestStats(PullRequestSubstream):
+class PullRequestStats(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
+    http_method = "POST"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+        return "graphql"
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(record=response.json(), stream_slice=stream_slice)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
+        for pull_request in nodes:
+            record = {
+                "number": pull_request["number"],
+                "updated_at": pull_request["updatedAt"],
+                "repository": pull_request["repository"]["name"],
+            }
+            yield record
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        return {key: value for key, value in record.items() if key in self.record_keys}
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            return pageInfo["endCursor"]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        query = get_query(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        return {"query": query[6:]}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        base_headers = super().request_headers(**kwargs)
+        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
+        return {**base_headers, **headers}
 
 
 class Reviews(PullRequestSubstream):
