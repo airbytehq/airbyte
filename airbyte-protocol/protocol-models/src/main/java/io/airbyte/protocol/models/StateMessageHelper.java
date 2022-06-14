@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.vavr.control.Either;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StateMessageHelper {
@@ -17,9 +18,9 @@ public class StateMessageHelper {
    * @param state
    * @return Either a json blob (on the left) or a structure state message.
    */
-  public static Either<JsonNode, List<AirbyteStateMessage>> getTypeState(JsonNode state) {
+  public static Either<JsonNode, List<AirbyteStateMessage>> getTypedState(JsonNode state) {
     if (state == null) {
-      return Either.left(Jsons.emptyObject());
+      return Either.right(new ArrayList<>());
     }
     try {
       return Either.right(Jsons.object(state, new AirbyteStateMessageListTypeReference()));
