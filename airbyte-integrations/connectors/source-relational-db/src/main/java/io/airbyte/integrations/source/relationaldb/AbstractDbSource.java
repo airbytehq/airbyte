@@ -109,7 +109,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    final StateManager stateManager = StateManagerFactory.createStateManager(deserializeState(state, config), catalog, supportsGlobalState(config));
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(deserializeState(state, config), catalog, supportedStateTypeSupplier(config));
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabaseInternal(config);
@@ -535,14 +536,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
-   * Generates a {@link Supplier} that can be used to determine if the global state manager should be
-   * selected for use by this connector.
+   * Generates a {@link Supplier} that can be used to determine which state manager should be selected
+   * for use by this connector.
    *
    * @param config The connector configuration.
    * @return A {@link Supplier}.
    */
-  protected Supplier<Boolean> supportsGlobalState(final JsonNode config) {
-    return () -> false;
+  protected Supplier<AirbyteStateType> supportedStateTypeSupplier(final JsonNode config) {
+    return () -> AirbyteStateType.LEGACY;
   }
 
 }
