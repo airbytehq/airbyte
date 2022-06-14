@@ -29,7 +29,8 @@ public interface StateManager<T, S> {
    * Retrieves the {@link CdcStateManager} associated with the state manager.
    *
    * @return The {@link CdcStateManager}
-   * @throws UnsupportedOperationException if the state manager does not support tracking change data capture (CDC) state.
+   * @throws UnsupportedOperationException if the state manager does not support tracking change data
+   *         capture (CDC) state.
    */
   CdcStateManager getCdcStateManager();
 

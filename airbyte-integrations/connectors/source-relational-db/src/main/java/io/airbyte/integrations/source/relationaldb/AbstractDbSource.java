@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    final StateManager stateManager = StateManagerFactory.createStateManager(deserializeState(state, config), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(deserializeState(state, config), catalog, supportsGlobalState(config));
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabaseInternal(config);
@@ -516,7 +517,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * Deserializes the state represented as JSON into an object representation.
    *
    * @param stateJson The state as JSON.
-   * @param config The plugin configuration.
+   * @param config The connector configuration.
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson, final JsonNode config) {
@@ -531,6 +532,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(stateJson));
       }
     }
+  }
+
+  /**
+   * Generates a {@link Supplier} that can be used to determine if the global state manager should be
+   * selected for use by this connector.
+   *
+   * @param config The connector configuration.
+   * @return A {@link Supplier}.
+   */
+  protected Supplier<Boolean> supportsGlobalState(final JsonNode config) {
+    return () -> false;
   }
 
 }

@@ -12,7 +12,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
@@ -78,4 +77,5 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
       return new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
     }
   }
+
 }

@@ -4,12 +4,9 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -21,6 +18,7 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,17 +33,20 @@ public class StateManagerFactoryTest {
   private static final String PUBLICATION = "publication";
   private static final String REPLICATION_METHOD = "replication_method";
 
+  private static final Supplier<Boolean> GLOBAL_STATE = () -> true;
+
+  private static final Supplier<Boolean> NO_GLOBAL_STATE = () -> false;
+
   @Test
   void testNullOrEmptyState() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final JsonNode config = mock(JsonNode.class);
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      StateManagerFactory.createStateManager(null, catalog, config);
+      StateManagerFactory.createStateManager(null, catalog, NO_GLOBAL_STATE);
     });
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      StateManagerFactory.createStateManager(List.of(), catalog, config);
+      StateManagerFactory.createStateManager(List.of(), catalog, NO_GLOBAL_STATE);
     });
   }
 
@@ -53,10 +54,9 @@ public class StateManagerFactoryTest {
   void testLegacyStateManagerCreationFromAirbyteStateMessage() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final AirbyteStateMessage airbyteStateMessage = mock(AirbyteStateMessage.class);
-    final JsonNode config = mock(JsonNode.class);
     when(airbyteStateMessage.getData()).thenReturn(Jsons.jsonNode(new DbState()));
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, NO_GLOBAL_STATE);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(LegacyStateManager.class, stateManager.getClass());
@@ -70,16 +70,8 @@ public class StateManagerFactoryTest {
             .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace(NAMESPACE).withName(NAME))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
-    final JsonNode config = mock(JsonNode.class);
-    final JsonNode replicationConfig = mock(JsonNode.class);
 
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
-
-    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(true);
-    when(config.get(REPLICATION_METHOD)).thenReturn(replicationConfig);
-
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, GLOBAL_STATE);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(GlobalStateManager.class, stateManager.getClass());
@@ -94,16 +86,8 @@ public class StateManagerFactoryTest {
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final AirbyteStateMessage airbyteStateMessage =
         new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState).withData(Jsons.jsonNode(new DbState()));
-    final JsonNode config = mock(JsonNode.class);
-    final JsonNode replicationConfig = mock(JsonNode.class);
 
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
-
-    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(true);
-    when(config.get(REPLICATION_METHOD)).thenReturn(replicationConfig);
-
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, GLOBAL_STATE);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(GlobalStateManager.class, stateManager.getClass());
@@ -115,9 +99,8 @@ public class StateManagerFactoryTest {
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
             NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())));
-    final JsonNode config = mock(JsonNode.class);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, NO_GLOBAL_STATE);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(StreamStateManager.class, stateManager.getClass());
@@ -130,41 +113,11 @@ public class StateManagerFactoryTest {
         .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
             NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())))
         .withData(Jsons.jsonNode(new DbState()));
-    final JsonNode config = mock(JsonNode.class);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, config);
+    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, NO_GLOBAL_STATE);
 
     Assertions.assertNotNull(stateManager);
     Assertions.assertEquals(StreamStateManager.class, stateManager.getClass());
-  }
-
-  @Test
-  void testCdcDetectionLogic() {
-    final JsonNode config = mock(JsonNode.class);
-    final JsonNode replicationConfig = mock(JsonNode.class);
-
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
-    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(true);
-    when(config.get(REPLICATION_METHOD)).thenReturn(replicationConfig);
-    assertTrue(StateManagerFactory.isCdc(config));
-
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(false);
-    assertFalse(StateManagerFactory.isCdc(config));
-
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(false);
-    assertFalse(StateManagerFactory.isCdc(config));
-
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(true);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(true);
-    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(false);
-    assertFalse(StateManagerFactory.isCdc(config));
-
-    when(replicationConfig.hasNonNull(REPLICATION_SLOT)).thenReturn(false);
-    when(replicationConfig.hasNonNull(PUBLICATION)).thenReturn(false);
-    when(config.hasNonNull(REPLICATION_METHOD)).thenReturn(false);
-    assertFalse(StateManagerFactory.isCdc(config));
   }
 
 }
