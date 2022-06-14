@@ -413,7 +413,7 @@ public abstract class JdbcSourceAcceptanceTest {
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
-    final List<AirbyteMessage> expectedMessages = getTestMessages();
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
