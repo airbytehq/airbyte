@@ -173,10 +173,7 @@ public class StateManagerFactoryTest {
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
 
-    final StateManager stateManager = StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, STREAM_STATE_TYPE);
-
-    Assertions.assertNotNull(stateManager);
-    Assertions.assertEquals(StreamStateManager.class, stateManager.getClass());
+    Assertions.assertThrows(IllegalArgumentException.class, () ->  StateManagerFactory.createStateManager(List.of(airbyteStateMessage), catalog, STREAM_STATE_TYPE));
   }
 
   @Test
