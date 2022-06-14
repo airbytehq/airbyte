@@ -249,7 +249,8 @@ module.exports = {
       items: [
         'understanding-airbyte/beginners-guide-to-catalog',
         'understanding-airbyte/catalog',
-        'understanding-airbyte/airbyte-specification',
+        'understanding-airbyte/airbyte-protocol',
+        'understanding-airbyte/airbyte-protocol-docker',
         'understanding-airbyte/basic-normalization',
         {
           type: 'category',
