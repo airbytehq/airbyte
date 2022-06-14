@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import itertools
 from collections import ChainMap
 from typing import Any, Iterable, List, Mapping
