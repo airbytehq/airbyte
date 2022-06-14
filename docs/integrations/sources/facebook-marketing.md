@@ -105,7 +105,7 @@ You can segment the AdInsights table into parts based on the following informati
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
 ## Facebook Marketing Attribution Reporting
-Please be informed that the connector uses the `lookback_window` parameter to perform the repetitive read of the last `<lookback_window>` days in the Incremental sync mode. This means some data would be synced twice (or even more) despite the cursor value being up-to-date. You can change this date window by modifying the according parameter when setting up the source. The fewer the value - the fewer duplicates you will have. The greater the value - the more precise values you get. More details on what the attribution window is and what purposes it serves you can find at the [Facebook Article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+Please be informed that the connector uses the `lookback_window` parameter to perform the repetitive read of the last `<lookback_window>` days in the Incremental sync mode. This means some data will be synced twice (or possibly more often) despite the cursor value being up-to-date. You can change this date window by modifying the `lookback_window` parameter when setting up the source. The smaller the value - the fewer duplicates you will have. The greater the value - the more precise results you will get. More details on what the attribution window is and what purpose it serves can be found in this [Facebook Article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
 ## Data type mapping
 
