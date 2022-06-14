@@ -287,7 +287,11 @@ class HttpStream(Stream, ABC):
             response: requests.Response = self._session.send(request, **request_kwargs)
 
         if self.should_retry(response):
-            self.backoff_exception(request, response)
+            custom_backoff_time = self.backoff_time(response)
+            if custom_backoff_time:
+                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
+            else:
+                raise DefaultBackoffException(request=request, response=response)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
@@ -296,13 +300,6 @@ class HttpStream(Stream, ABC):
                 self.logger.error(response.text)
                 raise exc
         return response
-
-    def backoff_exception(self, request, response):
-        custom_backoff_time = self.backoff_time(response)
-        if custom_backoff_time:
-            raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
-        else:
-            raise DefaultBackoffException(request=request, response=response)
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
