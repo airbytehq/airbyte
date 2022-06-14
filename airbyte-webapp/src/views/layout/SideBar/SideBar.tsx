@@ -14,7 +14,6 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
-import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
@@ -60,10 +59,9 @@ const SideBar: React.FC = () => {
 
   const menuItemStyle = (isActive: boolean) => {
     console.log(isActive);
-    const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
-    return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
+    return classnames(styles.menuItem, { [styles.activated]: isActive });
   };
-  console.log("ok");
+
   return (
     <Bar>
       <div>
@@ -82,8 +80,8 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
-              <ConnectionsIcon />
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
+              <OnboardingIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
@@ -130,7 +128,13 @@ const SideBar: React.FC = () => {
         </li>
 
         <li>
-          <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
+          <NavLink
+            className={({ isActive }) => menuItemStyle(isActive)}
+            to={RoutePaths.Settings}
+            // isActive={(_, location) =>
+            //   location.pathname.startsWith(RoutePaths.Settings)
+            // }
+          >
             <React.Suspense fallback={null}>
               <NotificationIndicator />
             </React.Suspense>
