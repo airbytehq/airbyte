@@ -37,6 +37,11 @@ class ConstantBackoff:
         return self._backoff_in_seconds
 
 
+class ExponentialBackoff:
+    def backoff(self, response):
+        return None
+
+
 class DefaultRetrier(Retrier):
     def __init__(
         self,
