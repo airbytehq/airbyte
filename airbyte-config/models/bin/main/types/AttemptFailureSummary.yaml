@@ -1,0 +1,18 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/AttemptFailureSummary.yaml
+title: AttemptFailureSummary
+description: Attempt-level summarization of failures that occurred during a sync workflow.
+type: object
+additionalProperties: false
+required:
+  - failures
+properties:
+  failures:
+    description: Ordered list of failures that occurred during the attempt.
+    type: array
+    items:
+      "$ref": FailureReason.yaml
+  partialSuccess:
+    description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed records is unknown.
+    type: boolean
