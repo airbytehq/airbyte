@@ -436,7 +436,7 @@ class Events(SemiIncrementalMixin, GithubStream):
 
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+    API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
     """
 
     use_cache = True
@@ -1059,7 +1059,7 @@ class ProjectCards(GithubStream):
 class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
+    API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1077,7 +1077,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
