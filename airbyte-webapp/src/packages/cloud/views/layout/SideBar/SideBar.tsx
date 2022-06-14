@@ -25,6 +25,7 @@ import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
+import styles from "./Sidebar.module.scss";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -49,29 +50,6 @@ const Menu = styled.ul`
   padding: 0;
   margin: 20px 0 0;
   width: 100%;
-`;
-
-const MenuItem = styled(NavLink)`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  border-radius: 4px;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-  position: relative;
-
-  &.active {
-    color: ${({ theme }) => theme.whiteColor};
-    background: ${({ theme }) => theme.primaryColor};
-  }
 `;
 
 const Text = styled.div`
@@ -114,58 +92,58 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={RoutePaths.Onboarding}>
+              <NavLink className={styles.menuItem} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
                 </Text>
-              </MenuItem>
+              </NavLink>
             </li>
           ) : null}
           <li>
-            <MenuItem to={RoutePaths.Connections}>
+            <NavLink className={styles.menuItem} to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Source}>
+            <NavLink className={styles.menuItem} to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Destination}>
+            <NavLink className={styles.menuItem} to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
         </Menu>
       </div>
       <Menu>
         <li>
-          <MenuItem to={CloudRoutes.Credits}>
+          <NavLink className={styles.menuItem} to={CloudRoutes.Credits}>
             <CreditsIcon icon={faStar} />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </Text>
-          </MenuItem>
+          </NavLink>
         </li>
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "status" }, { value: "recipes" }]}>
             {({ onOpen }) => (
-              <MenuItem onClick={onOpen} as="div">
+              <div className={styles.menuItem} onClick={onOpen}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />
                 </Text>
-              </MenuItem>
+              </div>
             )}
           </SidebarPopout>
         </li>
@@ -187,17 +165,17 @@ const SideBar: React.FC = () => {
             ]}
           >
             {({ onOpen }) => (
-              <MenuItem onClick={onOpen} as="div">
+              <div className={styles.menuItem} onClick={onOpen}>
                 <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
                 <Text>
                   <FormattedMessage id="sidebar.support" />
                 </Text>
-              </MenuItem>
+              </div>
             )}
           </SidebarPopout>
         </li>
         <li>
-          <MenuItem to={RoutePaths.Settings}>
+          <NavLink className={styles.menuItem} to={RoutePaths.Settings}>
             <WithFeature featureId={FeatureItem.AllowUpdateConnectors}>
               <React.Suspense fallback={null}>
                 <NotificationIndicator />
@@ -207,7 +185,7 @@ const SideBar: React.FC = () => {
             <Text>
               <FormattedMessage id="sidebar.settings" />
             </Text>
-          </MenuItem>
+          </NavLink>
         </li>
       </Menu>
     </Bar>
