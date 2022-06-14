@@ -7,7 +7,6 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
-from multiprocessing import Pool
 from requests_oauthlib import OAuth1
 from datetime import datetime, timedelta, date
 
@@ -123,10 +122,8 @@ class NetsuiteStream(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         records = response.json().get("items")
         request_kwargs = self.request_kwargs(stream_state, stream_slice, next_page_token)
-        with Pool(self.concurrency_limit) as pool:
-            data = pool.starmap(self.fetch_record, [(r, request_kwargs) for r in records])
-        for record in data:
-            yield record
+        for record in records:
+            yield self.fetch_record(record, request_kwargs)
 
 
 # Basic incremental stream
