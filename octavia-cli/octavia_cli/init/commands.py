@@ -15,8 +15,6 @@ DIRECTORIES_TO_CREATE = {"connections", "destinations", "sources"}
 DEFAULT_API_HEADERS_FILE_CONTENT = pkg_resources.read_text(example_files, "example_api_http_headers.yaml")
 API_HTTP_HEADERS_TARGET_PATH = Path("api_http_headers.yaml")
 
-AIRBYTE_HEADERS_FILE_PATH_ENV_VARIABLE_NAME = "AIRBYTE_HEADERS_FILE_PATH"
-
 
 def create_api_headers_configuration_file() -> bool:
     if not API_HTTP_HEADERS_TARGET_PATH.is_file():
@@ -50,8 +48,8 @@ def init(ctx: click.Context):
         message = f"❓ - Already existing directories: {', '.join(not_created_directories) }."
         click.echo(click.style(message, fg="yellow", bold=True))
 
-    created_api_headers_file = create_api_headers_configuration_file()
-    if created_api_headers_file:
+    created_api_http_headers_file = create_api_headers_configuration_file()
+    if created_api_http_headers_file:
         message = f"✅ - Created API HTTP headers file in {API_HTTP_HEADERS_TARGET_PATH}"
         click.echo(click.style(message, fg="green", bold=True))
     else:
