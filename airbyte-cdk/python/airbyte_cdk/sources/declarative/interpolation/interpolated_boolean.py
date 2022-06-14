@@ -5,6 +5,7 @@
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 false_values = {"False", "false", "{}", "[]", "()", "", "0", "0.0", "False", "false"}
+false_objects = [[], {}, (), False, None]
 
 
 class InterpolatedBoolean:
@@ -18,7 +19,7 @@ class InterpolatedBoolean:
             return self._condition
         else:
             evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
-            if any(evaluated == value for value in [[], {}, False, None]):
+            if any(evaluated == value for value in false_objects):
                 return False
             if evaluated in false_values:
                 return False
