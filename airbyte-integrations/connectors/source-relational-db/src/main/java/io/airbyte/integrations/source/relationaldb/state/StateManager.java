@@ -11,6 +11,8 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Defines a manager that manages connector state. Connector state is used to keep track of the data
@@ -20,6 +22,8 @@ import java.util.Optional;
  * @param <S> The type of the stream(s) stored within the state maintained by the manager.
  */
 public interface StateManager<T, S> {
+
+  Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
 
   /**
    * Retrieves the {@link CdcStateManager} associated with the state manager.
@@ -136,6 +140,7 @@ public interface StateManager<T, S> {
   default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
+    LOGGER.debug("Updating cursor value for {} to {}...", pair, cursor);
     cursorInfo.get().setCursor(cursor);
     return emit(pair);
   }

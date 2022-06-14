@@ -44,11 +44,11 @@ public class StateManagerFactory {
       if (isCdc(config) || airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
         LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
         return new GlobalStateManager(airbyteStateMessage, catalog);
-      } else if (airbyteStateMessage.getData() != null) {
-        LOGGER.info("Legacy adapter state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+      } else if (airbyteStateMessage.getData() != null && airbyteStateMessage.getStream() == null) {
+        LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
         return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
       } else {
-        LOGGER.info("Per stream state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+        LOGGER.info("Stream state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
         return new StreamStateManager(state, catalog);
       }
     } else {

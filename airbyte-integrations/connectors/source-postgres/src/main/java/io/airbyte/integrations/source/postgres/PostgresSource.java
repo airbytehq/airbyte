@@ -27,10 +27,12 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.AirbyteStateMessageListTypeReference;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -411,12 +413,18 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
   // state.
   @Override
-  protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson) {
+  protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson, final JsonNode config) {
     if (stateJson == null) {
-      // TODO What should the default/empty state be -- per stream or global?
-      return List.of(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState()));
+      if (isCdc(config)) {
+        final AirbyteGlobalState globalState = new AirbyteGlobalState()
+            .withSharedState(Jsons.jsonNode(new CdcState()))
+            .withStreamStates(List.of());
+        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      } else {
+        return List.of(new AirbyteStateMessage()
+            .withStateType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()));
+      }
     } else {
       try {
         return Jsons.object(stateJson, new AirbyteStateMessageListTypeReference());

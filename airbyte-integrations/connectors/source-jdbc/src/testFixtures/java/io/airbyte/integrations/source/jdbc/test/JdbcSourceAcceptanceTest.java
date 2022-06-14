@@ -392,8 +392,7 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessages);
 
     final List<AirbyteMessage> expectedMessages = getAirbyteMessagesReadOneColumn();
-    assertEquals(actualMessages.size(), expectedMessages.size());
-    assertEquals(actualMessages, expectedMessages);
+    assertEquals(expectedMessages.size(), actualMessages.size());
     assertEquals(expectedMessages, actualMessages);
   }
 
@@ -414,7 +413,7 @@ public abstract class JdbcSourceAcceptanceTest {
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
+    final List<AirbyteMessage> expectedMessages = getTestMessages();
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
@@ -449,8 +448,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    assertEquals(actualMessages.size(), expectedMessages.size());
-    assertEquals(actualMessages, expectedMessages);
+    assertEquals(expectedMessages.size(), actualMessages.size());
     assertEquals(expectedMessages, actualMessages);
   }
 
@@ -483,11 +481,10 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessages);
 
     final List<AirbyteMessage> secondStreamExpectedMessages = getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces);
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
+    final List<AirbyteMessage> expectedMessages = getTestMessages();
     expectedMessages.addAll(secondStreamExpectedMessages);
 
-    assertEquals(actualMessages.size(), expectedMessages.size());
-    assertEquals(actualMessages, expectedMessages);
+    assertEquals(expectedMessages.size(), actualMessages.size());
     assertEquals(expectedMessages, actualMessages);
   }
 
@@ -629,8 +626,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertEquals(actualMessagesSecondSync.size(), expectedMessages.size());
-    assertEquals(actualMessagesSecondSync, expectedMessages);
+    assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
     assertEquals(expectedMessages, actualMessagesSecondSync);
   }
 
@@ -712,6 +708,8 @@ public abstract class JdbcSourceAcceptanceTest {
     // we know the second streams messages are the same as the first minus the updated at column. so we
     // cheat and generate the expected messages off of the first expected messages.
     final List<AirbyteMessage> secondStreamExpectedMessages = getAirbyteMessagesSecondStreamWithNamespace(streamName2);
+
+    // Represents the state after the first stream has been updated
     final List<DbStreamState> expectedStateStreams1 = List.of(
         new DbStreamState()
             .withStreamName(streamName)
@@ -723,11 +721,13 @@ public abstract class JdbcSourceAcceptanceTest {
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID)));
 
-    final List<DbStreamState> expectedStateStreams2 = List.of(new DbStreamState()
-        .withStreamName(streamName)
-        .withStreamNamespace(namespace)
-        .withCursorField(List.of(COL_ID))
-        .withCursor("3"),
+    // Represents the state after both streams have been updated
+    final List<DbStreamState> expectedStateStreams2 = List.of(
+        new DbStreamState()
+            .withStreamName(streamName)
+            .withStreamNamespace(namespace)
+            .withCursorField(List.of(COL_ID))
+            .withCursor("3"),
         new DbStreamState()
             .withStreamName(streamName2)
             .withStreamNamespace(namespace)
@@ -735,14 +735,13 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursor("3"));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
-    expectedMessagesFirstSync.addAll(createExpectedTestMessages(expectedStateStreams1));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
-    expectedMessagesFirstSync.addAll(createExpectedTestMessages(expectedStateStreams2));
+    expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1), expectedStateStreams2));
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
-    assertEquals(actualMessagesFirstSync.size(), expectedMessagesFirstSync.size());
-    assertEquals(actualMessagesFirstSync, expectedMessagesFirstSync);
+    assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
   }
 
@@ -817,8 +816,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
-    assertEquals(actualMessages.size(), expectedMessages.size());
-    assertEquals(actualMessages, expectedMessages);
+    assertEquals(expectedMessages.size(), actualMessages.size());
     assertEquals(expectedMessages, actualMessages);
   }
 
@@ -888,10 +886,12 @@ public abstract class JdbcSourceAcceptanceTest {
     return supportsPerStream()
         ? states.stream()
             .map(s -> new AirbyteMessage().withType(Type.STATE)
-                .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
-                    .withStream(new AirbyteStreamState()
-                        .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                        .withStreamState(Jsons.jsonNode(s)))))
+                .withState(
+                    new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+                        .withStream(new AirbyteStreamState()
+                            .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                            .withStreamState(Jsons.jsonNode(s)))
+                        .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
             .collect(
                 Collectors.toList())
         : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
@@ -1041,9 +1041,25 @@ public abstract class JdbcSourceAcceptanceTest {
    */
   protected JsonNode extractState(final AirbyteMessage airbyteMessage) {
     if (supportsPerStream()) {
-      return Jsons.jsonNode(airbyteMessage.getState());
+      return Jsons.jsonNode(List.of(airbyteMessage.getState()));
     } else {
       return airbyteMessage.getState().getData();
+    }
+  }
+
+  protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState, final List<DbStreamState> legacyStates) {
+    if (supportsPerStream()) {
+      return new AirbyteMessage().withType(Type.STATE)
+          .withState(
+              new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState()
+                      .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
+                          .withName(dbStreamState.getStreamName()))
+                      .withStreamState(Jsons.jsonNode(dbStreamState)))
+                  .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
+    } else {
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
   }
 
