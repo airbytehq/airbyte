@@ -42,7 +42,7 @@ public class S3JsonlFormatConfigTest {
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 6, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
