@@ -1,4 +1,4 @@
-# Destination Databricks Delta Lake
+# Destination Databricks Lakehouse
 
 This is the repository for the Databricks destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/databricks).
