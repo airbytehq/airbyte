@@ -27,6 +27,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   private final AtomicBoolean hasEmittedState;
   private final Stack<StreamDescriptor> streamDescriptors = new Stack<>();
   private boolean isPartialReset;
+  private boolean isStarted = false;
 
   public EmptyAirbyteSource() {
     hasEmittedState = new AtomicBoolean();
@@ -34,6 +35,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
+
+    sourceConfig.getState().getState()
     try {
       if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
         isPartialReset = false;
@@ -50,6 +53,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
       // No op, the new format is not supported
       isPartialReset = false;
     }
+    isStarted = true;
   }
 
   // always finished. it has no data to send.
@@ -65,6 +69,10 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   @Override
   public Optional<AirbyteMessage> attemptRead() {
+    if (!isStarted) {
+      throw new IllegalStateException("The empty source has not been started.");
+    }
+
     if (isPartialReset) {
       if (!streamDescriptors.isEmpty()) {
         StreamDescriptor streamDescriptor = streamDescriptors.pop();
