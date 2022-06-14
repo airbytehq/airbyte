@@ -14,11 +14,13 @@ from airbyte_cdk.sources.declarative.types import Config
 class ListStreamSlicer(StreamSlicer):
     """
     Stream slicer that iterates over the values of a list
+    If slice_values is a string, then
     """
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
         if isinstance(slice_values, str):
             slice_values = ast.literal_eval(slice_values)
+        assert isinstance(slice_values, list)
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
         self._slice_values = slice_values
         self._config = config
