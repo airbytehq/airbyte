@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StreamDescriptor;
@@ -13,15 +14,20 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.StateMessageHelper;
+import io.vavr.control.Either;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This source will never emit any messages. It can be used in cases where that is helpful (hint:
  * reset connection jobs).
  */
+@Slf4j
 public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
@@ -36,7 +42,6 @@ public class EmptyAirbyteSource implements AirbyteSource {
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
 
-    sourceConfig.getState().getState()
     try {
       if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
         isPartialReset = false;
@@ -46,6 +51,15 @@ public class EmptyAirbyteSource implements AirbyteSource {
         if (streamDescriptors.isEmpty()) {
           isPartialReset = false;
         } else {
+          Either<JsonNode, List<AirbyteStateMessage>> eitherState = StateMessageHelper.getTypeState(sourceConfig.getState().getState());
+          if (eitherState.isLeft()) {
+            log.error("The state is not compatible with a partial reset that  have been requested");
+            throw new IllegalStateException("Legacy state for a partial reset");
+          }
+
+          if (eitherState.isRight()) {
+
+          }
           isPartialReset = true;
         }
       }
