@@ -11,6 +11,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -34,12 +35,16 @@ public class EmptyAirbyteSource implements AirbyteSource {
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     try {
-      ResetSourceConfiguration sourceConfiguration = Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
-      streamDescriptors.addAll(sourceConfiguration.getStreamsToReset());
-      if (streamDescriptors.isEmpty()) {
+      if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
         isPartialReset = false;
       } else {
-        isPartialReset = true;
+        ResetSourceConfiguration sourceConfiguration = Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
+        streamDescriptors.addAll(sourceConfiguration.getStreamsToReset());
+        if (streamDescriptors.isEmpty()) {
+          isPartialReset = false;
+        } else {
+          isPartialReset = true;
+        }
       }
     } catch (IllegalArgumentException e) {
       // No op, the new format is not supported
@@ -79,7 +84,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     } else {
       if (!hasEmittedState.get()) {
         hasEmittedState.compareAndSet(false, true);
-        return Optional.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withData(Jsons.emptyObject())));
+        return Optional.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject())));
       } else {
         return Optional.empty();
       }
