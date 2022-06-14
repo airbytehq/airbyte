@@ -22,6 +22,7 @@ import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
+import ConnectionsIcon from "./components/ConnectionsIcon";
 
 const Bar = styled.nav`
   width: 100px;
@@ -58,7 +59,7 @@ const SideBar: React.FC = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    const isChild = location.pathname.split("/").length > 4;
+    const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
@@ -80,8 +81,10 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connection}>
-              <OnboardingIcon />
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
+              <OnboardingIcon /></NavLink>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
+              <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
