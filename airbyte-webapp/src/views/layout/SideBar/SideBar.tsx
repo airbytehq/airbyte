@@ -59,95 +59,93 @@ const SideBar: React.FC = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    const isChild = location.pathname.split("/").length > 4;
+    const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
   return (
-    <>
-      <Bar>
-        <div>
-          <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-            <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
-          </Link>
-          <Menu>
-            {workspace.displaySetupWizard ? (
-              <li>
-                <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
-                  <OnboardingIcon />
-                  <Text>
-                    <FormattedMessage id="sidebar.onboarding" />
-                  </Text>
-                </NavLink>
-              </li>
-            ) : null}
-            <li>
-              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
-                <ConnectionsIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.connections" />
-                </Text>
-              </NavLink>
-            </li>
-            <li>
-              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Source}>
-                <SourceIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.sources" />
-                </Text>
-              </NavLink>
-            </li>
-            <li>
-              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Destination}>
-                <DestinationIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.destinations" />
-                </Text>
-              </NavLink>
-            </li>
-          </Menu>
-        </div>
+    <Bar>
+      <div>
+        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
+          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        </Link>
         <Menu>
+          {workspace.displaySetupWizard ? (
+            <li>
+              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
+                <OnboardingIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </NavLink>
+            </li>
+          ) : null}
           <li>
-            <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
-              <HelpIcon icon={faRocket} />
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
+              <ConnectionsIcon />
               <Text>
-                <FormattedMessage id="sidebar.update" />
-              </Text>
-            </a>
-          </li>
-          <li>
-            <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-              {({ onOpen }) => (
-                <div className={styles.menuItem} onClick={onOpen}>
-                  <DocsIcon />
-                  <Text>
-                    <FormattedMessage id="sidebar.resources" />
-                  </Text>
-                </div>
-              )}
-            </SidebarPopout>
-          </li>
-
-          <li>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
-              <React.Suspense fallback={null}>
-                <NotificationIndicator />
-              </React.Suspense>
-              <SettingsIcon />
-              <Text>
-                <FormattedMessage id="sidebar.settings" />
+                <FormattedMessage id="sidebar.connections" />
               </Text>
             </NavLink>
           </li>
-          {config.version ? (
-            <li>
-              <Version primary />
-            </li>
-          ) : null}
+          <li>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Source}>
+              <SourceIcon />
+              <Text>
+                <FormattedMessage id="sidebar.sources" />
+              </Text>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Destination}>
+              <DestinationIcon />
+              <Text>
+                <FormattedMessage id="sidebar.destinations" />
+              </Text>
+            </NavLink>
+          </li>
         </Menu>
-      </Bar>
-    </>
+      </div>
+      <Menu>
+        <li>
+          <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
+            <HelpIcon icon={faRocket} />
+            <Text>
+              <FormattedMessage id="sidebar.update" />
+            </Text>
+          </a>
+        </li>
+        <li>
+          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
+            {({ onOpen }) => (
+              <div className={styles.menuItem} onClick={onOpen}>
+                <DocsIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </div>
+            )}
+          </SidebarPopout>
+        </li>
+
+        <li>
+          <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
+            <React.Suspense fallback={null}>
+              <NotificationIndicator />
+            </React.Suspense>
+            <SettingsIcon />
+            <Text>
+              <FormattedMessage id="sidebar.settings" />
+            </Text>
+          </NavLink>
+        </li>
+        {config.version ? (
+          <li>
+            <Version primary />
+          </li>
+        ) : null}
+      </Menu>
+    </Bar>
   );
 };
 
