@@ -736,6 +736,8 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
         for pull_request in nodes:
             record = {
+                "id": pull_request["databaseId"],
+                "node_id": pull_request["id"],
                 "number": pull_request["number"],
                 "updated_at": pull_request["updatedAt"],
                 "repository": pull_request["repository"]["name"],

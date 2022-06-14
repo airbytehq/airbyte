@@ -9,6 +9,8 @@ from sgqlc.types.relay import Connection, connection_args
 
 
 class PullRequest(Type):
+    id = str
+    database_id = int
     number = int
     repository = Field("Repository")
     updated_at = datetime.DateTime
@@ -35,6 +37,8 @@ def get_query(owner, name, page_size, next_page_token):
         kwargs["after"] = next_page_token
 
     pull_requests = op.repository(owner=owner, name=name).pull_requests(**kwargs)
+    pull_requests.nodes.id()
+    pull_requests.nodes.database_id()
     pull_requests.nodes.number()
     pull_requests.nodes.updated_at()
     pull_requests.nodes.repository()
