@@ -1,0 +1,28 @@
+{
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/workday",
+    "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Source Workday Singer Spec",
+        "type": "object",
+        "required": ["username", "password", "reports"],
+        "additionalProperties": true,
+        "properties":{
+            "username": {
+                "title": "username",
+                "type": "string",
+                "description": "The username of the workday account with access to the reports to extract"
+            },
+            "password": {
+                "title": "password",
+                "type": "string",
+                "description": "The password of the workday account with access to the reports to extract"
+            },
+            "reports": {
+                "title": "report",
+                "type": "string json",
+                "description": "include the name of the stream for the report and the URL to the Workday XML REST link for the report you wish to extract"
+            }
+        }
+    } 
+} 
+    
