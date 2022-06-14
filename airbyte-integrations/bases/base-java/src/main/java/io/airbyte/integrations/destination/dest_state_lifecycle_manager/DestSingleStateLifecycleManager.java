@@ -32,7 +32,7 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
 
   @VisibleForTesting
   Queue<AirbyteMessage> listPending() {
-    return new LinkedList<>(lastPendingState == null ? Collections.emptyList() : List.of(lastPendingState));
+    return stateMessageToQueue(lastPendingState);
   }
 
   @Override
@@ -45,7 +45,7 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public Queue<AirbyteMessage> listFlushed() {
-    return new LinkedList<>(lastFlushedState == null ? Collections.emptyList() : List.of(lastFlushedState));
+    return stateMessageToQueue(lastFlushedState);
   }
 
   @Override
@@ -58,7 +58,11 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public Queue<AirbyteMessage> listCommitted() {
-    return new LinkedList<>(lastCommittedState == null ? Collections.emptyList() : List.of(lastCommittedState));
+    return stateMessageToQueue(lastCommittedState);
+  }
+
+  private static Queue<AirbyteMessage> stateMessageToQueue(final AirbyteMessage stateMessage) {
+    return new LinkedList<>(stateMessage == null ? Collections.emptyList() : List.of(stateMessage));
   }
 
 }

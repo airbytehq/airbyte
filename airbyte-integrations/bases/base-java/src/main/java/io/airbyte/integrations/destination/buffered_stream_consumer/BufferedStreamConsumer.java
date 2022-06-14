@@ -151,7 +151,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     stateManager.markPendingAsFlushed();
   }
 
-  private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));
@@ -175,12 +175,19 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     bufferingStrategy.close();
 
     try {
-      // if no state was emitted (i.e. full refresh) and if there were still no failures, we claim
-      // success. this is the full refresh case. if there was no state AND a failure, we assume failure.
+      // flushed is empty in 2 cases:
+      // 1. either it is full refresh (no state is emitted necessarily).
+      // 2. it is stream but no states were flushed.
+      // in both of these cases, if there was a failure, we should not bother committing. otherwise,
+      // attempt to commit.
       if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
-        // if any state message flushed that means we can still go for at least a partial success.
+        /*
+         * if any state message was flushed that means we should try to commit what we have. if
+         * hasFailed=false, then it could be full success. if hasFailed=true, then going for partial
+         * success.
+         */
         onClose.accept(false);
       }
 

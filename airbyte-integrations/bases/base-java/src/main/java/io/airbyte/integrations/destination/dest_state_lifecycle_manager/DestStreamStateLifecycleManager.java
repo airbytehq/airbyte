@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -86,8 +85,8 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
         .stream()
         // typically, we support by namespace and then stream name, so we retain that pattern here.
         .sorted(Comparator
-            .comparing(
-                (Function<Entry<StreamDescriptor, AirbyteMessage>, String>) entry -> entry.getKey().getNamespace(),
+            .<Entry<StreamDescriptor, AirbyteMessage>, String>comparing(
+                entry -> entry.getKey().getNamespace(),
                 Comparator.nullsFirst(Comparator.naturalOrder())) // namespace is allowed to be null
             .thenComparing(entry -> entry.getKey().getName()))
         .map(Entry::getValue)
