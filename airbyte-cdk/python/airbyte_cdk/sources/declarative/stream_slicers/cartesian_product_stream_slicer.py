@@ -10,6 +10,21 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 
 
 class CartesianProductStreamSlicer(StreamSlicer):
+    """
+    Stream slicers that iterates over the cartesian product of input stream slicers
+    Given 2 stream slicers with the following slices:
+    A: [{"i": 0}, {"i": 1}, {"i": 2}]
+    B: [{"s": "hello"}, {"s": "world"}]
+    the resulting stream slices are
+    [
+        {"i": 0, "s": "hello"},
+        {"i": 0, "s": "world"},
+        {"i": 1, "s": "hello"},
+        {"i": 1, "s": "world"},
+        {"i": 2, "s": "hello"},
+        {"i": 2, "s": "world"},
+    """
+
     def __init__(self, stream_slicers: List[StreamSlicer]):
         self._stream_slicers = stream_slicers
 
