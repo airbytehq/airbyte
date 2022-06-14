@@ -201,7 +201,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
-    } catch (final IOException e) {
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final Optional<Attempt> lastAttempt = job.getLastAttemptWithOutput();
+      // TODO how can we do this also for discover and check?
+      lastAttempt.flatMap(Attempt::getFailureSummary)
+          .ifPresent(attemptFailureSummary -> jobErrorReporter.reportSyncJobFailure(attemptFailureSummary, connectionId, job.getConfig().getSync()));
+
+    } catch (final IOException e) { // TODO is throwing retryable exception the right response?
       throw new RetryableException(e);
     }
   }
@@ -227,11 +234,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
 
-      final Job job = jobPersistence.getJob(jobId);
-      final UUID connectionId = UUID.fromString(job.getScope());
-      jobErrorReporter.reportSyncJobFailure(failureSummary, connectionId, job.getConfig().getSync()); // TODO how can we do this also for discover and check?
-
-    } catch (final IOException e) { // TODO is throwing retryable exception the right response?
+    } catch (final IOException e) {
       throw new RetryableException(e);
     }
   }
