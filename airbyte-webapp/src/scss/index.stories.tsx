@@ -28,5 +28,5 @@ const Template: ComponentStory<typeof Div> = ({ children }) => (
 
 export const Primary = Template.bind({});
 Primary.args = {
-  children: "The quick brown fox jumped over the lazy dog.",
+  children: "The quick brown fox jumps over the lazy dog.",
 };
