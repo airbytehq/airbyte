@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from source_metabase.streams import Cards
+from source_metabase.streams import Cards, Collections, Dashboards, Users
 
 
 class MetabaseAuth(HttpAuthenticator):
@@ -35,9 +35,11 @@ class SourceMetabase(AbstractSource):
                     return False, "Invalid or expired session tokens, check if session is still valid"
                 else:
                     logger.info(str(e))
-                    return False, f"Error while checking connection: {e}r"
+                    return False, f"Error while checking connection: {e}"
             json_response = response.json()
-            logger.info(f"Connection check for Metabase successful for {json_response['first_name']} {json_response['last_name']}")
+            logger.info(
+                f"Connection check for Metabase successful for {json_response['common_name']} login at {json_response['last_login']}"
+            )
             return True, None
         except Exception as e:
             return False, e
@@ -47,4 +49,7 @@ class SourceMetabase(AbstractSource):
         args = {"authenticator": authenticator, "instance_api_url": config["instance_api_url"]}
         return [
             Cards(**args),
+            Collections(**args),
+            Dashboards(**args),
+            Users(**args),
         ]

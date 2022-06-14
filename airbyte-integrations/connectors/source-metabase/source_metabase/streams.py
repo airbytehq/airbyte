@@ -14,7 +14,7 @@ class MetabaseStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.instance_api_url = instance_api_url
 
-    primary_key = None
+    primary_key = "id"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -45,3 +45,34 @@ class MetabaseStream(HttpStream, ABC):
 class Cards(MetabaseStream):
     def path(self, **kwargs) -> str:
         return "card"
+
+
+class Collections(MetabaseStream):
+    def path(self, **kwargs) -> str:
+        return "collection"
+
+
+class Dashboards(MetabaseStream):
+    def path(self, **kwargs) -> str:
+        return "dashboard"
+
+
+class PermissionMemberships(MetabaseStream):
+    def path(self, **kwargs) -> str:
+        return "permissions/membership"
+
+
+class Users(MetabaseStream):
+    def path(self, **kwargs) -> str:
+        return "user"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield from response_json.get("data", [])
