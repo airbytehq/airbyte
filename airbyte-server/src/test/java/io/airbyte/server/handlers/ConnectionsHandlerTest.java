@@ -115,7 +115,8 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
-        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
+        .withSourceCatalogId(UUID.randomUUID());
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -194,7 +195,8 @@ class ConnectionsHandlerTest {
               .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
               .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
               .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
-              .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
+              .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
+          .sourceCatalogId(standardSync.getSourceCatalogId());
 
       final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -343,7 +345,8 @@ class ConnectionsHandlerTest {
           standardSync.getConnectionId(),
           standardSync.getSourceId(),
           standardSync.getDestinationId(),
-          standardSync.getOperationIds())
+          standardSync.getOperationIds(),
+          newSourceCatalogId)
           .schedule(null)
           .syncCatalog(catalog)
           .status(ConnectionStatus.INACTIVE);

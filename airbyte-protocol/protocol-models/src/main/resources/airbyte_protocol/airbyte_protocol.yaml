@@ -74,49 +74,65 @@ definitions:
     properties:
       state_type:
         "$ref": "#/definitions/AirbyteStateType"
+      stream:
+        "$ref": "#/definitions/AirbyteStreamState"
+      global:
+        "$ref": "#/definitions/AirbyteGlobalState"
       data:
         description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      global:
-        "$ref": "#/definitions/AirbyteStateBlob"
-      streams:
-        type: array
-        items:
-          "$ref": "#/definitions/AirbyteStreamState"
 
   AirbyteStateType:
     type: string
     description: >
       The type of state the other fields represent.
-      If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
-      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams.
-      PER_STREAM means that the state should be read from `streams`. Each item in the list represents the state for the associated stream.
+      Is set to LEGACY, the state data should be read from the `data` field for backwards compatibility.
+      If not set, assume the state object is type LEGACY.
+      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams. It contains one shared
+      state and individual stream states.
+      PER_STREAM means that the state should be read from `stream`. The state present in this field correspond to the isolated state of the
+      associated stream description.
     enum:
       - GLOBAL
-      - PER_STREAM
-
+      - STREAM
+      - LEGACY
   AirbyteStreamState:
     type: object
-    description: "per stream state data"
-    additionalProperties: false
+    additionalProperties: true
+    required:
+      - stream_descriptor
+    properties:
+      stream_descriptor:
+        "$ref": "#/definitions/StreamDescriptor"
+      stream_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+  AirbyteGlobalState:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_states
+    properties:
+      shared_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      stream_states:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
+  StreamDescriptor:
+    type: object
+    additionalProperties: true
     required:
       - name
-      - state
     properties:
       name:
-        description: "Stream name"
         type: string
-      state:
-        "$ref": "#/definitions/AirbyteStateBlob"
       namespace:
-        description: Optional Source-defined namespace.
         type: string
-
   AirbyteStateBlob:
     type: object
     description: "the state data"
-    additionalProperties: false
+    additionalProperties: true
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
 
   AirbyteLogMessage:

@@ -38,14 +38,23 @@ class AirbyteRecordMessage(BaseModel):
 
 class AirbyteStateType(Enum):
     GLOBAL = "GLOBAL"
-    PER_STREAM = "PER_STREAM"
+    STREAM = "STREAM"
+    LEGACY = "LEGACY"
+
+
+class StreamDescriptor(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str
+    namespace: Optional[str] = None
 
 
 class AirbyteStateBlob(BaseModel):
     pass
 
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
 
 class Level(Enum):
@@ -164,11 +173,18 @@ class OAuthConfigSpecification(BaseModel):
 
 class AirbyteStreamState(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    name: str = Field(..., description="Stream name")
-    state: AirbyteStateBlob
-    namespace: Optional[str] = Field(None, description="Optional Source-defined namespace.")
+    stream_descriptor: StreamDescriptor
+    stream_state: Optional[AirbyteStateBlob] = None
+
+
+class AirbyteGlobalState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    shared_state: Optional[AirbyteStateBlob] = None
+    stream_states: List[AirbyteStreamState]
 
 
 class AirbyteTraceMessage(BaseModel):
@@ -263,9 +279,9 @@ class AirbyteStateMessage(BaseModel):
         extra = Extra.allow
 
     state_type: Optional[AirbyteStateType] = None
+    stream: Optional[AirbyteStreamState] = None
+    global_: Optional[AirbyteGlobalState] = Field(None, alias="global")
     data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")
-    global_: Optional[AirbyteStateBlob] = Field(None, alias="global")
-    streams: Optional[List[AirbyteStreamState]] = None
 
 
 class AirbyteCatalog(BaseModel):
