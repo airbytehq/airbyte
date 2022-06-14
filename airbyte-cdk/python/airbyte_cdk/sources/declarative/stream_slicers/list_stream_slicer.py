@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config
 class ListStreamSlicer(StreamSlicer):
     """
     Stream slicer that iterates over the values of a list
-    If slice_values is a string, then
+    If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
     """
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
