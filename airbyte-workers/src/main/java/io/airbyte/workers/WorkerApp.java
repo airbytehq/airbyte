@@ -204,7 +204,8 @@ public class WorkerApp {
             workerEnvironment,
             logConfigs,
             jobPersistence,
-            airbyteVersion),
+            airbyteVersion,
+            false),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 

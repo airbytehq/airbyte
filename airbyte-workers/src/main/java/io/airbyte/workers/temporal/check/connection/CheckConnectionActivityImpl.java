@@ -9,6 +9,7 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -35,6 +36,18 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
+  private final boolean shouldRun;
+
+  public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
+      final ProcessFactory processFactory,
+      final SecretsHydrator secretsHydrator,
+      final Path workspaceRoot,
+      final WorkerEnvironment workerEnvironment,
+      final LogConfigs logConfigs,
+      final JobPersistence jobPersistence,
+      final String airbyteVersion) {
+    this(workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, jobPersistence, airbyteVersion, true);
+  }
 
   public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
                                      final ProcessFactory processFactory,
@@ -43,7 +56,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final JobPersistence jobPersistence,
-                                     final String airbyteVersion) {
+                                     final String airbyteVersion,
+                                     final boolean shouldRun) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -52,9 +66,15 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
+    this.shouldRun = shouldRun;
   }
 
-  public StandardCheckConnectionOutput run(CheckConnectionInput args) {
+  @Override
+  public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
+    if(!shouldRun) {
+      return new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED);
+    }
+
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
