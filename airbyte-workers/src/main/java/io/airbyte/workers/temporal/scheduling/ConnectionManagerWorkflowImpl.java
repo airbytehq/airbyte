@@ -101,7 +101,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private final AutoDisableConnectionActivity autoDisableConnectionActivity =
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final CheckConnectionActivity checkActivity =
-      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
