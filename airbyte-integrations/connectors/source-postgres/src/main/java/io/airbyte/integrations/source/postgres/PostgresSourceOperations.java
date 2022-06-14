@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import org.postgresql.jdbc.PgResultSetMetaData;
 import org.slf4j.Logger;
@@ -108,27 +109,52 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void setTimeWithTimezone(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+  private void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      //attempt to parse the time w/o timezone. This can be caused by schema created with a different version of the connector
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    }
   }
 
-  private void setTimestampWithTimezone(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+  private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      //attempt to parse the datetime w/o timezone. This can be caused by schema created with a different version of the connector
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    }
   }
 
   @Override
-  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      //attempt to parse the datetime with timezone. This can be caused by schema created with an older version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    }
   }
 
   @Override
-  protected void setTime(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      //attempt to parse the datetime with timezone. This can be caused by schema created with an older version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    }
   }
 
   @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      //attempt to parse the date with timezone. This can be caused by schema created with an older version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    }
   }
 
   @Override
@@ -170,21 +196,21 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalDate date = getDateTimeObject(resultSet, index, LocalDate.class);
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final LocalDate date = getDateTimeObject(resultSet, index, LocalDate.class);
     node.put(columnName, resolveEra(date, date.toString()));
   }
 
   @Override
-  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
     node.put(columnName, time.toString());
   }
 
   @Override
-  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
-    LocalDate date = timestamp.toLocalDate();
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
+    final LocalDate date = timestamp.toLocalDate();
     node.put(columnName, resolveEra(date, timestamp.toString()));
   }
 
@@ -214,7 +240,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -264,7 +290,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final var data = resultSet.getObject(index);
     try {
       node.put(columnName, OBJECT_MAPPER.writeValueAsString(data));
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException("Could not parse 'hstore' value:" + e);
     }
   }
