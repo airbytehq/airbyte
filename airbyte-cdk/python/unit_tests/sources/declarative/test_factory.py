@@ -48,6 +48,20 @@ authenticator:
     assert authenticator._tokens == ["verysecrettoken"]
 
 
+def test_list_based_stream_slicer_with_values_refd():
+    content = """
+    repositories: ["airbyte", "airbyte-cloud"]
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "*ref(repositories)"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
 def test_full_config():
     content = """
 decoder:
