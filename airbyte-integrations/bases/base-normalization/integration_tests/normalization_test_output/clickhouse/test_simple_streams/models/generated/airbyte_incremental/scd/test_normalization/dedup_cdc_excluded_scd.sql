@@ -28,18 +28,19 @@
                     -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
                     -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     alter table {{ final_table_relation }} delete where _airbyte_unique_key in (
-                        select inactive_counts.unique_key
+                        select recent_records.unique_key
                         from (
-                            select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as inactive_count
-                            from {{ this }}
-                            where _airbyte_active_row = 0 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
-                            group by _airbyte_unique_key
-                        ) inactive_counts left join (
-                            select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as active_count
-                            from {{ this }}
-                            where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
-                            group by _airbyte_unique_key
-                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                                select distinct _airbyte_unique_key as unique_key
+                                from {{ this }}
+                                where 1=1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
+                            ) recent_records
+                            left join (
+                                select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as active_count
+                                from {{ this }}
+                                where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + quote('dedup_cdc_excluded')) }}
+                                group by _airbyte_unique_key
+                            ) active_counts
+                            on recent_records.unique_key = active_counts.unique_key
                         where active_count is null or active_count = 0
                     )
                     {% else %}

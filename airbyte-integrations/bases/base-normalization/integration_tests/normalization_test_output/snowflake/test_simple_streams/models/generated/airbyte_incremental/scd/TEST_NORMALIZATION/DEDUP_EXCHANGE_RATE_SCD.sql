@@ -29,18 +29,19 @@
                     -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
                     -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
                     delete from {{ final_table_relation }} where {{ final_table_relation }}._AIRBYTE_UNIQUE_KEY in (
-                        select inactive_counts.unique_key
+                        select recent_records.unique_key
                         from (
-                            select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as inactive_count
-                            from {{ this }}
-                            where _AIRBYTE_ACTIVE_ROW = 0 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
-                            group by _AIRBYTE_UNIQUE_KEY
-                        ) inactive_counts left join (
-                            select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as active_count
-                            from {{ this }}
-                            where _AIRBYTE_ACTIVE_ROW = 1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
-                            group by _AIRBYTE_UNIQUE_KEY
-                        ) active_counts on inactive_counts.unique_key = active_counts.unique_key
+                                select distinct _AIRBYTE_UNIQUE_KEY as unique_key
+                                from {{ this }}
+                                where 1=1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
+                            ) recent_records
+                            left join (
+                                select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as active_count
+                                from {{ this }}
+                                where _AIRBYTE_ACTIVE_ROW = 1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('DEDUP_EXCHANGE_RATE')) }}
+                                group by _AIRBYTE_UNIQUE_KEY
+                            ) active_counts
+                            on recent_records.unique_key = active_counts.unique_key
                         where active_count is null or active_count = 0
                     )
                     {% else %}
