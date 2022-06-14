@@ -10,6 +10,9 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Collections;
@@ -155,6 +158,56 @@ public class StateGeneratorUtils {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Converts a {@link AirbyteStateType#LEGACY} state message into a {@link AirbyteStateType#GLOBAL}
+   * message.
+   *
+   * @param airbyteStateMessage A {@link AirbyteStateType#LEGACY} state message.
+   * @return A {@link AirbyteStateType#GLOBAL} state message.
+   */
+  public static AirbyteStateMessage convertLegacyStateToGlobalState(final AirbyteStateMessage airbyteStateMessage) {
+    final DbState dbState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
+    final AirbyteGlobalState globalState = new AirbyteGlobalState()
+        .withSharedState(Jsons.jsonNode(dbState.getCdcState()))
+        .withStreamStates(dbState.getStreams().stream()
+            .map(s -> new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withName(s.getStreamName()).withNamespace(s.getStreamNamespace()))
+                .withStreamState(Jsons.jsonNode(s)))
+            .collect(
+                Collectors.toList()));
+    return new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
+  }
+
+  /**
+   * Converts a {@link AirbyteStateType#GLOBAL} state message into a list of
+   * {@link AirbyteStateType#STREAM} messages.
+   *
+   * @param airbyteStateMessage A {@link AirbyteStateType#GLOBAL} state message.
+   * @return A list {@link AirbyteStateType#STREAM} state messages.
+   */
+  public static List<AirbyteStateMessage> convertGlobalStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
+    return airbyteStateMessage.getGlobal().getStreamStates().stream()
+        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(s.getStreamDescriptor()).withStreamState(s.getStreamState())))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Converts a {@link AirbyteStateType#LEGACY} state message into a list of
+   * {@link AirbyteStateType#STREAM} messages.
+   *
+   * @param airbyteStateMessage A {@link AirbyteStateType#LEGACY} state message.
+   * @return A list {@link AirbyteStateType#STREAM} state messages.
+   */
+  public static List<AirbyteStateMessage> convertLegacyStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
+    return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
+        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                .withStreamState(Jsons.jsonNode(s))))
+        .collect(Collectors.toList());
   }
 
 }

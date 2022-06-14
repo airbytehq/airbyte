@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -415,7 +416,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson, final JsonNode config) {
     if (stateJson == null) {
-      if (isCdc(config)) {
+      if (supportedStateTypeSupplier(config).get() == AirbyteStateType.GLOBAL) {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()
             .withSharedState(Jsons.jsonNode(new CdcState()))
             .withStreamStates(List.of());
@@ -433,6 +434,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(stateJson));
       }
     }
+  }
+
+  @Override
+  protected Supplier<AirbyteStateType> supportedStateTypeSupplier(final JsonNode config) {
+    return () -> isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {
