@@ -2,7 +2,9 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import React from "react";
 
 const Div: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
-  <div {...props}>{children}</div>
+  <div {...props} className="with-text-styles">
+    {children}
+  </div>
 );
 
 export default {
