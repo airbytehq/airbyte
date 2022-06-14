@@ -184,16 +184,23 @@ class Orders(IncrementalXolaStream):
         for data in raw_response:
             try:
                 # Tags._id
-                resp = {"tags": []}
-                for tag in data["tags"]:
-                    resp["tags"].append({"id": tag["id"]})
-
+                resp = {}
+                
+                if "tags" in data.keys():
+                    resp["tags"] = ",".join([tag['id'] for tag in data["tags"]])
+                else:
+                    resp["tags"] = ""
+            
                 resp["order_id"] = data["id"]
-
                 if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
                 if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
                 if "customerEmail" in data.keys(): resp["customerEmail"] = data["customerEmail"]
-                if "travelers" in data.keys(): resp["travelers"] = data["travelers"]
+                
+                if "travelers" in data.keys(): 
+                    resp["travelers"] = ",".join([traveler['id'] for traveler in data["travelers"]])
+                else:
+                    resp["travelers"] = ""
+                
                 if "source" in data.keys(): resp["source"] = data["source"]
                 if "createdBy" in data.keys(): resp["createdBy"] = data["createdBy"]
                 if "quantity" in data.keys(): resp["quantity"] = data["quantity"]

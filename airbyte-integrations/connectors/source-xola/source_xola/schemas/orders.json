@@ -6,17 +6,7 @@
       "additionalProperties": false,
       "properties":{
          "tags":{
-            "type":["null","array"],
-            "default":[],
-            "items":{
-               "type":["null","object"],
-               "properties":{
-                  "id":{
-                     "title":"Id",
-                     "type":["null","string"]
-                  }
-               }
-            }
+            "type":["null","string"]
          },
          "order_id":{
             "type":["null","string"]
@@ -33,16 +23,7 @@
             "type":["null","string"]
          },
          "travelers":{
-            "type":"array",
-            "default":[],
-            "items":{
-               "properties":{
-                  "id":{
-                     "title":"Id",
-                     "type":["null","string"]
-                  }
-               }
-            }
+            "type":["null","string"]
          },
          "source":{
             "type":["null","string"]
