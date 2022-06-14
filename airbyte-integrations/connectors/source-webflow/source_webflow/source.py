@@ -28,6 +28,9 @@ that are contained in each of the desired collections.
 """
 
 
+# Webflow expects a 'accept-version' header with a value of '1.0.0' (as of May 2022)
+WEBFLOW_ACCEPT_VERSION = "1.0.0"
+
 # Basic full refresh stream
 class WebflowStream(HttpStream, ABC):
     """
@@ -300,11 +303,10 @@ class SourceWebflow(AbstractSource):
         which overloads that standard authentication to include additional headers that are required by Webflow.
         """
         api_key = config.get("api_key", None)
-        accept_version = config.get("accept_version", None)
+        accept_version = WEBFLOW_ACCEPT_VERSION
         if not api_key:
             raise Exception("Config validation error: 'api_key' is a required property")
-        if not accept_version:
-            raise Exception("Config validation error: 'accept_version' is a required property")
+
         return WebflowTokenAuthenticator(token=api_key, accept_version=accept_version)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
