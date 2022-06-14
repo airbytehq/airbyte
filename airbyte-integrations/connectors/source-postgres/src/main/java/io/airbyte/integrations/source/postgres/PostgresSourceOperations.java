@@ -140,7 +140,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @Override
   protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
-      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     } catch (final DateTimeParseException e) {
       //attempt to parse the datetime with timezone. This can be caused by schema created with an older version of the connector
       preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
@@ -149,12 +149,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      //attempt to parse the date with timezone. This can be caused by schema created with an older version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
-    }
+    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
   @Override
