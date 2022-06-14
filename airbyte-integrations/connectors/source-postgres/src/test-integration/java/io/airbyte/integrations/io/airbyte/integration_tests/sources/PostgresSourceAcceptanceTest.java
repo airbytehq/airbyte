@@ -116,7 +116,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
+                Field.of("name", JsonSchemaType.STRING ))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
