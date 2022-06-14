@@ -3,9 +3,19 @@
 #
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Optional, Union
 
 import requests
+
+
+class NonRetriableBehavior(Enum):
+    Ok = ("OK",)
+    Fail = ("FAIL",)
+    Ignore = "IGNORE"
+
+
+RetryBehavior = Union[NonRetriableBehavior, Optional[float]]
 
 
 class Retrier(ABC):
@@ -14,13 +24,8 @@ class Retrier(ABC):
     def max_retries(self) -> Union[int, None]:
         pass
 
-    @property
     @abstractmethod
-    def retry_factor(self) -> float:
-        pass
-
-    @abstractmethod
-    def should_retry(self, response: requests.Response) -> bool:
+    def should_retry(self, response: requests.Response) -> RetryBehavior:
         pass
 
     @abstractmethod

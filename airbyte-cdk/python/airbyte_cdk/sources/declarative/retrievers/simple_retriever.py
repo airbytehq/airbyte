@@ -9,6 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableBehavior
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -83,7 +84,8 @@ class SimpleRetriever(Retriever, HttpStream):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return self._requester.should_retry(response)
+        retry_behavior = self._requester.should_retry(response)
+        return not isinstance(retry_behavior, NonRetriableBehavior)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
