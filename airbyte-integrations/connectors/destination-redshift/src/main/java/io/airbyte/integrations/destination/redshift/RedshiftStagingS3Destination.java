@@ -51,11 +51,15 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
+  private boolean isEphemeralKeysAndPurgingStagingData(JsonNode config, EncryptionConfig encryptionConfig) {
+    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
+  }
+
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
-    if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
+    if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
@@ -119,7 +123,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
+    final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("uploading_method").get("encryption"));
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
