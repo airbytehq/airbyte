@@ -28,8 +28,10 @@ To set up a source:
 
 1. On the Airbyte Cloud dashboard, click **Sources** and then click **+ New source**. 
 2. On the Set up the source page, select the source you want to set up from the **Source type** dropdown.
-3. The fields relevant to your source are displayed. The Setup Guide provides information to help you fill out the fields for your selected source.
-4. Click **Set up source**. 
+
+    The fields relevant to your source are displayed. The Setup Guide provides information to help you fill out the fields for your selected source.
+
+3. Click **Set up source**. 
 
 ## Set up a destination
 
@@ -41,8 +43,10 @@ To set up a destination:
 
 1. On the Airbyte Cloud dashboard, click **Destinations** and then click **+ New destination**.
 2. On the Set up the destination page, select the destination you want to set up from the **Destination type** dropdown.
-3. The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination.
-4. Click **Set up destination**. 
+    
+    The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination.
+
+3. Click **Set up destination**. 
 
 ## Set up a connection
 
@@ -104,16 +108,16 @@ To set up a connection:
 
 3. Select a destination:
     - To use an existing destination, select your desired destination from the **Destination** dropdown. Click **Use existing destination**.
-    - To set up a new destination, select the source you want to set up from the **Destination type** dropdown. The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected source. Click **Set up destination**.
+    - To set up a new destination, select the destination you want to set up from the **Destination type** dropdown. The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination. Click **Set up destination**.
 	
     The Set up the connection page is displayed.
 4. From the **Replication frequency** dropdown, select how often you want the data to sync from the source to the destination.
         
     **Note:** The default replication frequency is **Every 24 hours**.
 
-5. From the **Destination Namespace** dropdown, select the format in which you want the data to stored in the destination:
+5. From the **Destination Namespace** dropdown, select the format in which you want to store the data in the destination:
 	
-    **Note:** The default namespace is **Mirror source structure**.
+    **Note:** The default configuration is **Mirror source structure**.
 	
     <table>
     <tr>
@@ -125,26 +129,26 @@ To set up a connection:
     <tr>
     <td>Mirror source structure
     </td>
-    <td>Some sources (for example, databases) provide namespace information for a stream. If a source provides the namespace information, the destination will reproduce the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.
+    <td>Some sources (for example, databases) provide namespace information for a stream. If a source provides the namespace information, the destination will reproduce the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option
     </td>
     </tr>
     <tr>
     <td>Destination default
     </td>
-    <td>All streams will be replicated and stored in the default namespace defined on the Destination Settings page. For more information, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#destination-connector-settings"> ​​Destination Connector Settings</a>.
+    <td>All streams will be replicated and stored in the default namespace defined on the Destination Settings page. For more information, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#destination-connector-settings"> ​​Destination Connector Settings</a>
     </td>
     </tr>
     <tr>
     <td>Custom format
     </td>
-    <td>All streams will be replicated and stored in a custom format. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#custom-format"> Custom format</a> for more details.
+    <td>All streams will be replicated and stored in a custom format. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#custom-format"> Custom format</a> for more details
     </td>
     </tr>
     </table>
 
 
 :::tip
-To better understand the destination namespace configurations, see [Destination Namespace example](../understanding-airbyte/namespaces.md#examples).
+To better understand the destination namespace configurations, see [Destination Namespace example](../understanding-airbyte/namespaces.md#examples)
 :::
 
 6. (Optional) In the **Destination Stream Prefix (Optional)** field, add a prefix to stream names (for example, adding a prefix `airbyte_` renames `projects` to  `airbyte_projects`).
@@ -174,13 +178,14 @@ To better understand the destination namespace configurations, see [Destination 
          
             **Note:** Some sync modes may not yet be available for your source or destination
 
-    4. **Cursor field**: Used in incremental sync mode to determine which records to sync. Airbyte pre-selects the Cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
-    5. **Primary key**: Used in Deduped + history sync mode to determine the unique identifier.
+    4. **Cursor field**: Used in **Incremental** sync mode to determine which records to sync. Airbyte pre-selects the cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
+    5. **Primary key**: Used in **Deduped + history** sync mode to determine the unique identifier.
     6. **Destination**:
         - **Namespace:** The database schema of your destination tables.
         - **Stream name:** The final table name in destination.
+
 10. Click **Set up connection**.
-11. Airbyte tests the connection. If the sync is successful, the Connection page will display.
+11. Airbyte tests the connection. If the sync is successful, the Connection page is displayed.
 
 ## Verify the connection
 
