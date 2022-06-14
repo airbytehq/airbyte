@@ -100,10 +100,12 @@ public class StateGeneratorUtils {
    * @return The legacy {@link DbState}.
    */
   public static DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
-    return new DbState().withStreams(pairToCursorInfoMap.entrySet().stream()
-        .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-        .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
-        .collect(Collectors.toList()));
+    return new DbState()
+        .withCdc(false)
+        .withStreams(pairToCursorInfoMap.entrySet().stream()
+            .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
+            .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
+            .collect(Collectors.toList()));
   }
 
   /**

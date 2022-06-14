@@ -427,8 +427,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     COL_UPDATED_AT, "2006-10-19",
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
-                    COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456",
-                    COL_UPDATED_AT, "2006-10-19")))));
+                    COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)

@@ -62,6 +62,7 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
     final Optional<CursorInfo> cursorInfo = Optional.ofNullable(pairToCursorInfoMap.get(pair));
 
     if (cursorInfo.isPresent()) {
+      LOGGER.debug("Generating state message for {}...", pair);
       return new AirbyteStateMessage()
           .withStateType(AirbyteStateType.STREAM)
           // Temporarily include legacy state for backwards compatibility with the platform
