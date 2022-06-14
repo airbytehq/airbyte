@@ -1,9 +1,19 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "3.1.1"
+    id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
+
+// This array should contain a path to all configs that are common to most build tasks and
+// might affect them (i.e. if any of those files change we want to rerun most tasks)
+def commonConfigs = [
+    '.env',
+    'package.json',
+    'package-lock.json',
+    'tsconfig.json',
+    '.prettierrc.js'
+]
 
 node {
     download = true
@@ -11,60 +21,79 @@ node {
 }
 
 npm_run_build {
-    inputs.files fileTree('public')
-    inputs.files fileTree('src')
-    inputs.file 'package.json'
-    inputs.file 'package-lock.json'
+    inputs.files commonConfigs
+    inputs.file '.eslintrc'
+    inputs.dir 'public'
+    inputs.dir 'src'
 
-    // todo (cgardens) - the plugin seems to ignore this value when the copy command is run. ideally the output would be place in build/app.
-    outputs.dir project.buildDir
+    outputs.dir 'build/app'
 }
 
 task test(type: NpmTask) {
     dependsOn assemble
 
     args = ['run', 'test', '--', '--watchAll=false', '--silent']
-    inputs.files fileTree('src')
-    inputs.file 'package.json'
-    inputs.file 'package-lock.json'
+    inputs.files commonConfigs
+    inputs.dir 'src'
 }
 
 task licenseCheck(type: NpmTask) {
     dependsOn npmInstall
 
     args = ['run', 'license-check']
-    inputs.file 'package.json'
-    inputs.file 'package-lock.json'
+    inputs.files commonConfigs
+    inputs.file 'scripts/license-check.js'
+
+    // The licenseCheck has no outputs, thus we always treat the outpus up to date
+    // as long as the inputs have not changed
+    outputs.upToDateWhen { true }
 }
 
-// Make sure to always run a license check after we installed dependencies
-npmInstall.finalizedBy licenseCheck
-assemble.dependsOn npm_run_build
-build.finalizedBy test
+task validateLinks(type: NpmTask) {
+    dependsOn npmInstall
 
-task copyBuild(type: Copy) {
-    dependsOn copyDocker
+    args = ['run', 'validate-links']
 
-    from "${project.projectDir}/build"
-    into "build/docker/bin/build"
-    exclude ".docker"
-    exclude "docker"
+    // Since the output of this task depends on availability of URLs
+    // we never want to treat it as "up-to-date" and always want to run it
+    outputs.upToDateWhen { false }
+}
+
+task buildStorybook(type: NpmTask) {
+    dependsOn npmInstall
+    args = ['run', 'build:storybook']
+
+    inputs.files commonConfigs
+    inputs.dir '.storybook'
+    inputs.dir 'public'
+    inputs.dir 'src'
+
+    outputs.dir 'build/storybook'
+}
+
+task copyBuildOutput(type: Copy) {
+    dependsOn copyDocker, npm_run_build
+
+    from "${project.projectDir}/build/app"
+    into 'build/docker/bin/build'
 }
 
 task copyDocs(type: Copy) {
-    dependsOn copyDocker
+    dependsOn copyDocker, copyBuildOutput
 
     from "${project.rootProject.projectDir}/docs/integrations"
-    into "build/docker/bin/docs/integrations"
+    into "build/docker/bin/build/docs/integrations"
+    // google-ads.md is blocked by Ad Blockers
+    rename ('google-ads.md', 'gglad.md')
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 // Copy images that are used in .md integration documentation docs
-task copyAssets(type: Copy) {
-    dependsOn copyDocker
+task copyDocAssets(type: Copy) {
+    dependsOn copyDocker, copyBuildOutput
 
     from "${project.rootProject.projectDir}/docs/.gitbook"
-    into "build/docker/bin/docs/.gitbook"
+    into "build/docker/bin/build/docs/.gitbook"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
@@ -75,16 +104,15 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-copyBuild.dependsOn npm_run_build
-copyNginx.dependsOn npm_run_build
-copyDocs.dependsOn npm_run_build
-copyAssets.dependsOn npm_run_build
-assemble.dependsOn copyDocs
-copyDocker.dependsOn(npm_run_build)
+// Those tasks should be run as part of the "check" task
+check.dependsOn validateLinks, licenseCheck, test
+
+build.dependsOn buildStorybook
 
 Task dockerBuildTask = getDockerBuildTask("webapp", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyBuild)
+dockerBuildTask.dependsOn(copyDocker)
+dockerBuildTask.dependsOn(copyBuildOutput)
 dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)
-dockerBuildTask.dependsOn(copyAssets)
+dockerBuildTask.dependsOn(copyDocAssets)
 assemble.dependsOn(dockerBuildTask)

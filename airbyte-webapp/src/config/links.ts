@@ -1,6 +1,10 @@
+// This file should contain all hard-coded outbound links we use in the UI.
+// Everything that is exported via `links` here will be validated in the CI for it's
+// existence as well as periodically checked that they are still reachable.
+
 const BASE_DOCS_LINK = "https://docs.airbyte.com";
 
-const uiConfig = {
+export const links = {
   technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
   termsLink: "https://airbyte.com/terms",
   privacyLink: "https://airbyte.com/privacy-policy",
@@ -23,7 +27,4 @@ const uiConfig = {
   webpageLink: "https://airbyte.com",
 } as const;
 
-type UiConfig = Record<keyof typeof uiConfig, string>;
-
-export type { UiConfig };
-export { uiConfig };
+export type OutboundLinks = typeof links;

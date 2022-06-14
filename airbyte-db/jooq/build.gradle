@@ -12,7 +12,7 @@ dependencies {
 
     // jOOQ code generation
     implementation libs.jooq.codegen
-    implementation libs.testcontainers.postgresql
+    implementation libs.platform.testcontainers.postgresql
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
     // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
@@ -21,6 +21,7 @@ dependencies {
 
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
     jooqGenerator project(':airbyte-db:db-lib')
+    jooqGenerator libs.platform.testcontainers.postgresql
 }
 
 jooq {
