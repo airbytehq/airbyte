@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation 'javax.validation:validation-api:1.1.0.Final'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'io.vavr:vavr:0.10.4'
 }
 
 jsonSchema2Pojo {
