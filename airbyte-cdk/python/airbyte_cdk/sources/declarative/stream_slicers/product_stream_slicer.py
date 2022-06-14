@@ -24,6 +24,7 @@ class ProductStreamSlicer(StreamSlicer):
         {"i": 1, "s": "world"},
         {"i": 2, "s": "hello"},
         {"i": 2, "s": "world"},
+    ]
     """
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
