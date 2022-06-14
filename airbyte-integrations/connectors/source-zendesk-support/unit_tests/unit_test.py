@@ -408,7 +408,6 @@ class TestSourceZendeskSupportStream:
             (Groups, None),
             (SatisfactionRatings, None),
             (TicketFields, None),
-            # (TicketMetrics, None),
         ],
         ids=[
             "Macros",
@@ -416,7 +415,6 @@ class TestSourceZendeskSupportStream:
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
-            # "TicketMetrics",
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
