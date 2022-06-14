@@ -12,7 +12,7 @@ config = {"option": "OPTION"}
 
 response = requests.Response()
 response.headers = {"A_HEADER": "HEADER_VALUE"}
-response_body = {"next_page_cursor": "12345"}
+response_body = {"next_page_cursor": 12345}
 response._content = json.dumps(response_body).encode("utf-8")
 last_responses = [{"id": 0}]
 decoder = JsonDecoder()
@@ -51,7 +51,7 @@ def test_value_depends_on_last_responses():
 
     next_page_token = paginator.next_page_token(response, last_responses)
 
-    assert next_page_token["cursor"] == "0"
+    assert next_page_token["cursor"] == 0
 
 
 def test_name_is_interpolated():
@@ -68,7 +68,7 @@ def test_token_is_none_if_field_not_found():
     paginator = InterpolatedPaginator(next_page_tokens, decoder, config)
 
     r = requests.Response()
-    r._content = json.dumps({"not_next_page_cursor": "12345"}).encode("utf-8")
+    r._content = json.dumps({"not_next_page_cursor": 12345}).encode("utf-8")
 
     next_page_token = paginator.next_page_token(r, last_responses)
 

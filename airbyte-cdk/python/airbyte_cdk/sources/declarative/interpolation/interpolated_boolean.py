@@ -18,6 +18,8 @@ class InterpolatedBoolean:
             return self._condition
         else:
             evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
+            if any(evaluated == value for value in [[], {}, False, None]):
+                return False
             if evaluated in false_values:
                 return False
             # The presence of a value is generally regarded as truthy, so we treat it as such

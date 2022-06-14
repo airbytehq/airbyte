@@ -17,7 +17,7 @@ factory = DeclarativeComponentFactory()
 
 parser = YamlParser()
 
-input_config = {"apikey": "verysecrettoken"}
+input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}
 
 
 def test_factory():
@@ -59,6 +59,20 @@ def test_list_based_stream_slicer_with_values_refd():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_list_based_stream_slicer_with_values_defined_in_config():
+    content = """
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    print(f"slice_values: {stream_slicer._slice_values}")
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
 
 

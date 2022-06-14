@@ -18,7 +18,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
         ),
     ],
 )
-def test_substream_slicer(test_name, slice_values, slice_definition, expected_slices):
+def test_list_slicer(test_name, slice_values, slice_definition, expected_slices):
     slicer = ListStreamSlicer(slice_values, slice_definition, config={})
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import ast
 import datetime
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
@@ -24,14 +25,23 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    return result
+                    try:
+                        ast_result = ast.literal_eval(result)
+                        return ast_result
+                    except ValueError:
+                        return result
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._eval(default, context)
+        default_value = self._eval(default, context)
+        try:
+            ast_result = ast.literal_eval(default_value)
+            return ast_result
+        except ValueError:
+            return default_value
 
     def _eval(self, s: str, context):
         try:
