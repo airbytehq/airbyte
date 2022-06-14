@@ -29,6 +29,7 @@ public interface StateManager<T, S> {
    * Retrieves the {@link CdcStateManager} associated with the state manager.
    *
    * @return The {@link CdcStateManager}
+   * @throws UnsupportedOperationException if the state manager does not support tracking change data capture (CDC) state.
    */
   CdcStateManager getCdcStateManager();
 
@@ -50,7 +51,7 @@ public interface StateManager<T, S> {
    * @return The {@link AirbyteStateMessage} that represents the current state contained in the state
    *         manager.
    */
-  AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair);
+  AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair);
 
   /**
    * Retrieves an {@link Optional} possibly containing the cursor value tracked in the state
@@ -121,7 +122,7 @@ public interface StateManager<T, S> {
    * @return An {@link AirbyteStateMessage} that represents the current state maintained by the state
    *         manager.
    */
-  default AirbyteStateMessage emit(final AirbyteStreamNameNamespacePair pair) {
+  default AirbyteStateMessage emit(final Optional<AirbyteStreamNameNamespacePair> pair) {
     return toState(pair);
   }
 
@@ -142,7 +143,7 @@ public interface StateManager<T, S> {
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
     LOGGER.debug("Updating cursor value for {} to {}...", pair, cursor);
     cursorInfo.get().setCursor(cursor);
-    return emit(pair);
+    return emit(Optional.ofNullable(pair));
   }
 
 }
