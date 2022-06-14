@@ -87,6 +87,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Beta                 | Yes                 |
 | [Marketo](sources/marketo.md)                                                               | Alpha                | Yes                 |
+| [Metabase](sources/metabase.md)                                                             | Alpha                | No                  |
 | [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
 | [Microsoft Dynamics Customer Engagement](sources/microsoft-dynamics-customer-engagement.md) | Alpha                | No                  |
 | [Microsoft Dynamics GP](sources/microsoft-dynamics-gp.md)                                   | Alpha                | No                  |
