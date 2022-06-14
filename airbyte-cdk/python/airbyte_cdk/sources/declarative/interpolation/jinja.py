@@ -25,11 +25,7 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    try:
-                        ast_result = ast.literal_eval(result)
-                        return ast_result
-                    except ValueError:
-                        return result
+                    return self._literal_eval(result)
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
@@ -37,11 +33,14 @@ class JinjaInterpolation(Interpolation):
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
         default_value = self._eval(default, context)
+        return self._literal_eval(default_value)
+
+    def _literal_eval(self, value):
         try:
-            ast_result = ast.literal_eval(default_value)
+            ast_result = ast.literal_eval(value)
             return ast_result
-        except ValueError:
-            return default_value
+        except (ValueError, SyntaxError):
+            return value
 
     def _eval(self, s: str, context):
         try:
