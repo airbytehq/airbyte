@@ -379,7 +379,6 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
 
-    # cursor_field = "updated_at"
     response_list_name: str = None
     sideload_param: str = None
 
