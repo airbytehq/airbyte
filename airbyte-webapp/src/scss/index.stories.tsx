@@ -1,8 +1,9 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
+import React from "react";
 
-import { classy } from "utils/components";
-
-const Div = classy("div", "with-text-styles");
+const Div: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
+  <div {...props}>{children}</div>
+);
 
 export default {
   title: "Styles/Text",
