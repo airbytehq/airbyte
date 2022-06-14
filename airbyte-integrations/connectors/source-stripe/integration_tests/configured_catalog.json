@@ -40,21 +40,27 @@
       "stream": {
         "name": "checkout_sessions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["expires_at"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["expires_at"]
     },
     {
       "stream": {
         "name": "checkout_sessions_line_items",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["checkout_session_expires_at"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["checkout_session_expires_at"]
     },
     {
       "stream": {

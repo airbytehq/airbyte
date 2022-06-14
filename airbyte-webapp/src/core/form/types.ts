@@ -2,7 +2,7 @@ import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
-type FormItem = {
+interface FormItem {
   fieldKey: string;
   path: string;
   isRequired: boolean;
@@ -11,7 +11,7 @@ type FormItem = {
   description?: string;
 
   airbyte_hidden?: boolean;
-};
+}
 
 export type FormBaseItem = {
   _type: "formItem";
@@ -46,5 +46,12 @@ type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectAr
 export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WidgetConfig = { [key: string]: any };
-export type WidgetConfigMap = { [key: string]: WidgetConfig };
+export interface WidgetConfig {
+  [key: string]: any;
+}
+export interface WidgetConfigMap {
+  [key: string]: WidgetConfig;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FormComponentOverrideProps = Record<string, any>;

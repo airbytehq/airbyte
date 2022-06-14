@@ -14,6 +14,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+from .utils import getter
+
 DEFAULT_PAGE_SIZE = 100
 
 
@@ -21,7 +23,6 @@ class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
 
     primary_key = "id"
-    use_cache = True
 
     # Detect streams with high API load
     large_stream = False
@@ -43,7 +44,7 @@ class GithubStream(HttpStream, ABC):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for repository in self.repositories:
             yield {"repository": repository}
 
@@ -88,7 +89,7 @@ class GithubStream(HttpStream, ABC):
 
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
-    def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
         organisation = stream_slice.get("organization", "")
         repository = stream_slice.get("repository", "")
@@ -140,7 +141,7 @@ class GithubStream(HttpStream, ABC):
             self.logger.warn(error_msg)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = {"per_page": self.page_size}
@@ -195,12 +196,15 @@ class SemiIncrementalMixin:
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
+        self._starting_point_cache = {}
 
     @property
     def __slice_key(self):
         if hasattr(self, "repositories"):
             return "repository"
         return "organization"
+
+    record_slice_key = __slice_key
 
     def convert_cursor_value(self, value):
         return value
@@ -216,7 +220,7 @@ class SemiIncrementalMixin:
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        slice_value = latest_record[self.__slice_key]
+        slice_value = getter(latest_record, self.record_slice_key)
         updated_state = self.convert_cursor_value(latest_record[self.cursor_field])
         stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
         if stream_state_value:
@@ -224,13 +228,18 @@ class SemiIncrementalMixin:
         current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             slice_value = stream_slice[self.__slice_key]
             stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
         return self._start_date
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if self.__slice_key not in self._starting_point_cache:
+            self._starting_point_cache[self.__slice_key] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[self.__slice_key]
 
     def read_records(
         self,
@@ -248,6 +257,10 @@ class SemiIncrementalMixin:
                 yield record
             elif self.is_sorted_descending and cursor_value < start_point:
                 break
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        yield from super().stream_slices(**kwargs)
 
 
 class IncrementalMixin(SemiIncrementalMixin):
@@ -300,7 +313,7 @@ class Collaborators(GithubStream):
 
 class IssueLabels(GithubStream):
     """
-    API docs: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -319,7 +332,7 @@ class Organizations(GithubStream):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:
             yield {"organization": organization}
 
@@ -368,6 +381,8 @@ class Teams(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
     """
+
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/teams"
@@ -424,6 +439,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
+    use_cache = True
     large_stream = True
     first_read_override_key = "first_read_override"
 
@@ -470,6 +486,8 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
+
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/comments"
@@ -522,6 +540,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
+    use_cache = True
     stream_base_params = {
         "state": "all",
     }
@@ -554,6 +573,7 @@ class Comments(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
+    use_cache = True
     large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -638,6 +658,7 @@ class Issues(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
+    use_cache = True
     large_stream = True
 
     stream_base_params = {
@@ -652,6 +673,7 @@ class ReviewComments(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
+    use_cache = True
     large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -662,8 +684,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
-    use_cache = False
-
     def __init__(self, parent: PullRequests, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
@@ -787,7 +807,6 @@ class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
     copy_parent_key = "comment_id"
-    use_cache = False
     cursor_field = "created_at"
 
     def __init__(self, start_date: str = "", **kwargs):
@@ -899,6 +918,7 @@ class ProjectColumns(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
     """
 
+    use_cache = True
     cursor_field = "updated_at"
 
     def __init__(self, parent: HttpStream, start_date: str, **kwargs):
@@ -1051,11 +1071,14 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
 
 
-class WorkflowRuns(GithubStream):
+class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
     API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
     """
+
+    # key for accessing slice value from record
+    record_slice_key = ["repository", "full_name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
@@ -1071,6 +1094,7 @@ class TeamMembers(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
     """
 
+    use_cache = True
     primary_key = ["id", "team_slug"]
 
     def __init__(self, parent: Teams, **kwargs):

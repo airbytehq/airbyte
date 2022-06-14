@@ -10,15 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
-  public boolean usesNewScheduler() {
-    // TODO: sweep this method along with the scheduler
-    log.info("New Scheduler: true (post-migration)");
-
-    // After migrating all OSS users onto the new temporal scheduler, this should always return true.
-    return true;
-  }
-
-  @Override
   public boolean autoDisablesFailingConnections() {
     log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
 

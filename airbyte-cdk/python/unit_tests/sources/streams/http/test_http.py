@@ -248,20 +248,22 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     assert response.status_code == status_code
 
 
-def test_raise_on_http_errors_off_timeout(requests_mock):
+@pytest.mark.parametrize(
+    "error",
+    (
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ReadTimeout,
+    ),
+)
+def test_raise_on_http_errors(mocker, error):
     stream = AutoFailFalseHttpStream()
-    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectTimeout)
+    send_mock = mocker.patch.object(requests.Session, "send", side_effect=error())
 
-    with pytest.raises(requests.exceptions.ConnectTimeout):
+    with pytest.raises(error):
         list(stream.read_records(SyncMode.full_refresh))
-
-
-def test_raise_on_http_errors_off_connection_error(requests_mock):
-    stream = AutoFailFalseHttpStream()
-    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectionError)
-
-    with pytest.raises(requests.exceptions.ConnectionError):
-        list(stream.read_records(SyncMode.full_refresh))
+    assert send_mock.call_count == stream.max_retries + 1
 
 
 class PostHttpStream(StubBasicReadHttpStream):
@@ -474,10 +476,10 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     assert message == expected_message
 
 
-def test_default_parse_response_error_message_not_json():
+def test_default_parse_response_error_message_not_json(requests_mock):
     stream = StubBasicReadHttpStream()
-    response = MagicMock()
-    response.json.side_effect = requests.exceptions.JSONDecodeError()
+    requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
+    response = requests.get("mock://test.com/not_json")
 
     message = stream.parse_response_error_message(response)
     assert message is None

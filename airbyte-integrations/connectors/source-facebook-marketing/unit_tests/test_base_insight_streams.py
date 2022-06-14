@@ -51,7 +51,7 @@ def async_job_mock_fixture(mocker):
 
 class TestBaseInsightsStream:
     def test_init(self, api):
-        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1))
+        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
 
         assert not stream.breakdowns
         assert stream.action_breakdowns == AdsInsights.ALL_ACTION_BREAKDOWNS
@@ -66,6 +66,7 @@ class TestBaseInsightsStream:
             name="CustomName",
             breakdowns=["test1", "test2"],
             action_breakdowns=["field1", "field2"],
+            insights_lookback_window=28,
         )
 
         assert stream.breakdowns == ["test1", "test2"]
@@ -85,6 +86,7 @@ class TestBaseInsightsStream:
             api=api,
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
         )
 
         records = list(
@@ -104,11 +106,7 @@ class TestBaseInsightsStream:
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
-        stream = AdsInsights(
-            api=api,
-            start_date=datetime(2010, 1, 1),
-            end_date=datetime(2011, 1, 1),
-        )
+        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
 
         records = list(
             stream.read_records(
@@ -143,11 +141,7 @@ class TestBaseInsightsStream:
     )
     def test_state(self, api, state):
         """State setter/getter should work with all combinations"""
-        stream = AdsInsights(
-            api=api,
-            start_date=datetime(2010, 1, 1),
-            end_date=datetime(2011, 1, 1),
-        )
+        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
 
         assert stream.state == {}
 
@@ -162,7 +156,7 @@ class TestBaseInsightsStream:
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date):
         """Stream will use start_date when there is not state"""
         end_date = start_date + duration(weeks=2)
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
         slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
@@ -179,7 +173,7 @@ class TestBaseInsightsStream:
         """Stream will use start_date when there is not state and start_date within 28d from now"""
         start_date = recent_start_date
         end_date = pendulum.now()
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
         slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
@@ -197,7 +191,7 @@ class TestBaseInsightsStream:
         end_date = start_date + duration(days=10)
         cursor_value = start_date + duration(days=5)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
         slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
@@ -216,7 +210,7 @@ class TestBaseInsightsStream:
         end_date = pendulum.now()
         cursor_value = end_date - duration(days=1)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
         slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
@@ -237,7 +231,7 @@ class TestBaseInsightsStream:
             AdsInsights.cursor_field: cursor_value.date().isoformat(),
             "slices": [(cursor_value + duration(days=1)).date().isoformat(), (cursor_value + duration(days=3)).date().isoformat()],
         }
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
         slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
@@ -251,7 +245,7 @@ class TestBaseInsightsStream:
         assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
 
     def test_get_json_schema(self, api):
-        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1))
+        stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
 
         schema = stream.get_json_schema()
 
@@ -261,7 +255,11 @@ class TestBaseInsightsStream:
 
     def test_get_json_schema_custom(self, api):
         stream = AdsInsights(
-            api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), breakdowns=["device_platform", "country"]
+            api=api,
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            breakdowns=["device_platform", "country"],
+            insights_lookback_window=28,
         )
 
         schema = stream.get_json_schema()
@@ -275,6 +273,7 @@ class TestBaseInsightsStream:
             api=api,
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
         )
 
         fields = stream.fields
@@ -289,6 +288,7 @@ class TestBaseInsightsStream:
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
         )
 
         assert stream.fields == ["account_id", "account_currency"]
@@ -297,7 +297,7 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=10))
+
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
@@ -311,7 +311,7 @@ class TestBaseInsightsStream:
             "time_increment": 1,
         }
 
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=10)
         stream.state = state
         assert stream._completed_slices == {pendulum.Date(2020, 3, 21), pendulum.Date(2020, 3, 22), pendulum.Date(2020, 3, 23)}
 
@@ -327,11 +327,11 @@ class TestBaseInsightsStream:
         start_date = pendulum.parse("2020-03-01")
         end_date = pendulum.parse("2020-05-01")
         yesterday, _ = set_today("2020-04-01")
-        monkeypatch.setattr(AdsInsights, "INSIGHTS_LOOKBACK_PERIOD", pendulum.duration(days=20))
+
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJob", FakeInsightAsyncJob)
         monkeypatch.setattr(source_facebook_marketing.streams.base_insight_streams, "InsightAsyncJobManager", FakeInsightAsyncJobManager)
 
-        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=20)
 
         records = read_full_refresh(stream)
         assert len(records) == (yesterday - start_date).days + 1

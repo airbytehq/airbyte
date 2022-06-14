@@ -19,6 +19,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -32,8 +33,7 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -134,6 +134,7 @@ public class WorkerApp {
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
+  private final StreamResetPersistence streamResetPersistence;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -191,7 +192,8 @@ public class WorkerApp {
             jobNotifier,
             jobTracker,
             configRepository,
-            jobCreator),
+            jobCreator,
+            streamResetPersistence),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         new CheckConnectionActivityImpl(
@@ -355,7 +357,7 @@ public class WorkerApp {
   }
 
   private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
-    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
+    MetricClientFactory.initialize(MetricEmittingApps.WORKER);
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
@@ -437,6 +439,8 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -463,7 +467,8 @@ public class WorkerApp {
         connectionHelper,
         containerOrchestratorConfig,
         jobNotifier,
-        jobTracker).start();
+        jobTracker,
+        streamResetPersistence).start();
   }
 
   public static void main(final String[] args) {
