@@ -23,7 +23,7 @@
     transition: variables.$transition-out;
   }
 
-  &.activated {
+  &.active {
     color: colors.$whiteColor;
     background: colors.$primaryColor;
     transition: variables.$transition-out;
@@ -32,6 +32,16 @@
       color: colors.$whiteColor;
       background: #7f7eff; //todo: update to use palette when palette up to date
       transition: variables.$transition-out;
+    }
+  }
+
+  &.activeChild {
+    color: colors.$whiteColor;
+    background: #353b7b;
+
+    &:hover {
+      color: colors.$whiteColor;
+      background: #565c94;
     }
   }
 }

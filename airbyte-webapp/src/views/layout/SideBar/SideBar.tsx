@@ -11,6 +11,7 @@ import Version from "components/Version";
 
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -55,10 +56,11 @@ const HelpIcon = styled(FontAwesomeIcon)`
 const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
+  const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    console.log(isActive);
-    return classnames(styles.menuItem, { [styles.activated]: isActive });
+    const isChild = location.pathname.split("/").length > 4;
+    return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
   return (
@@ -128,13 +130,7 @@ const SideBar: React.FC = () => {
           </li>
 
           <li>
-            <NavLink
-              className={({ isActive }) => menuItemStyle(isActive)}
-              to={RoutePaths.Settings}
-              // isActive={(_, location) =>
-              //   location.pathname.startsWith(RoutePaths.Settings)
-              // }
-            >
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
               <React.Suspense fallback={null}>
                 <NotificationIndicator />
               </React.Suspense>
