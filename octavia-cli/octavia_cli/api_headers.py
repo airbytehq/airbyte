@@ -1,9 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 from dataclasses import dataclass
-from itertools import groupby
-from typing import Optional, List, Tuple, NoReturn
+from typing import List, Optional, Tuple
 
 import airbyte_api_client
 import click
@@ -13,120 +12,98 @@ from .apply.yaml_loaders import EnvVarLoader
 
 API_HEADERS_YAML_FILE_INSTRUCTION = """
 headers:
-  - name: Authorization
-    value: Basic dXNlcjpwYXNzd29yZA==
-  - name: Content-Type
-    value: application/json
+  "Authorization": "Basic dXNlcjpwYXNzd29yZA=="
+  "Content-Type": "application/json"
 """.strip()
 
 
+class InvalidApiHttpHeadersFileError(click.exceptions.ClickException):
+    pass
+
+
 @dataclass
-class ApplicationHeader:
-    name: Optional[str]
-    value: Optional[str]
+class ApiHttpHeader:
+    name: str
+    value: str
 
     def __post_init__(self):
         try:
             assert isinstance(self.name, str) and self.name
             assert isinstance(self.value, str) and self.value
         except AssertionError:
-            raise AttributeError("Header name and value must be non empty string")
+            raise AttributeError("Header name and value must be non empty string.")
         self.name = self.name.strip()
         self.value = self.value.strip()
 
-    def clean(self):
-        return ApplicationHeader(
-            name=self.name.strip(),
-            value=self.value.strip()
-        )
 
+def deserialize_file_based_headers(header_configuration_path: str) -> List[ApiHttpHeader]:
+    """Parse API HTTP headers declared in a YAML file to a list of ApiHttpHeaders
 
-def deduplicate_api_headers(application_headers: List[ApplicationHeader]) -> List[ApplicationHeader]:
-    sorted_headers = sorted(application_headers, key=lambda header: header.name)
-    groups = groupby(sorted_headers, key=lambda header: header.name)
-    unique_headers = [
-        ApplicationHeader(
-            name=header_name,
-            value=sorted([header.value for header in group_headers])[0]
-        ) for header_name, group_headers in groups]
-    return unique_headers
+    Args:
+        header_configuration_path (str): Path to the YAML file where API HTTP headers are declared.
 
+    Raises:
+        InvalidApiHttpHeadersFileError: Raised if the YAML structure is not valid.
 
-class InvalidHeaderConfigurationFile(Exception):
-    pass
-
-
-def deserialize_file_based_headers(header_configuration_path: str) -> List[ApplicationHeader]:
+    Returns:
+        List[ApiHttpHeader]: List of HTTP headers parsed from the YAML file.
+    """
     with open(header_configuration_path) as file:
-        content = yaml.load(file, EnvVarLoader)
+        try:
+            content = yaml.load(file, EnvVarLoader)
+            headers = content["headers"]
+        except (TypeError, KeyError, yaml.scanner.ScannerError):
+            raise InvalidApiHttpHeadersFileError(
+                f"Please provide valid yaml file to declare API HTTP headers, like below:\n{API_HEADERS_YAML_FILE_INSTRUCTION}"
+            )
 
-    headers = content.get("headers", None)
-
-    if not headers:
-        raise AttributeError("""
-        Please provide valid configuration file, like below
-        headers:
-          - name: Authorization
-            value: Basic dXNlcjpwYXNzd29yZA==
-          - name: Content-Type
-            value: application/json
-        """)
-
-    try:
-        application_headers = [ApplicationHeader(header["name"], header["value"]) for header in headers]
-    except KeyError:
-        raise InvalidHeaderConfigurationFile("Headers must have name and value keys")
-
-    return deduplicate_api_headers(application_headers)
+    return [ApiHttpHeader(name, value) for name, value in headers.items()]
 
 
-def deseriliaze_opiton_based_headers(api_headers: List[Tuple[str, str]]) -> List[ApplicationHeader]:
-    return deduplicate_api_headers([
-        ApplicationHeader(header_name, header_value) for header_name, header_value in api_headers
-    ])
+def deserialize_option_based_headers(api_http_headers: List[Tuple[str, str]]) -> List[ApiHttpHeader]:
+    """Parse API HTTP headers declared in CLI options to a list of ApiHttpHeaders
+
+    Args:
+        api_http_headers (List[Tuple[str, str]]): Raw list of api headers tuples retrieved from CLI options.
+
+    Returns:
+        List[ApiHttpHeader]: List of HTTP headers parsed from the CLI options.
+    """
+    return list({header_name: ApiHttpHeader(header_name, header_value) for header_name, header_value in api_http_headers}.values())
 
 
 def merge_api_headers(
-        option_based_headers: List[ApplicationHeader],
-        file_based_headers: List[ApplicationHeader]) -> List[ApplicationHeader]:
+    option_based_raw_headers: Optional[List[Tuple[str, str]]], api_http_headers_file_path: Optional[str]
+) -> List[ApiHttpHeader]:
+    """Deserialize headers from options and files into ApiHttpHeader and merge options based headers with file based headers.
+
+    Args:
+        option_based_raw_headers (Optional[List[Tuple[str, str]]]): Option based headers.
+        api_http_headers_file_path (Optional[str]): Path to the YAML file with http headers.
+
+    Returns:
+        List[ApiHttpHeader]: Lit of unique ApiHttpHeaders
     """
-    This function merges the HTTP headers parsed from the yam file and from the CLI option. Headers from CLI options override those defined
-    in th file.
-    :param option_based_headers:  headers which came from CLI options --api-headers
-    :param file_based_headers: all application headers which were parsed from file --api-headers-file
-    :return: the merged list of unique Http headers
-    """
+    if option_based_raw_headers and api_http_headers_file_path:
+        click.echo(
+            "ℹ️ - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
+        )
+
+    option_based_headers = deserialize_option_based_headers(option_based_raw_headers) if option_based_raw_headers is not None else []
+    file_based_headers = deserialize_file_based_headers(api_http_headers_file_path) if api_http_headers_file_path else []
 
     merged_headers = {header.name: header for header in file_based_headers}
     for header in option_based_headers:
         merged_headers[header.name] = header
-
     return list(merged_headers.values())
 
 
-def deserialize_api_headers(api_headers: Optional[List[Tuple[str, str]]], api_headers_file: Optional[str]) -> List[ApplicationHeader]:
-    if api_headers and api_headers_file:
-        click.echo("Passed api headers file and api headers at the same time, Overriding policy applied when priority of file is higher")
+def set_api_headers_on_api_client(api_client: airbyte_api_client.ApiClient, api_headers: List[ApiHttpHeader]) -> None:
+    """Set the API headers on the API client
 
-    argument_based_headers = []
-    file_based_application_headers = []
-
-    if api_headers:
-        argument_based_headers = deseriliaze_opiton_based_headers(api_headers)
-
-    if api_headers_file:
-        file_based_application_headers = deserialize_file_based_headers(api_headers_file)
-
-    api_headers_result = merge_api_headers(
-        argument_based_headers, file_based_application_headers
-    )
-
-    return api_headers_result
-
-
-def set_api_headers(api_client: airbyte_api_client.ApiClient, api_headers: List[ApplicationHeader]) -> NoReturn:
+    Args:
+        api_client (airbyte_api_client.ApiClient): The API client on which headers will be set.
+        api_headers (List[ApiHttpHeader]): Headers to set on the API client.
+    """
     for api_header in api_headers:
-        try:
-            api_client.set_default_header(api_header.name, api_header.value)
-        except Exception as e:
-            click.echo(f"Skipping applying configuration due to exception {e}")
+        api_client.set_default_header(api_header.name, api_header.value)
