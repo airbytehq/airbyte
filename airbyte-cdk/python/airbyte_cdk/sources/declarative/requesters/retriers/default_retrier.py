@@ -29,6 +29,14 @@ class BackoffStrategy:
     pass
 
 
+class ConstantBackoff:
+    def __init__(self, backoff_in_seconds):
+        self._backoff_in_seconds = backoff_in_seconds
+
+    def backoff(self, response):
+        return self._backoff_in_seconds
+
+
 class DefaultRetrier(Retrier):
     def __init__(
         self,
@@ -45,7 +53,7 @@ class DefaultRetrier(Retrier):
         if backoff is None:
             backoff = []
         if not isinstance(backoff, list):
-            retry = [backoff]
+            backoff = [backoff]
         self._max_retries = max_retries
         self._retry_factor = retry_factor
         self.ignore = ignore
@@ -82,7 +90,8 @@ class DefaultRetrier(Retrier):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         for backoff_strategy in self._backoff_strategies:
-            if backoff_strategy:
-                return self._backoff.backoff_time(response)
+            backoff = backoff_strategy.backoff(response)
+            if backoff:
+                return backoff
         # None defaults to exponential backoff...
         return None
