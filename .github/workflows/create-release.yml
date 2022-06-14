@@ -27,9 +27,10 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_ID/pulls)
-          # the printf helps escape characters so that jq can parse the output.
-          # the sed removes carriage returns so that the body is easier to parse later.
-          PR_BODY=$(printf '%s' "$PR" | jq '.[0].body' | sed 's/\\r//g')
+          # The printf helps escape characters so that jq can parse the output.
+          # The sed removes carriage returns so that the body is easier to parse later, and
+          #   escapes backticks so that they are not executed as commands.
+          PR_BODY=$(printf '%s' "$PR" | jq '.[0].body' | sed 's/\\r//g' | sed 's/`/\\`/g')
           echo ::set-output name=pr_body::${PR_BODY}
       - name: Extract Changelog
         id: extract_changelog
