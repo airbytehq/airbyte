@@ -111,10 +111,6 @@ class ResourceState:
         with open(self.path, "w") as state_file:
             yaml.dump(self.as_dict(), state_file)
 
-    def delete(self) -> None:
-        """Delete the state file"""
-        os.remove(self.path)
-
     @classmethod
     def create(cls, configuration_path: str, configuration_hash: str, workspace_id: str, resource_id: str) -> "ResourceState":
         """Create a state for a resource configuration.
@@ -131,6 +127,10 @@ class ResourceState:
         state = ResourceState(configuration_path, workspace_id, resource_id, generation_timestamp, configuration_hash)
         state._save()
         return state
+
+    def delete(self) -> None:
+        """Delete the state file"""
+        os.remove(self.path)
 
     @classmethod
     def from_file(cls, file_path: str) -> "ResourceState":
@@ -160,14 +160,22 @@ class ResourceState:
     def from_configuration_path_and_workspace(cls, configuration_path, workspace_id):
         state_path = cls._get_path_from_configuration_and_workspace_id(configuration_path, workspace_id)
         state = cls.from_file(state_path)
-
         return state
 
     @classmethod
-    def migrate(self, state_to_migrate_path, workspace_id):
+    def migrate(self, state_to_migrate_path: str, workspace_id: str) -> "ResourceState":
+        """Create a per workspace state from a legacy state file and remove the legacy state file.
+
+        Args:
+            state_to_migrate_path (str): Path to the legacy state file to migrate.
+            workspace_id (str): Workspace id for which the new state will be stored.
+
+        Returns:
+            ResourceState: The new state after migration.
+        """
         state_to_migrate = ResourceState.from_file(state_to_migrate_path)
         new_state = ResourceState.create(
-            state_to_migrate.configuration_path, state_to_migrate.configuration_path, workspace_id, state_to_migrate.resource_id
+            state_to_migrate.configuration_path, state_to_migrate.configuration_hash, workspace_id, state_to_migrate.resource_id
         )
         state_to_migrate.delete()
         return new_state
@@ -601,6 +609,14 @@ class Connection(BaseResource):
 
     @property
     def source_id(self):
+        """Retrieve the source id from the source state file of the current workspace.
+
+        Raises:
+            MissingStateError: Raised if the state file of the current workspace is not found.
+
+        Returns:
+            str: source id
+        """
         try:
             source_state = ResourceState.from_configuration_path_and_workspace(
                 self.raw_configuration["source_configuration_path"], self.workspace_id
@@ -613,6 +629,14 @@ class Connection(BaseResource):
 
     @property
     def destination_id(self):
+        """Retrieve the destination id from the destination state file of the current workspace.
+
+        Raises:
+            MissingStateError: Raised if the state file of the current workspace is not found.
+
+        Returns:
+            str: destination id
+        """
         try:
             destination_state = ResourceState.from_configuration_path_and_workspace(
                 self.raw_configuration["destination_configuration_path"], self.workspace_id
@@ -730,15 +754,15 @@ class Connection(BaseResource):
             deserialized_operations.append(operation)
         return deserialized_operations
 
-    # TODO this check can be removed when all our active user are on >= 0.36.11
+    # TODO this check can be removed when all our active user are on >= 0.37.0
     def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
-        """We changed connection configuration keys from camelCase to snake_case in 0.36.11.
+        """We changed connection configuration keys from camelCase to snake_case in 0.37.0.
         This function check if the connection configuration has some camelCase keys and display a meaningful error message.
 
         Args:
             configuration_to_check (dict): Configuration to validate
         """
-        error_message = "These keys should be in snake_case since version 0.36.10, please edit or regenerate your connection configuration"
+        error_message = "These keys should be in snake_case since version 0.37.0, please edit or regenerate your connection configuration"
         self._check_for_invalid_configuration_keys(
             configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message
         )
@@ -753,7 +777,7 @@ class Connection(BaseResource):
                 stream["config"], {"aliasName", "cursorField", "destinationSyncMode", "primaryKey", "syncMode"}, error_message
             )
 
-    # TODO this check can be removed when all our active user are on > 0.39.1
+    # TODO this check can be removed when all our active user are on > 0.39.18
     def _check_for_legacy_raw_configuration_keys(self, raw_configuration):
         self._check_for_invalid_configuration_keys(
             raw_configuration,
