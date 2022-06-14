@@ -39,7 +39,7 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = make_stream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}}
-    expected_params = {"offset": 1000 }
+    expected_params = {"offset": 1000}
     assert stream.request_params(**inputs) == expected_params
 
 

@@ -165,6 +165,13 @@ class IncrementalNetsuiteStream(NetsuiteStream, ABC):
         return {**(stream_slice or {}), **(next_page_token or {})}
 
 
+class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
+    # Custom records use lastmodified instead of lastModifiedDate
+    @property
+    def cursor_field(self) -> str:
+        return "lastmodified"
+
+
 # Source
 class SourceNetsuite(AbstractSource):
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
@@ -186,7 +193,7 @@ class SourceNetsuite(AbstractSource):
         session = requests.Session()
         session.auth = auth
         # automatically raise an error on failed requests
-        session.hooks = { 'response': lambda r, *args, **kwargs: r.raise_for_status() }
+        session.hooks = {"response": lambda r, *args, **kwargs: r.raise_for_status()}
         return session
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -224,9 +231,16 @@ class SourceNetsuite(AbstractSource):
         schemas = {n: session.get(metadata_url + n, headers=schema_headers).json() for n in record_names}
 
         incremental_record_names = [n for n in record_names if schemas[n]["properties"].get("lastModifiedDate")]
+        custom_incremental_record_names = [n for n in record_names if schemas[n]["properties"].get("lastmodified")]
         standard_record_names = [n for n in record_names if n not in incremental_record_names]
 
         streams = [NetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in standard_record_names]
-        incremental_streams = [IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in incremental_record_names]
+        incremental_streams = [
+            IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in incremental_record_names
+        ]
+        custom_incremental_streams = [
+            CustomIncrementalNetsuiteStream(auth, name, base_url, strat_datetime, concurrency_limit)
+            for name in custom_incremental_record_names
+        ]
 
-        return streams + incremental_streams
+        return streams + incremental_streams + custom_incremental_streams
