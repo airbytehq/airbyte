@@ -31,9 +31,7 @@ and "DATA" is not null
 -- depends_on: __dbt__cte__nested_stream_with_c___names_partition_data_ab1
 select
     _airbyte_partition_hashid,
-    cast(currency as 
-    varchar
-) as currency,
+    cast(currency as text) as currency,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -46,13 +44,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__nested_stream_with_c___names_partition_data_ab2
 select
-    md5(cast(coalesce(cast(_airbyte_partition_hashid as 
-    varchar
-), '') || '-' || coalesce(cast(currency as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_data_hashid,
+    md5(cast(coalesce(cast(_airbyte_partition_hashid as text), '') || '-' || coalesce(cast(currency as text), '') as text)) as _airbyte_data_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_c___names_partition_data_ab2 tmp
 -- DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
