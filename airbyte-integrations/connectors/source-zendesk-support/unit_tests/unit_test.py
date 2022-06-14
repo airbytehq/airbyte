@@ -408,7 +408,7 @@ class TestSourceZendeskSupportStream:
             (Groups, None),
             (SatisfactionRatings, None),
             (TicketFields, None),
-            (TicketMetrics, None),
+            # (TicketMetrics, None),
         ],
         ids=[
             "Macros",
@@ -416,7 +416,7 @@ class TestSourceZendeskSupportStream:
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
-            "TicketMetrics",
+            # "TicketMetrics",
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
@@ -555,12 +555,14 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms),
             (TicketMetricEvents),
             (TicketAudits),
+            (TicketMetrics),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "TicketMetrics",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls):

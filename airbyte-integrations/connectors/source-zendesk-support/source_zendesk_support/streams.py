@@ -335,7 +335,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     """
     Endpoints provide a cursor pagination and sorting mechanism
     """
-
+    cursor_field = "updated_at"
     next_page_field = "next_page"
     prev_start_time = None
 
@@ -379,7 +379,7 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
 
-    cursor_field = "updated_at"
+    # cursor_field = "updated_at"
     response_list_name: str = None
     sideload_param: str = None
 
@@ -483,8 +483,6 @@ class Groups(SourceZendeskSupportStream):
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
-    cursor_field = "updated_at"
-
 
 class SatisfactionRatings(SourceZendeskSupportStream):
     """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
@@ -517,12 +515,20 @@ class TicketFields(SourceZendeskSupportStream):
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
 
-    cursor_field = "updated_at"
 
-
-class TicketMetrics(SourceZendeskSupportStream):
+class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
-
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+    
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"start_time": self.check_stream_state(stream_state)}
+        if next_page_token:
+            params.update({"page": next_page_token or 1, "per_page": self.page_size})
+        return params
+    
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
