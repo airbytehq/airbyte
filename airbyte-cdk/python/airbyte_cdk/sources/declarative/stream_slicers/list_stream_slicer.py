@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import ast
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -16,7 +16,7 @@ class ListStreamSlicer(StreamSlicer):
     Stream slicer that iterates over the values of a list
     """
 
-    def __init__(self, slice_values: List[str], slice_definition: Mapping[str, Any], config: Config):
+    def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
         if isinstance(slice_values, str):
             slice_values = ast.literal_eval(slice_values)
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
