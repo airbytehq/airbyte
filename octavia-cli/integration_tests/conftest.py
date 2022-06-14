@@ -8,9 +8,9 @@ import pytest
 import yaml
 from airbyte_api_client.api import connection_api
 from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
+from octavia_cli.api_headers import ApplicationHeader
 from octavia_cli.apply.resources import Connection, Destination, Source
 from octavia_cli.entrypoint import get_api_client, get_workspace_id
-from octavia_cli.headers import ApplicationHeader
 from octavia_cli.init.commands import DIRECTORIES_TO_CREATE as OCTAVIA_PROJECT_DIRECTORIES
 
 
@@ -160,9 +160,7 @@ def connection_with_normalization(
 def secured_api_client():
     basic_auth_token = f"Basic {base64.b64encode(b'user1:password').decode()}"
 
-    return get_api_client("http://localhost:8010", api_headers=[
-        ApplicationHeader(name="Authorization", value=basic_auth_token)
-    ])
+    return get_api_client("http://localhost:8010", api_headers=[ApplicationHeader(name="Authorization", value=basic_auth_token)])
 
 
 @pytest.fixture(scope="session")
@@ -218,10 +216,12 @@ def connection_secured_state_path(octavia_test_project_directory):
 
 
 @pytest.fixture(scope="session")
-def connection_secured(secured_api_client, workspace_id, octavia_test_project_directory, secured_source, destination_secured,
-                       connection_secured_state_path):
-    configuration, configuration_path = updated_connection_configuration_and_path(octavia_test_project_directory, secured_source,
-                                                                                  destination_secured)
+def connection_secured(
+    secured_api_client, workspace_id, octavia_test_project_directory, secured_source, destination_secured, connection_secured_state_path
+):
+    configuration, configuration_path = updated_connection_configuration_and_path(
+        octavia_test_project_directory, secured_source, destination_secured
+    )
     connection = Connection(secured_api_client, workspace_id, configuration, configuration_path)
     yield connection
     connection.api_instance.delete_connection(connection.resource_id_request_body)

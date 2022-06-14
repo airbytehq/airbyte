@@ -1,5 +1,0 @@
-# This file is an example file with headers used to pass to octavia cli client. It can help to reach out to secured
-# airbyte instances (ex. proxy auth server)
-headers:
-  - name: "Content-Type"
-    value: "application/json"

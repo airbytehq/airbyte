@@ -1,29 +1,26 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import importlib.resources as pkg_resources
 import os
-from typing import Iterable, Tuple, Dict, Optional
+from pathlib import Path
+from typing import Iterable, Tuple
 
 import click
-import yaml
-
 from octavia_cli.base_commands import OctaviaCommand
 
+from . import example_files
+
 DIRECTORIES_TO_CREATE = {"connections", "destinations", "sources"}
-API_HEADERS_CONFIGURATION_FILE = "api_headers.yaml"
-DEFAULT_API_HEADERS_FILE_CONTENT = """
-headers:
-  - name: "Content-Type"
-    value: "application/json"
-""".strip("\n")
+DEFAULT_API_HEADERS_FILE_CONTENT = pkg_resources.read_text(example_files, "example_api_http_headers.yaml")
+API_HTTP_HEADERS_TARGET_PATH = Path("api_http_headers.yaml")
 
 AIRBYTE_HEADERS_FILE_PATH_ENV_VARIABLE_NAME = "AIRBYTE_HEADERS_FILE_PATH"
 
 
 def create_api_headers_configuration_file() -> bool:
-    if not os.path.isfile(API_HEADERS_CONFIGURATION_FILE):
-        with open(API_HEADERS_CONFIGURATION_FILE, "w") as file:
+    if not API_HTTP_HEADERS_TARGET_PATH.is_file():
+        with open(API_HTTP_HEADERS_TARGET_PATH, "w") as file:
             file.write(DEFAULT_API_HEADERS_FILE_CONTENT)
         return True
     return False
@@ -54,10 +51,9 @@ def init(ctx: click.Context):
         click.echo(click.style(message, fg="yellow", bold=True))
 
     created_api_headers_file = create_api_headers_configuration_file()
-
     if created_api_headers_file:
-        message = f"✅ - Created example application headers configuration file {API_HEADERS_CONFIGURATION_FILE}"
+        message = f"✅ - Created API HTTP headers file in {API_HTTP_HEADERS_TARGET_PATH}"
         click.echo(click.style(message, fg="green", bold=True))
     else:
-        message = "❓ - Application headers file already exists, skipping"
+        message = "❓ - API HTTP headers file already exists, skipping."
         click.echo(click.style(message, fg="yellow", bold=True))
