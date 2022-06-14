@@ -277,3 +277,5 @@ For more details and options, you can also refer to the [testing connectors docs
 ## Acceptance Tests
 
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
+
+TODO: REVERT CHANGES AFTER THE TEST, DO NOT MERGE!
