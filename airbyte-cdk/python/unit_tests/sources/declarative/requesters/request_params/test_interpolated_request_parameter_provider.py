@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_requ
 
 state = {"date": "2021-01-01"}
 stream_slice = {"start_date": "2020-01-01"}
-next_page_token = {"offset": 12345}
+next_page_token = {"offset": "12345"}
 config = {"option": "OPTION"}
 
 

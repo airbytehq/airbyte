@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import ast
 from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
@@ -17,6 +17,8 @@ class ListStreamSlicer(StreamSlicer):
     """
 
     def __init__(self, slice_values: List[str], slice_definition: Mapping[str, Any], config: Config):
+        if isinstance(slice_values, str):
+            slice_values = ast.literal_eval(slice_values)
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
         self._slice_values = slice_values
         self._config = config
