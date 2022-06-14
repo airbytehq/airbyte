@@ -439,8 +439,7 @@ public abstract class JdbcSourceAcceptanceTest {
           Field.of(COL_ID, JsonSchemaType.NUMBER),
           Field.of(COL_NAME, JsonSchemaType.STRING)));
 
-      final List<AirbyteMessage> secondStreamExpectedMessages = getAirbyteMessagesSecondSync(streamName2);
-      expectedMessages.addAll(secondStreamExpectedMessages);
+      expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2));
     }
 
     final List<AirbyteMessage> actualMessages = MoreIterators
@@ -480,9 +479,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    final List<AirbyteMessage> secondStreamExpectedMessages = getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces);
-    final List<AirbyteMessage> expectedMessages = getTestMessages();
-    expectedMessages.addAll(secondStreamExpectedMessages);
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
+    expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertEquals(expectedMessages, actualMessages);
