@@ -58,8 +58,8 @@ const SideBar: React.FC = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    console.log(isActive);
-    return classnames(styles.menuItem, { [styles.activated]: isActive });
+    const isChild = location.pathname.split("/").length > 4;
+    return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
   return (
@@ -80,7 +80,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connection}>
               <OnboardingIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -100,6 +100,31 @@ const SideBar: React.FC = () => {
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
+                <FormattedMessage id="sidebar.update" />
+              </Text>
+            </a>
+          </li>
+          <li>
+            <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
+              {({ onOpen }) => (
+                <div className={styles.menuItem} onClick={onOpen}>
+                  <DocsIcon />
+                  <Text>
+                    <FormattedMessage id="sidebar.resources" />
+                  </Text>
+                </div>
+              )}
+            </SidebarPopout>
+          </li>
+
+          <li>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
+              <SettingsIcon />
+              <Text>
+                <FormattedMessage id="sidebar.settings" />
               </Text>
             </NavLink>
           </li>
