@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +34,9 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     stateManager.getCdcStateManager().setCdcState(cdcState);
     /*
      * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
-     * Therefore, it doesn't matter what we pass here, as it will be ignored.
+     * Therefore, provide an empty optional.
      */
-    final AirbyteStateMessage stateMessage = stateManager.emit(null);
+    final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 

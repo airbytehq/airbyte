@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -57,6 +58,6 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
   }
 
   @Override
-  public abstract AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair);
+  public abstract AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair);
 
 }

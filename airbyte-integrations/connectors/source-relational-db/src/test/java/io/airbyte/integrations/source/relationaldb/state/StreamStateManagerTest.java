@@ -15,6 +15,7 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
@@ -159,10 +160,31 @@ public class StreamStateManagerTest {
     final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = new AirbyteStreamNameNamespacePair("other", "other");
 
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
-    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(airbyteStreamNameNamespacePair);
+    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.of(airbyteStreamNameNamespacePair));
     assertNotNull(airbyteStateMessage);
     assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getStateType());
     assertNotNull(airbyteStateMessage.getStream());
+  }
+
+  @Test
+  void testToStateWithoutStreamPair() {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new ConfiguredAirbyteStream()
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
+                .withCursorField(List.of(CURSOR_FIELD1)),
+            new ConfiguredAirbyteStream()
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))
+                .withCursorField(List.of(CURSOR_FIELD2)),
+            new ConfiguredAirbyteStream()
+                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
+
+    final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
+    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
+    assertNotNull(airbyteStateMessage);
+    assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getStateType());
+    assertNotNull(airbyteStateMessage.getStream());
+    assertNull(airbyteStateMessage.getStream().getStreamState());
   }
 
   @Test
@@ -200,7 +222,7 @@ public class StreamStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final StateManager stateManager = new StreamStateManager(
         List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState())), catalog);
-    assertNotNull(stateManager.getCdcStateManager());
+    Assertions.assertThrows(UnsupportedOperationException.class, () -> stateManager.getCdcStateManager());
   }
 
   private List<AirbyteStateMessage> createDefaultState() {

@@ -53,25 +53,29 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
 
   @Override
   public CdcStateManager getCdcStateManager() {
-    return new CdcStateManager(new CdcState());
+    throw new UnsupportedOperationException("CDC state management not supported by stream state manager.");
   }
 
   @Override
-  public AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair) {
-    final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
-    final Optional<CursorInfo> cursorInfo = Optional.ofNullable(pairToCursorInfoMap.get(pair));
+  public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
+    if (pair.isPresent()) {
+      final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
+      final Optional<CursorInfo> cursorInfo = Optional.ofNullable(pairToCursorInfoMap.get(pair.get()));
 
-    if (cursorInfo.isPresent()) {
-      LOGGER.debug("Generating state message for {}...", pair);
-      return new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
-          // Temporarily include legacy state for backwards compatibility with the platform
-          .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
-          .withStream(StateGeneratorUtils.generateStreamState(pair, cursorInfo.get()));
+      if (cursorInfo.isPresent()) {
+        LOGGER.debug("Generating state message for {}...", pair);
+        return new AirbyteStateMessage()
+            .withStateType(AirbyteStateType.STREAM)
+            // Temporarily include legacy state for backwards compatibility with the platform
+            .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
+            .withStream(StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get()));
+      } else {
+        LOGGER.warn("Cursor information could not be located in state for stream {}.  Returning a new, empty state message...", pair);
+        return new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
+      }
     } else {
-      LOGGER.warn("Cursor information could not be located in state for stream {}.", pair);
+      LOGGER.warn("Stream not provided.  Returning a new, empty state message...");
       return new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
     }
   }
-
 }

@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -62,7 +63,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
   }
 
   @Override
-  public AirbyteStateMessage toState(final AirbyteStreamNameNamespacePair pair) {
+  public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     // Populate global state
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(getCdcStateManager().getCdcState()));
