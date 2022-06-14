@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-scheduler:scheduler-models')
 
     testImplementation libs.flyway.core
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
     testImplementation project(':airbyte-test-utils')
 }
 

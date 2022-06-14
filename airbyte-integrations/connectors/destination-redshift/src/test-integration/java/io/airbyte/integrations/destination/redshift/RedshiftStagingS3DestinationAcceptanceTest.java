@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperat
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
@@ -61,8 +62,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     return config;
   }
 
-  public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  public JsonNode getStaticConfig() throws IOException {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
 
   @Override
