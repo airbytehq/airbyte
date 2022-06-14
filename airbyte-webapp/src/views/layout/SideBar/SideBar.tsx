@@ -1,5 +1,6 @@
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -20,6 +21,7 @@ import SettingsIcon from "./components/SettingsIcon";
 import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
+import styles from "./SideBar.module.scss";
 
 const Bar = styled.nav`
   width: 100px;
@@ -41,45 +43,6 @@ const Menu = styled.ul`
   width: 100%;
 `;
 
-const MenuItem = styled(NavLink)`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  border-radius: 4px;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-  position: relative;
-
-  &.active {
-    color: ${({ theme }) => theme.whiteColor};
-    background: ${({ theme }) => theme.primaryColor};
-  }
-`;
-
-const MenuLinkItem = styled.a`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-`;
-
 const Text = styled.div`
   margin-top: 7px;
 `;
@@ -93,94 +56,102 @@ const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
 
+  const menuItemStyle = (isActive: boolean) => {
+    console.log(isActive);
+    return classnames(styles.menuItem, { [styles.activated]: isActive });
+  };
+
   return (
-    <Bar>
-      <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
-        </Link>
-        <Menu>
-          {workspace.displaySetupWizard ? (
+    <>
+      <Bar>
+        <div>
+          <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
+            <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+          </Link>
+          <Menu>
+            {workspace.displaySetupWizard ? (
+              <li>
+                <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
+                  <OnboardingIcon />
+                  <Text>
+                    <FormattedMessage id="sidebar.onboarding" />
+                  </Text>
+                </NavLink>
+              </li>
+            ) : null}
             <li>
-              <MenuItem to={RoutePaths.Onboarding}>
-                <OnboardingIcon />
+              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
+                <ConnectionsIcon />
                 <Text>
-                  <FormattedMessage id="sidebar.onboarding" />
+                  <FormattedMessage id="sidebar.connections" />
                 </Text>
-              </MenuItem>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Source}>
+                <SourceIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.sources" />
+                </Text>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Destination}>
+                <DestinationIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.destinations" />
+                </Text>
+              </NavLink>
+            </li>
+          </Menu>
+        </div>
+        <Menu>
+          <li>
+            <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
+              <HelpIcon icon={faRocket} />
+              <Text>
+                <FormattedMessage id="sidebar.update" />
+              </Text>
+            </a>
+          </li>
+          <li>
+            <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
+              {({ onOpen }) => (
+                <div className={styles.menuItem} onClick={onOpen}>
+                  <DocsIcon />
+                  <Text>
+                    <FormattedMessage id="sidebar.resources" />
+                  </Text>
+                </div>
+              )}
+            </SidebarPopout>
+          </li>
+
+          <li>
+            <NavLink
+              className={({ isActive }) => menuItemStyle(isActive)}
+              to={RoutePaths.Settings}
+              // isActive={(_, location) =>
+              //   location.pathname.startsWith(RoutePaths.Settings)
+              // }
+            >
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
+              <SettingsIcon />
+              <Text>
+                <FormattedMessage id="sidebar.settings" />
+              </Text>
+            </NavLink>
+          </li>
+          {config.version ? (
+            <li>
+              <Version primary />
             </li>
           ) : null}
-          <li>
-            <MenuItem to={RoutePaths.Connections}>
-              <ConnectionsIcon />
-              <Text>
-                <FormattedMessage id="sidebar.connections" />
-              </Text>
-            </MenuItem>
-          </li>
-          <li>
-            <MenuItem to={RoutePaths.Source}>
-              <SourceIcon />
-              <Text>
-                <FormattedMessage id="sidebar.sources" />
-              </Text>
-            </MenuItem>
-          </li>
-          <li>
-            <MenuItem to={RoutePaths.Destination}>
-              <DestinationIcon />
-              <Text>
-                <FormattedMessage id="sidebar.destinations" />
-              </Text>
-            </MenuItem>
-          </li>
         </Menu>
-      </div>
-      <Menu>
-        <li>
-          <MenuLinkItem href={config.links.updateLink} target="_blank">
-            <HelpIcon icon={faRocket} />
-            <Text>
-              <FormattedMessage id="sidebar.update" />
-            </Text>
-          </MenuLinkItem>
-        </li>
-        <li>
-          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen }) => (
-              <MenuItem onClick={onOpen} as="div">
-                <DocsIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.resources" />
-                </Text>
-              </MenuItem>
-            )}
-          </SidebarPopout>
-        </li>
-
-        <li>
-          <MenuItem
-            to={RoutePaths.Settings}
-            // isActive={(_, location) =>
-            //   location.pathname.startsWith(RoutePaths.Settings)
-            // }
-          >
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-            <SettingsIcon />
-            <Text>
-              <FormattedMessage id="sidebar.settings" />
-            </Text>
-          </MenuItem>
-        </li>
-        {config.version ? (
-          <li>
-            <Version primary />
-          </li>
-        ) : null}
-      </Menu>
-    </Bar>
+      </Bar>
+    </>
   );
 };
 

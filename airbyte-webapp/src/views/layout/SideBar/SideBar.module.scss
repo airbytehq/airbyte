@@ -1,0 +1,37 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.menuItem {
+  color: colors.$greyColor30;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 4px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  margin-top: 7px;
+  text-decoration: none;
+  position: relative;
+
+  &:hover {
+    background: #262963; //todo: update to use palette when palette up to date
+    transition: variables.$transition-out;
+  }
+
+  &.activated {
+    color: colors.$whiteColor;
+    background: colors.$primaryColor;
+    transition: variables.$transition-out;
+
+    &:hover {
+      color: colors.$whiteColor;
+      background: #7f7eff; //todo: update to use palette when palette up to date
+      transition: variables.$transition-out;
+    }
+  }
+}
