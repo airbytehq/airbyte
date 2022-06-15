@@ -220,7 +220,6 @@ module.exports = {
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        'contributing-to-airbyte/monorepo-python-development',
         {
           type: 'link',
           label: 'Connector template',
