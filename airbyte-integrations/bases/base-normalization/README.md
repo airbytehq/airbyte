@@ -2,7 +2,7 @@
 
 * [Normalization](#normalization)
     * [Under the hood](#under-the-hood)
-        * [Incremental updates](#incremental-updates)
+        * [Incremental updates with dedup-history sync mode](#incremental-updates-with-dedup-history-sync-mode)
     * [Developer workflow](#developer-workflow)
         * [Setting up your environment](#setting-up-your-environment)
         * [Running dbt](#running-dbt)
@@ -44,7 +44,7 @@ Normalization has two Python modules:
 
 `entrypoint.sh` (the entrypoint to normalization's Docker image) invokes these two modules, then calls `dbt run` on their output.
 
-### Incremental updates
+### Incremental updates with dedup-history sync mode
 
 When generating the final table, we need to pull data from the SCD model.
 A naive implementation would require reading the entire SCD table and completely regenerating the final table on each run.
@@ -70,6 +70,7 @@ At a high level, this is the recommended workflow for updating base-normalizatio
    Run `dbt compile` and manually execute the SQL queries. This requires manual setup and validation, but allows you to quickly experiment
    with different inputs.
     1. You can substitute your preferred database/warehouse. This document will use Postgres because it's easy to set up.
+1. Run `dbt run` and verify that it generates the data correctly.
 1. Once `dbt run` succeeds, edit `stream_processor.py` until it generates the models you hand-wrote in step 1.
 1. Run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` integration test case.
 1. Run the full [integration test suite](#integration-tests).
@@ -77,7 +78,7 @@ At a high level, this is the recommended workflow for updating base-normalizatio
 
 ### Setting up your environment
 
-If you have a fullly-featured Python dev environment, you can just set a breakpoint at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+If you have a fully-featured Python dev environment, you can just set a breakpoint at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
 and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the
 breakpoint. This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
 
@@ -98,10 +99,13 @@ docker run \
 
 Then you'll need to edit `integration_tests/normalization_test_output/postgres/test_simple_streams/profiles.yml` and set the port to 9001.
 
+If you manually start an external Postgres instance (or whatever destination you're working on), you can set the [`NORMALIZATION_TEST_POSTGRES_DB_PORT`](https://github.com/airbytehq/airbyte/blob/8ed3fb5379bf5a93d011a78a3be435cf9de8ab74/airbyte-integrations/bases/base-normalization/integration_tests/dbt_integration_test.py#L26)
+variable to run tests against that instance.
+
 ### Running dbt
 
-Once you have a database available, you can run dbt commands. We recommend running dbt from inside the `airbyte/normalization:latest` image.
-This saves you the effort of installing dbt and reconfiguring dbt_project.yml.
+Once you have a database available, you can run dbt commands. We recommend running dbt from inside the `airbyte/normalization:dev` image.
+This saves you the effort of installing dbt and reconfiguring dbt_project.yml. You should build the image locally with `./gradlew :airbyte-integrations:bases:base-normalization:airbyteDocker`.
 
 First, `cd integration_tests/normalization_test_output/postgres/test_simple_streams`. Then install dbt's dependencies:
 ```shell
@@ -114,7 +118,7 @@ docker run \
   -v $(pwd)/build/dbt_packages/:/dbt \
   --entrypoint /usr/local/bin/dbt \
   --network host \
-  -i airbyte/normalization:latest \
+  -i airbyte/normalization:dev \
   deps \
   --profiles-dir=/workspace \
   --project-dir=/workspace
@@ -131,7 +135,7 @@ docker run \
   -v $(pwd)/build/dbt_packages/:/dbt \
   --entrypoint /usr/local/bin/dbt \
   --network host \
-  -i airbyte/normalization:latest \
+  -i airbyte/normalization:dev \
   compile \
   --profiles-dir=/workspace \
   --project-dir=/workspace
@@ -140,6 +144,25 @@ docker run \
 This will modify the files in `build/compiled/airbyte_utils/models/generated`.
 For example, if you edit `models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`, then after compiling,
 you can see the results in `build/compiled/airbyte_utils/models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`.
+
+You can also use `dbt run` to have dbt actually execute your models:
+```shell
+docker run \
+  --rm \
+  --init \
+  -v $(pwd):/workspace \
+  -v $(pwd)/build:/build \
+  -v $(pwd)/logs:/logs \
+  -v $(pwd)/build/dbt_packages/:/dbt \
+  --entrypoint /usr/local/bin/dbt \
+  --network host \
+  -i airbyte/normalization:dev \
+  run \
+  --profiles-dir=/workspace \
+  --project-dir=/workspace
+```
+Like `dbt compile`, this will modify the files in `build/compiled/airbyte_utils/models/generated`. It will also modify the files in
+`build/run/airbyte_utils/models/generated`.
 
 ## Testing normalization
 
