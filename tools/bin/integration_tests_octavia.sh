@@ -9,7 +9,7 @@ assert_root
 echo "Starting app..."
 
 # Detach so we can run subsequent commands
-VERSION=dev TRACKING_STRATEGY=logging docker-compose -f docker-compose.yaml -f octavia-cli/integration_tests/docker-compose-proxy.yaml run -d --service-ports nginx-proxy
+VERSION=dev TRACKING_STRATEGY=logging docker-compose -f docker-compose.yaml
 
 # Sometimes source/dest containers using airbyte volumes survive shutdown, which need to be killed in order to shut down properly.
 shutdown_cmd="docker-compose down -v || docker kill \$(docker ps -a -f volume=airbyte_workspace -f volume=airbyte_data -f volume=airbyte_db -q) && docker-compose down -v"
