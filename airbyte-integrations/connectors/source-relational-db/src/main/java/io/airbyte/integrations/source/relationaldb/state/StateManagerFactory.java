@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,19 +30,18 @@ public class StateManagerFactory {
    * Creates a {@link StateManager} based on the provided state object and catalog.  This method will handle the
    * conversion of the provided state to match the requested state manager based on the provided {@link AirbyteStateType}.
    *
+   * @param supportedStateType The type of state supported by the connector.
    * @param initialState The deserialized initial state that will be provided to the selected {@link StateManager}.
    * @param catalog The {@link ConfiguredAirbyteCatalog} for the connector that will utilize the state
    *        manager.
-   * @param stateTypeSupplier {@link Supplier} that provides the {@link AirbyteStateType} that will be
-   *        used to select the correct state manager.
    * @return A newly created {@link StateManager} implementation based on the provided state.
    */
-  public static StateManager createStateManager(final List<AirbyteStateMessage> initialState,
-                                                final ConfiguredAirbyteCatalog catalog,
-                                                final Supplier<AirbyteStateType> stateTypeSupplier) {
+  public static StateManager createStateManager(final AirbyteStateType supportedStateType,
+                                                final List<AirbyteStateMessage> initialState,
+                                                final ConfiguredAirbyteCatalog catalog) {
     if (initialState != null && !initialState.isEmpty()) {
       final AirbyteStateMessage airbyteStateMessage = initialState.get(0);
-      switch (stateTypeSupplier.get()) {
+      switch (supportedStateType) {
         case LEGACY:
           LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
           return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);

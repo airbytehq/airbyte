@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -110,7 +109,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final JsonNode state)
       throws Exception {
     final StateManager stateManager =
-        StateManagerFactory.createStateManager(deserializeState(state, config), catalog, supportedStateTypeSupplier(config));
+        StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabaseInternal(config);
@@ -517,33 +516,41 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * Deserializes the state represented as JSON into an object representation.
    *
-   * @param stateJson The state as JSON.
+   * @param initialStateJson The state as JSON.
    * @param config The connector configuration.
    * @return The deserialized object representation of the state.
    */
-  protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson, final JsonNode config) {
-    if (stateJson == null) {
-      // For backwards compatibility with existing connectors
-      return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+  protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
+    if (initialStateJson == null) {
+      return generateEmptyInitialState(config);
     } else {
       try {
-        return Jsons.object(stateJson, new AirbyteStateMessageListTypeReference());
+        return Jsons.object(initialStateJson, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
         LOGGER.warn("Defaulting to legacy state object...");
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(stateJson));
+        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(initialStateJson));
       }
     }
   }
 
   /**
-   * Generates a {@link Supplier} that can be used to determine which state manager should be selected
-   * for use by this connector.
+   * Generates an empty, initial state for use by the connector.
+   * @param config The connector configuration.
+   * @return The empty, initial state.
+   */
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    // For backwards compatibility with existing connectors
+    return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+  }
+
+  /**
+   * Returns the {@link AirbyteStateType} supported by this connector.
    *
    * @param config The connector configuration.
-   * @return A {@link Supplier}.
+   * @return A {@link AirbyteStateType} representing the state supported by this connector.
    */
-  protected Supplier<AirbyteStateType> supportedStateTypeSupplier(final JsonNode config) {
-    return () -> AirbyteStateType.LEGACY;
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return AirbyteStateType.LEGACY;
   }
 
 }

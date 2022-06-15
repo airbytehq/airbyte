@@ -411,34 +411,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return stream;
   }
 
-  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
-  // state.
+  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream state
   @Override
-  protected List<AirbyteStateMessage> deserializeState(final JsonNode stateJson, final JsonNode config) {
-    if (stateJson == null) {
-      if (supportedStateTypeSupplier(config).get() == AirbyteStateType.GLOBAL) {
-        final AirbyteGlobalState globalState = new AirbyteGlobalState()
-            .withSharedState(Jsons.jsonNode(new CdcState()))
-            .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-      } else {
-        return List.of(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState()));
-      }
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+      final AirbyteGlobalState globalState = new AirbyteGlobalState()
+          .withSharedState(Jsons.jsonNode(new CdcState()))
+          .withStreamStates(List.of());
+      return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
     } else {
-      try {
-        return Jsons.object(stateJson, new AirbyteStateMessageListTypeReference());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.warn("Defaulting to legacy state object...");
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(stateJson));
-      }
+      return List.of(new AirbyteStateMessage()
+          .withStateType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState()));
     }
   }
 
   @Override
-  protected Supplier<AirbyteStateType> supportedStateTypeSupplier(final JsonNode config) {
-    return () -> isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {
