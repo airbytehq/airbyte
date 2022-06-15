@@ -11,7 +11,7 @@ AIRBYTE_URL = "http://localhost:8000"
 @pytest.fixture(scope="module")
 def vcr_config():
     return {
-        "record_mode": "all",
+        "record_mode": "once",
         "match_on": ["method", "scheme", "host", "port", "path", "query", "headers"],
     }
 
