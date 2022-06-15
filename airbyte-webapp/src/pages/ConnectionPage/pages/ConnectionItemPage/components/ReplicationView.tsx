@@ -9,7 +9,7 @@ import styled from "styled-components";
 import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
-import { ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectionLoad,
@@ -51,13 +51,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    namespaceDefinition: ConnectionNamespaceDefinition.Source,
-    namespaceFormat: "",
-    schedule: null,
-    prefix: "",
-    syncCatalog: { streams: [] },
-  });
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -82,6 +75,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
       sourceCatalogId: connection?.catalogId,
+      name: connection?.name,
     });
 
     setSaved(true);
@@ -96,14 +90,14 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     formikHelpers?.resetForm({ values });
   };
 
-  const openResetDataModal = () => {
+  const openResetDataModal = (values: ValuesProps) => {
     openConfirmationModal({
       title: "connection.updateSchema",
       text: "connection.updateSchemaText",
       submitButtonText: "connection.updateSchema",
       submitButtonDataId: "refresh",
       onSubmit: async () => {
-        await onSubmit(currentValues);
+        await onSubmit(values);
         closeConfirmationModal();
       },
     });
@@ -111,8 +105,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
-      setCurrentValues(values);
-      openResetDataModal();
+      openResetDataModal(values);
     } else {
       await onSubmit(values);
     }
@@ -151,7 +144,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            mode={connection?.status !== ConnectionStatus.DEPRECATED ? "edit" : "readonly"}
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
@@ -25,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration test
- * credentials contain S3 credentials - this automatically causes COPY to be selected.
+ * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
+ * test credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
 public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -52,8 +53,8 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     return config;
   }
 
-  public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  public JsonNode getStaticConfig() throws IOException {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config_staging.json")));
   }
 
   @Override
@@ -160,9 +161,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
                 baseConfig.get("port").asInt(),
                 baseConfig.get("database").asText()),
             null,
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS
-        )
-    );
+            RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
   }
 
   public RedshiftSQLNameTransformer getNamingResolver() {
@@ -177,6 +176,11 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  }
+
+  @Override
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 1;
   }
 
 }

@@ -5,14 +5,14 @@ import styled from "styled-components";
 import { Button } from "components";
 import Spinner from "components/Spinner";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const Controls = styled.div`
   margin-top: 34px;

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -132,10 +132,12 @@ class DbtIntegrationTest(object):
                 "MYSQL_INITDB_SKIP_TZINFO=yes",
                 "-e",
                 f"MYSQL_DATABASE={config['database']}",
+                "-e",
+                "MYSQL_ROOT_HOST=%",
                 "-p",
                 f"{config['port']}:3306",
                 "-d",
-                "mysql",
+                "mysql/mysql-server",
             ]
             print("Executing: ", " ".join(commands))
             subprocess.call(commands)

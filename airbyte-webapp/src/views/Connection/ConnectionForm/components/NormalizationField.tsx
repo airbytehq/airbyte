@@ -26,16 +26,16 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
         {...form.getFieldProps(field.name)}
         id="normalization.raw"
         label={<FormattedMessage id="form.rawData" />}
-        value={NormalizationType.RAW}
-        checked={field.value === NormalizationType.RAW}
+        value={NormalizationType.raw}
+        checked={field.value === NormalizationType.raw}
         disabled={mode === "readonly"}
       />
       <LabeledRadioButton
         {...form.getFieldProps(field.name)}
         id="normalization.basic"
         label={<FormattedMessage id="form.basicNormalization" />}
-        value={NormalizationType.BASIC}
-        checked={field.value === NormalizationType.BASIC}
+        value={NormalizationType.basic}
+        checked={field.value === NormalizationType.basic}
         disabled={mode === "readonly"}
         message={
           mode !== "readonly" && (
@@ -43,7 +43,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
               id="form.basicNormalization.message"
               values={{
                 lnk: (lnk: React.ReactNode) => (
-                  <Link target="_blank" href={config.ui.normalizationLink} as="a">
+                  <Link target="_blank" href={config.links.normalizationLink} as="a">
                     {lnk}
                   </Link>
                 ),

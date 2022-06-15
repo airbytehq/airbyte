@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -124,8 +124,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     try (final DSLContext dslContext = getDSLContext(config)) {
       final List<org.jooq.Record> result = getDatabase(dslContext)
           .query(ctx -> ctx.fetch(
-                  String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                      OracleDestination.COLUMN_NAME_EMITTED_AT))
+              String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                  OracleDestination.COLUMN_NAME_EMITTED_AT))
               .stream()
               .collect(Collectors.toList()));
       return result
@@ -142,7 +142,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

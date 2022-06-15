@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -120,9 +120,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
                 config.get("host").asText(),
                 config.get("port").asInt(),
                 config.get("database").asText()),
-            SQLDialect.POSTGRES
-        )
-    );
+            SQLDialect.POSTGRES));
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {

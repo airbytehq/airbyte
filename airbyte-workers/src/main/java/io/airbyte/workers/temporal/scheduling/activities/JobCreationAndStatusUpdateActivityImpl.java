@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -15,12 +15,14 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.models.Attempt;
@@ -34,9 +36,9 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.run.TemporalWorkerRunFactory;
+import io.airbyte.workers.run.WorkerRun;
 import io.airbyte.workers.temporal.exception.RetryableException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import io.airbyte.workers.worker_run.WorkerRun;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -58,6 +60,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final JobTracker jobTracker;
   private final ConfigRepository configRepository;
   private final JobCreator jobCreator;
+  private final StreamResetPersistence streamResetPersistence;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -83,8 +86,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           standardSyncOperations.add(standardSyncOperation);
         }
 
+        final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
         final Optional<Long> jobIdOptional =
-            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
+            jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
 
         final long jobId = jobIdOptional.isEmpty()
             ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
@@ -112,7 +116,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
       }
     }
   }
@@ -217,7 +221,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
     } catch (final IOException e) {
@@ -238,10 +242,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void jobCancelled(final JobCancelledInput input) {
     try {
       final long jobId = input.getJobId();
-      jobPersistence.cancelJob(jobId);
       final int attemptId = input.getAttemptId();
       jobPersistence.failAttempt(jobId, attemptId);
       jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
+      jobPersistence.cancelJob(jobId);
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
@@ -314,7 +318,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(metric, 1, MetricTags.getReleaseStage(stage));
       }
     }
   }

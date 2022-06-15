@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,6 +10,8 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from bingads.service_client import ServiceClient
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from source_bing_ads.reports import ReportsMixin
@@ -61,6 +63,14 @@ class BingAdsStream(Stream, ABC):
         """
         pass
 
+    @property
+    def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
+        return self.client.get_service(service_name=self.service_name)
+
+    @property
+    def _user_id(self) -> int:
+        return self._service.GetUser().User.Id
+
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
         Default method for streams that don't support pagination
@@ -73,24 +83,20 @@ class BingAdsStream(Stream, ABC):
 
         yield from []
 
-    def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
+    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str = None) -> Mapping[str, Any]:
         request_kwargs = {
             "service_name": self.service_name,
+            "customer_id": customer_id,
             "account_id": account_id,
             "operation_name": self.operation_name,
             "params": params,
         }
-        if not self.use_cache:
-            return self.client.request(**request_kwargs)
-
-        with CACHE.use_cassette():
-            return self.client.request(**request_kwargs)
-
-    def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
-        """
-        Fetches account_id from slice object
-        """
-        return str(stream_slice.get("account_id")) if stream_slice else None
+        request = self.client.request(**request_kwargs)
+        if self.use_cache:
+            with CACHE.use_cassette():
+                return request
+        else:
+            return request
 
     def read_records(
         self,
@@ -101,14 +107,17 @@ class BingAdsStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
-        account_id = self.get_account_id(stream_slice)
+        account_id = str(stream_slice.get("account_id")) if stream_slice else None
+        customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
 
         while True:
             params = self.request_params(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, account_id=account_id
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                account_id=account_id,
             )
-
-            response = self.send_request(params, account_id=account_id)
+            response = self.send_request(params, customer_id=customer_id, account_id=account_id)
             for record in self.parse_response(response):
                 yield record
 
@@ -154,21 +163,12 @@ class Accounts(BingAdsStream):
                 {
                     "Field": "UserId",
                     "Operator": "Equals",
-                    "Value": self.config["user_id"],
+                    "Value": self._user_id,
                 }
             ]
         }
 
-        if self.config["accounts"]["selection_strategy"] == "subset":
-            predicates["Predicate"].append(
-                {
-                    "Field": "AccountId",
-                    "Operator": "In",
-                    "Value": ",".join(self.config["accounts"]["ids"]),
-                }
-            )
-
-        paging = self.client.get_service(service_name=self.service_name).factory.create("ns5:Paging")
+        paging = self._service.factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
         paging.Size = self.page_size_limit
         return {
@@ -213,7 +213,7 @@ class Campaigns(BingAdsStream):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"]}
+            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
 
@@ -247,8 +247,10 @@ class AdGroups(BingAdsStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"]}):
-                yield {"campaign_id": campaign["Id"], "account_id": account["Id"]}
+            for campaign in campaigns.read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+            ):
+                yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
 
@@ -294,7 +296,7 @@ class Ads(BingAdsStream):
         ad_groups = AdGroups(self.client, self.config)
         for slice in ad_groups.stream_slices(sync_mode=SyncMode.full_refresh):
             for ad_group in ad_groups.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"]}
+                yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"], "customer_id": slice["customer_id"]}
         yield from []
 
 
@@ -570,20 +572,12 @@ class SourceBingAds(AbstractSource):
         try:
             client = Client(**config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
-
-            if config["accounts"]["selection_strategy"] == "subset":
-                config_account_ids = set(config["accounts"]["ids"])
-                if not config_account_ids.issubset(account_ids):
-                    raise Exception(f"Accounts with ids: {config_account_ids.difference(account_ids)} not found on this user.")
-            elif config["accounts"]["selection_strategy"] == "all":
-                if not account_ids:
-                    raise Exception("You don't have accounts assigned to this user.")
+            if account_ids:
+                return True, None
             else:
-                raise Exception("Incorrect account selection strategy.")
+                raise Exception("You don't have accounts assigned to this user.")
         except Exception as error:
             return False, error
-
-        return True, None
 
     def get_report_streams(self, aggregation_type: str) -> List[Stream]:
         return [

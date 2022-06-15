@@ -1,7 +1,7 @@
 import { SegmentAnalytics } from "core/analytics/types";
 import { Feature } from "hooks/services/Feature";
 
-import { UiConfig } from "./uiConfig";
+import { OutboundLinks } from "./links";
 
 declare global {
   interface Window {
@@ -20,8 +20,8 @@ declare global {
   }
 }
 
-export type Config = {
-  ui: UiConfig;
+export interface Config {
+  links: OutboundLinks;
   features: Feature[];
   segment: { token: string; enabled: boolean };
   apiUrl: string;
@@ -31,7 +31,7 @@ export type Config = {
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
-};
+}
 
 export type DeepPartial<T> = {
   [P in keyof T]+?: DeepPartial<T[P]>;

@@ -6,9 +6,8 @@ resources:
   - bootloader.yaml
   - db.yaml
   - pod-sweeper.yaml
-  - scheduler.yaml
   - secret-gcs-log-creds.yaml
-  - scheduler-service-account.yaml
+  - admin-service-account.yaml
   - server.yaml
   - temporal.yaml
   - volume-configs.yaml

@@ -3,9 +3,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
+import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";
@@ -16,9 +16,17 @@ const SectionTitle = styled.div`
   line-height: 17px;
 `;
 
-export const OperationsSection: React.FC<{
-  destDefinition: DestinationDefinitionSpecification;
-}> = ({ destDefinition }) => {
+interface OperationsSectionProps {
+  destDefinition: DestinationDefinitionSpecificationRead;
+  onStartEditTransformation?: () => void;
+  onEndEditTransformation?: () => void;
+}
+
+export const OperationsSection: React.FC<OperationsSectionProps> = ({
+  destDefinition,
+  onStartEditTransformation,
+  onEndEditTransformation,
+}) => {
   const formatMessage = useIntl().formatMessage;
   const { hasFeature } = useFeatureService();
 
@@ -42,7 +50,14 @@ export const OperationsSection: React.FC<{
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
         <FieldArray name="transformations">
-          {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              onStartEdit={onStartEditTransformation}
+              onEndEdit={onEndEditTransformation}
+              {...formProps}
+            />
+          )}
         </FieldArray>
       )}
     </>

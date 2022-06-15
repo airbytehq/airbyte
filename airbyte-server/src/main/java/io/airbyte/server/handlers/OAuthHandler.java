@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.CompleteDestinationOAuthRequest;
-import io.airbyte.api.model.CompleteSourceOauthRequest;
-import io.airbyte.api.model.DestinationOauthConsentRequest;
-import io.airbyte.api.model.OAuthConsentRead;
-import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
-import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
-import io.airbyte.api.model.SourceOauthConsentRequest;
+import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
+import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
+import io.airbyte.api.model.generated.OAuthConsentRead;
+import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
+import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;

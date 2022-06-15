@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -8,7 +8,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void notifyEndOfStream() {
+  public void notifyEndOfInput() {
     // nothing to do here
   }
 

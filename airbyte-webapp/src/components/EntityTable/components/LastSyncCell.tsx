@@ -15,10 +15,10 @@ const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
 `;
 
-type IProps = {
+interface IProps {
   timeInSecond: number;
   enabled?: boolean;
-};
+}
 
 const LastSyncCell: React.FC<IProps> = ({ timeInSecond, enabled }) => {
   if (!timeInSecond) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -74,7 +74,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
       });
     } finally {
-       DataSourceFactory.close(dataSource);
+      DataSourceFactory.close(dataSource);
     }
   }
 
