@@ -34,14 +34,13 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(30, TimeUnit.SECONDS);
-
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
   private final AirbyteFileOffsetBackingStore offsetManager;
-  private final int debeziumTimeoutSeconds;
+  private final int firstRecordWaitSeconds;
+  private final int subsequentRecordSeconds;
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
@@ -52,13 +51,15 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
                                 final Supplier<Boolean> publisherStatusSupplier,
                                 final VoidCallable requestClose,
                                 final AirbyteFileOffsetBackingStore offsetManager,
-                                final int debeziumTimeoutSeconds) {
+                                final int firstRecordWaitSeconds,
+                                final int subsequentRecordSeconds) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
     this.offsetManager = offsetManager;
-    this.debeziumTimeoutSeconds = debeziumTimeoutSeconds;
+    this.firstRecordWaitSeconds = firstRecordWaitSeconds;
+    this.subsequentRecordSeconds = subsequentRecordSeconds;
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
@@ -73,10 +74,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final WaitTime waitTime = receivedFirstRecord
-            ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS
-            : new WaitTime(debeziumTimeoutSeconds, TimeUnit.SECONDS);
-        next = queue.poll(waitTime.period, waitTime.timeUnit);
+        final int waitSeconds = receivedFirstRecord ? subsequentRecordSeconds : firstRecordWaitSeconds;
+        next = queue.poll(waitSeconds, TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -84,7 +83,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       if (next == null) {
         // when the offset has changed, it means debezium is processing the change record
         if (offsetTimestamp != offsetManager.getFileTimestamp()) {
-          LOGGER.info("The offset has changed; wait for {}s for more records", debeziumTimeoutSeconds);
+          LOGGER.info("The offset has changed; wait for {}s for more records", firstRecordWaitSeconds);
           offsetTimestamp = offsetManager.getFileTimestamp();
           continue;
         }
@@ -154,18 +153,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     if (!hasSnapshotFinished) {
       throw new RuntimeException("Closing down debezium engine but snapshot has not finished");
     }
-  }
-
-  private static class WaitTime {
-
-    public final int period;
-    public final TimeUnit timeUnit;
-
-    public WaitTime(final int period, final TimeUnit timeUnit) {
-      this.period = period;
-      this.timeUnit = timeUnit;
-    }
-
   }
 
 }
