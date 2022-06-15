@@ -34,3 +34,9 @@ jobs:
 
           # See https://docs.aws.amazon.com/cli/latest/reference/ec2/terminate-instances.html for terminate command.
           echo $to_terminate |  jq '.[]  | .InstanceId' | xargs --no-run-if-empty --max-args=1 aws ec2 terminate-instances --instance-ids
+
+    steps:
+      - shell: List and Terminate GH actions in status 'offline'
+        env:
+          GITHUB_PAT: ${{ secrets.OCTAVIA_PAT }}
+        run: ./tools/bin/gh_action_zombie_killer
