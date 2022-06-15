@@ -26,7 +26,7 @@ class SourcePythonHttpTutorial(AbstractSource):
 ...
 ```
 
-Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency (Note: in a real implementation you should write code to connect to the API to validate connectivity and not just validate inputs):
+Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency:
 
 ```python
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -37,6 +37,8 @@ Following the docstring instructions, we'll change the implementation to verify 
         else:
             return True, None
 ```
+
+Note: in a real implementation you should write code to connect to the API to validate connectivity and not just validate inputs - for an example see `check_connection` in the [OneSignal source connector implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-onesignal/source_onesignal/source.py)
 
 Let's test out this implementation by creating two objects: a valid and an invalid config and attempt to give them as input to the connector. For this section, you will need to take the API access key generated earlier and add it to both configs. Because these configs contain secrets, we recommend storing configs which contain secrets in `secrets/config.json` because the `secrets` directory is gitignored by default.
 
