@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +23,7 @@ class AirbyteFileOffsetBackingStoreTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  void test() throws IOException {
+  void testDataIntegrity() throws IOException {
     final Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "offset-store-test");
 
     final byte[] bytes = MoreResources.readBytes("test_debezium_offset.dat");
@@ -45,6 +46,21 @@ class AirbyteFileOffsetBackingStoreTest {
     assertEquals(offset, stateFromOffsetStoreRoundTrip);
     // verify that the file written by the offset store is identical to the template file.
     assertTrue(com.google.common.io.Files.equal(templateFilePath.toFile(), writeFilePath.toFile()));
+  }
+
+  @Test
+  void testUpdateTimestamp() throws IOException {
+    final Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "offset-store-test");
+    final byte[] bytes = MoreResources.readBytes("test_debezium_offset.dat");
+    final Path templateFilePath = testRoot.resolve("template_offset.dat");
+    IOs.writeFile(templateFilePath, bytes);
+
+    final AirbyteFileOffsetBackingStore offsetStore = new AirbyteFileOffsetBackingStore(templateFilePath);
+    final long timestamp1 = offsetStore.getFileTimestamp();
+    final JsonNode newState = Jsons.jsonNode(Map.of("foo", "bar"));
+    offsetStore.persist(newState);
+    final long timestamp2 = offsetStore.getFileTimestamp();
+    assertNotEquals(timestamp1, timestamp2);
   }
 
 }
