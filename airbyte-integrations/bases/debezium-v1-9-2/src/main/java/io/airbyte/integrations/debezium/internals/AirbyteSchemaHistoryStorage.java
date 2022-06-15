@@ -85,7 +85,7 @@ public class AirbyteSchemaHistoryStorage {
       }
     } catch (final IOException e) {
       throw new IllegalStateException(
-          "Unable to create history file at " + path + ": " + e.getMessage(), e);
+          "Unable to check or create history file at " + path + ": " + e.getMessage(), e);
     }
   }
 

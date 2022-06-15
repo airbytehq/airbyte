@@ -369,15 +369,13 @@ public abstract class CdcSourceTest {
   protected void testRecordsProducedDuringAndAfterSync() throws Exception {
 
     final int recordsToCreate = 20;
-    final int[] recordsCreated = {0};
     // first batch of records. 20 created here and 6 created in setup method.
-    while (recordsCreated[0] < recordsToCreate) {
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
           Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 100 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated[0]));
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
       writeModelRecord(record);
-      recordsCreated[0]++;
     }
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
@@ -393,14 +391,12 @@ public abstract class CdcSourceTest {
     assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
 
     // second batch of records again 20 being created
-    recordsCreated[0] = 0;
-    while (recordsCreated[0] < recordsToCreate) {
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
           Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
-                  "F-" + recordsCreated[0]));
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
       writeModelRecord(record);
-      recordsCreated[0]++;
     }
 
     final JsonNode state = stateAfterFirstBatch.get(0).getData();
