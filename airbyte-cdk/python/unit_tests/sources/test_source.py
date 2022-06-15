@@ -181,8 +181,8 @@ def test_internal_config_limit(abstract_source, catalog):
     assert len(records) == STREAM_LIMIT
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     # Check if log line matches number of limit
-    read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
-    assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
+    read_log_record = [_l for _l in logger_info_args if _l.startswith("Stream Complete")]
+    assert read_log_record[0].startswith(f"Stream Complete: Read {STREAM_LIMIT} ")
 
     # No limit, check if state record produced for incremental stream
     catalog.streams[0].sync_mode = SyncMode.incremental
@@ -196,8 +196,8 @@ def test_internal_config_limit(abstract_source, catalog):
     assert len(records) == STREAM_LIMIT + 1
     assert records[-1].type == Type.STATE
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
-    read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
-    assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
+    read_log_record = [_l for _l in logger_info_args if _l.startswith("Stream Complete")]
+    assert read_log_record[0].startswith(f"Stream Complete: Read {STREAM_LIMIT} ")
 
 
 SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
