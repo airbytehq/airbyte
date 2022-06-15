@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -181,7 +181,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Uncaught exceptions are now handled by the AirbyteExceptionHandler, so
     // it will not be thrown outside the connector execution.
-    assertDoesNotThrow(() -> filterRecords(runRead(configuredCatalog, latestState)));
+    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
 }
