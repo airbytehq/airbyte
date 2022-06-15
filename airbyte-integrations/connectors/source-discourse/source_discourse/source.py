@@ -5,6 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from requests.auth import AuthBase
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -179,21 +180,33 @@ class Employees(IncrementalDiscourseStream):
         """
         raise NotImplementedError("Implement stream slices or delete this method!")
 
+class DiscourseAuthenticator(AuthBase):
+
+    def __init__(self, api_key, username):
+        self.api_key = api_key
+        self.username = username
+
+    def __call__(self, request):
+        request.headers.update(self.get_auth_header())
+        return request
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {"Api-Key": self.api_key, "Api-Username": self.username}
 
 # Source
 class SourceDiscourse(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        try:
+            auth = DiscourseAuthenticator(config["api_key"],config["api_username"])
+            resp = requests.get('http://discuss.airbyte.io/categories.json', headers=auth.get_auth_header())
+            status = resp.status_code
+            if status == 200:
+                return True, None
+            else:
+                message = resp.json()
+                return False, message
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
