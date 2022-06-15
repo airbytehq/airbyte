@@ -164,7 +164,7 @@ class Events(IncrementalAmplitudeStream):
             slices.append(
                 {
                     "start": start.strftime(self.date_template),
-                    "end": self._get_end_date(start).strftime(self.date_template),
+                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
                 }
             )
             start = start.add(**self.time_interval)
@@ -202,6 +202,9 @@ class Events(IncrementalAmplitudeStream):
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
         return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/export"
