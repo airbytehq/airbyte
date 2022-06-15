@@ -33,6 +33,10 @@ const config = {
                           from: '/upgrading-airbyte',
                           to: '/operator-guides/upgrading-airbyte',
                         },
+                        {
+                            from: '/catalog',
+                            to: '/understanding-airbyte/airbyte-protocol',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
