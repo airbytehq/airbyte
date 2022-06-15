@@ -557,11 +557,15 @@ where 1 = 1
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_time(definition):
-            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if is_time_with_timezone(definition):
                 sql_type = jinja_call("type_time_with_timezone()")
             else:
                 sql_type = jinja_call("type_time_without_timezone()")
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                sql_type = f"'{sql_type}'"
+                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
