@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "posts": [
+    {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "username": "string",
+    "avatar_template": "string",
+    "created_at": "string",
+    "cooked": "string",
+    "post_number": 0,
+    "post_type": 0,
+    "updated_at": "string",
+    "reply_count": 0,
+    "reply_to_post_number": "string",
+    "quote_count": 0,
+    "incoming_link_count": 0,
+    "reads": 0,
+    "readers_count": 0,
+    "score": 0,
+    "yours": true,
+    "topic_id": 0,
+    "topic_slug": "string",
+    "topic_title": "string",
+    "topic_html_title": "string",
+    "category_id": 0,
+    "display_username": "string",
+    "primary_group_name": "string",
+    "flair_name": "string",
+    "flair_url": "string",
+    "flair_bg_color": "string",
+    "flair_color": "string",
+    "version": 0,
+    "can_edit": true,
+    "can_delete": true,
+    "can_recover": true,
+    "can_wiki": true,
+    "user_title": "string",
+    "raw": "string",
+    "actions_summary": [
+    {
+    "id": 0,
+    "can_act": true
+    }
+    ],
+    "moderator": true,
+    "admin": true,
+    "staff": true,
+    "user_id": 0,
+    "hidden": true,
+    "trust_level": 0,
+    "deleted_at": "string",
+    "user_deleted": true,
+    "edit_reason": "string",
+    "can_view_edit_history": true,
+    "wiki": true,
+    "reviewable_id": "string",
+    "reviewable_score_count": 0,
+    "reviewable_score_pending_count": 0
+    }
+    ]
+}
