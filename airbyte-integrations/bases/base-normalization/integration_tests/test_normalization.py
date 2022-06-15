@@ -89,10 +89,10 @@ def run_test_normalization(destination_type: DestinationType, test_resource_name
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(destination_type, test_resource_name)
     run_first_normalization(destination_type, test_resource_name, test_root_dir)
-    # if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_incremental.txt")):
-    #     run_incremental_normalization(destination_type, test_resource_name, test_root_dir)
-    # if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")):
-    #     run_schema_change_normalization(destination_type, test_resource_name, test_root_dir)
+    if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_incremental.txt")):
+        run_incremental_normalization(destination_type, test_resource_name, test_root_dir)
+    if os.path.exists(os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")):
+        run_schema_change_normalization(destination_type, test_resource_name, test_root_dir)
 
 
 def run_first_normalization(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
