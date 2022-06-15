@@ -12,35 +12,31 @@ _schema_root = _schema.github_schema
 
 
 def get_query(owner, name, page_size, next_page_token):
-    op = sgqlc.operation.Operation(_schema_root.query_type)
-
     kwargs = {"first": page_size}
     if next_page_token:
         kwargs["after"] = next_page_token
 
+    op = sgqlc.operation.Operation(_schema_root.query_type)
     pull_requests = op.repository(owner=owner, name=name).pull_requests(**kwargs)
-    pull_requests.nodes.id()
-    pull_requests.nodes.database_id()
-    pull_requests.nodes.number()
-    pull_requests.nodes.updated_at()
-    repository = pull_requests.nodes.repository()
-    repository.name()
-    comments = pull_requests.nodes.comments()
-    comments.total_count()
-    commits = pull_requests.nodes.commits()
-    commits.total_count()
+    pull_requests.nodes.__fields__(
+        id=True,
+        database_id=True,
+        number=True,
+        updated_at=True,
+        changed_files=True,
+        deletions=True,
+        additions=True,
+        merged=True,
+        can_be_rebased=True,
+        maintainer_can_modify=True,
+        merge_state_status=True,
+    )
+    pull_requests.nodes.repository.__fields__(name=True)
+    pull_requests.nodes.comments.__fields__(total_count=True)
+    pull_requests.nodes.commits.__fields__(total_count=True)
     reviews = pull_requests.nodes.reviews(first=100)
     reviews.total_count()
-    reviews_comments = reviews.nodes.comments()
-    reviews_comments.total_count()
-    pull_requests.nodes.changed_files()
-    pull_requests.nodes.deletions()
-    pull_requests.nodes.additions()
-    pull_requests.nodes.merged()
+    reviews.nodes.comments.__fields__(total_count=True)
     pull_requests.nodes.merged_by()
-    pull_requests.nodes.can_be_rebased()
-    pull_requests.nodes.maintainer_can_modify()
-    pull_requests.nodes.merge_state_status()
-    pull_requests.page_info.__fields__("has_next_page")
-    pull_requests.page_info.__fields__(end_cursor=True)
+    pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
