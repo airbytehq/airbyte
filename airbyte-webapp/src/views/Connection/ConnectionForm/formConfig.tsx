@@ -62,7 +62,7 @@ function useDefaultTransformation(): OperationCreate {
       operatorType: OperatorType.dbt,
       dbt: {
         gitRepoUrl: "", // TODO: Does this need a value?
-        dockerImage: "fishtownanalytics/dbt:0.19.1",
+        dockerImage: "fishtownanalytics/dbt:1.0.0",
         dbtArguments: "run",
       },
     },
@@ -234,7 +234,7 @@ const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
+      schedule: connection.connectionId ? connection.schedule ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -261,17 +261,14 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
     () =>
       FrequencyConfig.map((item) => ({
         value: item.config,
-        label:
-          item.config === null
-            ? item.text
-            : formatMessage(
-                {
-                  id: "form.every",
-                },
-                {
-                  value: item.simpleText || item.text,
-                }
-              ),
+        label: item.config
+          ? formatMessage(
+              {
+                id: `form.every.${item.config.timeUnit}`,
+              },
+              { value: item.config.units }
+            )
+          : formatMessage({ id: "frequency.manual" }),
       })),
     [formatMessage]
   );

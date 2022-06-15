@@ -1546,7 +1546,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.1.3"
+- dockerImage: "airbyte/source-delighted:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1559,15 +1559,19 @@
       additionalProperties: false
       properties:
         since:
-          type: "integer"
-          description: "An Unix timestamp to retrieve records created on or after\
-            \ this time."
+          title: "Since"
+          type: "string"
+          description: "The date from which you'd like to replicate the data"
           examples:
-          - 1625328167
+          - "2022-05-30 04:50:23"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+          order: 0
         api_key:
+          title: "Delighted API Key"
           type: "string"
           description: "A Delighted API key."
           airbyte_secret: true
+          order: 1
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1838,7 +1842,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.51"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.52"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2217,7 +2221,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.4"
+- dockerImage: "airbyte/source-faker:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -3633,7 +3637,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.68"
+- dockerImage: "airbyte/source-hubspot:0.1.69"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6715,7 +6719,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.21"
+- dockerImage: "airbyte/source-postgres:0.4.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7646,7 +7650,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.9"
+- dockerImage: "airbyte/source-salesforce:1.0.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
