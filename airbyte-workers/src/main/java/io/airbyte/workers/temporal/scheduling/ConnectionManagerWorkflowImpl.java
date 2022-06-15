@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling;
@@ -17,7 +17,6 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.helper.SyncCheckConnectionFailure;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
@@ -123,6 +122,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       if (workflowState.isDeleted()) {
+        if (workflowState.isRunning()) {
+          log.info("Cancelling the current running job because a connection deletion was requested");
+          reportCancelled(false);
+        }
         log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
         return;
@@ -317,14 +320,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
-  private SyncCheckConnectionFailure checkConnections(GenerateInputActivity.GeneratedJobInput jobInputs) {
+  private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs) {
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
     final StandardSyncInput syncInput = jobInputs.getSyncInput();
     final JsonNode sourceConfig = syncInput.getSourceConfiguration();
     final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
     final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
-    SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
 
     final int attemptCreationVersion =
         Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
@@ -701,6 +704,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
   private void reportCancelledAndContinueWith(final boolean isReset, final ConnectionUpdaterInput connectionUpdaterInput) {
+    reportCancelled(isReset);
+    resetNewConnectionInput(connectionUpdaterInput);
+    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+  }
+
+  private void reportCancelled(final boolean isReset) {
     workflowState.setContinueAsReset(isReset);
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
@@ -722,8 +731,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               attemptNumber,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
-    resetNewConnectionInput(connectionUpdaterInput);
-    prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
 }

@@ -7,12 +7,12 @@ import { Button, H5 } from "components";
 
 import ErrorSign from "./components/ErrorSign";
 
-type SingletonCardProps = {
+interface SingletonCardProps {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;
   hasError?: boolean;
   onClose?: () => void;
-};
+}
 
 export const SlideUpAnimation = keyframes`
   0% {

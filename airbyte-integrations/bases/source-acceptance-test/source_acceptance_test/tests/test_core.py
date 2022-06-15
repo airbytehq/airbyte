@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -19,7 +19,6 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
-    DestinationSyncMode,
     Status,
     SyncMode,
     TraceType,
@@ -419,14 +418,15 @@ class TestBasicRead(BaseTest):
 
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
-                ConfiguredAirbyteStream(
+                # create ConfiguredAirbyteStream without validation
+                ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
                     ),
-                    sync_mode=SyncMode.full_refresh,
-                    destination_sync_mode=DestinationSyncMode.overwrite,
+                    sync_mode="INVALID",
+                    destination_sync_mode="INVALID",
                 )
             ]
         )

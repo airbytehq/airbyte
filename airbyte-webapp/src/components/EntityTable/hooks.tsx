@@ -1,17 +1,18 @@
-import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ConnectionStatus } from "core/domain/connection";
+import { getFrequencyConfig } from "config/utils";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
+import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+
 const useSyncActions = (): {
-  changeStatus: (connection: Connection) => Promise<void>;
-  syncManualConnection: (connection: Connection) => Promise<void>;
+  changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;
+  syncManualConnection: (connection: WebBackendConnectionRead) => Promise<void>;
 } => {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
   const analyticsService = useAnalyticsService();
 
-  const changeStatus = async (connection: Connection) => {
+  const changeStatus = async (connection: WebBackendConnectionRead) => {
     await updateConnection({
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
@@ -20,12 +21,11 @@ const useSyncActions = (): {
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
-      status: connection.status === ConnectionStatus.ACTIVE ? ConnectionStatus.INACTIVE : ConnectionStatus.ACTIVE,
+      name: connection.name,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
     });
 
-    const frequency = FrequencyConfig.find(
-      (item) => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
-    );
+    const frequency = getFrequencyConfig(connection.schedule);
 
     analyticsService.track("Source - Action", {
       action: connection.status === "active" ? "Disable connection" : "Reenable connection",
@@ -33,11 +33,11 @@ const useSyncActions = (): {
       connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
+      frequency: frequency?.type,
     });
   };
 
-  const syncManualConnection = async (connection: Connection) => {
+  const syncManualConnection = async (connection: WebBackendConnectionRead) => {
     await syncConnection(connection);
   };
 

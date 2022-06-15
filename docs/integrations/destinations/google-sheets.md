@@ -1,9 +1,43 @@
 # Google Sheets
 
-## Sync overview
+The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance. 
+This page guides you through the process of setting up the Google Sheets destination connector.
 
-The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance.
-Please be aware of the [Google Spreadsheet limitations](#limitations) before you configure your airbyte data replication using Destination Google Sheets
+
+## Prerequisites
+
+* Google Account
+* Google Spreadsheet URL
+
+## Step 1: Set up Google Sheets
+
+### Google Account
+
+#### If you don't have a Google Account
+
+Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=en) and create your Google Account.
+
+### Google Sheets (Google Spreadsheets)
+
+1. Once you acquire your Google Account, simply open the [Google Support](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create the fresh empty Google  to be used as a destination for your data replication, or if already have one - follow the next step.
+2. You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
+These two steps are highlighted in the screenshot below:
+
+![](../../.gitbook/assets/google_spreadsheet_url.png)
+
+## Step 2: Set up the Google Sheets destination connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**. 
+3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector. 
+4. Select `Sign in with Google`.
+5. Log in and Authorize to the Instagram account and click `Set up source`.
+
+**For Airbyte OSS:**
+
+At this moment the `Google Sheets Destination` works only with Airbyte Cloud.
 
 ### Output schema
 
@@ -55,7 +89,7 @@ EXAMPLE:
 | :--- | :--- |
 | Any Type | `string` |
 
-### Features
+### Features & Supported sync modes
 
 | Feature | Supported?\(Yes/No\) |
 | :--- | :--- |
@@ -64,9 +98,10 @@ EXAMPLE:
 | Incremental Append | Yes |
 | Incremental Append-Deduplicate | Yes |
 
-### Performance considerations
+### Rate Limiting & Performance Considerations
 
 At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Destination to ensure high transfer speeds.
+Please be aware of the [Google Spreadsheet limitations](#limitations) before you configure your airbyte data replication using Destination Google Sheets
 
 ### <a name="limitations"></a>Google Sheets Limitations
 
@@ -83,22 +118,6 @@ At max, you can have 18,278 columns in Google Sheets in a worksheet.
 * **Up to 200 Worksheets in a Spreadsheet**
 
 You cannot create more than 200 worksheets within single spreadsheet.
-
-
-## Getting Started (Airbyte Cloud Only)
-To configure the connector you'll need to:
-
-* [Authorize your Google account via OAuth](#oauth)
-* [The Full URL or Spreadsheet ID you'd like to sync](#sheetlink)
-
-### <a name="oauth"></a> Authorize your Google account via OAuth
-Click on the "Sign in with Google" button and authorize via your Google account.
-
-### <a name="sheetlink"></a>Spreadsheet Link
-You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
-These two steps are highlighted in the screenshot below:
-
-![](../../.gitbook/assets/google_spreadsheet_url.png)
 
 
 #### Future improvements:

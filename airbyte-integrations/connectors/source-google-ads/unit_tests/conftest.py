@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
+from source_google_ads.models import Customer
 
 
 @pytest.fixture(scope="session", name="config")
@@ -47,3 +48,8 @@ def mock_oauth_call(requests_mock):
         "https://accounts.google.com/o/oauth2/token",
         json={"access_token": "access_token", "refresh_token": "refresh_token", "expires_in": 0},
     )
+
+
+@pytest.fixture
+def customers(config):
+    return [Customer(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]

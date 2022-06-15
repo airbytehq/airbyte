@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -14,6 +14,7 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -51,13 +52,18 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
+    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
+        "replication_type", "CDC",
+        "data_to_sync", "Existing and New",
+        "snapshot_isolation", "Snapshot"));
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", "CDC")
+        .put("replication", replicationConfig)
         .build());
 
     dslContext = DSLContextFactory.create(
@@ -66,7 +72,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
     final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
@@ -84,12 +91,13 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   private void executeQuery(final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
         DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
-            config.get("port").asInt())), null)) {
+            container.getUsername(),
+            container.getPassword(),
+            container.getDriverClassName(),
+            String.format("jdbc:sqlserver://%s:%d;",
+                config.get("host").asText(),
+                config.get("port").asInt())),
+        null)) {
       final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx

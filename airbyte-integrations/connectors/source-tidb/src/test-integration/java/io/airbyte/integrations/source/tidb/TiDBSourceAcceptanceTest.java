@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.tidb;
@@ -56,7 +56,8 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.MYSQL)) {
+            config.get("database").asText()),
+        SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
       database.query(ctx -> {

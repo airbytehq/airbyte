@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -51,14 +50,13 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
         .put("password", dbContainer.getPassword())
         .build());
 
-    dataSource =  DataSourceFactory.create(
+    dataSource = DataSourceFactory.create(
         configWithoutDbName.get("username").asText(),
         configWithoutDbName.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
             configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt())
-    );
+            configWithoutDbName.get("port").asInt()));
 
     try {
       database = new DefaultJdbcDatabase(dataSource);

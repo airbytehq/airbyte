@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.client;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface EventRunner {
 
-  void createNewSchedulerWorkflow(final UUID connectionId);
+  void createConnectionManagerWorkflow(final UUID connectionId);
 
   ManualOperationResult startNewManualSync(final UUID connectionId);
 

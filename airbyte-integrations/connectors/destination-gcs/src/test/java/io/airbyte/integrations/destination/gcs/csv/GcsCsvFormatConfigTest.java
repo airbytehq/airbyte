@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs.csv;
@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
-import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,9 +52,10 @@ public class GcsCsvFormatConfigTest {
     assertEquals("CSV", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(
-        gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
+        .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
+        .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -71,9 +72,10 @@ public class GcsCsvFormatConfigTest {
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(
-        gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
+        .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
+        .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);

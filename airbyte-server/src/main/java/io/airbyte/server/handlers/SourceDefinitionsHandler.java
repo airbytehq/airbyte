@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -7,19 +7,19 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.api.model.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.CustomSourceDefinitionUpdate;
-import io.airbyte.api.model.PrivateSourceDefinitionRead;
-import io.airbyte.api.model.PrivateSourceDefinitionReadList;
-import io.airbyte.api.model.ReleaseStage;
-import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionReadList;
-import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
+import io.airbyte.api.model.generated.ReleaseStage;
+import io.airbyte.api.model.generated.SourceDefinitionCreate;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceDefinitionReadList;
+import io.airbyte.api.model.generated.SourceDefinitionUpdate;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;

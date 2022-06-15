@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -498,12 +498,14 @@ def to_lower_identifier(input: re.Match) -> str:
 
 def test_redshift_normalization_migration(tmp_path, setup_test_path):
     destination_type = DestinationType.REDSHIFT
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
     resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
     catalog_file = base_dir / resources_dir / "destination_catalog.json"
     messages_file1 = base_dir / resources_dir / "messages1.txt"
     messages_file2 = base_dir / resources_dir / "messages2.txt"
-    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql"
+    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql.j2"
 
     shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
     shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -223,7 +223,7 @@ class SourceGithub(AbstractSource):
             teams_stream,
             team_members_stream,
             Users(**organization_args),
-            Workflows(**repository_args),
-            WorkflowRuns(**repository_args),
+            Workflows(**repository_args_with_start_date),
+            WorkflowRuns(**repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

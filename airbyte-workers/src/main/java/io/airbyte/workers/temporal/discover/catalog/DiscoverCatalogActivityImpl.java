@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.discover.catalog;
@@ -14,14 +14,14 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -12,13 +12,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+  public static final int REDSHIFT_SUPER_MAX_BYTE_SIZE = 1000000;
 
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
                                                                                        select tablename, schemaname
@@ -56,15 +57,19 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       ALTER TABLE %1$s RENAME %3$s_reserve to %3$s;
       """;
 
-  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
-
-  public RedshiftSqlOperations(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
-  }
+  public RedshiftSqlOperations() {}
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return redshiftDataTmpTableMode.getTmpTableSqlStatement(schemaName, tableName);
+    return String.format("""
+                         CREATE TABLE IF NOT EXISTS %s.%s (
+                          %s VARCHAR PRIMARY KEY,
+                          %s SUPER,
+                          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+                          """, schemaName, tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
@@ -86,15 +91,31 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    final String recordQueryComponent = redshiftDataTmpTableMode.getInsertRowMode();
+    final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
   @Override
   public boolean isValidData(final JsonNode data) {
+    // check overall size of the SUPER data
     final String stringData = Jsons.serialize(data);
     final int dataSize = stringData.getBytes(StandardCharsets.UTF_8).length;
-    return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+    boolean isValid = dataSize <= REDSHIFT_SUPER_MAX_BYTE_SIZE;
+
+    // check VARCHAR limits for VARCHAR fields within the SUPER object, if overall object is valid
+    if (isValid) {
+      Map<String, Object> dataMap = Jsons.flatten(data);
+      for (Object value : dataMap.values()) {
+        if (value instanceof String stringValue) {
+          final int stringDataSize = stringValue.getBytes(StandardCharsets.UTF_8).length;
+          isValid = stringDataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+          if (!isValid) {
+            break;
+          }
+        }
+      }
+    }
+    return isValid;
   }
 
   /**

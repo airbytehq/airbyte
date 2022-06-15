@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -82,9 +82,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             final NamingConventionTransformer namingResolver,
                                                             final SqlOperations sqlOps)
       throws Exception {
-    // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
-
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
@@ -100,8 +97,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
-        getConnectionProperties(config)
-    );
+        getConnectionProperties(config));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {
@@ -132,7 +128,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config, catalog);
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
+        catalog);
   }
 
 }

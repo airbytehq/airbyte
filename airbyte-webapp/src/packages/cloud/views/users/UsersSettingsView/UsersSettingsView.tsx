@@ -13,8 +13,6 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useListUsers, useUserHook } from "packages/cloud/services/users/UseUserHook";
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
 
-import RoleToolTip from "./components/RoleToolTip";
-
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
@@ -54,17 +52,19 @@ export const UsersSettingsView: React.FC = () => {
         accessor: "email",
         Cell: ({ cell }: CellProps<User>) => cell.value,
       },
-      {
-        Header: (
-          <>
-            <FormattedMessage id="userSettings.table.column.role" />
-            <RoleToolTip />
-          </>
-        ),
-        headerHighlighted: true,
-        accessor: "userId",
-        Cell: (_: CellProps<User>) => "admin",
-      },
+      // TEMP: Currently all cloud users are admins.
+      // Remove when there is more than role
+      // {
+      //   Header: (
+      //     <>
+      //       <FormattedMessage id="userSettings.table.column.role" />
+      //       <RoleToolTip />
+      //     </>
+      //   ),
+      //   headerHighlighted: true,
+      //   accessor: "userId",
+      //   Cell: (_: CellProps<User>) => "Admin",
+      // },
       {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,

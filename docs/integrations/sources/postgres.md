@@ -137,7 +137,11 @@ If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2jso
 
 #### 5. Create publications and replication identities for tables
 
-For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. **You must add the replication identity before creating the publication. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.** Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+
+Please note that:
+- You must **add the replication identity before creating the publication**. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.
+- The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
@@ -233,6 +237,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `circle`                              | string         |                                                                                                                                                 |
 | `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903).         |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `hstore`                              | string         |                                                                                                                                                 |
 | `inet`                                | string         |                                                                                                                                                 |
 | `integer`, `int`, `int4`              | number         |                                                                                                                                                 |
 | `interval`                            | string         |                                                                                                                                                 |
@@ -257,7 +262,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `timetz`                              | string         |                                                                                                             |
 | `timestamp`                           | string         |                                                                                                             |
 | `timestamptz`                         | string         |                                                                                                             |
-| `tsquery`                             | string         | Not supported with CDC node. Parsed value is null. Issue: [#7911](https://github.com/airbytehq/airbyte/issues/7911) |
+| `tsquery`                             | string         |                                                                                                             |
 | `tsvector`                            | string         |                                                                                                             |
 | `uuid`                                | string         |                                                                                                             |
 | `xml`                                 | string         |                                                                                                             |
@@ -266,10 +271,38 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                           |
 | composite type                        | string         |                                                                                                             |
 
+## Troubleshooting
+
+### Sync data from Postgres hot standby server
+
+when the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is obviously not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanations.
+
+Here is the typical exception:
+```
+Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery
+    Detail: User query might have needed to see row versions that must be removed.
+    Hint: In a moment you should be able to reconnect to the database and repeat your command.
+```
+
+Possible solutions include:
+- [Recommended] Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
+- [Recommended] Sync data when there is no update running in the primary server, or sync data from the primary server.
+- [Not Recommended] Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
+
+One optimization on the Airbyte side is to break one large and long sync into multiple small ones. This improvement is tracked in https://github.com/airbytehq/airbyte/issues/13783.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.24  | 2022-06-14 | [13549](https://github.com/airbytehq/airbyte/pull/13549) | Fixed truncated precision if the value of microseconds or seconds is 0 |
+| 0.4.23  | 2022-06-13 | [13655](https://github.com/airbytehq/airbyte/pull/13745) | Fixed handling datetime cursors when upgrading from older versions of the connector |
+| 0.4.22  | 2022-06-09 | [13655](https://github.com/airbytehq/airbyte/pull/13655) | Fixed bug with unsupported date-time datatypes during incremental sync |
+| 0.4.21  | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size |
+| 0.4.20  | 2022-06-02 | [13367](https://github.com/airbytehq/airbyte/pull/13367) | Added convertion hstore to json format |
+| 0.4.19  | 2022-05-25 | [13166](https://github.com/airbytehq/airbyte/pull/13166) | Added timezone awareness and handle BC dates |
+| 0.4.18  | 2022-05-25 | [13083](https://github.com/airbytehq/airbyte/pull/13083) | Add support for tsquey type |
+| 0.4.17  | 2022-05-19 | [13016](https://github.com/airbytehq/airbyte/pull/13016) | CDC modify schema to allow null values |
 | 0.4.16  | 2022-05-14 | [12840](https://github.com/airbytehq/airbyte/pull/12840) | Added custom JDBC parameters field |
 | 0.4.15  | 2022-05-13 | [12834](https://github.com/airbytehq/airbyte/pull/12834) | Fix the bug that the connector returns empty catalog for Azure Postgres database |
 | 0.4.14  | 2022-05-08 | [12689](https://github.com/airbytehq/airbyte/pull/12689) | Add table retrieval according to role-based `SELECT` privilege |

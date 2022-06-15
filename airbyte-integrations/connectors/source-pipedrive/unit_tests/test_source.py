@@ -1,13 +1,16 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
-    ConnectorSpecification,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    AirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
     SyncMode,
-    DestinationSyncMode
 )
-
 from source_pipedrive.source import SourcePipedrive
 
 logger = AirbyteLogger()
@@ -16,15 +19,7 @@ PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 
 
 def test_check_connection(requests_mock, config_token):
-    body = {
-        "success": "true",
-        "data": [
-            {
-                "id": 1,
-                "update_time": "2020-10-14T11:30:36.551Z"
-            }
-        ]
-    }
+    body = {"success": "true", "data": [{"id": 1, "update_time": "2020-10-14T11:30:36.551Z"}]}
     response = setup_response(200, body)
     api_token = config_token["authorization"]["api_token"]
     requests_mock.register_uri("GET", PIPEDRIVE_URL_BASE + "deals?limit=50&api_token=" + api_token, response)
@@ -71,10 +66,7 @@ def test_streams(config_token):
 
 def setup_response(status, body):
     return [
-        {
-            "json": body,
-            "status_code": status
-        },
+        {"json": body, "status_code": status},
     ]
 
 

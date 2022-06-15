@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -55,8 +55,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         config.get("jdbc_url").asText(),
-        SQLDialect.POSTGRES
-        )) {
+        SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 
       database.query(ctx -> {

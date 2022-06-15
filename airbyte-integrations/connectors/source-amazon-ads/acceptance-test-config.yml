@@ -22,6 +22,7 @@ tests:
         extra_fields: no
         exact_order: no
         extra_records: no
+      timeout_seconds: 900
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_sponsored_display.json"
       empty_streams: ["sponsored_display_targetings"]
@@ -33,5 +34,6 @@ tests:
   full_refresh:
     - config_path: "secrets/config_test_account.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1800
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_sponsored_display.json"

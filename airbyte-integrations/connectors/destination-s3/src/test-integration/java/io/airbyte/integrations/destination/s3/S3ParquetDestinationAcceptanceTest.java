@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -17,15 +17,19 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
 
-public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
+public class S3ParquetDestinationAcceptanceTest extends S3AvroParquetDestinationAcceptanceTest {
 
   protected S3ParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
@@ -75,6 +79,32 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
   @Override
   protected TestDataComparator getTestDataComparator() {
     return new S3AvroParquetTestDataComparator();
+  }
+
+  @Override
+  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final Map<String, Set<Type>> resultDataTypes = new HashMap<>();
+
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
+      final var path = new org.apache.hadoop.fs.Path(uri);
+      final Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
+
+      try (final ParquetReader<Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
+          .withConf(hadoopConfig)
+          .build()) {
+        GenericData.Record record;
+        while ((record = parquetReader.read()) != null) {
+          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          resultDataTypes.putAll(actualDataTypes);
+        }
+      }
+    }
+
+    return resultDataTypes;
   }
 
 }

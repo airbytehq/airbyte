@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.spec;
@@ -12,9 +12,9 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
