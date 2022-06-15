@@ -84,7 +84,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       if (next == null) {
         // when the offset has changed, it means debezium is processing the change record
         if (offsetTimestamp != offsetManager.getFileTimestamp()) {
-          LOGGER.info("The offset has changed; keep waiting for the first change record");
+          LOGGER.info("The offset has changed; wait for {}s for more records", debeziumTimeoutSeconds);
           offsetTimestamp = offsetManager.getFileTimestamp();
           continue;
         }
@@ -93,7 +93,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         // to shutdown
         LOGGER.info("Closing cause next is returned as null");
         requestClose();
-        LOGGER.info("no record found. polling again.");
+        LOGGER.info("No record found. polling again.");
         continue;
       }
 
