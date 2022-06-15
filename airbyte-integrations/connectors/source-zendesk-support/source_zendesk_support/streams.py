@@ -484,9 +484,8 @@ class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
 
 
 class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
-    """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
-
-    The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
+    """
+    SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -535,7 +534,9 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
-    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
+    """
+    TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
+    """
 
     cursor_field = "time"
 
