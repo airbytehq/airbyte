@@ -20,5 +20,5 @@ from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_scd') 
 -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 
