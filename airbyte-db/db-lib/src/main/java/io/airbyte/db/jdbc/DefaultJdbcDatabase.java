@@ -76,7 +76,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public DatabaseMetaData getMetaData() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final DatabaseMetaData metaData = connection.getMetaData();
-      connection.close();
       return metaData;
     } catch (SQLException e) {
       throw new ConnectionErrorException(e.getSQLState(), e.getCause() == null ? e : e.getCause());
