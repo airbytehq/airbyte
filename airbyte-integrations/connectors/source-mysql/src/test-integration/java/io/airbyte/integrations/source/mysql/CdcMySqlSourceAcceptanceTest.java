@@ -179,8 +179,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
 
-    // Uncaught exceptions are now handled by the AirbyteExceptionHandler, so
-    // it will not be thrown outside the connector execution.
     assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
