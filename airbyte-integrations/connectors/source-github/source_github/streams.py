@@ -739,22 +739,22 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
         for pull_request in nodes:
             record = {
-                "id": pull_request["databaseId"],
-                "node_id": pull_request["id"],
+                "id": pull_request["id"],
+                "node_id": pull_request["node_id"],
                 "number": pull_request["number"],
-                "updated_at": pull_request["updatedAt"],
+                "updated_at": pull_request["updated_at"],
                 "repository": pull_request["repository"]["name"],
                 "comments": pull_request["comments"]["totalCount"],
                 "commits": pull_request["commits"]["totalCount"],
                 "review_comments": sum([node["comments"]["totalCount"] for node in pull_request["reviews"]["nodes"]]),
-                "changed_files": pull_request["changedFiles"],
+                "changed_files": pull_request["changed_files"],
                 "deletions": pull_request["deletions"],
                 "additions": pull_request["additions"],
                 "merged": pull_request["merged"],
                 "merged_by": pull_request["mergedBy"],
-                "can_be_rebased": pull_request["canBeRebased"],
-                "maintainer_can_modify": pull_request["maintainerCanModify"],
-                "mergeable_state": pull_request["mergeStateStatus"].lower(),
+                "can_be_rebased": pull_request["can_be_rebased"],
+                "maintainer_can_modify": pull_request["maintainer_can_modify"],
+                "merge_state_status": pull_request["merge_state_status"],
             }
             yield record
 

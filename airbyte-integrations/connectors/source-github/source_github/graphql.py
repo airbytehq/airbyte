@@ -19,17 +19,18 @@ def get_query(owner, name, page_size, next_page_token):
     op = sgqlc.operation.Operation(_schema_root.query_type)
     pull_requests = op.repository(owner=owner, name=name).pull_requests(**kwargs)
     pull_requests.nodes.__fields__(
-        id=True,
-        database_id=True,
+        id="node_id",
+        database_id="id",
         number=True,
-        updated_at=True,
-        changed_files=True,
+        updated_at="updated_at",
+        changed_files="changed_files",
         deletions=True,
         additions=True,
         merged=True,
-        can_be_rebased=True,
-        maintainer_can_modify=True,
-        merge_state_status=True,
+        mergeable=True,
+        can_be_rebased="can_be_rebased",
+        maintainer_can_modify="maintainer_can_modify",
+        merge_state_status="merge_state_status",
     )
     pull_requests.nodes.repository.__fields__(name=True)
     pull_requests.nodes.comments.__fields__(total_count=True)

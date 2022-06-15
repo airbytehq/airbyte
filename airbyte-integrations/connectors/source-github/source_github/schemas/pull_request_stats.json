@@ -20,10 +20,10 @@
     "mergeable": {
       "type": ["null", "boolean"]
     },
-    "rebaseable": {
+    "can_be_rebased": {
       "type": ["null", "boolean"]
     },
-    "mergeable_state": {
+    "merge_state_status": {
       "type": ["null", "string"]
     },
     "merged_by": {
