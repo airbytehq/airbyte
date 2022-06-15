@@ -247,7 +247,6 @@ module.exports = {
       label: 'Understand Airbyte',
       items: [
         'understanding-airbyte/beginners-guide-to-catalog',
-        'understanding-airbyte/catalog',
         'understanding-airbyte/airbyte-protocol',
         'understanding-airbyte/airbyte-protocol-docker',
         'understanding-airbyte/basic-normalization',
