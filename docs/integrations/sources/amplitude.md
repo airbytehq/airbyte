@@ -59,6 +59,7 @@ The Amplitude connector should gracefully handle Amplitude API limitations under
 
 | Version | Date       | Pull Request                                           | Subject |
 |:--------| :--------- | :----------------------------------------------------- | :------ |
+| 0.1.9   | 2022-06-10 | [13638](https://github.com/airbytehq/airbyte/pull/13638) | Fixed an infinite loop when fetching Amplitude data |
 | 0.1.8   | 2022-06-01 | [13373](https://github.com/airbytehq/airbyte/pull/13373) | Fixed the issue when JSON Validator produces erros on `date-time` check |
 | 0.1.7   | 2022-05-21 | [13074](https://github.com/airbytehq/airbyte/pull/13074) | Removed time offset for `Events` stream, which caused a lot of duplicated records |
 | 0.1.6   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |

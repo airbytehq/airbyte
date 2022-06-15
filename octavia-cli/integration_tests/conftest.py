@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 import os
 
 import pytest
@@ -35,7 +34,7 @@ def octavia_test_project_directory():
 
 @pytest.fixture(scope="session")
 def api_client():
-    return get_api_client("http://localhost:8000")
+    return get_api_client("http://localhost:8000", "octavia-cli/integration-tests", None)
 
 
 @pytest.fixture(scope="session")
@@ -43,12 +42,15 @@ def workspace_id(api_client):
     return get_workspace_id(api_client, None)
 
 
-@pytest.fixture(scope="session")
-def source_configuration_and_path(octavia_test_project_directory):
-    path = f"{octavia_test_project_directory}/sources/poke/configuration.yaml"
+def open_yaml_configuration(path: str):
     with open(path, "r") as f:
         local_configuration = yaml.safe_load(f)
     return local_configuration, path
+
+
+def source_configuration_and_path(octavia_test_project_directory):
+    path = f"{octavia_test_project_directory}/sources/poke/configuration.yaml"
+    return open_yaml_configuration(path)
 
 
 @pytest.fixture(scope="session")
@@ -70,9 +72,7 @@ def source(api_client, workspace_id, source_configuration_and_path, source_state
 @pytest.fixture(scope="session")
 def destination_configuration_and_path(octavia_test_project_directory):
     path = f"{octavia_test_project_directory}/destinations/postgres/configuration.yaml"
-    with open(path, "r") as f:
-        local_configuration = yaml.safe_load(f)
-    return local_configuration, path
+    return open_yaml_configuration(path)
 
 
 @pytest.fixture(scope="session")
