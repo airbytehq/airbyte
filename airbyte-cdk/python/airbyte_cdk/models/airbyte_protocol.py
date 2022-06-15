@@ -27,13 +27,13 @@ class AirbyteRecordMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    stream: str = Field(..., description="the name of this record's stream")
-    data: Dict[str, Any] = Field(..., description="the record data")
+    namespace: Optional[str] = Field(None, description="namespace the data is associated with")
+    stream: str = Field(..., description="stream the data is associated with")
+    data: Dict[str, Any] = Field(..., description="record data")
     emitted_at: int = Field(
         ...,
         description="when the data was emitted from the source. epoch in millisecond.",
     )
-    namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
 
 
 class AirbyteStateType(Enum):
@@ -70,8 +70,8 @@ class AirbyteLogMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    level: Level = Field(..., description="the type of logging")
-    message: str = Field(..., description="the log message")
+    level: Level = Field(..., description="log level")
+    message: str = Field(..., description="log message")
 
 
 class TraceType(Enum):
@@ -261,7 +261,10 @@ class ConnectorSpecification(BaseModel):
         ...,
         description="ConnectorDefinition specific blob. Must be a valid JSON string.",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsIncremental: Optional[bool] = Field(
+        None,
+        description="(deprecated) If the connector supports incremental mode or not.",
+    )
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
