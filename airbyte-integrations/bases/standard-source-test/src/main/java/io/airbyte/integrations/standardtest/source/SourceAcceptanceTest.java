@@ -236,7 +236,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
+    final JsonNode latestState = Jsons.jsonNode(stateMessages);
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),

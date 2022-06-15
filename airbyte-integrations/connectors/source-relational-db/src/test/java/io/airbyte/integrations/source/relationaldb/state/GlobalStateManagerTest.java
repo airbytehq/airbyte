@@ -41,12 +41,14 @@ public class GlobalStateManagerTest {
   @Test
   void testCdcStateManager() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState()))
+    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(cdcState))
         .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace("namespace").withName("name"))
             .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final StateManager stateManager =
         new GlobalStateManager(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     assertNotNull(stateManager.getCdcStateManager());
+    assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
   }
 
   @Test

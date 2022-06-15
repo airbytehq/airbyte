@@ -92,7 +92,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
    */
   private CdcState extractCdcState(final AirbyteStateMessage airbyteStateMessage) {
     if (airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
-      return Jsons.object(airbyteStateMessage.getGlobal().getSharedState(), DbState.class).getCdcState();
+      return Jsons.object(airbyteStateMessage.getGlobal().getSharedState(), CdcState.class);
     } else {
       return Jsons.object(airbyteStateMessage.getData(), DbState.class).getCdcState();
     }
