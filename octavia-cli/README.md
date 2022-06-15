@@ -105,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.18-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.19-alpha
 ```
 
 ### Using `docker-compose`
@@ -341,7 +341,7 @@ $ octavia apply
 ❓ - Do you want to update weather? [y/N]: y
 ✍️ - Running update because a diff was detected between local and remote resource.
 🎉 - Successfully updated weather on your Airbyte instance!
-💾 - New state for weather stored at ./sources/weather/state.yaml.
+💾 - New state for weather stored at ./sources/weather/state_<workspace_id>.yaml.
 🐙 - my_db exists on your Airbyte instance, let's check if we need to update it!
 😴 - Did not update because no change detected.
 🐙 - weather_to_pg exists on your Airbyte instance, let's check if we need to update it!
@@ -350,7 +350,7 @@ $ octavia apply
 ❓ - Do you want to update weather_to_pg? [y/N]: y
 ✍️ - Running update because a diff was detected between local and remote resource.
 🎉 - Successfully updated weather_to_pg on your Airbyte instance!
-💾 - New state for weather_to_pg stored at ./connections/weather_to_pg/state.yaml.
+💾 - New state for weather_to_pg stored at ./connections/weather_to_pg/state_<workspace_id>.yaml.
 ```
 
 ## Contributing
@@ -384,11 +384,12 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version  | Date       | Description                            | PR                                                         |
-|----------|------------|----------------------------------------|------------------------------------------------------------|
-| 0.39.19  | 2022-06-15 | Allow users to set custom HTTP headers | [#12893](https://github.com/airbytehq/airbyte/pull/12893)  |
-| 0.38.5   | 2022-05-12 | Enable normalization on connection     | [#12727](https://github.com/airbytehq/airbyte/pull/12727)  |
-| 0.36.11  | 2022-05-05 | Use snake case in connection fields    | [#12133](https://github.com/airbytehq/airbyte/pull/12133)  |
-| 0.36.2   | 2022-04-15 | Improve telemetry                      | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68  | 2022-04-12 | Add telemetry                          | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61  | 2022-04-07 | Alpha release                          | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)  |
+| Version  | Date       | Description                                        | PR                                                       |
+|----------|------------|----------------------------------------------------|----------------------------------------------------------|
+| 0.39.20  | 2022-06-16 | Allow connection management on multiple workspaces | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
+| 0.39.19  | 2022-06-15 | Allow users to set custom HTTP headers             | [#12893](https://github.com/airbytehq/airbyte/pull/12893)  |
+| 0.39.14  | 2022-05-12 | Enable normalization on connection                 | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
+| 0.37.0   | 2022-05-05 | Use snake case in connection fields                | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
+| 0.36.2   | 2022-04-15 | Improve telemetry                                  | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68  | 2022-04-12 | Add telemetry                                      | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61  | 2022-04-07 | Alpha release                                      | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
