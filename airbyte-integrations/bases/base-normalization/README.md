@@ -1,6 +1,9 @@
 # Normalization
 
 * [Normalization](#normalization)
+    * [Developer workflow](#developer-workflow)
+        * [Setting up your environment](#setting-up-your-environment)
+        * [Running dbt](#running-dbt)
     * [Testing normalization](#testing-normalization)
         * [Build & Activate Virtual Environment and install dependencies](#build--activate-virtual-environment-and-install-dependencies)
         * [Unit Tests](#unit-tests)
@@ -28,6 +31,82 @@ Related documentation on normalization is available here:
 
 * [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
 * [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
+
+## Developer workflow
+
+At a high level, this is the recommended workflow for updating base-normalization:
+1. Manually edit the models in `integration_tests/normalization_test_output/postgres/test_simple_streams/models/generated`.
+   Run `dbt compile` and manually execute the SQL queries. This requires manual setup and validation, but allows you to quickly experiment with different inputs.
+    1. You can substitute your preferred database/warehouse. This document will use Postgres because it's easy to set up.
+1. Once `dbt run` succeeds, edit `stream_processor.py` until it generates the models you hand-wrote in step 1.
+1. Run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` integration test case.
+1. Run the full [integration test suite](#integration-tests).
+1. Commit the changes in `integration_tests/normalization_test_output`.
+
+### Setting up your environment
+
+If you have a fullly-featured Python dev environment, you can just set a breakpoint at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the breakpoint.
+This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
+
+Otherwise, you can run this command:
+```shell
+docker run \
+  --rm \
+  --name "normalization_dev_postgres" \
+  -e "integration-tests" \
+  -e "integration-tests" \
+  -p "9001:5432" \
+  -d \
+  marcosmarxm/postgres-ssl:dev \
+  -c ssl=on \
+  -c ssl_cert_file=/var/lib/postgresql/server.crt \
+  -c ssl_key_file=/var/lib/postgresql/server.key \
+```
+
+Then you'll need to edit `integration_tests/normalization_test_output/postgres/test_simple_streams/profiles.yml` and set the port to 9001.
+
+### Running dbt
+
+Once you have a database available, you can run dbt commands. We recommend running dbt from inside the `airbyte/normalization:latest` image.
+This saves you the effort of installing dbt and reconfiguring dbt_project.yml.
+
+First, `cd integration_tests/normalization_test_output/postgres/test_simple_streams`. Then install dbt's dependencies:
+```shell
+docker run \
+  --rm \
+  --init \
+  -v $(pwd):/workspace \
+  -v $(pwd)/build:/build \
+  -v $(pwd)/logs:/logs \
+  -v $(pwd)/build/dbt_packages/:/dbt \
+  --entrypoint /usr/local/bin/dbt \
+  --network host \
+  -i airbyte/normalization:latest \
+  deps \
+  --profiles-dir=/workspace \
+  --project-dir=/workspace
+```
+
+You should be able to run `dbt compile` now:
+```shell
+docker run \
+  --rm \
+  --init \
+  -v $(pwd):/workspace \
+  -v $(pwd)/build:/build \
+  -v $(pwd)/logs:/logs \
+  -v $(pwd)/build/dbt_packages/:/dbt \
+  --entrypoint /usr/local/bin/dbt \
+  --network host \
+  -i airbyte/normalization:latest \
+  compile \
+  --profiles-dir=/workspace \
+  --project-dir=/workspace
+```
+
+This will modify the files in `build/compiled/airbyte_utils/models/generated`. For example, if you edit `models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`,
+then after compiling, you can see the results in `build/compiled/airbyte_utils/models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`.
 
 ## Testing normalization
 
