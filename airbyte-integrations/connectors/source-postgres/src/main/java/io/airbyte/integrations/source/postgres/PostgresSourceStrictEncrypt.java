@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This file will soon be removed. Any change to this file should also be duplicated to
- * PostgresSourceStrictEncrypt.java in the source-postgres module.
+ * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
+ * completely once the migration of multi-variant connector is done.
  */
 public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
