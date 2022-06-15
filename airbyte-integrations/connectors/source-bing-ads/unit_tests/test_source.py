@@ -3,7 +3,7 @@
 #
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import source_bing_ads
