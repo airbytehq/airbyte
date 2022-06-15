@@ -9,7 +9,7 @@ import pkg_resources
 from airbyte_api_client.api import workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
-from .api_http_headers import API_HEADERS_YAML_FILE_INSTRUCTION, ApiHttpHeader, merge_api_headers, set_api_headers_on_api_client
+from .api_http_headers import ApiHttpHeader, merge_api_headers, set_api_headers_on_api_client
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
 from .generate import commands as generate_commands
@@ -85,11 +85,12 @@ def set_context_object(
     "option_based_api_http_headers",
     help='Additional HTTP header name and header value pairs to pass to use when calling Airbyte\'s API ex. --api-http-header "Authorization" "Basic dXNlcjpwYXNzd29yZA=="',
     multiple=True,
-    type=(str, str),
+    nargs=2,
+    type=click.Tuple([str, str]),
 )
 @click.option(
     "--api-http-headers-file-path",
-    help=f"Path to the Yaml file with API HTTP headers like below \n {API_HEADERS_YAML_FILE_INSTRUCTION}",
+    help=f"Path to the Yaml file with API HTTP headers. Please check the {init_commands.API_HTTP_HEADERS_TARGET_PATH} file.",
     type=click.Path(exists=True, readable=True),
 )
 @click.pass_context
