@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -17,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StateMessageHelper;
 import io.vavr.control.Either;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
@@ -34,6 +37,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   private final Stack<StreamDescriptor> streamDescriptors = new Stack<>();
   private boolean isPartialReset;
   private boolean isStarted = false;
+  private Either<List<AirbyteStateMessage>, AirbyteStateMessage> perStreamOrGlobalState;
 
   public EmptyAirbyteSource() {
     hasEmittedState = new AtomicBoolean();
@@ -51,14 +55,28 @@ public class EmptyAirbyteSource implements AirbyteSource {
         if (streamDescriptors.isEmpty()) {
           isPartialReset = false;
         } else {
-          Either<JsonNode, List<AirbyteStateMessage>> eitherState = StateMessageHelper.getTypeState(sourceConfig.getState().getState());
+          Either<JsonNode, List<AirbyteStateMessage>> eitherState = StateMessageHelper.getTypedState(sourceConfig.getState().getState());
           if (eitherState.isLeft()) {
             log.error("The state is not compatible with a partial reset that  have been requested");
             throw new IllegalStateException("Legacy state for a partial reset");
           }
 
           if (eitherState.isRight()) {
-
+            List<AirbyteStateMessage> stateMessages = eitherState.get();
+            List<AirbyteStateMessage> stateMessagesNotPerStream =
+                stateMessages.stream().filter(stateMessage -> stateMessage.getStateType() != AirbyteStateType.STREAM).toList();
+            if (stateMessages.isEmpty()) {
+              log.error("No state has been provide, no reset will be perform, this will wun nothing");
+              streamDescriptors.clear();
+            } else if (stateMessages.size() == 1 && stateMessages.get(0).getStateType() == AirbyteStateType.GLOBAL) {
+              // Global
+              perStreamOrGlobalState = Either.right(stateMessages.get(0));
+            } else if (stateMessagesNotPerStream.size() == stateMessages.size()) {
+              // Per Stream
+              perStreamOrGlobalState = Either.left(stateMessages);
+            } else {
+              throw new IllegalStateException("The state that the empty source recieved is in an unexpected format and can not be use");
+            }
           }
           isPartialReset = true;
         }
@@ -88,20 +106,25 @@ public class EmptyAirbyteSource implements AirbyteSource {
     }
 
     if (isPartialReset) {
-      if (!streamDescriptors.isEmpty()) {
-        StreamDescriptor streamDescriptor = streamDescriptors.pop();
-        AirbyteMessage responseMessage = new AirbyteMessage()
-            .withState(
-                new AirbyteStateMessage()
-                    .withStream(new AirbyteStreamState()
-                        .withStreamDescriptor(
-                            new io.airbyte.protocol.models.StreamDescriptor()
-                                .withName(streamDescriptor.getName())
-                                .withNamespace(streamDescriptor.getNamespace()))
-                        .withStreamState(null)));
-        return Optional.of(responseMessage);
+      if (perStreamOrGlobalState.isLeft()) {
+        if (!streamDescriptors.isEmpty()) {
+          // Per stream, it will emit one message per stream being reset
+          StreamDescriptor streamDescriptor = streamDescriptors.pop();
+          List<AirbyteStateMessage> stateMessages = perStreamOrGlobalState.getLeft();
+          try {
+            while (hasState(stateMessages, streamDescriptor)) {
+              streamDescriptor = streamDescriptors.pop();
+            }
+            return Optional.of(getNullPerStreamMessage(streamDescriptor));
+          } catch (EmptyStackException e) {
+            return Optional.empty();
+          }
+        } else {
+          return Optional.empty();
+        }
       } else {
-        return Optional.empty();
+        // global state, it will emit one global message
+        return Optional.of(getNullGlobalMessage(streamDescriptors, perStreamOrGlobalState.get()));
       }
     } else {
       if (!hasEmittedState.get()) {
@@ -123,4 +146,61 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // no op.
   }
 
+
+  private boolean hasState(List<AirbyteStateMessage> stateMessages, StreamDescriptor streamDescriptor) {
+    return stateMessages.stream().filter(stateMessage ->
+        stateMessage.getStream().getStreamDescriptor().equals(streamDescriptor)
+    ).count() != 0;
+  }
+
+  private AirbyteMessage getNullPerStreamMessage(StreamDescriptor streamDescriptor) {
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(
+            new AirbyteStateMessage()
+                .withStateType(AirbyteStateType.STREAM)
+                .withStream(
+                    new AirbyteStreamState()
+                        .withStreamDescriptor(new io.airbyte.protocol.models.StreamDescriptor()
+                            .withName(streamDescriptor.getName())
+                            .withNamespace(streamDescriptor.getNamespace())
+                        )
+                        .withStreamState(null)
+                )
+        );
+  }
+
+  private AirbyteMessage getNullGlobalMessage(Stack<StreamDescriptor> streamDescriptors, AirbyteStateMessage currentState) {
+    AirbyteGlobalState globalState = new AirbyteGlobalState();
+    globalState.setStreamStates(new ArrayList<>());
+
+    streamDescriptors.forEach(streamDescriptor -> globalState.getStreamStates().add(
+        new AirbyteStreamState()
+            .withStreamDescriptor(
+                new io.airbyte.protocol.models.StreamDescriptor()
+                    .withName(streamDescriptor.getName())
+                    .withNamespace(streamDescriptor.getNamespace())
+            )
+            .withStreamState(null)
+    ));
+
+    if (currentState.getGlobal().getStreamStates().size() == globalState.getStreamStates().size()) {
+      log.info("All the streams of a global state have been reset, the shared state will be erased as well");
+      globalState.setSharedState(null);
+    } else {
+      log.info("This is a partial reset, the shared state will be preserve");
+      globalState.setSharedState(currentState.getGlobal().getSharedState());
+    }
+
+
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(
+            new AirbyteStateMessage()
+                .withStateType(AirbyteStateType.GLOBAL)
+                .withGlobal(
+                    globalState
+                )
+        );
+  }
 }
