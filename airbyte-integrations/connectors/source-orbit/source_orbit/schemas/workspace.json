@@ -2,40 +2,35 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "data": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "attributes": {
       "type": "object",
       "properties": {
-        "id": {
+        "name": {
           "type": "string"
         },
-        "type": {
+        "slug": {
           "type": "string"
         },
-        "attributes": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "slug": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "members_count": {
-              "type": "integer"
-            },
-            "activities_count": {
-              "type": "integer"
-            },
-            "tags": {
-              "type": "object"
-            }
-          }
+        "updated_at": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "members_count": {
+          "type": "integer"
+        },
+        "activities_count": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "object"
         }
       }
     }

@@ -21,11 +21,6 @@ class OrbitStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
     def parse_response(
         self,
         response: requests.Response,
@@ -33,7 +28,9 @@ class OrbitStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        yield response.json()
+        data = response.json()
+        records = data['data']
+        yield from records
 
 
 class OrbitStreamPaginated(OrbitStream):
@@ -41,11 +38,11 @@ class OrbitStreamPaginated(OrbitStream):
         decoded_response = response.json()
         links = decoded_response.get("links")
         if not links:
-            return
+            return None
 
         next = links.get("next")
         if not next:
-            return
+            return None
 
         next_url = urllib.parse.urlparse(next)
         next_params = list((cast(str, k), v) for (k, v) in urllib.parse.parse_qsl(next_url.query))
@@ -84,3 +81,15 @@ class Workspace(OrbitStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"workspaces/{self.workspace}"
+
+    # We aren't returning a dict with this stream, so we need to "yield" instead of "yield from".
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        records = data['data']
+        yield records

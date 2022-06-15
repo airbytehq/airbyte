@@ -24,13 +24,13 @@ class SourceOrbit(AbstractSource):
             next(workspace_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
-            return False, e
+            return False, f"Please check that your API key and workspace name are entered correctly: {repr(e)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        stream_args = {
-            "authenticator": TokenAuthenticator(token=config["api_token"]),
+        stream_kwargs = {
+            "authenticator": TokenAuthenticator(config["api_token"]),
             "workspace": config["workspace"],
         }
 
-        return [Members(**stream_args), Workspace(**stream_args)]
+        return [Members(**stream_kwargs), Workspace(**stream_kwargs)]
