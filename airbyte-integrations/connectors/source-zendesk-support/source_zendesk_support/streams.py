@@ -335,6 +335,7 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     """
     Endpoints provide a cursor pagination and sorting mechanism
     """
+
     cursor_field = "updated_at"
     next_page_field = "next_page"
     prev_start_time = None
@@ -495,11 +496,7 @@ class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {
-            "page": 1,
-            "per_page": self.page_size,
-            "sort_by": "asc"
-        }
+        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
         params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
         if next_page_token:
@@ -517,21 +514,23 @@ class TicketForms(SourceZendeskSupportCursorPaginationStream):
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = self._parse_next_page_number(response)
         return next_page if next_page else None
-    
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = {
             "start_time": self.check_stream_state(stream_state),
             "page": 1,
             "per_page": self.page_size,
         }
         if next_page_token:
-            params['page'] = next_page_token
+            params["page"] = next_page_token
         return params
-    
+
 
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
