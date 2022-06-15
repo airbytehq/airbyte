@@ -47,6 +47,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean signalledClose;
   private long offsetTimestamp;
 
+  /**
+   * @param firstRecordTimeout the amount of time to wait before Debezium processes the first record.
+   * @param subsequentRecordTimeout the extra time to wait after Debezium has processed the first record.
+   */
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
