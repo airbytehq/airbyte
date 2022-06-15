@@ -1248,7 +1248,7 @@ public class ConnectionManagerWorkflowTest {
 
     @ParameterizedTest
     @MethodSource("getSetupFailingActivity")
-    void testWorkflowRestarted(final Thread mockSetup) throws InterruptedException {
+    void testWorkflowRestartedAfterFailedActivity(final Thread mockSetup) throws InterruptedException {
       mockSetup.run();
       Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
           Duration.ZERO));
