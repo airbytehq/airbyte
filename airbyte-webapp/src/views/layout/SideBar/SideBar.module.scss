@@ -18,7 +18,8 @@
   text-decoration: none;
   position: relative;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     background: #262963; //todo: update to use palette when palette up to date
     transition: variables.$transition-out;
   }
@@ -28,7 +29,8 @@
     background: colors.$primaryColor;
     transition: variables.$transition-out;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       color: colors.$whiteColor;
       background: #7f7eff; //todo: update to use palette when palette up to date
       transition: variables.$transition-out;
@@ -39,7 +41,8 @@
     color: colors.$whiteColor;
     background: #353b7b;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       color: colors.$whiteColor;
       background: #565c94;
     }
