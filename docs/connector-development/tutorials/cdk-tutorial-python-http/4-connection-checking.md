@@ -26,7 +26,7 @@ class SourcePythonHttpTutorial(AbstractSource):
 ...
 ```
 
-Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency:
+Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency (Note: in a real implementation you should write code to connect to the API to validate connectivity and not just validate inputs):
 
 ```python
     def check_connection(self, logger, config) -> Tuple[bool, any]:
