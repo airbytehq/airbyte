@@ -26,17 +26,16 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * This class is copied from source-postgres-strict-encrypt. The original
- * file can be deleted completely once the migration of multi-variant
- * connector is done.
+ * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
+ * completely once the migration of multi-variant connector is done.
  */
-@SetEnvironmentVariable(key = "DEPLOYMENT_MODE", value = "CLOUD")
+@SetEnvironmentVariable(key = "DEPLOYMENT_MODE",
+                        value = "CLOUD")
 public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";

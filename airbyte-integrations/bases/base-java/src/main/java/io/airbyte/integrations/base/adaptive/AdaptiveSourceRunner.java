@@ -10,6 +10,9 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class launches different variants of a source connector based on where Airbyte is deployed.
+ */
 public class AdaptiveSourceRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveSourceRunner.class);

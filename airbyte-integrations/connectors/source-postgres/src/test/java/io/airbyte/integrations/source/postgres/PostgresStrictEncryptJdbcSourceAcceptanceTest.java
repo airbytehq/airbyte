@@ -43,9 +43,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * This class is copied from source-postgres-strict-encrypt. The original
- * file can be deleted completely once the migration of multi-variant
- * connector is done.
+ * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
+ * completely once the migration of multi-variant connector is done.
  */
 class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 

@@ -113,7 +113,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     try {
       preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
     } catch (final DateTimeParseException e) {
-      //attempt to parse the time w/o timezone. This can be caused by schema created with a different version of the connector
+      // attempt to parse the time w/o timezone. This can be caused by schema created with a different
+      // version of the connector
       preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     }
   }
@@ -122,7 +123,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      //attempt to parse the datetime w/o timezone. This can be caused by schema created with a different version of the connector
+      // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
+      // version of the connector
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     }
   }
@@ -132,7 +134,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      //attempt to parse the datetime with timezone. This can be caused by schema created with an older version of the connector
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
   }
@@ -142,7 +145,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     try {
       preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     } catch (final DateTimeParseException e) {
-      //attempt to parse the datetime with timezone. This can be caused by schema created with an older version of the connector
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
       preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
     }
   }
