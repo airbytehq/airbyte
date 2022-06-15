@@ -53,3 +53,5 @@ data:
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
+  METRIC_CLIENT: ""
+  OTEL_COLLECTOR_ENDPOINT: ""
