@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.util.SafeObjectInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class handles reading and writing a debezium offset file. In many cases it is duplicating
@@ -35,16 +33,20 @@ import org.slf4j.LoggerFactory;
  */
 public class AirbyteFileOffsetBackingStore {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteFileOffsetBackingStore.class);
-
   private final Path offsetFilePath;
+  private long fileTimestamp;
 
   public AirbyteFileOffsetBackingStore(final Path offsetFilePath) {
     this.offsetFilePath = offsetFilePath;
+    this.fileTimestamp = System.currentTimeMillis();
   }
 
   public Path getOffsetFilePath() {
     return offsetFilePath;
+  }
+
+  public long getFileTimestamp() {
+    return fileTimestamp;
   }
 
   public Map<String, String> read() {
@@ -122,6 +124,7 @@ public class AirbyteFileOffsetBackingStore {
         raw.put(key, value);
       }
       os.writeObject(raw);
+      this.fileTimestamp = System.currentTimeMillis();
     } catch (final IOException e) {
       throw new ConnectException(e);
     }

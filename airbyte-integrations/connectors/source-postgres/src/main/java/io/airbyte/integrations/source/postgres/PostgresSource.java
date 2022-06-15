@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.PG_DEBEZIUM_TIMEOUT_SECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -237,7 +238,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
+          PostgresCdcProperties.getDebeziumProperties(sourceConfig),
+          catalog, false, PG_DEBEZIUM_TIMEOUT_SECONDS);
       return handler.getIncrementalIterators(
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),

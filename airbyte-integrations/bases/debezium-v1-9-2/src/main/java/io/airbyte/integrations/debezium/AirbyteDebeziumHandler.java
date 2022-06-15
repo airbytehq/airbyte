@@ -51,6 +51,7 @@ public class AirbyteDebeziumHandler {
   private final CdcTargetPosition targetPosition;
   private final ConfiguredAirbyteCatalog catalog;
   private final boolean trackSchemaHistory;
+  private final int debeziumTimeoutSeconds;
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
@@ -58,13 +59,15 @@ public class AirbyteDebeziumHandler {
                                 final CdcTargetPosition targetPosition,
                                 final Properties connectorProperties,
                                 final ConfiguredAirbyteCatalog catalog,
-                                final boolean trackSchemaHistory) {
+                                final boolean trackSchemaHistory,
+                                final int debeziumTimeoutSeconds) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.connectorProperties = connectorProperties;
     this.catalog = catalog;
     this.trackSchemaHistory = trackSchemaHistory;
     this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    this.debeziumTimeoutSeconds = debeziumTimeoutSeconds;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final CdcSavedInfoFetcher cdcSavedInfoFetcher,
@@ -83,7 +86,9 @@ public class AirbyteDebeziumHandler {
         queue,
         targetPosition,
         publisher::hasClosed,
-        publisher::close);
+        publisher::close,
+        offsetManager,
+        debeziumTimeoutSeconds);
 
     // convert to airbyte message.
     final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
