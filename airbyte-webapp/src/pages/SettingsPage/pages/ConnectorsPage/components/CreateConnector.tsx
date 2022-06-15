@@ -10,16 +10,16 @@ import { useCreateSourceDefinition } from "services/connector/SourceDefinitionSe
 
 import CreateConnectorModal from "./CreateConnectorModal";
 
-type IProps = {
+interface IProps {
   type: string;
-};
+}
 
-type ICreateProps = {
+interface ICreateProps {
   name: string;
   documentationUrl: string;
   dockerImageTag: string;
   dockerRepository: string;
-};
+}
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();

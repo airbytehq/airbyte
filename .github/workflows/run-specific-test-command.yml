@@ -50,9 +50,9 @@ jobs:
         with:
           java-version: '14'
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: '16.13.0'
+          node-version: 'lts/gallium'
 
       - name: Build
         id: run-specific-test

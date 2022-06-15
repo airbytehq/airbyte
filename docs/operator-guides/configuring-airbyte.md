@@ -80,13 +80,7 @@ The following variables are relevant to both Docker and Kubernetes.
 2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
-5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md) 
-
-#### Scheduler
-1. `SUBMITTER_NUM_THREADS` - Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
-2. `MINIMUM_WORKSPACE_RETENTION_DAYS` - Defines the minimum configuration file age for sweeping. The Scheduler will do it's best to now sweep files younger than this. Defaults to 1 day.
-3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
-4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
+5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
 
 ### Docker-Only
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.

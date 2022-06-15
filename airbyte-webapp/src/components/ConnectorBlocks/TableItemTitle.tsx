@@ -9,7 +9,7 @@ import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-type TableItemTitleProps = {
+interface TableItemTitleProps {
   type: "source" | "destination";
   dropDownData: DropDownRow.IDataItem[];
   onSelect: (item: DropDownRow.IDataItem) => void;
@@ -17,7 +17,7 @@ type TableItemTitleProps = {
   entityName: string;
   entityIcon?: React.ReactNode;
   releaseStage?: ReleaseStage;
-};
+}
 
 const Content = styled.div`
   display: flex;

@@ -56,6 +56,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
     base_params = {}
     cursor_field = "date"
     date_template = "%Y%m%d"
+    compare_date_template = None
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -69,16 +70,39 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         """
         pass
 
+    def _get_date_time_items_from_schema(self):
+        """
+        Get all properties from schema with format: 'date-time'
+        """
+        result = []
+        schema = self.get_json_schema()["properties"]
+        for key, value in schema.items():
+            if value.get("format") == "date-time":
+                result.append(key)
+        return result
+
+    def _date_time_to_rfc3339(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        date_time_fields = self._get_date_time_items_from_schema()
+        for item in record:
+            if item in date_time_fields:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+        return record
+
     def _get_end_date(self, current_date: pendulum, end_date: pendulum = pendulum.now()):
         if current_date.add(**self.time_interval).date() < end_date.date():
             end_date = current_date.add(**self.time_interval)
         return end_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        # save state value in source native format
+        if self.compare_date_template:
+            latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
+        else:
+            latest_state = latest_record[self.cursor_field]
+        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         parsed = urlparse.urlparse(response.url)
@@ -113,7 +137,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 class Events(IncrementalAmplitudeStream):
     cursor_field = "event_time"
     date_template = "%Y%m%dT%H"
-    compare_date_template = "%Y-%m-%d %H:%M:%S"
+    compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
     time_interval = {"days": 3}
@@ -125,7 +149,7 @@ class Events(IncrementalAmplitudeStream):
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
                     if record[self.cursor_field] >= state_value:
-                        yield record
+                        yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
         with gzip.open(zip_file) as file:
@@ -158,11 +182,9 @@ class Events(IncrementalAmplitudeStream):
         end = pendulum.parse(stream_slice["end"])
         if start > end:
             yield from []
-
         # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
         # for example, if there is no data from the specified time period, a 404 exception is thrown
         # https://developers.amplitude.com/docs/export-api#status-codes
-
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)

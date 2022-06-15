@@ -17,10 +17,7 @@
         "title": "Host Address",
         "description": "The server host address",
         "type": "string",
-        "examples": [
-          "www.host.com",
-          "192.0.2.1"
-        ],
+        "examples": ["www.host.com", "192.0.2.1"],
         "order": 1
       },
       "port": {
@@ -28,23 +25,18 @@
         "description": "The server port",
         "type": "integer",
         "default": 22,
-        "examples": [
-          "22"
-        ],
+        "examples": ["22"],
         "order": 2
       },
-      "credentials" : {
+      "credentials": {
         "type": "object",
         "title": "Authentication *",
         "description": "The server authentication method",
-        "order" : 3,
+        "order": 3,
         "oneOf": [
           {
             "title": "Password Authentication",
-            "required": [
-              "auth_method",
-              "auth_user_password"
-            ],
+            "required": ["auth_method", "auth_user_password"],
             "properties": {
               "auth_method": {
                 "description": "Connect through password authentication",
@@ -63,10 +55,7 @@
           },
           {
             "title": "SSH Key Authentication",
-            "required": [
-              "auth_method",
-              "auth_ssh_key"
-            ],
+            "required": ["auth_method", "auth_ssh_key"],
             "properties": {
               "auth_method": {
                 "description": "Connect through ssh key",
@@ -92,19 +81,14 @@
         "type": "string",
         "default": "csv,json",
         "order": 4,
-        "examples": [
-          "csv,json",
-          "csv"
-        ]
+        "examples": ["csv,json", "csv"]
       },
       "folder_path": {
         "title": "Folder Path (Optional)",
         "description": "The directory to search files for sync",
         "type": "string",
         "default": "",
-        "examples": [
-          "/logs/2022"
-        ],
+        "examples": ["/logs/2022"],
         "order": 5
       },
       "file_pattern": {

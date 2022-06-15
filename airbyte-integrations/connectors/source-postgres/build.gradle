@@ -11,10 +11,10 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:debezium')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
@@ -25,8 +25,8 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
-
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.jdbc
+    testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
