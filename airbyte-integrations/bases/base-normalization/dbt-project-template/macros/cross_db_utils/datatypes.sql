@@ -163,6 +163,10 @@
     DateTime64
 {% endmacro %}
 
+{% macro redshift__type_timestamp_with_timezone() %}
+    TIMESTAMPTZ
+{% endmacro %}
+
 
 {# timestamp without time zone  -------------------------------------------------     #}
 
@@ -193,6 +197,10 @@
     varchar2(4000)
 {% endmacro %}
 
+{% macro redshift__type_timestamp_without_timezone() %}
+    TIMESTAMP
+{% endmacro %}
+
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -211,6 +219,14 @@
 
 {% macro oracle__type_time_without_timezone() %}
     varchar2(4000)
+{% endmacro %}
+
+{% macro redshift__type_time_without_timezone() %}
+    TIME
+{% endmacro %}
+
+{% macro clickhouse__type_time_without_timezone() %}
+    String
 {% endmacro %}
 
 
@@ -239,6 +255,18 @@
 
 {% macro oracle__type_time_with_timezone() %}
     varchar2(4000)
+{% endmacro %}
+
+{% macro snowflake__type_time_with_timezone() %}
+    varchar
+{% endmacro %}
+
+{% macro redshift__type_time_with_timezone() %}
+    TIMETZ
+{% endmacro %}
+
+{% macro clickhouse__type_time_with_timezone() %}
+    String
 {% endmacro %}
 
 
