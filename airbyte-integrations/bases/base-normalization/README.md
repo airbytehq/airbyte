@@ -54,11 +54,11 @@ Then we only need to find records from the source table with `_airbyte_emitted_a
 (equal to is necessary in case a previous normalization run was interrupted).
 
 This handles the two error scenarios quite cleanly:
-* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superse
+* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superset
   of those records, then normalization will see that the SCD table has none of those records. The SCD model has a deduping stage,
   which removes the records which were synced multiple times.
-* If normalization fails partway through, such that (for example) the SCD model is updated, but the final table is not, and then the sync
-  is retried, then the source should not re-emit any old records (because the destination will have emitted a state message ack-ing
+* If normalization fails partway through, such that (for example) the SCD model is updated but the final table is not, and then the sync
+  is retried, then the source will not re-emit any old records (because the destination will have emitted a state message ack-ing
   all of the records). If the retry emits some new records, then normalization will append them to the SCD table as usual
   (because, from the SCD's point of view, this is just a normal sync). Then the final table's latest `__airbyte_emitted_at`
   will be older than the original attempt, so it will pull both the new records _and_ the first attempt's records from the SCD table.
