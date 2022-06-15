@@ -67,6 +67,150 @@
         "default": false,
         "order": 7
       },
+      "ssl_mode": {
+        "title": "SSL modes",
+        "description": "SSL modes.",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "Disable",
+            "additionalProperties": false,
+            "description": "Disable SSL.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "disable",
+                "enum": ["disable"],
+                "default": "disable",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Allow",
+            "additionalProperties": false,
+            "description": "Allow SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "allow",
+                "enum": ["allow"],
+                "default": "allow",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Prefer",
+            "additionalProperties": false,
+            "description": "Prefer SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "prefer",
+                "enum": ["prefer"],
+                "default": "prefer",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Require",
+            "additionalProperties": false,
+            "description": "Require SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "require",
+                "enum": ["require"],
+                "default": "require",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Verify-ca",
+            "additionalProperties": false,
+            "description": "Verify-ca SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-ca",
+                "enum": ["verify-ca"],
+                "default": "verify-ca",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Verify-full",
+            "additionalProperties": false,
+            "description": "Verify-full SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-full",
+                "enum": ["verify-full"],
+                "default": "verify-full",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password (Optional)",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      },
       "replication_method": {
         "type": "object",
         "title": "Replication Method",

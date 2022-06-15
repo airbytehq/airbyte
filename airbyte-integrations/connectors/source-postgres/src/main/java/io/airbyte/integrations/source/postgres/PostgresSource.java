@@ -35,6 +35,10 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -44,12 +48,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
+  private static final String CA_CERTIFICATE = "ca.crt";
+  private static final String CLIENT_CERTIFICATE = "client.crt";
+  private static final String CLIENT_KEY = "client.key";
+  private static final String CLIENT_ENCRYPTED_KEY = "client.pk8";
+
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
@@ -85,8 +98,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
+      if ("disable".equals(config.get("ssl_mode").get("mode").asText())) {
+        additionalParameters.add("sslmode=disable");
+      } else {
+        additionalParameters.addAll(obtainConnectionOptions(config.get("ssl_mode")));
+      }
     }
 
     if (config.has("schemas") && config.get("schemas").isArray()) {
@@ -409,6 +425,118 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
+  }
+
+  /* Helpers */
+
+  private List<String> obtainConnectionOptions(final JsonNode encryption) {
+    final List<String> additionalParameters = new ArrayList<>();
+    if (!encryption.isNull()) {
+      final var method = encryption.get("mode").asText();
+      final var clientKeyPassword = getKeyStorePassword(encryption.get("client_key_password"));
+      if ("verify-ca".equals(method)) {
+        additionalParameters.addAll(obtainConnectionCaOptions(encryption, method, clientKeyPassword));
+      } else if ("verify-full".equals(method)) {
+        additionalParameters.addAll(obtainConnectionFullOptions(encryption, method, clientKeyPassword));
+      } else {
+        additionalParameters.add("ssl=true");
+        additionalParameters.add("sslmode=" + method);
+      }
+    }
+    return additionalParameters;
+  }
+
+  private List<String> obtainConnectionFullOptions(final JsonNode encryption,
+                                                   final String method,
+                                                   final String clientKeyPassword) {
+    final List<String> additionalParameters = new ArrayList<>();
+    try {
+      convertAndImportFullCertificate(encryption.get("ca_certificate").asText(),
+              encryption.get("client_certificate").asText(), encryption.get("client_key").asText(), clientKeyPassword);
+    } catch (final IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to import certificate into Java Keystore");
+    }
+    additionalParameters.add("ssl=true");
+    additionalParameters.add("sslmode=" + method);
+    additionalParameters.add("sslrootcert=" + CA_CERTIFICATE);
+    additionalParameters.add("sslcert=" + CLIENT_CERTIFICATE);
+    additionalParameters.add("sslkey=" + CLIENT_ENCRYPTED_KEY);
+    additionalParameters.add("sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
+    return additionalParameters;
+  }
+  private List<String> obtainConnectionCaOptions(final JsonNode encryption,
+                                                 final String method,
+                                                 final String clientKeyPassword) {
+    final List<String> additionalParameters = new ArrayList<>();
+    try {
+      convertAndImportCaCertificate(encryption.get("ca_certificate").asText(), clientKeyPassword);
+    } catch (final IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to import certificate into Java Keystore");
+    }
+    additionalParameters.add("ssl=true");
+    additionalParameters.add("sslmode=" + method);
+    additionalParameters.add("sslrootcert=" + CA_CERTIFICATE);
+    additionalParameters.add("sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
+    return additionalParameters;
+  }
+
+  private static void convertAndImportFullCertificate(final String caCertificate,
+                                                      final String clientCertificate,
+                                                      final String clientKey,
+                                                      final String clientKeyPassword)
+          throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    createCertificateFile(CA_CERTIFICATE, caCertificate);
+    createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
+    createCertificateFile(CLIENT_KEY, clientKey);
+    //add CA certificate to the custom keystore
+    runProcess("keytool -alias ca-certificate -keystore customkeystore"
+            + " -import -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    //add client certificate to the custom keystore
+    runProcess("keytool -alias client-certificate -keystore customkeystore"
+            + " -import -file " + CLIENT_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    //convert client.key to client.pk8 based on the documentation
+    runProcess("openssl pkcs8 -topk8 -inform PEM -in " + CLIENT_KEY + " -outform DER -out "
+            + CLIENT_ENCRYPTED_KEY + " -nocrypt", run);
+
+    String result = System.getProperty("user.dir") + "/customkeystore";
+    System.setProperty("javax.net.ssl.trustStore", result);
+    System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
+  }
+
+  private static void convertAndImportCaCertificate(final String caCertificate,
+                                                    final String clientKeyPassword)
+          throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    createCertificateFile(CA_CERTIFICATE, caCertificate);
+    runProcess("keytool -import -alias rds-root -keystore customkeystore"
+            + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+
+    String result = System.getProperty("user.dir") + "/customkeystore";
+    System.setProperty("javax.net.ssl.trustStore", result);
+    System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
+  }
+
+  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+      out.print(fileValue);
+    }
+  }
+
+  private static String getKeyStorePassword(final JsonNode sslMode) {
+    var keyStorePassword = KEY_STORE_PASS;
+    if (!sslMode.isNull() || !sslMode.isEmpty()) {
+      keyStorePassword = sslMode.asText();
+    }
+    return keyStorePassword;
+  }
+
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
+    if (!pr.waitFor(50, TimeUnit.SECONDS)) {
+      pr.destroy();
+      throw new RuntimeException("Timeout while executing: " + cmd);
+    }
   }
 
 }
