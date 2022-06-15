@@ -52,7 +52,7 @@ setup(
     ],
     python_requires=">=3.9.11",
     extras_require={
-        "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
+        "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "pytest-vcr", "requests-mock", "pre-commit"],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
