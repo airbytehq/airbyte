@@ -16,6 +16,10 @@ Available commands:
   publish_external  <image_name> <image_version>
 "
 
+# these filenames must match DEFAULT_SPEC_FILE and CLOUD_SPEC_FILE in GcsBucketSpecFetcher.java
+default_spec_file="spec.json"
+cloud_spec_file="spec.cloud.json"
+
 _check_tag_exists() {
   DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect "$1" > /dev/null
 }
@@ -373,12 +377,12 @@ publish_spec_files() {
   generate_spec_file "$image_name" "$image_version" "$tmp_default_spec_file" "OSS"
   generate_spec_file "$image_name" "$image_version" "$tmp_cloud_spec_file" "CLOUD"
 
-  gsutil cp "$tmp_default_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+  gsutil cp "$tmp_default_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/$default_spec_file"
   if cmp --silent -- "$tmp_default_spec_file" "$tmp_cloud_spec_file"; then
     echo "This connector has the same spec file for OSS and cloud"
   else
     echo "Uploading cloud specific spec file"
-    gsutil cp "$tmp_cloud_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.cloud.json"
+    gsutil cp "$tmp_cloud_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/$cloud_spec_file"
   fi
 }
 

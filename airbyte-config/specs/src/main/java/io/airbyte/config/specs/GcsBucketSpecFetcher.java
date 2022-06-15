@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class GcsBucketSpecFetcher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsBucketSpecFetcher.class);
+  // these filenames must match default_spec_file and cloud_spec_file in manage.sh
   private static final String DEFAULT_SPEC_FILE = "spec.json";
   private static final String CLOUD_SPEC_FILE = "spec.cloud.json";
 
