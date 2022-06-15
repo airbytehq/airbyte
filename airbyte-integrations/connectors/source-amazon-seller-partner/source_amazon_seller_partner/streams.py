@@ -43,6 +43,7 @@ class AmazonSPStream(HttpStream, ABC):
         aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_id: str,
+        source_name: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
@@ -56,6 +57,7 @@ class AmazonSPStream(HttpStream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
+        self.source_name = source_name
         self._session.auth = aws_signature
 
     @property
@@ -124,7 +126,10 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        yield from response.json().get(self.data_field, [])
+        results = response.json().get(self.data_field, [])
+        for item in results:
+            item["source_name"] = self.source_name
+        yield from results
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -167,6 +172,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
+        source_name: str,
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -179,6 +185,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.period_in_days = period_in_days
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
+        self.source_name = source_name
 
     @property
     def url_base(self) -> str:
@@ -311,7 +318,12 @@ class ReportsAmazonSPStream(Stream, ABC):
         )
 
         document_records = self.parse_document(document)
-        yield from document_records
+        print(type(document_records))
+        results = []
+        for item in document_records:
+            item["source_name"] = self.source_name
+            results.append(item)
+        yield from results
 
     def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
@@ -711,7 +723,10 @@ class Orders(IncrementalAmazonSPStream):
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get(self.data_field, {}).get(self.name, [])
+        results = response.json().get(self.data_field, {}).get(self.name, [])
+        for item in results:
+            item["source_name"] = self.source_name
+        yield from results
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
@@ -759,4 +774,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
+        results = response.json().get(self.data_field, {}).get("shippingLabels", [])
+        for item in results:
+            item["source_name"] = self.source_name
+        yield from results
