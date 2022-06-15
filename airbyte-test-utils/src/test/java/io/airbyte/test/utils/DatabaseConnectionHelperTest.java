@@ -41,7 +41,7 @@ public class DatabaseConnectionHelperTest {
     final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test

@@ -20,11 +20,11 @@ const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
 
-type IProps = {
+interface IProps {
   data: EntityTableDataItem[];
   entity: "source" | "destination";
   onClickRow?: (data: EntityTableDataItem) => void;
-};
+}
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
   const { query, push } = useRouter();

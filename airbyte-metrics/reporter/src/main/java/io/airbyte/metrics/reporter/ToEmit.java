@@ -6,7 +6,7 @@ package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -24,30 +24,30 @@ public enum ToEmit {
 
   NUM_PENDING_JOBS(countMetricEmission(() -> {
     final var pendingJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfPendingJobs);
-    DogStatsDMetricSingleton.gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
   })),
   NUM_RUNNING_JOBS(countMetricEmission(() -> {
     final var runningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfRunningJobs);
-    DogStatsDMetricSingleton.gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
   })),
   OLDEST_RUNNING_JOB_AGE_SECS(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
-    DogStatsDMetricSingleton.gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
   })),
   OLDEST_PENDING_JOB_AGE_SECS(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
-    DogStatsDMetricSingleton.gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
   })),
   NUM_ACTIVE_CONN_PER_WORKSPACE(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
     for (long count : age) {
-      DogStatsDMetricSingleton.percentile(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+      MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
     }
   })),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {
-      DogStatsDMetricSingleton.recordTimeGlobal(
+      MetricClientFactory.getMetricClient().distribution(
           OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
     }
   }), 1, TimeUnit.HOURS);
@@ -72,7 +72,7 @@ public enum ToEmit {
     return () -> {
       try {
         metricQuery.call();
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
       } catch (final Exception e) {
         log.error("Exception querying database for metric: ", e);
       }

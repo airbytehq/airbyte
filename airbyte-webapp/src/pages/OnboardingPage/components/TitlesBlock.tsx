@@ -3,11 +3,11 @@ import styled from "styled-components";
 
 import { H1 } from "components/base";
 
-type TitlesBlockProps = {
+interface TitlesBlockProps {
   title: React.ReactNode;
   children?: React.ReactNode;
   testId?: string;
-};
+}
 
 const TitlesContent = styled.div`
   padding: 42px 0 33px;

@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.Job;
@@ -31,13 +32,16 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       JobSyncConfig config = job.getConfig().getSync();
       if (input.isReset()) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
+        final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
         config = new JobSyncConfig()
             .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
             .withNamespaceFormat(resetConnection.getNamespaceFormat())
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
-            .withSourceConfiguration(Jsons.emptyObject())
+            // null check for backwards compatibility with reset jobs that did not have a
+            // resetSourceConfiguration
+            .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
             .withOperationSequence(resetConnection.getOperationSequence())

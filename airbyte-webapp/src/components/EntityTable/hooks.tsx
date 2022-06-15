@@ -1,4 +1,4 @@
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { getFrequencyConfig } from "config/utils";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
@@ -21,12 +21,11 @@ const useSyncActions = (): {
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
+      name: connection.name,
       status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
     });
 
-    const frequency = FrequencyConfig.find(
-      (item) => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
-    );
+    const frequency = getFrequencyConfig(connection.schedule);
 
     analyticsService.track("Source - Action", {
       action: connection.status === "active" ? "Disable connection" : "Reenable connection",
@@ -34,7 +33,7 @@ const useSyncActions = (): {
       connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
+      frequency: frequency?.type,
     });
   };
 

@@ -1,6 +1,6 @@
 # Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
 
@@ -20,7 +20,7 @@ You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https
 
 ## The Airbyte specification
 
-Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 
 ## Adding a new connector
 
@@ -119,7 +119,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests, publish the connector and bump the connector version
+   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```

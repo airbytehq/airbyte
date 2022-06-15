@@ -12,7 +12,13 @@ from requests import codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
-TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
+TRANSIENT_EXCEPTIONS = (
+    DefaultBackoffException,
+    exceptions.ConnectTimeout,
+    exceptions.ReadTimeout,
+    exceptions.ConnectionError,
+    exceptions.ChunkedEncodingError,
+)
 
 logger = logging.getLogger("airbyte")
 

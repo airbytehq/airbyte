@@ -159,7 +159,7 @@ The nice thing about this approach is that you are running your source exactly a
 
 Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.yaml`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/spec.yaml) of what the `spec.yaml` looks like for the stripe source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
 
@@ -213,7 +213,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 ### Step 11: Add the connector to the API/UI
 
-Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/).
+Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
 
 Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 

@@ -19,3 +19,4 @@ export * from "./Spinner";
 export * from "./StatusIcon";
 export * from "./TextWithHTML";
 export * from "./ProgressBar";
+export * from "./ConnectorCard";
