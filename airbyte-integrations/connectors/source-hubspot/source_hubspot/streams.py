@@ -64,13 +64,14 @@ def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
     summary_length = 0
     local_properties = []
     for property_ in properties_list:
-        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
+        current_property_length = len(urllib.parse.quote(f"property={property_}&"))
+        if current_property_length + summary_length >= PROPERTIES_PARAM_MAX_LENGTH:
             yield local_properties
             local_properties = []
             summary_length = 0
 
         local_properties.append(property_)
-        summary_length += len(property_) + len(urllib.parse.quote(","))
+        summary_length += current_property_length
 
     if local_properties:
         yield local_properties
