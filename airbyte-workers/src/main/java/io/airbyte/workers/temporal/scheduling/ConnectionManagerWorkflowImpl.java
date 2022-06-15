@@ -88,7 +88,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
 
-  private static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
+  static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -491,7 +491,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     try {
       return mapper.apply(input);
     } catch (final Exception e) {
-      log.error("[ACTIVITY-RETRY-FAILURE] Connection " + connectionId +
+      log.error("[ACTIVITY-FAILURE] Connection " + connectionId +
           " failed to run an activity. Connection manager workflow will be restarted after a delay of " +
           WORKFLOW_FAILURE_RESTART_DELAY.getSeconds() + " seconds.", e);
       // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
@@ -512,8 +512,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         return runMandatoryActivityWithOutput(mapper, input);
       }
 
-      log.info("Finished wait for connection {}, restarting connection manager workflow",
-          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds());
+      log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
 
       final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
       // this ensures that the new workflow will still perform a reset if an activity failed while
