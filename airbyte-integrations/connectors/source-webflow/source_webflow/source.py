@@ -59,36 +59,6 @@ class WebflowStream(HttpStream, ABC):
         return {}
 
 
-class Info(WebflowStream):
-    """
-    Hits Webflow's "info" API - See: https://developers.webflow.com/#authentication for details
-    This is only used in testing and/or connection checking, to confirm that authentication is working correctly.
-    """
-
-    #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
-    primary_key = None
-
-    def path(self, **kwargs) -> str:
-        """
-        Since the url is "https://api.webflow.com/info then just returns "info" (which is appended to the url_base - previously defined)
-        """
-        return "info"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Webflow info API returns a single object
-        """
-        response_json = response.json()
-
-        # Note that the info API returns a single object, but this method is expected to return an iterable.
-        # Wrap the item in an array to make it iterable
-        return [response_json]
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """This API returns a single json object, and therefore does not require pagination"""
-        return {}
-
-
 class Schema(WebflowStream):
     """
     Gets the schema of the current collection - see: https://developers.webflow.com/#get-collection-with-full-schema, and
@@ -321,21 +291,15 @@ class SourceWebflow(AbstractSource):
 
         try:
             # Check that authenticator can be retrieved
-            auth = self.get_authenticator(config)
-
-            # make sure site_id is specified, required for retrieving the various collections
-            config.get("site_id")
-
-            # The "Info" stream is used for testing that connectivity/authentication is working correctly.
-            info_stream = Info(authenticator=auth)
-            info_records = info_stream.read_records(sync_mode="full_refresh")
-            info = list(info_records)[0]
-            logger.info(f"Successfully connected to info stream. Received info: {info}")
-
+            authenticator = self.get_authenticator(config)
+            site_id = config.get("site_id")
+            collections_stream = Collections(authenticator=authenticator, site_id=site_id)
+            collections_records = collections_stream.read_records(sync_mode="full_refresh")
+            record = next(collections_records)
+            logger.info(f"Successfully connected to Collections stream. Pulled one record: {record}")
+            return True, None
         except Exception as e:
             return False, e
-
-        return True, None
 
     def generate_streams(self, authenticator: WebflowTokenAuthenticator, site_id: str) -> List[Stream]:
         """ "Generates a list of stream by their names."""
