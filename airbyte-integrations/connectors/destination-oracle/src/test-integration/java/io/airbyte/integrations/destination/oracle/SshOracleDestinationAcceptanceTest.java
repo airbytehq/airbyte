@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +58,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()

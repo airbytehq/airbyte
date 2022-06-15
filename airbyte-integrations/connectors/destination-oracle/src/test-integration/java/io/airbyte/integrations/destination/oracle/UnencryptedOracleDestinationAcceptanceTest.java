@@ -21,6 +21,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,8 +44,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   private JsonNode getConfig(final OracleContainer db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("sid", db.getSid())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
