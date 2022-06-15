@@ -160,14 +160,18 @@ class AbstractSource(Source, ABC):
             record_iterator = self._read_full_refresh(stream_instance, configured_stream, internal_config)
 
         record_counter = 0
+        state_counter = 0
         stream_name = configured_stream.stream.name
         logger.info(f"Syncing stream: {stream_name} ")
         for record in record_iterator:
             if record.type == MessageType.RECORD:
                 record_counter += 1
+            if record.type == MessageType.STATE:
+                state_counter += 1
+                logger.info(f"Stream State Emitted ({state_counter}): Read {record_counter} records so far from {stream_name} stream")
             yield record
 
-        logger.info(f"Read {record_counter} records from {stream_name} stream")
+        logger.info(f"Stream Complete: Read {record_counter} records from {stream_name} stream which produced {state_counter} state messages")
 
     @staticmethod
     def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:

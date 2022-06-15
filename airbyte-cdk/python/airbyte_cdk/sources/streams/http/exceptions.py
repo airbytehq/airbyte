@@ -4,9 +4,11 @@
 
 
 from typing import Union
+import logging
 
 import requests
 
+logger = logging.getLogger("airbyte")
 
 class BaseBackoffException(requests.exceptions.HTTPError):
     def __init__(self, request: requests.PreparedRequest, response: requests.Response):
@@ -31,6 +33,9 @@ class UserDefinedBackoffException(BaseBackoffException):
         :param request: the request that triggered this backoff exception
         :param response: the response that triggered the backoff exception
         """
+        logger.info(
+            f"Backing off for {backoff}s. Request URL: {request.url}, Response Code: {response.status_code}, Response Text: {response.text}"
+        )
         self.backoff = backoff
         super().__init__(request=request, response=response)
 
