@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_webflow.source import CollectionItems, WebflowStream
+from source_webflow.source import CollectionItems, WebflowStream, SourceWebflow
 
 
 @pytest.fixture
@@ -39,6 +39,14 @@ def test_parse_response_of_collection_items(patch_base_class):
     inputs = {"response": MagicMock(json=lambda: response_data)}
     parsed_item = next(stream.parse_response(**inputs))
     assert parsed_item == mock_record
+
+
+def test_generate_streams(patch_base_class):
+    SourceWebflow.get_collection_name_to_id_dict = MagicMock(return_value={"name-1": "id-1", "name-2": "id-2"})
+    source = SourceWebflow()
+    config_mock = MagicMock()
+    streams = source.generate_streams(config_mock, "fake site id")
+    assert len(list(streams)) == 2
 
 
 def test_http_method(patch_base_class):
