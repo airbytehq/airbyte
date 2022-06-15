@@ -861,7 +861,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public int getActivityNumberOfAttempt() {
-    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "5"));
   }
 
   // Helpers
