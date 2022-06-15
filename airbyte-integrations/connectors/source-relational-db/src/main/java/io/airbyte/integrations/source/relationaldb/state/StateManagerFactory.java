@@ -64,7 +64,7 @@ public class StateManagerFactory {
    * <ul>
    * <li>Stream -> Global (not supported, results in {@link IllegalArgumentException}</li>
    * <li>Legacy -> Global (supported)</li>
-   * <li>Global -> Glboal (supported/no conversion required)</li>
+   * <li>Global -> Global (supported/no conversion required)</li>
    * </ul>
    *
    * @param airbyteStateMessage The current state that is to be converted to global state.
@@ -93,7 +93,7 @@ public class StateManagerFactory {
    * Handles the conversion between a different state type and the stream state. This method handles
    * the following transitions:
    * <ul>
-   * <li>Global -> Stream (supported/shared state discarded)</li>
+   * <li>Global -> Stream (not supported, results in {@link IllegalArgumentException}</li>
    * <li>Legacy -> Stream (supported)</li>
    * <li>Stream -> Stream (supported/no conversion required)</li>
    * </ul>
