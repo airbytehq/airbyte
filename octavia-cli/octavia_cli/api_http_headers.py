@@ -9,12 +9,7 @@ import click
 import yaml
 
 from .apply.yaml_loaders import EnvVarLoader
-
-API_HEADERS_YAML_FILE_INSTRUCTION = """
-headers:
-  "Authorization": "Basic dXNlcjpwYXNzd29yZA=="
-  "Content-Type": "application/json"
-""".strip()
+from .init.commands import API_HTTP_HEADERS_TARGET_PATH
 
 
 class InvalidApiHttpHeadersFileError(click.exceptions.ClickException):
@@ -54,7 +49,7 @@ def deserialize_file_based_headers(header_configuration_path: str) -> List[ApiHt
             headers = content["headers"]
         except (TypeError, KeyError, yaml.scanner.ScannerError):
             raise InvalidApiHttpHeadersFileError(
-                f"Please provide valid yaml file to declare API HTTP headers, like below:\n{API_HEADERS_YAML_FILE_INSTRUCTION}"
+                f"Please provide valid yaml file to declare API HTTP headers. Please check the {API_HTTP_HEADERS_TARGET_PATH} file."
             )
 
     return [ApiHttpHeader(name, value) for name, value in headers.items()]
