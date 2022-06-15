@@ -60,9 +60,7 @@ class OrbitStreamPaginated(OrbitStream):
 
 class Members(OrbitStreamPaginated):
     # Docs: https://docs.orbit.love/reference/members-overview
-
-    # TODO: Write a function to access "id" in the "data" array in the schema.
-    primary_key = ""
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -73,9 +71,7 @@ class Members(OrbitStreamPaginated):
 class Workspace(OrbitStream):
     # Docs: https://docs.orbit.love/reference/get_workspaces-workspace-slug
     # This stream is primarily used for connnection checking.
-
-    # TODO: Write a function to access "id" in the "data" object in the schema.
-    primary_key = ""
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
