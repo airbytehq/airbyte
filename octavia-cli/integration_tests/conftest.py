@@ -48,6 +48,7 @@ def open_yaml_configuration(path: str):
     return local_configuration, path
 
 
+@pytest.fixture(scope="session")
 def source_configuration_and_path(octavia_test_project_directory):
     path = f"{octavia_test_project_directory}/sources/poke/configuration.yaml"
     return open_yaml_configuration(path)
