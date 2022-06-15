@@ -73,23 +73,25 @@ def deserialize_option_based_headers(api_http_headers: List[Tuple[str, str]]) ->
 
 
 def merge_api_headers(
-    option_based_raw_headers: Optional[List[Tuple[str, str]]], api_http_headers_file_path: Optional[str]
+    option_based_api_http_headers: Optional[List[Tuple[str, str]]], api_http_headers_file_path: Optional[str]
 ) -> List[ApiHttpHeader]:
     """Deserialize headers from options and files into ApiHttpHeader and merge options based headers with file based headers.
 
     Args:
-        option_based_raw_headers (Optional[List[Tuple[str, str]]]): Option based headers.
+        option_based_api_http_headers (Optional[List[Tuple[str, str]]]): Option based headers.
         api_http_headers_file_path (Optional[str]): Path to the YAML file with http headers.
 
     Returns:
         List[ApiHttpHeader]: Lit of unique ApiHttpHeaders
     """
-    if option_based_raw_headers and api_http_headers_file_path:
+    if option_based_api_http_headers and api_http_headers_file_path:
         click.echo(
             "ℹ️ - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
         )
 
-    option_based_headers = deserialize_option_based_headers(option_based_raw_headers) if option_based_raw_headers is not None else []
+    option_based_headers = (
+        deserialize_option_based_headers(option_based_api_http_headers) if option_based_api_http_headers is not None else []
+    )
     file_based_headers = deserialize_file_based_headers(api_http_headers_file_path) if api_http_headers_file_path else []
 
     merged_headers = {header.name: header for header in file_based_headers}
