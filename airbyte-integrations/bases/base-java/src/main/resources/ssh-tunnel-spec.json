@@ -1,7 +1,7 @@
 {
   "type": "object",
   "title": "SSH Tunnel Method",
-  "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+  "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#ssh-tunnel\">connection via SSH tunnel</a>.",
   "oneOf": [
     {
       "title": "No Tunnel",
