@@ -16,6 +16,19 @@ class PullRequestCommitConnection(Type):
     totalCount = int
 
 
+class PullRequestReviewCommentConnection(Type):
+    totalCount = int
+
+
+class PullRequestReview(Type):
+    comments = Field(PullRequestReviewCommentConnection)
+
+
+class PullRequestReviewConnection(Connection):
+    totalCount = int
+    nodes = list_of(PullRequestReview)
+
+
 class PullRequest(Type):
     id = str
     database_id = int
@@ -23,6 +36,7 @@ class PullRequest(Type):
     repository = Field("Repository")
     comments = Field(IssueCommentConnection)
     commits = Field(PullRequestCommitConnection)
+    reviews = Field(PullRequestReviewConnection, args=connection_args())
     updated_at = datetime.DateTime
     changedFiles = int
     deletions = int
@@ -61,6 +75,9 @@ def get_query(owner, name, page_size, next_page_token):
     pull_requests.nodes.repository()
     pull_requests.nodes.comments()
     pull_requests.nodes.commits()
+    reviews = pull_requests.nodes.reviews(first=100)
+    reviews.totalCount()
+    reviews.nodes.comments()
     pull_requests.nodes.changedFiles()
     pull_requests.nodes.deletions()
     pull_requests.nodes.additions()

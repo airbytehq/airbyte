@@ -743,6 +743,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 "repository": pull_request["repository"]["name"],
                 "comments": pull_request["comments"]["totalCount"],
                 "commits": pull_request["commits"]["totalCount"],
+                "review_comments": sum([node["comments"]["totalCount"] for node in pull_request["reviews"]["nodes"]]),
                 "changed_files": pull_request["changedFiles"],
                 "deletions": pull_request["deletions"],
                 "additions": pull_request["additions"],
