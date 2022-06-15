@@ -483,27 +483,28 @@ class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
 
-class SatisfactionRatings(SourceZendeskSupportStream):
+class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
 
     The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
     """
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        """Adds the filtering field 'start_time'"""
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = {
+            "page": 1,
+            "per_page": self.page_size,
+            "sort_by": "asc"
+        }
         start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
-
-        if not start_time:
-            start_time = self.str2unixtime(self._start_date)
-        params.update(
-            {
-                "start_time": start_time,
-                "sort_by": "asc",
-            }
-        )
+        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        if next_page_token:
+            params["page"] = next_page_token
         return params
 
 
@@ -523,9 +524,13 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
         return next_page if next_page else None
     
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"start_time": self.check_stream_state(stream_state)}
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page": 1,
+            "per_page": self.page_size,
+        }
         if next_page_token:
-            params.update({"page": next_page_token or 1, "per_page": self.page_size})
+            params['page'] = next_page_token
         return params
     
 
