@@ -22,17 +22,12 @@ This serves as a living document regarding conventions we have agreed upon as a 
     * const myVar; export { myVar }; ❌
 
 
-
-
-
 ## Component Props
-
-* Use interfaces not types
 * Use explicit, verbose naming 
     * ie: `interface ConnectionFormProps` not `interface iProps`
 
 
-## Use the prop `data-testid` instead of `data-id`Testing
+## Testing
 
 * Test files should be store alongside the files/features they are testing
 * Use the prop `data-testid` instead of `data-id`
