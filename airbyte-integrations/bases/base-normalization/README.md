@@ -1,6 +1,7 @@
 # Normalization
 
 * [Normalization](#normalization)
+    * [Under the hood](#under-the-hood)
     * [Developer workflow](#developer-workflow)
         * [Setting up your environment](#setting-up-your-environment)
         * [Running dbt](#running-dbt)
@@ -31,6 +32,16 @@ Related documentation on normalization is available here:
 
 * [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
 * [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
+
+## Under the hood
+
+Normalization has two Python modules:
+* `transform_config` parses the destination connector config and generates a profile.yml file,
+  which configures how dbt will connect to the destination database.
+* `transform_catalog` parses the connection's catalog and generates a dbt_project.yml file,
+  which configures the models that dbt will run and how they should be materialized.
+
+`entrypoint.sh` (the entrypoint to normalization's Docker image) invokes these two modules, then calls `dbt run` on their output.
 
 ## Developer workflow
 
