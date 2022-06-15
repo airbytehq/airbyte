@@ -164,7 +164,7 @@ class Events(IncrementalAmplitudeStream):
             slices.append(
                 {
                     "start": start.strftime(self.date_template),
-                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template)
+                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
                 }
             )
             start = start.add(**self.time_interval)
