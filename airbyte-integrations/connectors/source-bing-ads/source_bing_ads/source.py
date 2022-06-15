@@ -597,6 +597,13 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
+        # Added in the case of task #12489
+        # https://github.com/airbytehq/airbyte/issues/12489
+        config['hourly_reports'] = client.hourly_reports
+        config['daily_reports'] = client.daily_reports
+        config['weekly_reports'] = client.weekly_reports
+        config['monthly_reports'] = client.monthly_reports
+
         if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
             streams.append(BudgetSummaryReport(client, config))
 
