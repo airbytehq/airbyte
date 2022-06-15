@@ -31,6 +31,7 @@ that are contained in each of the desired collections.
 # Webflow expects a 'accept-version' header with a value of '1.0.0' (as of May 2022)
 WEBFLOW_ACCEPT_VERSION = "1.0.0"
 
+
 # Basic full refresh stream
 class WebflowStream(HttpStream, ABC):
     """
