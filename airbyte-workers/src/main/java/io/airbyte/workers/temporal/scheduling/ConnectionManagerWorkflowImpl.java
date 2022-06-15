@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -87,7 +88,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
 
-  private static final Duration ACTIVITY_FAILURE_RESTART_DELAY = Duration.ofMinutes(10);
+  private static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -491,25 +492,35 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return mapper.apply(input);
     } catch (final Exception e) {
       log.error("[ACTIVITY-RETRY-FAILURE] Connection " + connectionId +
-          " failed to run an activity. Connection manager workflow will be restarted after a short delay.", e);
+          " failed to run an activity. Connection manager workflow will be restarted after a delay of " +
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds() + " seconds.", e);
       // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
 
-      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
-      // this ensures that the new workflow will still perform a reset if an activity failed while attempting to reset the connection
-      if (workflowState.isResetConnection()) {
-        newWorkflowInput.setResetConnection(true);
-        newWorkflowInput.setFromJobResetFailure(true);
-      }
-
-      // Wait a short delay before restarting workflow. This is important if, for example, the failing activity was configured to not have retries.
-      // Without this delay, that activity could cause the workflow to loop extremely quickly, overwhelming temporal.
-      log.info("Waiting {} before restarting the workflow, to prevent spamming temporal with restarts.", ACTIVITY_FAILURE_RESTART_DELAY.toString());
-      Workflow.await(ACTIVITY_FAILURE_RESTART_DELAY, () -> workflowState.isRetryFailedActivity());
+      // Wait a short delay before restarting workflow. This is important if, for example, the failing
+      // activity was configured to not have retries.
+      // Without this delay, that activity could cause the workflow to loop extremely quickly,
+      // overwhelming temporal.
+      log.info("Waiting {} seconds before restarting the workflow for connection {}, to prevent spamming temporal with restarts.",
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds(),
+          connectionId);
+      Workflow.await(WORKFLOW_FAILURE_RESTART_DELAY, () -> workflowState.isRetryFailedActivity());
 
       // Accept a manual signal to retry the failed activity during this window
       if (workflowState.isRetryFailedActivity()) {
+        log.info("Received RetryFailedActivity signal for connection {}. Retrying activity.", connectionId);
         workflowState.setRetryFailedActivity(false);
         return runMandatoryActivityWithOutput(mapper, input);
+      }
+
+      log.info("Finished wait for connection {}, restarting connection manager workflow",
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds());
+
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      // this ensures that the new workflow will still perform a reset if an activity failed while
+      // attempting to reset the connection
+      if (workflowState.isResetConnection()) {
+        newWorkflowInput.setResetConnection(true);
+        newWorkflowInput.setFromJobResetFailure(true);
       }
 
       Workflow.continueAsNew(newWorkflowInput);

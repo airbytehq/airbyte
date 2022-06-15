@@ -508,14 +508,19 @@ public interface Configs {
   int getMaxActivityTimeoutSecond();
 
   /**
-   * Get the duration in second between 2 activity attempts
+   * Get initial delay in seconds between two activity attempts
    */
   int getInitialDelayBetweenActivityAttemptsSeconds();
 
   /**
-   * Get the maximum interval between retries of an activity
+   * Get maximum delay in seconds between two activity attempts
    */
   int getMaxDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get the delay in seconds between an activity failing and the workflow being restarted
+   */
+  int getWorkflowFailureRestartDelaySeconds();
 
   /**
    * Get number of attempts of the non long running activities
