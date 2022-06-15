@@ -138,42 +138,33 @@ docker-compose run octavia-cli <command>`
 
 ### `octavia` command flags
 
-| **Flag**                                 | **Description**                                              | **Env Variable**             | **Default**                                            |
-|------------------------------------------|--------------------------------------------------------------|------------------------------|--------------------------------------------------------|
-| `--airbyte-url`                          | Airbyte instance URL.                                        | `AIRBYTE_URL`                | `http://localhost:8000`                                |
-| `--workspace-id`                         | Airbyte workspace id.                                        | `AIRBYTE_WORKSPACE_ID`       | The first workspace id found on your Airbyte instance. |
-| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.             | `OCTAVIA_ENABLE_TELEMETRY`   | True                                                   |
-| `--api-headers`                          | Header value pairs passed while calling airbyte api endpoint | not supported                | None                                                   |
-| `--api-headers-file`                     | Yaml file with header pairs values                           | not supported                | None                                                   |
-           
+| **Flag**                                   | **Description**                                                                   | **Env Variable**             | **Default**                                            |
+|--------------------------------------------|-----------------------------------------------------------------------------------|------------------------------|--------------------------------------------------------|
+| `--airbyte-url`                            | Airbyte instance URL.                                                             | `AIRBYTE_URL`                | `http://localhost:8000`                                |
+| `--workspace-id`                           | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`       | The first workspace id found on your Airbyte instance. |
+| `--enable-telemetry/--disable-telemetry`   | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY`   | True                                                   |
+| `--api-http-header`                        | HTTP Header value pairs passed while calling Airbyte's API | not supported.       | None                         | None                                                   |
+| `--api-http-headers-file-path`             | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                         | None                                                   |
+
+#### Using custom HTTP headers
+You can set custom HTTP headers to send to Airbyte's API with options:          
 ```bash
---api-header "Authorization: Basic dXNlcjpwYXNzd29yZA==" --api-header "Content-Type: application/json"
+octavia --api-http-header Header-Name Header-Value --api-http-header Header-Name-2 Header-Value-2 list connectors sources
 ```
 
-yaml file example passed to --api-headers-file flag
-```bash
+You can also use a custom YAML file (one is already created on init in `api_http_headers.yaml`) to declare the HTTP headers to send to the API:
+```yaml
 headers:
-  - name: Authorization
-    value: Basic dXNlcjpwYXNzd29yZA==
-  - name: Content-Type
-    value: application/json
+  Authorization: Basic foobar==
+  User-Agent: octavia-cli/0.0.0
 ```
-You can also provide environment variables to yaml file
-```bash
+Environment variable expansion is available in this Yaml file
+```yaml
 headers:
-  - name: ${AUTHORIZATION_HEADER_NAME}
-    value: ${AUTHORIZATION_HEADER_VALUE}
-  - name: Content-Type
-    value: application/json
+  Authorization: Bearer ${MY_API_TOKEN}
 ```
 
-to use that option provide relative based on current path or 
-absolute path to configuration file
-
-note:
-- application headers from cli arguments overrides application headers from file
-- if multiple application headers with the same name provided with different key values, then values are sorted in
-  alphabetical order.
+**Options based headers are overriding file based headers if an header is declared in both.**
 
 ### `octavia` subcommands
 
@@ -393,10 +384,11 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description                         | PR                                                       |
-|---------|------------|-------------------------------------|----------------------------------------------------------|
-| 0.38.5  | 2022-05-12 | Enable normalization on connection  | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
-| 0.36.11 | 2022-05-05 | Use snake case in connection fields | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
-| 0.36.2  | 2022-04-15 | Improve telemetry                   | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68 | 2022-04-12 | Add telemetry                       | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61 | 2022-04-07 | Alpha release                       | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version  | Date       | Description                            | PR                                                         |
+|----------|------------|----------------------------------------|------------------------------------------------------------|
+| 0.39.19  | 2022-06-15 | Allow users to set custom HTTP headers | [#12893](https://github.com/airbytehq/airbyte/pull/12893)  |
+| 0.38.5   | 2022-05-12 | Enable normalization on connection     | [#12727](https://github.com/airbytehq/airbyte/pull/12727)  |
+| 0.36.11  | 2022-05-05 | Use snake case in connection fields    | [#12133](https://github.com/airbytehq/airbyte/pull/12133)  |
+| 0.36.2   | 2022-04-15 | Improve telemetry                      | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68  | 2022-04-12 | Add telemetry                          | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61  | 2022-04-07 | Alpha release                          | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)  |
