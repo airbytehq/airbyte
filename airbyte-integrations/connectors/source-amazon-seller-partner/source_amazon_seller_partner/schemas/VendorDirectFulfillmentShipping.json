@@ -4,6 +4,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "source_name": {
+      "type": ["null", "string"]
+    },
     "purchaseOrderNumber": {
       "type": ["null", "string"]
     },

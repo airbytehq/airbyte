@@ -1,11 +1,13 @@
 {
-  "replication_start_date": "2021-07-01T00:00:00Z",
-  "refresh_token": "<refresh_token>",
-  "lwa_app_id": "<lwa_app_id>",
-  "lwa_client_secret": "<lwa_client_secret>",
-  "aws_access_key": "<aws_access_key>",
-  "aws_secret_key": "<aws_secret_key>",
-  "role_arn": "<role_arn>",
-  "aws_environment": "<PRODUCTION or SANDBOX>",
-  "region": "US"
+  "replication_start_date": "2022-06-01T00:00:00Z",
+  "refresh_token": "Atzr|IwEBILk3Okhbr9U8yaihj6nKmq_LvgzWbFGhvwXS7sBo_U0fLEBn1f-qgtbZMSQFkxKljcHLkgvepsB_JIxUs4kaHhw_PV-SiYkIYjBNArdfLY7Z-WW3MZ8r34YREaXEBx63icKSKpxShkD5QwqmMFBj7h_n-rIGyN7FE4DkXY4r5IAuPriGoAbtyXc1L3q5uDfpZiYOpfjOG-lYuyVVXI_FCA7DO_5BlIw38U4lJN-MlQvAw-ym2e7DBxNspnUGoGOzmYMi4PxwvS50ohShIxDIjydZGEFT7ElVcm67y96XXxr1AGd4mjYeXA14mCqXzyp2vmg",
+  "app_id": "amzn1.application-oa2-client.8b33dc8ae27b43d59a4b43a864da967f",
+  "source_name": "niubi plus",
+  "lwa_app_id": "amzn1.application-oa2-client.8b33dc8ae27b43d59a4b43a864da967f",
+  "lwa_client_secret": "e53fdf4e6389c0e0cfea8bee89596712bb52249ea25c9b1349660d56022f064d",
+  "aws_access_key": "AKIAZZVBETK5WWDOPO4Q",
+  "aws_secret_key": "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",
+  "role_arn": "arn:aws:iam::673574066875:user/it_sictecinfotech",
+  "aws_environment": "PRODUCTION",
+  "region": "CA"
 }
