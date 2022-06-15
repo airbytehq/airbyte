@@ -54,20 +54,21 @@ Then we only need to find records from the source table with `_airbyte_emitted_a
 (equal to is necessary in case a previous normalization run was interrupted).
 
 This handles the two error scenarios quite cleanly:
-* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superset of those records,
-  then normalization will see that the SCD table has none of those records. The SCD model has a deduping stage,
+* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superse
+  of those records, then normalization will see that the SCD table has none of those records. The SCD model has a deduping stage,
   which removes the records which were synced multiple times.
-* If normalization fails partway through, such that (for example) the SCD model is updated, but the final table is not, and then the sync is retried,
-  then the source should not re-emit any old records (because the destination will have emitted a state message ack-ing all of the records).
-  If the retry emits some new records, then normalization will append them to the SCD table as usual (because, from the SCD's point of view, this
-  is just a normal sync). Then the final table's latest `__airbyte_emitted_at` will be older than the original attempt, so it will pull both the new
-  records _and_ the first attempt's records from the SCD table.
+* If normalization fails partway through, such that (for example) the SCD model is updated, but the final table is not, and then the sync
+  is retried, then the source should not re-emit any old records (because the destination will have emitted a state message ack-ing
+  all of the records). If the retry emits some new records, then normalization will append them to the SCD table as usual
+  (because, from the SCD's point of view, this is just a normal sync). Then the final table's latest `__airbyte_emitted_at`
+  will be older than the original attempt, so it will pull both the new records _and_ the first attempt's records from the SCD table.
 
 ## Developer workflow
 
 At a high level, this is the recommended workflow for updating base-normalization:
 1. Manually edit the models in `integration_tests/normalization_test_output/postgres/test_simple_streams/models/generated`.
-   Run `dbt compile` and manually execute the SQL queries. This requires manual setup and validation, but allows you to quickly experiment with different inputs.
+   Run `dbt compile` and manually execute the SQL queries. This requires manual setup and validation, but allows you to quickly experiment
+   with different inputs.
     1. You can substitute your preferred database/warehouse. This document will use Postgres because it's easy to set up.
 1. Once `dbt run` succeeds, edit `stream_processor.py` until it generates the models you hand-wrote in step 1.
 1. Run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` integration test case.
@@ -77,8 +78,8 @@ At a high level, this is the recommended workflow for updating base-normalizatio
 ### Setting up your environment
 
 If you have a fullly-featured Python dev environment, you can just set a breakpoint at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
-and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the breakpoint.
-This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
+and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the
+breakpoint. This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
 
 Otherwise, you can run this command:
 ```shell
@@ -136,8 +137,9 @@ docker run \
   --project-dir=/workspace
 ```
 
-This will modify the files in `build/compiled/airbyte_utils/models/generated`. For example, if you edit `models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`,
-then after compiling, you can see the results in `build/compiled/airbyte_utils/models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`.
+This will modify the files in `build/compiled/airbyte_utils/models/generated`.
+For example, if you edit `models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`, then after compiling,
+you can see the results in `build/compiled/airbyte_utils/models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`.
 
 ## Testing normalization
 
@@ -328,7 +330,8 @@ transmitted by a source. In this integration test, the files is read and "cat" t
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
 
-Note that `test_simple_streams` has additional message files, each representing a separate sync (`messages_incremental.txt` and `messages_schema_change.txt`).
+Note that `test_simple_streams` has additional message files, each representing a separate sync
+(`messages_incremental.txt` and `messages_schema_change.txt`).
 
 ##### data_input/replace_identifiers.json:
 The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
@@ -356,9 +359,9 @@ So, for each target destination, the steps run by the tests are:
 8. Optional checks (nothing for the moment)
 
 Note that the tests are using the normalization code from the python files directly, so it is not necessary to rebuild the docker images
-in between when iterating on the code base. However, dbt cli and destination connectors are invoked via the dev docker images. This means that if your
-`airbyte/normalization:dev` image doesn't have a working dbt installation, tests _will_ fail. Similarly, if your `destination-xyz:dev` image doesn't
-work, then the base-normalization integration tests will fail.
+in between when iterating on the code base. However, dbt cli and destination connectors are invoked via the dev docker images.
+This means that if your `airbyte/normalization:dev` image doesn't have a working dbt installation, tests _will_ fail.
+Similarly, if your `destination-xyz:dev` image doesn't work, then the base-normalization integration tests will fail.
 
 #### Integration Test Checks:
 
