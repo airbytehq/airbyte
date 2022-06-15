@@ -24,9 +24,10 @@ import org.slf4j.LoggerFactory;
 public class GcsBucketSpecFetcher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsBucketSpecFetcher.class);
+
   // these filenames must match default_spec_file and cloud_spec_file in manage.sh
-  private static final String DEFAULT_SPEC_FILE = "spec.json";
-  private static final String CLOUD_SPEC_FILE = "spec.cloud.json";
+  public static final String DEFAULT_SPEC_FILE = "spec.json";
+  public static final String CLOUD_SPEC_FILE = "spec.cloud.json";
 
   private final Storage storage;
   private final String bucketName;
@@ -74,6 +75,7 @@ public class GcsBucketSpecFetcher {
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));
   }
 
+  @VisibleForTesting
   Optional<Blob> getSpecAsBlob(final String dockerImageName, final String dockerImageTag) {
     if (deploymentMode == DeploymentMode.CLOUD) {
       final Optional<Blob> cloudSpecAsBlob = getSpecAsBlob(dockerImageName, dockerImageTag, CLOUD_SPEC_FILE, DeploymentMode.CLOUD);
