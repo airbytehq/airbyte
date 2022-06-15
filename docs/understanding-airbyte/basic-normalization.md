@@ -103,7 +103,8 @@ In Airbyte, the current normalization option is implemented using a dbt Transfor
 * [Redshift](../integrations/destinations/redshift.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 
-Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
+Basic Normalization can be configured when you're creating the connection between your Connection Setup and after in the Transformation Tab.
+Select the option: **Normalized tabular data**.
 
 ## Rules
 
@@ -352,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.4 | 2022-06-14 | [\#12846](https://github.com/airbytehq/airbyte/pull/12846) | CDC correctly deletes propagates deletions to final tables |
 |                 | 0.2.3 | 2022-06-10 | [\#11204](https://github.com/airbytehq/airbyte/pull/11204) | MySQL: add support for SSh tunneling |
 |                 | 0.2.2 | 2022-06-02 | [\#13289](https://github.com/airbytehq/airbyte/pull/13289) | BigQuery use `json_extract_string_array` for array of simple type elements |
 |                 | 0.2.1 | 2022-05-17 | [\#12924](https://github.com/airbytehq/airbyte/pull/12924) | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
