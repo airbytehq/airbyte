@@ -21,6 +21,7 @@ from normalization.transform_catalog.utils import (
     is_combining_node,
     is_date,
     is_datetime,
+    is_datetime_with_timezone,
     is_datetime_without_timezone,
     is_integer,
     is_number,
@@ -28,7 +29,7 @@ from normalization.transform_catalog.utils import (
     is_simple_property,
     is_string,
     is_time,
-    is_time_without_timezone,
+    is_time_with_timezone,
     jinja_call,
     remove_jinja,
 )
@@ -524,10 +525,10 @@ where 1 = 1
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
-                if is_datetime_without_timezone(definition):
-                    sql_type = jinja_call("type_timestamp_without_timezone()")
-                else:
+                if is_datetime_with_timezone(definition):
                     sql_type = jinja_call("type_timestamp_with_timezone()")
+                else:
+                    sql_type = jinja_call("type_timestamp_without_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
                 sql_type = jinja_call("type_timestamp_with_timezone()")
@@ -557,10 +558,10 @@ where 1 = 1
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_time(definition):
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
-            if is_time_without_timezone(definition):
-                sql_type = jinja_call("type_time_without_timezone()")
-            else:
+            if is_time_with_timezone(definition):
                 sql_type = jinja_call("type_time_with_timezone()")
+            else:
+                sql_type = jinja_call("type_time_without_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")

@@ -171,7 +171,7 @@
 {%- endmacro -%}
 
 {% macro default__type_timestamp_without_timezone() %}
-    timestamp without time zone
+    timestamp
 {% endmacro %}
 
 {#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
@@ -185,6 +185,14 @@
     datetime2
 {%- endmacro -%}
 
+{% macro bigquery__type_timestamp_without_timezone() %}
+    datetime
+{% endmacro %}
+
+{% macro oracle__type_timestamp_without_timezone() %}
+    varchar2(4000)
+{% endmacro %}
+
 
 {# time without time zone  -------------------------------------------------     #}
 
@@ -193,7 +201,7 @@
 {%- endmacro -%}
 
 {% macro default__type_time_without_timezone() %}
-    time without time zone
+    time
 {% endmacro %}
 
 {#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
@@ -201,9 +209,9 @@
     char
 {%- endmacro -%}
 
-{%- macro sqlserver__type_time_without_timezone() -%}
-    time
-{%- endmacro -%}
+{% macro oracle__type_time_without_timezone() %}
+    varchar2(4000)
+{% endmacro %}
 
 
 {# time with time zone  -------------------------------------------------     #}
@@ -224,6 +232,14 @@
 {%- macro sqlserver__type_time_with_timezone() -%}
     NVARCHAR(max)
 {%- endmacro -%}
+
+{% macro bigquery__type_time_with_timezone() %}
+    STRING
+{% endmacro %}
+
+{% macro oracle__type_time_with_timezone() %}
+    varchar2(4000)
+{% endmacro %}
 
 
 {# date  -------------------------------------------------     #}
