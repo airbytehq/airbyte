@@ -3,12 +3,13 @@
 #
 
 
-from typing import Union
 import logging
+from typing import Union
 
 import requests
 
 logger = logging.getLogger("airbyte")
+
 
 class BaseBackoffException(requests.exceptions.HTTPError):
     def __init__(self, request: requests.PreparedRequest, response: requests.Response):

@@ -171,7 +171,9 @@ class AbstractSource(Source, ABC):
                 logger.info(f"Stream State Emitted ({state_counter}): Read {record_counter} records so far from {stream_name} stream")
             yield record
 
-        logger.info(f"Stream Complete: Read {record_counter} records from {stream_name} stream which produced {state_counter} state messages")
+        logger.info(
+            f"Stream Complete: Read {record_counter} records from {stream_name} stream which produced {state_counter} state messages"
+        )
 
     @staticmethod
     def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
