@@ -11,3 +11,6 @@
 {"type":"RECORD","record":{"stream":"renamed_dedup_cdc_excluded","data":{"id":8,"name":"vw","column`_'with\"_quotes":"ma\"z`d'a","_ab_cdc_updated_at":1623949314663,"_ab_cdc_lsn":26985264,"_ab_cdc_deleted_at":null},"emitted_at":1623960160}}
 {"type":"RECORD","record":{"stream":"renamed_dedup_cdc_excluded","data":{"id":9,"name":"opel","column`_'with\"_quotes":"ma\"z`d'a","_ab_cdc_updated_at":1623950868109,"_ab_cdc_lsn":28009440,"_ab_cdc_deleted_at":null},"emitted_at":1623961660}}
 {"type":"RECORD","record":{"stream":"renamed_dedup_cdc_excluded","data":{"id":9,"name":null,"column`_'with\"_quotes":"ma\"z`d'a","_ab_cdc_updated_at":1623950868371,"_ab_cdc_lsn":28010232,"_ab_cdc_deleted_at":1623950868371},"emitted_at":1623961660}}
+
+# This message tests the ability to delete a record which was inserted in a previous sync. See messages_incremental.txt for how it was inserted.
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"ford","column`_'with\"_quotes":"ma\"z`d'a","_ab_cdc_updated_at":1625000000000,"_ab_cdc_lsn":29020252,"_ab_cdc_deleted_at":1625000000000},"emitted_at":1625000000000}}

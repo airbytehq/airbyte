@@ -132,10 +132,12 @@ class DbtIntegrationTest(object):
                 "MYSQL_INITDB_SKIP_TZINFO=yes",
                 "-e",
                 f"MYSQL_DATABASE={config['database']}",
+                "-e",
+                "MYSQL_ROOT_HOST=%",
                 "-p",
                 f"{config['port']}:3306",
                 "-d",
-                "mysql",
+                "mysql/mysql-server",
             ]
             print("Executing: ", " ".join(commands))
             subprocess.call(commands)
@@ -365,7 +367,8 @@ class DbtIntegrationTest(object):
                             line = input_data.readline()
                             if not line:
                                 break
-                            process.stdin.write(line)
+                            if not line.startswith(b"#"):
+                                process.stdin.write(line)
                 process.stdin.close()
 
             thread = threading.Thread(target=writer)

@@ -51,6 +51,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -1686,6 +1687,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
     return ctx.select(asterisk())
         .from(ACTOR_DEFINITION)
+        .where(ACTOR_DEFINITION.RELEASE_STAGE.isNull()
+            .or(ACTOR_DEFINITION.RELEASE_STAGE.ne(ReleaseStage.custom).or(ACTOR_DEFINITION.CUSTOM)))
         .fetch()
         .stream()
         .collect(Collectors.toMap(
