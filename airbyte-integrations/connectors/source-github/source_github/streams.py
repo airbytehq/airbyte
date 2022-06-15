@@ -748,6 +748,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 "deletions": pull_request["deletions"],
                 "additions": pull_request["additions"],
                 "merged": pull_request["merged"],
+                "merged_by": pull_request["mergedBy"],
                 "can_be_rebased": pull_request["canBeRebased"],
                 "maintainer_can_modify": pull_request["maintainerCanModify"],
                 "mergeable_state": pull_request["mergeStateStatus"].lower(),

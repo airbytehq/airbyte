@@ -8,6 +8,10 @@ from sgqlc.types import Field, Type, datetime, list_of
 from sgqlc.types.relay import Connection, connection_args
 
 
+class Actor(Type):
+    login = str
+
+
 class IssueCommentConnection(Type):
     totalCount = int
 
@@ -42,6 +46,7 @@ class PullRequest(Type):
     deletions = int
     additions = int
     merged = bool
+    mergedBy = Actor
     canBeRebased = bool
     maintainerCanModify = bool
     mergeStateStatus = str
@@ -82,6 +87,7 @@ def get_query(owner, name, page_size, next_page_token):
     pull_requests.nodes.deletions()
     pull_requests.nodes.additions()
     pull_requests.nodes.merged()
+    pull_requests.nodes.mergedBy()
     pull_requests.nodes.canBeRebased()
     pull_requests.nodes.maintainerCanModify()
     pull_requests.nodes.mergeStateStatus()
