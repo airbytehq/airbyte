@@ -2,6 +2,7 @@
 
 * [Normalization](#normalization)
     * [Under the hood](#under-the-hood)
+        * [Incremental updates](#incremental-updates)
     * [Developer workflow](#developer-workflow)
         * [Setting up your environment](#setting-up-your-environment)
         * [Running dbt](#running-dbt)
@@ -42,6 +43,25 @@ Normalization has two Python modules:
   which configures the models that dbt will run and how they should be materialized.
 
 `entrypoint.sh` (the entrypoint to normalization's Docker image) invokes these two modules, then calls `dbt run` on their output.
+
+### Incremental updates
+
+When generating the final table, we need to pull data from the SCD model.
+A naive implementation would require reading the entire SCD table and completely regenerating the final table on each run.
+This is obviously inefficient, so we instead use dbt's [incremental materialization mode](https://docs.getdbt.com/docs/building-a-dbt-project/building-models/configuring-incremental-models).
+At each stage of the dbt pipeline, normalization will query the target table for the newest `_airbyte_emitted_at` value.
+Then we only need to find records from the source table with `_airbyte_emitted_at` greater than or equal to that value
+(equal to is necessary in case a previous normalization run was interrupted).
+
+This handles the two error scenarios quite cleanly:
+* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superset of those records,
+  then normalization will see that the SCD table has none of those records. The SCD model has a deduping stage,
+  which removes the records which were synced multiple times.
+* If normalization fails partway through, such that (for example) the SCD model is updated, but the final table is not, and then the sync is retried,
+  then the source should not re-emit any old records (because the destination will have emitted a state message ack-ing all of the records).
+  If the retry emits some new records, then normalization will append them to the SCD table as usual (because, from the SCD's point of view, this
+  is just a normal sync). Then the final table's latest `__airbyte_emitted_at` will be older than the original attempt, so it will pull both the new
+  records _and_ the first attempt's records from the SCD table.
 
 ## Developer workflow
 
