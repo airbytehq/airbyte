@@ -7,8 +7,8 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.postgres.PostgresUtils.CDC_FIRST_RECORD_WAIT_SECONDS;
-import static io.airbyte.integrations.source.postgres.PostgresUtils.CDC_SUBSEQUENT_RECORD_WAIT_SECONDS;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.CDC_FIRST_RECORD_TIMEOUT;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.CDC_SUBSEQUENT_RECORD_TIMEOUT;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -247,7 +247,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig),
-          catalog, false, CDC_FIRST_RECORD_WAIT_SECONDS, CDC_SUBSEQUENT_RECORD_WAIT_SECONDS);
+          catalog, false, CDC_FIRST_RECORD_TIMEOUT, CDC_SUBSEQUENT_RECORD_TIMEOUT);
       return handler.getIncrementalIterators(
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),

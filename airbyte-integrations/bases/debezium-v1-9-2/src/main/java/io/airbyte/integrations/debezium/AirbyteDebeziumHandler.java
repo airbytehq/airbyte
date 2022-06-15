@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,8 +52,8 @@ public class AirbyteDebeziumHandler {
   private final CdcTargetPosition targetPosition;
   private final ConfiguredAirbyteCatalog catalog;
   private final boolean trackSchemaHistory;
-  private final int firstRecordWaitSeconds;
-  private final int subsequentRecordWaitSeconds;
+  private final Duration firstRecordTimeout;
+  private final Duration subsequentRecordTimeout;
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
@@ -61,16 +62,16 @@ public class AirbyteDebeziumHandler {
                                 final Properties connectorProperties,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final boolean trackSchemaHistory,
-                                final int firstRecordWaitSeconds,
-                                final int subsequentRecordWaitSeconds) {
+                                final Duration firstRecordTimeout,
+                                final Duration subsequentRecordTimeout) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.connectorProperties = connectorProperties;
     this.catalog = catalog;
     this.trackSchemaHistory = trackSchemaHistory;
     this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-    this.firstRecordWaitSeconds = firstRecordWaitSeconds;
-    this.subsequentRecordWaitSeconds = subsequentRecordWaitSeconds;
+    this.firstRecordTimeout = firstRecordTimeout;
+    this.subsequentRecordTimeout = subsequentRecordTimeout;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final CdcSavedInfoFetcher cdcSavedInfoFetcher,
@@ -91,8 +92,8 @@ public class AirbyteDebeziumHandler {
         publisher::hasClosed,
         publisher::close,
         offsetManager,
-        firstRecordWaitSeconds,
-        subsequentRecordWaitSeconds);
+        firstRecordTimeout,
+        subsequentRecordTimeout);
 
     // convert to airbyte message.
     final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
