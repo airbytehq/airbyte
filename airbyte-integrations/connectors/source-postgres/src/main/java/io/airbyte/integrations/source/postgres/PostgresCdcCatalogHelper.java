@@ -7,6 +7,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class PostgresCdcCatalogHelper {
 
@@ -23,7 +25,9 @@ public final class PostgresCdcCatalogHelper {
    */
   public static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
+      final List<SyncMode> syncModes = new ArrayList<>(stream.getSupportedSyncModes());
+      syncModes.remove(SyncMode.INCREMENTAL);
+      stream.setSupportedSyncModes(syncModes);
     }
 
     return stream;
