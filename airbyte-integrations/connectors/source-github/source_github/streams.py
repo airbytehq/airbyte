@@ -741,6 +741,15 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 "number": pull_request["number"],
                 "updated_at": pull_request["updatedAt"],
                 "repository": pull_request["repository"]["name"],
+                "comments": pull_request["comments"]["totalCount"],
+                "commits": pull_request["commits"]["totalCount"],
+                "changed_files": pull_request["changedFiles"],
+                "deletions": pull_request["deletions"],
+                "additions": pull_request["additions"],
+                "merged": pull_request["merged"],
+                "can_be_rebased": pull_request["canBeRebased"],
+                "maintainer_can_modify": pull_request["maintainerCanModify"],
+                "mergeable_state": pull_request["mergeStateStatus"].lower(),
             }
             yield record
 
@@ -766,6 +775,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
+        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
         headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
         return {**base_headers, **headers}
 
