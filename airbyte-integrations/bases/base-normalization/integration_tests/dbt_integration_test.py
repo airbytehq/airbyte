@@ -367,7 +367,8 @@ class DbtIntegrationTest(object):
                             line = input_data.readline()
                             if not line:
                                 break
-                            process.stdin.write(line)
+                            if not line.startswith(b"#"):
+                                process.stdin.write(line)
                 process.stdin.close()
 
             thread = threading.Thread(target=writer)
