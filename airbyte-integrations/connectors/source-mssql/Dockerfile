@@ -13,6 +13,7 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-mssql
+
 COPY --from=build /airbyte /airbyte
 
 LABEL io.airbyte.version=0.4.2
