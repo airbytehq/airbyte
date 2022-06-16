@@ -17,8 +17,8 @@
   },
   "rules": {
     "curly": "error",
-    "css-modules/no-undef-class": [1, { "camelCase": true }],
-    "css-modules/no-unused-class": [1],
+    "css-modules/no-undef-class": [2, { "camelCase": true }],
+    "css-modules/no-unused-class": [2, { "camelCase": true }],
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "import/order": [
