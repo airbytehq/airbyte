@@ -3,17 +3,16 @@
 #
 
 
-import json
 import logging
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
-from airbyte_cdk.sources.singer import SingerSource
+from airbyte_cdk.sources.singer import ConfigContainer, SingerSource
 
 
 class Source{{properCase name}}Singer(SingerSource):
     TAP_CMD = "{{ tap_name }}"
 
-    def check_config(self, logger: logging.Logger, config_path: str, config: json) -> AirbyteConnectionStatus:
+    def check_config(self, logger: logging.Logger, config_path: str, config: ConfigContainer) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.

@@ -5,37 +5,33 @@
 
 import os
 import logging
-from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Type
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.source import BaseSource
 from airbyte_cdk.sources.utils.catalog_helpers import CatalogHelper
 
 from .singer_helpers import Catalogs, SingerHelper, SyncModeInfo
 
 
-@dataclass
-class ConfigContainer:
-    config: Mapping[str, Any]
+class ConfigContainer(Dict[str, Any]):
     config_path: str
 
+    def __init__(self, config, config_path):
+        super().__init__(config)
+        self.config_path = config_path
 
-class SingerSource(Source):
 
-    # can be overridden to change an input config
-    # according to issue CDK: typing errors #9500, mypy raises error on this line
-    # 'Return type "ConfigContainer" of "configure" incompatible with return type "Mapping[str, Any]" in supertype "Connector"'
-    # need to fix, ignored for now
-    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:  # type: ignore
+class SingerSource(BaseSource[ConfigContainer]):
+    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
         """
         Persist raw_config in temporary directory to run the Source job
         This can be overridden if extra temporary files need to be persisted in the temp dir
         """
-        config = self.transform_config(raw_config)
         config_path = os.path.join(temp_dir, "config.json")
+        config = ConfigContainer(self.transform_config(raw_config), config_path)
         self.write_config(config, config_path)
-        return ConfigContainer(config, config_path)
+        return config
 
     # Can be overridden to change an input config
     def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -64,7 +60,7 @@ class SingerSource(Source):
         """
         return state_path
 
-    def check_config(self, logger: logging.Logger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check_config(self, logger: logging.Logger, config_path: str, config: ConfigContainer) -> AirbyteConnectionStatus:
         """
         Some Singer source may perform check using config_path or config to
         tests if the input configuration can be used to successfully connect to the integration
@@ -93,26 +89,19 @@ class SingerSource(Source):
         )
         return catalogs
 
-    # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 2 of "check" is incompatible with supertype "Connector"; supertype defines the argument type as "Mapping[str, Any]"'
-    # need to fix, ignored for now
-    def check(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:  # type: ignore
+    def check(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
-        return self.check_config(logger, config_container.config_path, config_container.config)
+        return self.check_config(logger, config_container.config_path, config_container)
 
-    def discover(self, logger: logging.Logger, config_container) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:
         """
         Implements the parent class discover method.
         """
-        if isinstance(config_container, ConfigContainer):
-            return self._discover_internal(logger, config_container.config_path).airbyte_catalog
-        else:
-            return self._discover_internal(logger, config_container).airbyte_catalog
+        return self._discover_internal(logger, config_container.config_path).airbyte_catalog
 
     # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 2 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
     # 'Argument 3 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "ConfiguredAirbyteCatalog"'
     # 'Argument 4 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Optional[MutableMapping[str, Any]]"'
     # need to fix, ignored for now
@@ -185,10 +174,7 @@ class BaseSingerSource(SingerSource):
 
         return f"{self.tap_cmd} {cmd}"
 
-    # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 2 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
-    # need to fix, ignored for now
-    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:  # type: ignore
+    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)
         if self.force_full_refresh:
             return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
