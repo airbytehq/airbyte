@@ -16,19 +16,18 @@
 .icon {
   margin-right: 10px;
   font-size: 36px;
-  color: colors.$blackColor;
+  color: colors.$black;
 }
 
 .link {
   text-decoration: none;
-  color: colors.$textColor;
 }
 
 .hostingText {
   font-weight: 700;
   font-size: 14px;
   line-height: 17px;
-  color: colors.$textColor;
+  color: colors.$dark-blue-900;
   margin: 0;
 }
 
@@ -37,5 +36,5 @@
   font-size: 12px;
   line-height: 15px;
   margin: 0;
-  color: colors.$lightTextColor;
+  color: colors.$grey-300;
 }

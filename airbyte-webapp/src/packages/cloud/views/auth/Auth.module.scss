@@ -2,7 +2,7 @@
 
 .container {
   width: 100%;
-  background: colors.$whiteColor;
+  background: colors.$white;
   display: grid;
   height: 100%;
   grid-template-columns: minmax(max-content, 50%) minmax(500px, 50%);
@@ -15,7 +15,7 @@
 }
 
 .rightSide {
-  background: colors.$beigeColor;
+  background: colors.$beige;
   padding: 36px 97px 39px 64px;
   display: flex;
   flex-direction: column;
