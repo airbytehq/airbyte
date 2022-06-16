@@ -105,10 +105,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              DatabaseMetaData databaseMetaData = connection.getMetaData();
-              String dbProductName = databaseMetaData.getDatabaseProductName();
-              String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
-              System.out.println("1================================Product name/version: " + dbProductName + "/" + dbProductVersion);
 
               final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
               final List<String> newColumnNames = getWrappedColumn(database, columnNames, schemaName, tableName, identifierQuoteString);
