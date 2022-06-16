@@ -9,7 +9,6 @@ import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import java.util.Arrays;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
