@@ -43,10 +43,31 @@ class NetsuiteStream(HttpStream, ABC):
     def path(self, **kwargs) -> str:
         return record_path + self.obj_name
 
-    def string_schema(self, ref: str) -> Mapping[str, str]:
+    def ref_schema(self) -> Mapping[str, str]:
         return {
-            "title": ref,
-            "type": "string",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "Internal identifier",
+                    "type": "string"
+                },
+                "refName": {
+                    "title": "Reference Name",
+                    "type": ["string", "null"]
+                },
+                "externalId": {
+                    "title": "External identifier",
+                    "type": ["string", "null"]
+                },
+                "links": {
+                    "title": "Links",
+                    "type": "array",
+                    "readOnly": True,
+                    "items": {
+                        "$ref": "/services/rest/record/v1/metadata-catalog/nsLink"
+                    }
+                }
+            }
         }
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
@@ -59,14 +80,14 @@ class NetsuiteStream(HttpStream, ABC):
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
             if resp.status_code == 404:
-                schema = self.string_schema(ref)
+                schema = {"title": ref, "type": "string"}
             else:
                 resp.raise_for_status
                 schema = resp.json()
             self.schemas[ref] = schema
         return schema
 
-    def build_schema(self, record: Any, path: List[str]) -> Mapping[str, Any]:
+    def build_schema(self, record: Any) -> Mapping[str, Any]:
         # recursively build a schema with subschemas
         if type(record) == dict:
             # Netsuite schemas do not specify if fields can be null, or not
@@ -77,22 +98,16 @@ class NetsuiteStream(HttpStream, ABC):
                 record["type"] = [property_type, "null"]
             ref = record.get("$ref")
             if ref:
-                # some objects can reference objects that reference the original object
-                # this logic avoids infinite schema loops
-                if ref in path:
-                    return self.string_schema(ref)
-                else:
-                    schema = self.get_schema(ref)
-                    return self.build_schema(schema, path + [ref])
+                ns_link = ref == "/services/rest/record/v1/metadata-catalog/nsLink"
+                schema = self.get_schema(ref) if ns_link else self.ref_schema()
             else:
-                return {k: self.build_schema(v, path) for k, v in record.items()}
+                return {k: self.build_schema(v) for k, v in record.items()}
         else:
             return record
 
     def get_json_schema(self, **kwargs) -> dict:
-        schema_path = metadata_path + self.name
-        schema = self.get_schema(schema_path)
-        return self.build_schema(schema, [schema_path])
+        schema = self.get_schema(metadata_path + self.name)
+        return self.build_schema(schema)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp = response.json()
