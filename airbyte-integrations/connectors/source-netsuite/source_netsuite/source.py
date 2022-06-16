@@ -43,6 +43,12 @@ class NetsuiteStream(HttpStream, ABC):
     def path(self, **kwargs) -> str:
         return record_path + self.obj_name
 
+    def string_schema(self, ref: str) -> Mapping[str, str]:
+        return {
+            "title": ref,
+            "type": "string",
+        }
+
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
@@ -53,39 +59,40 @@ class NetsuiteStream(HttpStream, ABC):
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
             if resp.status_code == 404:
-                schema = {
-                    "title": ref,
-                    "type": "string",
-                }
+                schema = self.string_schema(ref)
             else:
                 resp.raise_for_status
                 schema = resp.json()
             self.schemas[ref] = schema
         return schema
 
-    def build_schema(self, subrecord: Any) -> Mapping[str, Any]:
+    def build_schema(self, record: Any, path: List[str]) -> Mapping[str, Any]:
         # recursively build a schema with subschemas
-        if type(subrecord) == dict:
+        if type(record) == dict:
             # Netsuite schemas do not specify if fields can be null, or not
             # as Airbyte expects, so we have to allow every field to be null
-            property_type = subrecord.get("type")
+            property_type = record.get("type")
             # ensure there is a type and null has not already been added
-            if property_type and (type(property_type) != list or (type(property_type) == list and "null" not in property_type)):
-                subrecord["type"] = [property_type, "null"]
-            ref = subrecord.get("$ref")
+            if property_type and "null" not in list(property_type):
+                record["type"] = [property_type, "null"]
+            ref = record.get("$ref")
             if ref:
-                schema = self.get_schema(ref)
-                return self.build_schema(schema)
+                # some objects can reference objects that reference the original object
+                # this logic avoids infinite schema loops
+                if ref in path:
+                    return self.string_schema(ref)
+                else:
+                    schema = self.get_schema(ref)
+                    return self.build_schema(schema, path + [ref])
             else:
-                return {k: self.build_schema(v) for k, v in subrecord.items()}
-        elif type(subrecord) == list:
-            return [self.build_schema(r) for r in subrecord]
+                return {k: self.build_schema(v, path) for k, v in record.items()}
         else:
-            return subrecord
+            return record
 
     def get_json_schema(self, **kwargs) -> dict:
-        schema = self.get_schema(metadata_path + self.name)
-        return self.build_schema(schema)
+        schema_path = metadata_path + self.name
+        schema = self.get_schema(schema_path)
+        return self.build_schema(schema, [schema_path])
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp = response.json()
