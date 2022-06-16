@@ -53,7 +53,7 @@ export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: Leg
   return useCallback(
     (
       action: string,
-      actionTypes: TrackActionActions[],
+      actionTypes: TrackActionActions[], //actionType is typically one entry (ie: CREATE) but is sometimes nested (ie: TEST.SUCCESS)
       properties: TrackConnectorActionProperties | TrackConnectionActionProperties
     ) => {
       const actionTypesString = actionTypes.toString().replaceAll(",", ".");
