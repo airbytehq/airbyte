@@ -35,6 +35,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -102,6 +103,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
+              DatabaseMetaData databaseMetaData = connection.getMetaData();
+              String dbProductName = databaseMetaData.getDatabaseProductName();
+              String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
+              System.out.println("1================================Product name/version: " + dbProductName + "/" + dbProductVersion);
 
               final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
               final List<String> newColumnNames = getWrappedColumn(database, columnNames, schemaName, tableName, identifierQuoteString);
@@ -252,6 +257,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      DatabaseMetaData databaseMetaData = connection.getMetaData();
+      String dbProductName = databaseMetaData.getDatabaseProductName();
+      String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
+      System.out.println("2================================Product name/version: " + dbProductName + "/" + dbProductVersion);
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
@@ -275,6 +284,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
+      DatabaseMetaData databaseMetaData = connection.getMetaData();
+      String dbProductName = databaseMetaData.getDatabaseProductName();
+      String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
+      System.out.println("================================Product name/version: " + dbProductName + "/" + dbProductVersion);
       final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
