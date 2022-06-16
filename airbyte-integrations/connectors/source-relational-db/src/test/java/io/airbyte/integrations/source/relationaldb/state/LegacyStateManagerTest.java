@@ -14,17 +14,24 @@ import static io.airbyte.integrations.source.relationaldb.state.StateTestConstan
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME2;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.STREAM_NAME3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -161,6 +168,17 @@ public class LegacyStateManagerTest {
             .withCdc(true)));
     final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b");
     assertEquals(expectedSecondEmission, actualSecondEmission);
+  }
+
+  @Test
+  void testCdcStateManager() {
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final CdcState cdcState = new CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)));
+    final DbState dbState = new DbState().withCdcState(cdcState).withStreams(List.of(
+        new DbStreamState().withStreamNamespace(NAMESPACE).withStreamName(STREAM_NAME1)));
+    final StateManager stateManager = new LegacyStateManager(dbState, catalog);
+    assertNotNull(stateManager.getCdcStateManager());
+    assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
   }
 
 }
