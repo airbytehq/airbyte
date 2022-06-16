@@ -4,10 +4,10 @@
 
 
 import os
+import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Type
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.utils.catalog_helpers import CatalogHelper
@@ -64,21 +64,21 @@ class SingerSource(Source):
         """
         return state_path
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check_config(self, logger: logging.Logger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Some Singer source may perform check using config_path or config to
         tests if the input configuration can be used to successfully connect to the integration
         """
         raise NotImplementedError
 
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+    def discover_cmd(self, logger: logging.Logger, config_path: str) -> str:
         """
         Returns the command used to run discovery in the singer tap. For example, if the bash command used to invoke the singer tap is `tap-postgres`,
         and the config JSON lived in "/path/config.json", this method would return "tap-postgres --config /path/config.json"
         """
         raise NotImplementedError
 
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+    def read_cmd(self, logger: logging.Logger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         """
         Returns the command used to read data from the singer tap. For example, if the bash command used to invoke the singer tap is `tap-postgres`,
         and the config JSON lived in "/path/config.json", and the catalog was in "/path/catalog.json",
@@ -86,7 +86,7 @@ class SingerSource(Source):
         """
         raise NotImplementedError
 
-    def _discover_internal(self, logger: AirbyteLogger, config_path: str) -> Catalogs:
+    def _discover_internal(self, logger: logging.Logger, config_path: str) -> Catalogs:
         cmd = self.discover_cmd(logger, config_path)
         catalogs = SingerHelper.get_catalogs(
             logger, cmd, self.get_sync_mode_overrides(), self.get_primary_key_overrides(), self.get_excluded_streams()
@@ -94,19 +94,15 @@ class SingerSource(Source):
         return catalogs
 
     # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 1 of "check" is incompatible with supertype "Connector"; supertype defines the argument type as "Logger"'
     # 'Argument 2 of "check" is incompatible with supertype "Connector"; supertype defines the argument type as "Mapping[str, Any]"'
     # need to fix, ignored for now
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:  # type: ignore
+    def check(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:  # type: ignore
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
         return self.check_config(logger, config_container.config_path, config_container.config)
 
-    # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 1 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
-    # need to fix, ignored for now
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:  # type: ignore
+    def discover(self, logger: logging.Logger, config_container) -> AirbyteCatalog:
         """
         Implements the parent class discover method.
         """
@@ -116,13 +112,12 @@ class SingerSource(Source):
             return self._discover_internal(logger, config_container).airbyte_catalog
 
     # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 1 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
     # 'Argument 2 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
     # 'Argument 3 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "ConfiguredAirbyteCatalog"'
     # 'Argument 4 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Optional[MutableMapping[str, Any]]"'
     # need to fix, ignored for now
     def read(  # type: ignore
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
+        self, logger: logging.Logger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
     ) -> Iterable[AirbyteMessage]:
         """
         Implements the parent class read method.
@@ -170,7 +165,7 @@ class SingerSource(Source):
 class BaseSingerSource(SingerSource):
     force_full_refresh = False
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check_config(self, logger: logging.Logger, config_path: str, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             self.try_connect(logger, config)
         except self.api_error as err:
@@ -180,10 +175,10 @@ class BaseSingerSource(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+    def discover_cmd(self, logger: logging.Logger, config_path: str) -> str:
         return f"{self.tap_cmd} --config {config_path} --discover"
 
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+    def read_cmd(self, logger: logging.Logger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_path = None if self.force_full_refresh else state_path
         args = {"--config": config_path, "--catalog": catalog_path, "--state": state_path}
         cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
@@ -191,16 +186,15 @@ class BaseSingerSource(SingerSource):
         return f"{self.tap_cmd} {cmd}"
 
     # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 1 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
     # 'Argument 2 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
     # need to fix, ignored for now
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:  # type: ignore
+    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:  # type: ignore
         catalog = super().discover(logger, config_container)
         if self.force_full_refresh:
             return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
         return catalog
 
-    def try_connect(self, logger: AirbyteLogger, config: Mapping[str, Any]):
+    def try_connect(self, logger: logging.Logger, config: Mapping[str, Any]):
         """Test provided credentials, raises self.api_error if something goes wrong"""
         raise NotImplementedError
 
