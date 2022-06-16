@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import static io.airbyte.integrations.util.HostPortResolver.resolveHost;
+import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -52,13 +55,10 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
-            .getIpAddress()))
+        .put("host", resolveHost(db))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("port", HostPortResolver.resolvePort(db))
+        .put("port", resolvePort(db))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
