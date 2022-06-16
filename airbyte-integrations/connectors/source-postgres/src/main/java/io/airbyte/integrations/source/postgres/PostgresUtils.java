@@ -10,8 +10,11 @@ import java.time.Duration;
 public class PostgresUtils {
 
   private static final String PGOUTPUT_PLUGIN = "pgoutput";
-  public static final Duration CDC_FIRST_RECORD_TIMEOUT = Duration.ofSeconds(5L);
-  public static final Duration CDC_SUBSEQUENT_RECORD_TIMEOUT = Duration.ofSeconds(5L);
+
+  // These values cannot be too short. In local unit tests, Debezium is fast.
+  // But in reality, the initial snapshot takes longer to run.
+  public static final Duration CDC_FIRST_RECORD_TIMEOUT = Duration.ofSeconds(30L);
+  public static final Duration CDC_SUBSEQUENT_RECORD_TIMEOUT = Duration.ofSeconds(30L);
 
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
