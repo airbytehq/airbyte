@@ -5,6 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from collections import Counter
 
 import requests
 from requests_oauthlib import OAuth1
@@ -223,6 +224,10 @@ class SourceNetsuite(AbstractSource):
         session = self.get_session(auth)
         # if record types are specified make sure they are valid
         if record_types:
+            # ensure there are no duplicate record types as this will break Airbyte
+            duplicates = [k for k,v in Counter(record_types).items() if v>1]
+            if duplicates:
+                return False, f'Duplicate record type: {", ".join(duplicates)}'
             params = {"select": ",".join(record_types)}
             url = base_url + metadata_path
             session.get(url, params=params)
