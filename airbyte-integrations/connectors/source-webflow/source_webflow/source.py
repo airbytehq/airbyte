@@ -59,7 +59,7 @@ class WebflowStream(HttpStream, ABC):
         return {}
 
 
-class Schema(WebflowStream):
+class CollectionSchema(WebflowStream):
     """
     Gets the schema of the current collection - see: https://developers.webflow.com/#get-collection-with-full-schema, and
     then converts that schema to a json-schema.org-compatible schema that uses supported Airbyte types.
@@ -224,12 +224,12 @@ class CollectionContents(WebflowStream):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
-        Webflow has an API,but it is not consistent with json-schema.org schemas. We use the Schema stream
+        Webflow has an API,but it is not consistent with json-schema.org schemas. We use the CollectionSchema stream
         to get these schemas and to also map them to json-schema format.
         """
 
         collection_id = self.collection_id
-        schema_stream = Schema(authenticator=self.authenticator, collection_id=collection_id)
+        schema_stream = CollectionSchema(authenticator=self.authenticator, collection_id=collection_id)
         schema_records = schema_stream.read_records(sync_mode="full_refresh")
 
         # each record corresponds to a property in the json schema. So we loop over each of these properties
