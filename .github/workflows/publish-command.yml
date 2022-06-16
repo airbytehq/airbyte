@@ -86,6 +86,8 @@ jobs:
       - start-publish-image-runner
       - preprocess-matrix
     strategy:
+      max-parallel: 5
+      fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
