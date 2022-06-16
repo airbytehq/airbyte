@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_webflow.source import CollectionItems, WebflowStream, SourceWebflow
+from source_webflow.source import CollectionContents, WebflowStream, SourceWebflow
 
 
 @pytest.fixture
@@ -18,14 +18,14 @@ def patch_base_class(mocker):
 
 
 def test_request_params_of_collection_items(patch_base_class):
-    stream = CollectionItems()
+    stream = CollectionContents()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1}}
     expected_params = {"limit": 100, "offset": 1}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token_of_collection_items(patch_base_class):
-    stream = CollectionItems()
+    stream = CollectionContents()
     response_data = {"items": [{"item1_key": "item1_val"}], "count": 10, "offset": 100}
     inputs = {"response": MagicMock(json=lambda: response_data)}
     expected_token = {"offset": 110}
@@ -33,7 +33,7 @@ def test_next_page_token_of_collection_items(patch_base_class):
 
 
 def test_parse_response_of_collection_items(patch_base_class):
-    stream = CollectionItems()
+    stream = CollectionContents()
     mock_record = {"item1_key": "item1_val"}
     response_data = {"items": [mock_record]}
     inputs = {"response": MagicMock(json=lambda: response_data)}

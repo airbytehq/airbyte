@@ -112,7 +112,7 @@ Is "{field_type}" defined in the mapping between Webflow and json schma ? """
         return {}
 
 
-class Collections(WebflowStream):
+class CollectionsList(WebflowStream):
     """
     The data that we are generally interested in pulling from Webflow is stored in "Collections".
     Example Collections that may be of interest are: "Blog Posts", "Blog Authors", etc.
@@ -149,7 +149,7 @@ class Collections(WebflowStream):
         return {}
 
 
-class CollectionItems(WebflowStream):
+class CollectionContents(WebflowStream):
     """
     This stream is used for pulling "items" out of a given Webflow collection. Because there is not a fixed number of collections with
     pre-defined names, each stream is an object that uses the passed-in collection name for the stream name.
@@ -258,7 +258,7 @@ class SourceWebflow(AbstractSource):
 
         collection_name_to_id_dict = {}
 
-        collections_stream = Collections(authenticator=authenticator, site_id=site_id)
+        collections_stream = CollectionsList(authenticator=authenticator, site_id=site_id)
         collections_records = collections_stream.read_records(sync_mode="full_refresh")
 
         # Loop over the list of records and create a dictionary with name as key, and _id as value
@@ -294,10 +294,10 @@ class SourceWebflow(AbstractSource):
             # Check that authenticator can be retrieved
             auth = self.get_authenticator(config)
             site_id = config.get("site_id")
-            collections_stream = Collections(authenticator=auth, site_id=site_id)
+            collections_stream = CollectionsList(authenticator=auth, site_id=site_id)
             collections_records = collections_stream.read_records(sync_mode="full_refresh")
             record = next(collections_records)
-            logger.info(f"Successfully connected to Collections stream. Pulled one record: {record}")
+            logger.info(f"Successfully connected to CollectionsList stream. Pulled one record: {record}")
             return True, None
         except Exception as e:
             return False, e
@@ -308,7 +308,7 @@ class SourceWebflow(AbstractSource):
         collection_name_to_id_dict = self.get_collection_name_to_id_dict(authenticator=authenticator, site_id=site_id)
 
         for collection_name, collection_id in collection_name_to_id_dict.items():
-            yield CollectionItems(
+            yield CollectionContents(
                 authenticator=authenticator,
                 site_id=site_id,
                 collection_id=collection_id,
