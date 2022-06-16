@@ -2,6 +2,7 @@ import { getFrequencyConfig } from "config/utils";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
+import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
@@ -12,6 +13,7 @@ const useSyncActions = (): {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
   const analyticsService = useAnalyticsService();
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
 
   const changeStatus = async (connection: WebBackendConnectionRead) => {
     await updateConnection(
@@ -22,13 +24,17 @@ const useSyncActions = (): {
 
     const frequency = getFrequencyConfig(connection.schedule);
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === "active" ? "Disable connection" : "Reenable connection",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+    const trackableAction =
+      connection.status === ConnectionStatus.active ? TrackActionActions.DISABLE : TrackActionActions.REENABLE;
+
+    const trackableActionString = `${trackableAction} connection`;
+
+    trackSourceAction(trackableActionString, [trackableAction], {
       frequency: frequency?.type,
+      connector_source: connection.source?.sourceName,
+      connector_source_definition_id: connection.source?.sourceDefinitionId, //another place I'm changing a label... clarify if that's ok
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
     });
   };
 

@@ -7,8 +7,8 @@ import HeadTitle from "components/HeadTitle";
 
 import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
+import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
@@ -29,15 +29,14 @@ const ConnectionItemPage: React.FC = () => {
 
   const { source, destination } = connection;
 
-  const analyticsService = useAnalyticsService();
-
   const frequency = getFrequencyConfig(connection.schedule);
 
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
+
   const onAfterSaveSchema = () => {
-    analyticsService.track("Source - Action", {
-      action: "Edit schema",
+    trackSourceAction("Edit schema", [TrackActionActions.SCHEMA], {
       connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId,
+      connector_source_definition_id: source.sourceDefinitionId, //todo: ask natalie if this _should_ be changed or if I should make the call more flexible to use the old (incorrect?) label
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.type,
