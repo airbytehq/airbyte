@@ -1,4 +1,4 @@
-**# Postgres
+# Postgres
 
 ## Features
 
@@ -74,7 +74,7 @@ GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
 ```
 
 This issue is tracked in [\#9771](https://github.com/airbytehq/airbyte/issues/9771).
-### <a name="jdbc-url-params"></a>3. (Advanced) configure additional JDBC URL parameters
+### <a name="jdbc-url-params"></a>3. (Advanced) Configure Additional JDBC URL Parameters
 
 This is an advanced configuration option. Users are advised to use it with caution. If you need to customize the JDBC connection beyond common options you can specify additional JDBC URL parameters in `JDBC URL Params` field. The value of `JDBC URL Params` field
 should have the form of key-value pairs separated by the symbol `&`. 
