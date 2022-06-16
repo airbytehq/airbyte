@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import org.slf4j.Logger;
@@ -17,8 +21,7 @@ public class DebeziumTracker {
     return INSTANCE;
   }
 
-  private DebeziumTracker() {
-  }
+  private DebeziumTracker() {}
 
   public void markAsStarted() {
     this.started = true;

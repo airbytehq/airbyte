@@ -586,6 +586,7 @@ public abstract class CdcSourceTest {
 
   /**
    * Override this method and return a bulk insert query to enable large record test.
+   *
    * @param startingId the ID of the first record to be inserted
    * @param recordsToInsert total number of records to insert
    */

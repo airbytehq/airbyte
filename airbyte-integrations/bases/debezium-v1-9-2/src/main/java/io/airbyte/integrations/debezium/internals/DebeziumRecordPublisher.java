@@ -29,7 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The purpose of this class is to intiliaze and spawn the debezium engine with the right properties to fetch records
+ * The purpose of this class is to intiliaze and spawn the debezium engine with the right properties
+ * to fetch records
  */
 public class DebeziumRecordPublisher implements AutoCloseable {
 
@@ -73,11 +74,13 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .using(getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
         .using(new ConnectorCallback() {
+
           @Override
           public void taskStarted() {
             ConnectorCallback.super.taskStarted();
             debeziumTracker.markAsStarted();
           }
+
         })
         .notifying(e -> {
           // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
@@ -193,7 +196,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .map(ConfiguredAirbyteStream::getStream)
         .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[]{','}, "\\,"))
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
   }
 
