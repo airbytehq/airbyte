@@ -27,4 +27,4 @@ class ListStreamSlicer(StreamSlicer):
         self._config = config
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        return (self._interpolation.eval(self._config, slice_value=slice_value, literal_eval=True) for slice_value in self._slice_values)
+        return [self._interpolation.eval(self._config, slice_value=slice_value) for slice_value in self._slice_values]
