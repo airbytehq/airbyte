@@ -1,7 +1,6 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
-import styled from "styled-components";
 
 import { Input } from "components";
 
@@ -9,93 +8,13 @@ import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
+import styles from "./ConnectionName.module.scss";
+
 interface ConnectionNameProps {
   connection: WebBackendConnectionRead;
 }
 
-const MainContainer = styled.div`
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Icon = styled(FontAwesomeIcon)`
-  display: none;
-  position: absolute;
-  right: 20px;
-  font-size: 18px;
-  color: ${({ theme }) => theme.primaryColor};
-`;
-
-const NameContainer = styled.div`
-  width: 650px;
-  background-color: rgba(255, 235, 215, 0.4);
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding: 0 20px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 235, 215, 0.4);
-
-  &:hover {
-    cursor: pointer;
-    border: ${({ theme }) => `1px solid ${theme.primaryColor}`};
-    background-color: ${({ theme }) => theme.primaryColor12};
-  }
-
-  &:hover ${Icon} {
-    display: block;
-  }
-`;
-
-const EditingContainer = styled.div`
-  width: 650px;
-  display: flex;
-  background-color: white;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px;
-  border: ${({ theme }) => `1px solid ${theme.primaryColor}`};
-`;
-
-const InputContainer = styled.div`
-  height: 50px;
-  width: 100%;
-
-  div {
-    border-radius: 8px;
-    border: none;
-    box-shadow: none;
-    background-color: white !important;
-  }
-`;
-
-const Name = styled.div`
-  flex-grow: 1;
-`;
-
-const H2 = styled.h2`
-  font-weight: 700;
-  font-size: 24px;
-  line-height: 29px;
-  text-align: center;
-  color: #1a194d;
-  margin: 10px;
-`;
-
-const StyledInput = styled(Input)`
-  border-radius: 8px;
-  background-color: white;
-  font-size: 24px;
-  height: 50px;
-  text-align: center;
-  div {
-    border: none;
-  }
-`;
-
-const InputWithKeystroke = withKeystrokeHandler(StyledInput);
+const InputWithKeystroke = withKeystrokeHandler(Input);
 
 const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   const { name } = connection;
@@ -158,19 +77,12 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   };
 
   return (
-    <MainContainer>
-      {!editingState && (
-        <NameContainer onClick={() => setEditingState(true)}>
-          <Name>
-            <H2>{name}</H2>
-          </Name>
-          <Icon icon={faPenToSquare} />
-        </NameContainer>
-      )}
-      {editingState && (
-        <EditingContainer>
-          <InputContainer onBlur={onBlur}>
+    <div className={styles.container}>
+      {editingState ? (
+        <div className={styles.editingContainer}>
+          <div className={styles.inputContainer} onBlur={onBlur}>
             <InputWithKeystroke
+              className={styles.input}
               value={connectionName}
               onChange={inputChange}
               onEscape={onEscape}
@@ -178,10 +90,17 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
               disabled={loading}
               defaultFocus
             />
-          </InputContainer>
-        </EditingContainer>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.nameContainer} onClick={() => setEditingState(true)}>
+          <div>
+            <h2>{name}</h2>
+          </div>
+          <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
+        </div>
       )}
-    </MainContainer>
+    </div>
   );
 };
 
