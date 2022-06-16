@@ -250,7 +250,8 @@ class SourceWebflow(AbstractSource):
 
     """This is the main class that defines the methods that will be called by Airbyte infrastructure"""
 
-    def _get_collection_name_to_id_dict(self, authenticator: str = None, site_id: str = None) -> Mapping[str, str]:
+    @staticmethod
+    def _get_collection_name_to_id_dict(authenticator: str = None, site_id: str = None) -> Mapping[str, str]:
         """
         Most of the Webflow APIs require the collection id, but the streams that we are generating use the collection name.
         This function will return a dictionary containing collection_name: collection_id entries.
