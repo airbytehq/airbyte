@@ -593,7 +593,7 @@ public abstract class CdcSourceTest {
     return Optional.empty();
   }
 
-  // @Test
+  @Test
   void testCheck() throws Exception {
     final AirbyteConnectionStatus status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
