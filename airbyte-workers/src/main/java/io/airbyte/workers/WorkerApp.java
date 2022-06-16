@@ -38,11 +38,11 @@ import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
-import io.airbyte.scheduler.persistence.JobErrorReporter;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.error_reporting.ErrorReportingClient;
+import io.airbyte.scheduler.persistence.job_error_reporter.ErrorReportingClient;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -443,11 +443,13 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy()); // we'll take inspo from trackingclient for metadata to include
-    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configPersistence, workspaceHelper, client);
+    LOGGER.info("GETTING ERR REPORTING CLIENT");
+    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy()); // we'll take inspo from trackingclient
+    LOGGER.info("CREATING THE ERROR REPORTER"); // for metadata to include
+    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configRepository, configs.getAirbyteVersionOrWarning(), client);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
-
+    LOGGER.info("CREATING THE WORKER APP");
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -475,8 +477,8 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence,
-        jobErrorReporter).start();
+        jobErrorReporter,
+        streamResetPersistence).start();
   }
 
   public static void main(final String[] args) {

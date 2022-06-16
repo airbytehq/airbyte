@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -219,7 +220,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
 
-        } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
+        } else if (childWorkflowFailure.getCause() instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
           // example, this lets us set the failureOrigin to normalization.
@@ -263,22 +264,25 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput,
-                             final StandardSyncOutput standardSyncOutput) {
+      final StandardSyncOutput standardSyncOutput) {
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+    log.info("REPORT FAILURE");
+    final AttemptFailureSummary attemptFailureSummary = FailureHelper.failureSummary(workflowInternalState.getFailures(),
+        workflowInternalState.getPartialSuccess());
 
     if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailure, new AttemptFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
           standardSyncOutput,
-          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
+          attemptFailureSummary));
     } else {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailureWithAttemptNumber, new AttemptNumberFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
           standardSyncOutput,
-          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
+          attemptFailureSummary));
     }
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
@@ -292,13 +296,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
             : null;
     if (maxAttempt > attemptNumber && failureType != FailureType.CONFIG_ERROR) {
+      log.info("RESTART FROM FAILURE");
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
     } else {
+      log.info("JOB FAILURE");
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure,
+          new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason, attemptFailureSummary));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);

@@ -28,7 +28,7 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
-import io.airbyte.scheduler.persistence.JobErrorReporter;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -194,21 +194,23 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
+      log.info("JOB FAILURE! persising");
       final var jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
 
+      log.info("JOB FAILURE! notifying");
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
 
       final UUID connectionId = UUID.fromString(job.getScope());
-      final Optional<Attempt> lastAttempt = job.getLastAttemptWithOutput();
-      // TODO how can we do this also for discover and check?
-      lastAttempt.flatMap(Attempt::getFailureSummary)
-          .ifPresent(attemptFailureSummary -> jobErrorReporter.reportSyncJobFailure(attemptFailureSummary, connectionId, job.getConfig().getSync()));
+      final AttemptFailureSummary failureSummary = input.getFailureSummary();
 
-    } catch (final IOException e) { // TODO is throwing retryable exception the right response?
+      log.info("JOB FAILURE! report error");
+      jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync());
+
+    } catch (final IOException e) {
       throw new RetryableException(e);
     }
   }

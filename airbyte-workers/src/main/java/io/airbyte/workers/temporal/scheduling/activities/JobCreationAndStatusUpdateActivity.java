@@ -131,6 +131,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private String reason;
+    private AttemptFailureSummary failureSummary;
 
   }
 
