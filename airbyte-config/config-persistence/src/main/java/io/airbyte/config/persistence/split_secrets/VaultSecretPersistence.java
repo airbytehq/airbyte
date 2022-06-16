@@ -11,11 +11,12 @@ import io.airbyte.commons.lang.Exceptions;
 import java.util.HashMap;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Slf4j
 final public class VaultSecretPersistence implements SecretPersistence {
 
-  private final String secretKey = "value";
+  private final String SECRET_KEY = "value";
   private final Vault vault;
   private final String pathPrefix;
 
@@ -35,15 +36,15 @@ final public class VaultSecretPersistence implements SecretPersistence {
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     try {
-      final var response = vault.logical().read(pathPrefix + coordinate.getFullCoordinate());
-      final var restResponse = response.getRestResponse();
-      final var responseCode = restResponse.getStatus();
+      val response = vault.logical().read(pathPrefix + coordinate.getFullCoordinate());
+      val restResponse = response.getRestResponse();
+      val responseCode = restResponse.getStatus();
       if (responseCode != 200) {
-        log.error("failed on read. Response code: " + responseCode);
+        log.error("Vault failed on read. Response code: " + responseCode);
         return Optional.empty();
       }
-      final var data = response.getData();
-      return Optional.of(data.get(secretKey));
+      val data = response.getData();
+      return Optional.of(data.get(SECRET_KEY));
     } catch (final VaultException e) {
       return Optional.empty();
     }
@@ -52,11 +53,11 @@ final public class VaultSecretPersistence implements SecretPersistence {
   @Override
   public void write(final SecretCoordinate coordinate, final String payload) {
     try {
-      final var newSecret = new HashMap<String, Object>();
-      newSecret.put(secretKey, payload);
+      val newSecret = new HashMap<String, Object>();
+      newSecret.put(SECRET_KEY, payload);
       vault.logical().write(pathPrefix + coordinate.getFullCoordinate(), newSecret);
     } catch (final VaultException e) {
-      log.error("failed on write", e);
+      log.error("Vault failed on write", e);
     }
   }
 
@@ -64,7 +65,7 @@ final public class VaultSecretPersistence implements SecretPersistence {
    * This creates a vault client using a vault agent which uses AWS IAM for auth using engine version 2.
    */
   private static Vault getVaultClient(final String address) throws VaultException {
-    final var config = new VaultConfig()
+    val config = new VaultConfig()
         .address(address)
         .engineVersion(2)
         .build();
@@ -75,7 +76,7 @@ final public class VaultSecretPersistence implements SecretPersistence {
    * Vault client for testing
    */
   private static Vault getVaultClient(final String address, final String token) throws VaultException {
-    final var config = new VaultConfig()
+    val config = new VaultConfig()
         .address(address)
         .token(token)
         .engineVersion(2)
