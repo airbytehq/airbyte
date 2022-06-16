@@ -21,6 +21,7 @@ SESSION_TOKEN = "session_token"
 class MetabaseAuth(HttpAuthenticator):
     def __init__(self, logger: logging.Logger, config: Mapping[str, Any]):
         self.need_session_close = False
+        self.session_token = ""
         self.logger = logger
         self.api_url = config[API_URL]
         if USERNAME in config and PASSWORD in config:
@@ -100,7 +101,7 @@ class SourceMetabase(AbstractSource):
                 authenticator.close_session()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        self.authenticator = MetabaseAuth(config)
+        self.authenticator = MetabaseAuth(logging.getLogger("airbyte"), config)
         if not self.authenticator.has_valid_token():
             raise ConnectionError("Failed to connect to source")
         args = {"authenticator": self.authenticator, API_URL: config[API_URL]}
