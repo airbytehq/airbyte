@@ -681,28 +681,36 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "globalState" : {
-    "streamStates" : {
-      "streamKey" : {
+    "shared_state" : "{}",
+    "streamStates" : [ {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
-      }
-    }
+      },
+      "streamState" : "{}"
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "streamState" : "{}"
+    } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "state" : {
-    "streamStates" : {
-      "streamKey" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      }
-    }
-  },
-  "streamStates" : {
-    "streamKey" : {
+  "streamState" : [ {
+    "streamDescriptor" : {
       "name" : "name",
       "namespace" : "namespace"
-    }
-  }
+    },
+    "streamState" : "{}"
+  }, {
+    "streamDescriptor" : {
+      "name" : "name",
+      "namespace" : "namespace"
+    },
+    "streamState" : "{}"
+  } ],
+  "state" : "{}"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -8001,6 +8009,91 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "catalogDiff" : {
+    "transformations" : [ {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    }, {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    } ]
+  },
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -8043,97 +8136,6 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncCatalogChanges" : {
-    "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-    "streamsRemoved" : [ {
-      "name" : "name",
-      "namespace" : "namespace"
-    }, {
-      "name" : "name",
-      "namespace" : "namespace"
-    } ],
-    "streamsUpdated" : [ {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    }, {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    } ]
-  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8250,6 +8252,91 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "catalogDiff" : {
+    "transformations" : [ {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    }, {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    } ]
+  },
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -8292,97 +8379,6 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncCatalogChanges" : {
-    "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-    "streamsRemoved" : [ {
-      "name" : "name",
-      "namespace" : "namespace"
-    }, {
-      "name" : "name",
-      "namespace" : "namespace"
-    } ],
-    "streamsUpdated" : [ {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    }, {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    } ]
-  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -8563,6 +8559,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -8605,97 +8686,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -8759,6 +8749,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -8801,97 +8876,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -9013,6 +8997,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -9055,97 +9124,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -9209,6 +9187,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -9251,97 +9314,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -9463,6 +9435,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -9505,97 +9562,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -9659,6 +9625,91 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "catalogDiff" : {
+      "transformations" : [ {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      }, {
+        "removeStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "transformType" : "add_stream",
+        "addStream" : {
+          "name" : "name",
+          "namespace" : "namespace"
+        },
+        "updateStream" : [ {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        }, {
+          "addField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "transformType" : "add_field",
+          "removeField" : {
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "fieldType" : [ "fieldType", "fieldType" ]
+          },
+          "updateFieldType" : {
+            "newType" : [ "newType", "newType" ],
+            "fieldName" : [ "fieldName", "fieldName" ],
+            "oldType" : [ "oldType", "oldType" ]
+          }
+        } ]
+      } ]
+    },
     "resourceRequirements" : {
       "cpu_limit" : "cpu_limit",
       "memory_request" : "memory_request",
@@ -9701,97 +9752,6 @@ font-style: italic;
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncCatalogChanges" : {
-      "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-      "streamsRemoved" : [ {
-        "name" : "name",
-        "namespace" : "namespace"
-      }, {
-        "name" : "name",
-        "namespace" : "namespace"
-      } ],
-      "streamsUpdated" : [ {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      }, {
-        "fieldsRemoved" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsAdded" : [ {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        }, {
-          "schema" : {
-            "key" : "{}"
-          },
-          "name" : "name"
-        } ],
-        "fieldsUpdated" : [ {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        }, {
-          "fromSchema" : {
-            "key" : "{}"
-          },
-          "name" : "name",
-          "toSchema" : {
-            "key" : "{}"
-          }
-        } ]
-      } ]
-    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -9909,6 +9869,91 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "catalogDiff" : {
+    "transformations" : [ {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    }, {
+      "removeStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "addStream" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "updateStream" : [ {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      }, {
+        "addField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "transformType" : "add_field",
+        "removeField" : {
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "fieldType" : [ "fieldType", "fieldType" ]
+        },
+        "updateFieldType" : {
+          "newType" : [ "newType", "newType" ],
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "oldType" : [ "oldType", "oldType" ]
+        }
+      } ]
+    } ]
+  },
   "resourceRequirements" : {
     "cpu_limit" : "cpu_limit",
     "memory_request" : "memory_request",
@@ -9951,97 +9996,6 @@ font-style: italic;
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncCatalogChanges" : {
-    "streamsAdded" : [ "streamsAdded", "streamsAdded" ],
-    "streamsRemoved" : [ {
-      "name" : "name",
-      "namespace" : "namespace"
-    }, {
-      "name" : "name",
-      "namespace" : "namespace"
-    } ],
-    "streamsUpdated" : [ {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    }, {
-      "fieldsRemoved" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsAdded" : [ {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      }, {
-        "schema" : {
-          "key" : "{}"
-        },
-        "name" : "name"
-      } ],
-      "fieldsUpdated" : [ {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      }, {
-        "fromSchema" : {
-          "key" : "{}"
-        },
-        "name" : "name",
-        "toSchema" : {
-          "key" : "{}"
-        }
-      } ]
-    } ]
-  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -10713,6 +10667,7 @@ font-style: italic;
     <li><a href="#ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a></li>
     <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
+    <li><a href="#AirbyteGlobalState"><code>AirbyteGlobalState</code> - </a></li>
     <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
     <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
     <li><a href="#AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a></li>
@@ -10726,6 +10681,7 @@ font-style: italic;
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
     <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
+    <li><a href="#CatalogDiff"><code>CatalogDiff</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
     <li><a href="#CompleteDestinationOAuthRequest"><code>CompleteDestinationOAuthRequest</code> - </a></li>
@@ -10766,8 +10722,9 @@ font-style: italic;
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
-    <li><a href="#FieldSchema"><code>FieldSchema</code> - </a></li>
-    <li><a href="#FieldSchemaTypeUpdate"><code>FieldSchemaTypeUpdate</code> - </a></li>
+    <li><a href="#FieldNameAndType"><code>FieldNameAndType</code> - </a></li>
+    <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
+    <li><a href="#FieldTypeUpdate"><code>FieldTypeUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
@@ -10835,9 +10792,8 @@ font-style: italic;
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
-    <li><a href="#StreamStateObject"><code>StreamStateObject</code> - </a></li>
-    <li><a href="#StreamUpdate"><code>StreamUpdate</code> - </a></li>
-    <li><a href="#SyncCatalogChanges"><code>SyncCatalogChanges</code> - </a></li>
+    <li><a href="#StreamState"><code>StreamState</code> - </a></li>
+    <li><a href="#StreamTransform"><code>StreamTransform</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
     <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
@@ -10884,6 +10840,14 @@ font-style: italic;
     <div class='model-description'>describes the available schema (catalog).</div>
     <div class="field-items">
       <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamAndConfiguration">array[AirbyteStreamAndConfiguration]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AirbyteGlobalState"><code>AirbyteGlobalState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">shared_state (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+<div class="param">streamStates </div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11011,6 +10975,13 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="CatalogDiff"><code>CatalogDiff</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Describes the difference between two Airbyte catalogs.</div>
+    <div class="field-items">
+      <div class="param">transformations </div><div class="param-desc"><span class="param-type"><a href="#StreamTransform">array[StreamTransform]</a></span> list of stream transformations. order does not matter. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="CheckConnectionRead"><code>CheckConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11133,12 +11104,13 @@ font-style: italic;
   </div>
   <div class="model">
     <h3><a name="ConnectionState"><code>ConnectionState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Contains the state for a connection. The stateType field identifies what type of state it is. Only the field corresponding to that type will be set, the rest will be null. If stateType=not_set, then none of the fields will be set.</div>
     <div class="field-items">
-      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
-<div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
-<div class="param">streamStates (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamStateObject">StreamStateObject</a></span>  </div>
+      <div class="param">stateType </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateType">ConnectionStateType</a></span>  </div>
+<div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+<div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
+<div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteGlobalState">AirbyteGlobalState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11405,20 +11377,32 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="FieldSchema"><code>FieldSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="FieldNameAndType"><code>FieldNameAndType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">schema (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+      <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">fieldType </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="FieldSchemaTypeUpdate"><code>FieldSchemaTypeUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="FieldTransform"><code>FieldTransform</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Describes the difference between two Streams.</div>
+    <div class="field-items">
+      <div class="param">transformType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">add_field</div><div class="param-enum">remove_field</div><div class="param-enum">update_field_type</div>
+<div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldNameAndType">FieldNameAndType</a></span>  </div>
+<div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldNameAndType">FieldNameAndType</a></span>  </div>
+<div class="param">updateFieldType (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldTypeUpdate">FieldTypeUpdate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="FieldTypeUpdate"><code>FieldTypeUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">fromSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
-<div class="param">toSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+      <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">oldType </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">newType </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11999,29 +11983,23 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="StreamStateObject"><code>StreamStateObject</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="StreamState"><code>StreamState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">streamKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
-<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateObject">ConnectionStateObject</a></span>  </div>
+      <div class="param">streamDescriptor </div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
+<div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="StreamUpdate"><code>StreamUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>Contains how the field changed within a stream</div>
+    <h3><a name="StreamTransform"><code>StreamTransform</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">fieldsRemoved </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">array[FieldSchema]</a></span> Streams being removed </div>
-<div class="param">fieldsAdded </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">array[FieldSchema]</a></span> Streams being added </div>
-<div class="param">fieldsUpdated </div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaTypeUpdate">array[FieldSchemaTypeUpdate]</a></span> Streams being updated </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="SyncCatalogChanges"><code>SyncCatalogChanges</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>Describe what has changed between the result of a schema discovery and the stored catalog</div>
-    <div class="field-items">
-      <div class="param">streamsRemoved </div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">array[StreamDescriptor]</a></span> Streams being removed </div>
-<div class="param">streamsAdded </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Streams being added </div>
-<div class="param">streamsUpdated </div><div class="param-desc"><span class="param-type"><a href="#StreamUpdate">array[StreamUpdate]</a></span> Streams being updated </div>
+      <div class="param">transformType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">add_stream</div><div class="param-enum">remove_stream</div><div class="param-enum">update_stream</div>
+<div class="param">addStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
+<div class="param">removeStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
+<div class="param">updateStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldTransform">array[FieldTransform]</a></span> list of field transformations. order does not matter. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12095,7 +12073,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncCatalogChanges (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncCatalogChanges">SyncCatalogChanges</a></span>  </div>
+<div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

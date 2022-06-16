@@ -4016,115 +4016,134 @@ components:
           $ref: "#/components/schemas/SynchronousJobRead"
     ConnectionState:
       type: object
+      description: Contains the state for a connection. The stateType field identifies what type of state it is. Only the field corresponding to that type will be set, the rest will be null. If stateType=not_set, then none of the fields will be set.
       required:
         - connectionId
+        - stateType
       properties:
+        stateType:
+          $ref: "#/components/schemas/ConnectionStateType"
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        state:
-          $ref: "#/components/schemas/ConnectionStateObject"
+        state: # legacy state object
+          $ref: "#/components/schemas/StateBlob"
+        streamState:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamState"
         globalState:
-          $ref: "#/components/schemas/ConnectionStateObject"
-        streamStates:
-          type: array
-          $ref: "#/components/schemas/StreamStateObject"
-    ConnectionStateObject:
+          $ref: "#/components/schemas/AirbyteGlobalState"
+    StateBlob:
       type: object
-      required:
-        - streamStates
-      properties:
-        shared:
-          $ref: "#/components/schemas/ConnectionStateObject"
-        streamStates:
-          type: array
-          $ref: "#/components/schemas/StreamStateObject"
-    StreamStateObject:
+    StreamState:
       type: object
       required:
         - streamDescriptor
       properties:
         streamDescriptor:
           $ref: "#/components/schemas/StreamDescriptor"
-        state:
-          $ref: "#/components/schemas/ConnectionStateObject"
+        streamState:
+          $ref: "#/components/schemas/StateBlob"
+    AirbyteGlobalState:
+      type: object
+      required:
+        - streamStates
+      properties:
+        shared_state:
+          $ref: "#/components/schemas/StateBlob"
+        streamStates:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamState"
     ConnectionStateType:
       type: string
       enum:
         - global
         - stream
         - legacy
-    SyncCatalogChanges:
+        - not_set
+    CatalogDiff:
       type: object
-      description: "Describe what has changed between the result of a schema discovery and the stored catalog"
+      description: "Describes the difference between two Airbyte catalogs."
       required:
-        - streamsRemoved
-        - streamsAdded
-        - streamsUpdated
+        - transformations
       properties:
-        streamsRemoved:
-          description: "Streams being removed"
+        transformations:
+          description: list of stream transformations. order does not matter.
           type: array
           items:
-            $ref: "#/components/schemas/StreamDescriptor"
-        streamsAdded:
-          description: "Streams being added"
+            $ref: "#/components/schemas/StreamTransform"
+    StreamTransform:
+      type: object
+      required:
+        - transformType
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_stream
+            - remove_stream
+            - update_stream
+        addStream:
+          $ref: "#/components/schemas/StreamDescriptor"
+        removeStream:
+          $ref: "#/components/schemas/StreamDescriptor"
+        updateStream:
+          type: array
+          description: list of field transformations. order does not matter.
+          items:
+            $ref: "#/components/schemas/FieldTransform"
+    FieldTransform:
+      type: object
+      description: "Describes the difference between two Streams."
+      required:
+        - transformType
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_field
+            - remove_field
+            - update_field_type
+        addField:
+          $ref: "#/components/schemas/FieldNameAndType"
+        removeField:
+          $ref: "#/components/schemas/FieldNameAndType"
+        updateFieldType:
+          $ref: "#/components/schemas/FieldTypeUpdate"
+    FieldNameAndType:
+      type: object
+      required:
+        - fieldName
+        - fieldType
+      properties:
+        fieldName:
           type: array
           items:
             type: string
-        streamsUpdated:
-          description: "Streams being updated"
+        fieldType:
           type: array
           items:
-            $ref: "#/components/schemas/StreamUpdate"
-    StreamUpdate:
-      type: object
-      description: "Contains how the field changed within a stream"
-      required:
-        - fieldsRemoved
-        - fieldsAdded
-        - fieldsUpdated
-      properties:
-        fieldsRemoved:
-          description: "Streams being removed"
-          type: array
-          items:
-            $ref: "#/components/schemas/FieldSchema"
-        fieldsAdded:
-          description: "Streams being added"
-          type: array
-          items:
-            $ref: "#/components/schemas/FieldSchema"
-        fieldsUpdated:
-          description: "Streams being updated"
-          type: array
-          items:
-            $ref: "#/components/schemas/FieldSchemaTypeUpdate"
-    FieldSchema:
+            type: string
+    FieldTypeUpdate:
       type: object
       required:
-        - name
-        - schema
+        - fieldName
+        - oldType
+        - newType
       properties:
-        name:
-          type: string
-        schema:
-          type: object
-          additionalProperties: true
-    FieldSchemaTypeUpdate:
-      type: object
-      required:
-        - fromSchema
-        - toSchema
-        - name
-      properties:
-        name:
-          type: string
-        fromSchema:
-          type: object
-          additionalProperties: true
-        toSchema:
-          type: object
-          additionalProperties: true
+        fieldName:
+          type: array
+          items:
+            type: string
+        oldType:
+          type: array
+          items:
+            type: string
+        newType:
+          type: array
+          items:
+            type: string
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object
@@ -4508,8 +4527,8 @@ components:
         catalogId:
           type: string
           format: uuid
-        syncCatalogChanges:
-          $ref: "#/components/schemas/SyncCatalogChanges"
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
     WebBackendConnectionReadList:
       type: object
       required:
