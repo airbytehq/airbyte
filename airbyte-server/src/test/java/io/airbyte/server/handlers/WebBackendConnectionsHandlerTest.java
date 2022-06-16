@@ -821,4 +821,5 @@ class WebBackendConnectionsHandlerTest {
 
     assertEquals(expected, actual);
   }
+
 }
