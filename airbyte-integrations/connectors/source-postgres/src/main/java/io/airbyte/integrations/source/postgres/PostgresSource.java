@@ -498,6 +498,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     //convert client.key to client.pk8 based on the documentation
     runProcess("openssl pkcs8 -topk8 -inform PEM -in " + CLIENT_KEY + " -outform DER -out "
             + CLIENT_ENCRYPTED_KEY + " -nocrypt", run);
+    runProcess("rm " + CLIENT_KEY, run);
 
     String result = System.getProperty("user.dir") + "/customkeystore";
     System.setProperty("javax.net.ssl.trustStore", result);
