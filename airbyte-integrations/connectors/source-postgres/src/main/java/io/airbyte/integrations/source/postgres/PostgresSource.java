@@ -35,7 +35,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -452,7 +450,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<String> additionalParameters = new ArrayList<>();
     try {
       convertAndImportFullCertificate(encryption.get("ca_certificate").asText(),
-              encryption.get("client_certificate").asText(), encryption.get("client_key").asText(), clientKeyPassword);
+          encryption.get("client_certificate").asText(), encryption.get("client_key").asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
@@ -464,6 +462,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     additionalParameters.add("sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory");
     return additionalParameters;
   }
+
   private List<String> obtainConnectionCaOptions(final JsonNode encryption,
                                                  final String method,
                                                  final String clientKeyPassword) {
@@ -484,20 +483,20 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                       final String clientCertificate,
                                                       final String clientKey,
                                                       final String clientKeyPassword)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCertificateFile(CA_CERTIFICATE, caCertificate);
     createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
     createCertificateFile(CLIENT_KEY, clientKey);
-    //add CA certificate to the custom keystore
+    // add CA certificate to the custom keystore
     runProcess("keytool -alias ca-certificate -keystore customkeystore"
-            + " -import -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
-    //add client certificate to the custom keystore
+        + " -import -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    // add client certificate to the custom keystore
     runProcess("keytool -alias client-certificate -keystore customkeystore"
-            + " -import -file " + CLIENT_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
-    //convert client.key to client.pk8 based on the documentation
+        + " -import -file " + CLIENT_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+    // convert client.key to client.pk8 based on the documentation
     runProcess("openssl pkcs8 -topk8 -inform PEM -in " + CLIENT_KEY + " -outform DER -out "
-            + CLIENT_ENCRYPTED_KEY + " -nocrypt", run);
+        + CLIENT_ENCRYPTED_KEY + " -nocrypt", run);
     runProcess("rm " + CLIENT_KEY, run);
 
     String result = System.getProperty("user.dir") + "/customkeystore";
@@ -507,11 +506,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static void convertAndImportCaCertificate(final String caCertificate,
                                                     final String clientKeyPassword)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCertificateFile(CA_CERTIFICATE, caCertificate);
     runProcess("keytool -import -alias rds-root -keystore customkeystore"
-            + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+        + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
 
     String result = System.getProperty("user.dir") + "/customkeystore";
     System.setProperty("javax.net.ssl.trustStore", result);

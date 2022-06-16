@@ -42,8 +42,8 @@ public class PostgresDestinationTest {
   private static final String STREAM_NAME = "id_and_name";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-          "ssl", "true",
-          "sslmode", "require");
+      "ssl", "true",
+      "sslmode", "require");
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
