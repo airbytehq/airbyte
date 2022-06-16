@@ -47,7 +47,7 @@ interface TrackConnectionActionProperties {
   enabled_streams: number;
 }
 
-export const useTrackAction = (namespace: TrackActionNamespace, type: LegacyTrackActionType) => {
+export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: LegacyTrackActionType) => {
   const analyticsService = useAnalyticsService();
 
   return useCallback(
@@ -58,12 +58,15 @@ export const useTrackAction = (namespace: TrackActionNamespace, type: LegacyTrac
     ) => {
       const actionTypesString = actionTypes.toString().replaceAll(",", ".");
 
+      // Calls that did not exist in the legacy format will not have a legacy event name
+      const legacyEventName = legacyType ? `${legacyType} - Action)` : "";
+
       analyticsService.track(`Airbyte.UI.${namespace}.${actionTypesString}`, {
         action,
         ...properties,
-        legacy_event_name: `${type} - Action`,
+        legacy_event_name: legacyEventName,
       });
     },
-    [analyticsService, namespace, type]
+    [analyticsService, namespace, legacyType]
   );
 };
