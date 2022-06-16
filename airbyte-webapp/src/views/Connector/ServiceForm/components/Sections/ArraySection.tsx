@@ -1,5 +1,5 @@
 import { FieldArray, useField } from "formik";
-import React from "react";
+import React, { useMemo } from "react";
 
 import { ArrayOfObjectsEditor } from "components";
 import GroupControls from "components/GroupControls";
@@ -16,6 +16,13 @@ interface ArraySectionProps {
   disabled?: boolean;
 }
 
+const getItemName = (item: Record<string, string>) => {
+  return Object.keys(item)
+    .sort()
+    .map((key) => `${key}: ${item[key]}`)
+    .join(" | ");
+};
+
 /**
  * ArraySection is responsible for handling array of objects
  * @param formField
@@ -26,7 +33,20 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
   const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
   const [field, , form] = useField(path);
 
-  const items = field.value ?? [];
+  const items = useMemo(() => field.value ?? [], [field.value]);
+
+  const itemsWithName = useMemo(
+    () =>
+      items.map((item: Record<string, string>) => {
+        const name = getItemName(item);
+        return {
+          ...item,
+          name,
+        };
+      }),
+    [items]
+  );
+
   const flow = unfinishedFlows[path];
 
   return (
@@ -57,7 +77,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                 }
               }}
               onRemove={arrayHelpers.remove}
-              items={items}
+              items={itemsWithName}
               disabled={disabled}
             >
               {() => (
