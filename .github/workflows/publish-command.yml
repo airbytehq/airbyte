@@ -82,7 +82,9 @@ jobs:
           echo "::set-output name=connectorjson::$full"
   publish-image:
     timeout-minutes: 240
-    needs: preprocess-matrix
+    needs:
+      - start-publish-image-runner
+      - preprocess-matrix
     strategy:
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
