@@ -278,7 +278,8 @@ class SourceWebflow(AbstractSource):
         if not api_key:
             raise Exception("Config validation error: 'api_key' is a required property")
 
-        return WebflowTokenAuthenticator(token=api_key, accept_version=accept_version)
+        auth = WebflowTokenAuthenticator(token=api_key, accept_version=accept_version)
+        return auth
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
