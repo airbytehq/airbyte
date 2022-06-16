@@ -38,7 +38,9 @@ import java.io.File;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +75,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
     final List<String> newIdentifiersList = getWrappedColumn(database,
@@ -91,12 +93,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final String cursorField,
-                                                               final JDBCType cursorFieldType,
-                                                               final String cursor) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final String cursorField,
+      final JDBCType cursorFieldType,
+      final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -131,19 +133,17 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
-   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
-   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
-   * with the ToString() function in the final Select query. Reference:
-   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be converted to a nvarchar(4000) data type by
+   * calling the ToString() method. So we make a separate query to get Table's MetaData, check is there any hierarchyid columns, and wrap required
+   * fields with the ToString() function in the final Select query. Reference: https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
    *
    * @return the list with Column names updated to handle functions (if nay) properly
    */
   private List<String> getWrappedColumn(final JdbcDatabase database,
-                                        final List<String> columnNames,
-                                        final String schemaName,
-                                        final String tableName,
-                                        final String enquoteSymbol) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final String enquoteSymbol) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
       final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
@@ -257,10 +257,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      DatabaseMetaData databaseMetaData = connection.getMetaData();
-      String dbProductName = databaseMetaData.getDatabaseProductName();
-      String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
-      System.out.println("2================================Product name/version: " + dbProductName + "/" + dbProductVersion);
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
@@ -284,11 +280,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      DatabaseMetaData databaseMetaData = connection.getMetaData();
-      String dbProductName = databaseMetaData.getDatabaseProductName();
-      String dbProductVersion = databaseMetaData.getDatabaseProductVersion();
-      System.out.println("================================Product name/version: " + dbProductName + "/" + dbProductVersion);
-      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+      boolean isAzureSQL = false;
+
+      try (Statement stmt = connection.createStatement();
+          ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
+        isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
+      }
+
+      final String sql =
+          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
@@ -361,11 +362,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
