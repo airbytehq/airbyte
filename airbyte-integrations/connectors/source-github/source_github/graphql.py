@@ -35,9 +35,17 @@ def get_query(owner, name, page_size, next_page_token):
     pull_requests.nodes.repository.__fields__(name=True)
     pull_requests.nodes.comments.__fields__(total_count=True)
     pull_requests.nodes.commits.__fields__(total_count=True)
-    reviews = pull_requests.nodes.reviews(first=100)
+    reviews = pull_requests.nodes.reviews(first=100, __alias__="review_comments")
     reviews.total_count()
     reviews.nodes.comments.__fields__(total_count=True)
-    pull_requests.nodes.merged_by()
+    user = pull_requests.nodes.merged_by(__alias__="merged_by").__as__(_schema_root.User)
+    user.__fields__(
+        id="node_id",
+        database_id="id",
+        login=True,
+        avatar_url="avatar_url",
+        url="html_url",
+        is_site_admin="site_admin",
+    )
     pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
