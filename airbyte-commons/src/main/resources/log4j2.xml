@@ -200,7 +200,7 @@
         <!--MySQL Debezium connector generates a log whenever it comes across a DDL query to mention that it skipped it.
         If a database has tons of DDL queries, the logs would be filled with such messages-->
         <Logger name="io.debezium.relational.history" level="OFF" />
-
+        <Logger name="io.debezium.connector.postgresql.connection.AbstractMessageDecoder" level="WARN" />
     </Loggers>
 
 </Configuration>
