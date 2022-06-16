@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 
 
-class ProductStreamSlicer(StreamSlicer):
+class CartesianProductStreamSlicer(StreamSlicer):
     """
     Stream slicers that iterates over the cartesian product of input stream slicers
     Given 2 stream slicers with the following slices:

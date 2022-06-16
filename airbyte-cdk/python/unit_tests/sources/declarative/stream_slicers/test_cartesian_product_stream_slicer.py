@@ -5,9 +5,9 @@
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.product_stream_slicer import ProductStreamSlicer
 
 
 @pytest.mark.parametrize(
@@ -56,6 +56,6 @@ from airbyte_cdk.sources.declarative.stream_slicers.product_stream_slicer import
     ],
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
-    slicer = ProductStreamSlicer(stream_slicers)
+    slicer = CartesianProductStreamSlicer(stream_slicers)
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
