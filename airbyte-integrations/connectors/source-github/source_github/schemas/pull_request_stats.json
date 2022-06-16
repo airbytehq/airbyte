@@ -27,7 +27,30 @@
       "type": ["null", "string"]
     },
     "merged_by": {
-      "$ref": "user.json"
+      "type": ["null", "object"],
+      "properties": {
+        "login": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "site_admin": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "comments": {
       "type": ["null", "integer"]
