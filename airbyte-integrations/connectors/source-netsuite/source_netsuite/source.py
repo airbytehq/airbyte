@@ -63,9 +63,7 @@ class NetsuiteStream(HttpStream, ABC):
                     "title": "Links",
                     "type": "array",
                     "readOnly": True,
-                    "items": {
-                        "$ref": "/services/rest/record/v1/metadata-catalog/nsLink"
-                    }
+                    "items": self.get_schema("/services/rest/record/v1/metadata-catalog/nsLink"),
                 }
             }
         }
