@@ -88,11 +88,15 @@ class SourceMetabase(AbstractSource):
         self.authenticator = None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        authenticator = None
         try:
             authenticator = MetabaseAuth(config)
             return authenticator.has_valid_token(), None
         except Exception as e:
             return False, e
+        finally:
+            if authenticator:
+                authenticator.close_session()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self.authenticator = MetabaseAuth(config)
