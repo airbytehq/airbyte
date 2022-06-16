@@ -149,7 +149,7 @@ def test_connection(config: Dict[str, str], config_no_engine: Dict[str, str], lo
     establish_connection(config)
 
 
-@patch("destination_firebolt.destination.FireboltS3Writer")
+@patch("destination_firebolt.writer.FireboltS3Writer")
 @patch("destination_firebolt.destination.connect")
 def test_check(
     mock_connection: MagicMock, mock_writer: MagicMock, config: Dict[str, str], config_external_table: Dict[str, str], logger: MagicMock
@@ -166,7 +166,7 @@ def test_check(
     assert status.status == Status.FAILED
 
 
-@patch("destination_firebolt.destination.FireboltSQLWriter")
+@patch("destination_firebolt.writer.FireboltSQLWriter")
 @patch("destination_firebolt.destination.establish_connection")
 def test_sql_write_append(
     mock_connection: MagicMock,
@@ -190,8 +190,8 @@ def test_sql_write_append(
     mock_writer.return_value.flush.assert_called_once()
 
 
-@patch("destination_firebolt.destination.FireboltS3Writer")
-@patch("destination_firebolt.destination.FireboltSQLWriter")
+@patch("destination_firebolt.writer.FireboltS3Writer")
+@patch("destination_firebolt.writer.FireboltSQLWriter")
 @patch("destination_firebolt.destination.establish_connection")
 def test_sql_write_overwrite(
     mock_connection: MagicMock,
@@ -217,8 +217,8 @@ def test_sql_write_overwrite(
     mock_writer.return_value.create_raw_table.mock_calls = [call(mock_connection, "table1"), call(mock_connection, "table2")]
 
 
-@patch("destination_firebolt.destination.FireboltS3Writer")
-@patch("destination_firebolt.destination.FireboltSQLWriter")
+@patch("destination_firebolt.writer.FireboltS3Writer")
+@patch("destination_firebolt.writer.FireboltSQLWriter")
 @patch("destination_firebolt.destination.establish_connection", MagicMock())
 def test_s3_write(
     mock_sql_writer: MagicMock,

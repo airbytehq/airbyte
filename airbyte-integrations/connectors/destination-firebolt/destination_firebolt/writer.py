@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from collections import defaultdict
 from datetime import datetime
 from time import time
@@ -9,6 +10,7 @@ from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+from airbyte_cdk import AirbyteLogger
 from firebolt.db import Connection
 from pyarrow import fs
 
@@ -215,3 +217,19 @@ class FireboltSQLWriter(FireboltWriter):
         Final data flush after all data has been written to memory.
         """
         self._flush()
+
+
+def create_firebolt_wirter(connection: Connection, config: json, logger: AirbyteLogger) -> FireboltWriter:
+    if config["loading_method"]["method"] == "S3":
+        logger.info("Using the S3 writing strategy")
+        writer = FireboltS3Writer(
+            connection,
+            config["loading_method"]["s3_bucket"],
+            config["loading_method"]["aws_key_id"],
+            config["loading_method"]["aws_key_secret"],
+            config["loading_method"]["s3_region"],
+        )
+    else:
+        logger.info("Using the SQL writing strategy")
+        writer = FireboltSQLWriter(connection)
+    return writer
