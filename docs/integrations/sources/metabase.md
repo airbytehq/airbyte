@@ -8,6 +8,7 @@ This source can sync data for the [Metabase API](https://www.metabase.com/docs/l
 
 This Source is capable of syncing the following Streams:
 
+* [Activity](https://www.metabase.com/docs/latest/api/activity.html#get-apiactivity)
 * [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
 * [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
 * [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
@@ -35,7 +36,9 @@ This Source is capable of syncing the following Streams:
 
 ### Requirements
 
-* `session_token` - Credential token to authenticate requests sent to Metabase API
+* Credentials:
+  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary.
+  * `session_token` - Credential token to authenticate requests sent to Metabase API   
 * `instance_api_url` - URL to interact with metabase instance API
 
 ### Setup guide
