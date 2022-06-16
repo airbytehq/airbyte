@@ -117,7 +117,7 @@ public class JsonPaths {
    * @param jsonPath - path to validate
    */
   public static void assertIsSingleReturnQuery(final String jsonPath) {
-    Preconditions.checkArgument(!jsonPath.contains("*"), "Cannot accept paths with wildcards because they may return more than one item.");
+    Preconditions.checkArgument(JsonPath.isPathDefinite(jsonPath), "Cannot accept paths with wildcards because they may return more than one item.");
   }
 
   /**
