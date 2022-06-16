@@ -4,12 +4,7 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class DebeziumTracker {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumTracker.class);
 
   private static final DebeziumTracker INSTANCE = new DebeziumTracker();
 
@@ -25,7 +20,6 @@ public class DebeziumTracker {
 
   public void markAsStarted() {
     this.started = true;
-    LOGGER.info("Debezium source task has started...");
   }
 
   public boolean isStarted() {
@@ -34,9 +28,6 @@ public class DebeziumTracker {
 
   public void incrementUpdateCounter() {
     this.updateCounter += 1;
-    if (this.updateCounter % 100000 == 0) {
-      LOGGER.info("Processed {} records", this.updateCounter);
-    }
   }
 
   public long getUpdateCounter() {
