@@ -12,6 +12,7 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
+import java.util.Optional;
 
 public class StateMessageHelper {
 
@@ -24,30 +25,29 @@ public class StateMessageHelper {
    * @param state
    * @return Either a json blob (on the left) or a structure state message.
    */
-  public static StateWrapper getTypedState(JsonNode state) {
+  public static Optional<StateWrapper> getTypedState(JsonNode state) {
     if (state == null) {
-      return new StateWrapper()
-          .withStateType(StateType.EMPTY);
+      return Optional.empty();
     } else {
       try {
         List<AirbyteStateMessage> stateMessages = Jsons.object(state, new AirbyteStateMessageListTypeReference());
         if (stateMessages.size() == 1 && stateMessages.get(0).getStateType() == AirbyteStateType.GLOBAL) {
-          return new StateWrapper()
+          return Optional.of(new StateWrapper()
               .withStateType(StateType.GLOBAL)
-              .withGlobal(stateMessages.get(0));
+              .withGlobal(stateMessages.get(0)));
         } else if (stateMessages.size() >= 1
             && stateMessages.stream().filter(stateMessage -> stateMessage.getStateType() != AirbyteStateType.STREAM).toList().isEmpty()) {
-          return new StateWrapper()
+          return Optional.of(new StateWrapper()
               .withStateType(StateType.STREAM)
-              .withStateMessages(stateMessages);
+              .withStateMessages(stateMessages));
         } else {
           throw new IllegalStateException("Unexpected state blob");
         }
 
       } catch (final IllegalArgumentException e) {
-        return new StateWrapper()
+        return Optional.of(new StateWrapper()
             .withStateType(StateType.LEGACY)
-            .withLegacyState(state);
+            .withLegacyState(state));
       }
     }
     /*

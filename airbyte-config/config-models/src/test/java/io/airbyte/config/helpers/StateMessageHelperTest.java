@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,14 +21,15 @@ public class StateMessageHelperTest {
 
   @Test
   public void testEmpty() {
-    StateWrapper stateWrapper = StateMessageHelper.getTypedState(null);
-    Assertions.assertThat(stateWrapper.getStateType()).isEqualTo(StateType.EMPTY);
+    Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(null);
+    Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
   public void testLegacy() {
-    StateWrapper stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject());
-    Assertions.assertThat(stateWrapper.getStateType()).isEqualTo(StateType.LEGACY);
+    Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject());
+    Assertions.assertThat(stateWrapper).isNotEmpty();
+    Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }
 
   @Test
@@ -40,9 +42,10 @@ public class StateMessageHelperTest {
                 .withStreamStates(Lists.newArrayList(
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()),
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()))));
-    StateWrapper stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage)));
-    Assertions.assertThat(stateWrapper.getStateType()).isEqualTo(StateType.GLOBAL);
-    Assertions.assertThat(stateWrapper.getGlobal()).isEqualTo(stateMessage);
+    Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage)));
+    Assertions.assertThat(stateWrapper).isNotEmpty();
+    Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.GLOBAL);
+    Assertions.assertThat(stateWrapper.get().getGlobal()).isEqualTo(stateMessage);
   }
 
   @Test
@@ -55,9 +58,10 @@ public class StateMessageHelperTest {
         .withStateType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()));
-    StateWrapper stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)));
-    Assertions.assertThat(stateWrapper.getStateType()).isEqualTo(StateType.STREAM);
-    Assertions.assertThat(stateWrapper.getStateMessages()).containsExactlyInAnyOrder(stateMessage1, stateMessage2);
+    Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)));
+    Assertions.assertThat(stateWrapper).isNotEmpty();
+    Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.STREAM);
+    Assertions.assertThat(stateWrapper.get().getStateMessages()).containsExactlyInAnyOrder(stateMessage1, stateMessage2);
   }
 
   @Test
