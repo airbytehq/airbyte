@@ -20,11 +20,14 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -51,7 +54,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
       if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
         isPartialReset = false;
       } else {
-        ResetSourceConfiguration sourceConfiguration = Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
+        final ResetSourceConfiguration sourceConfiguration =
+            Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
         streamDescriptors.addAll(sourceConfiguration.getStreamsToReset());
         if (streamDescriptors.isEmpty()) {
           isPartialReset = false;
@@ -59,21 +63,22 @@ public class EmptyAirbyteSource implements AirbyteSource {
           stateWrapper = StateMessageHelper.getTypedState(sourceConfig.getState().getState());
 
           // TODO: compare with catalog
-          List<StreamDescriptor> catalogStreamDescriptor = sourceConfig.getCatalog().getStreams().stream().map(
+          final Set<StreamDescriptor> catalogStreamDescriptors = sourceConfig.getCatalog().getStreams().stream().map(
               configuredAirbyteStream -> new StreamDescriptor()
                   .withName(configuredAirbyteStream.getStream().getName())
                   .withNamespace(configuredAirbyteStream.getStream().getNamespace()))
-              .toList();
-          /*
-           * if (eitherState.isLeft()) {
-           * log.error("The state is not compatible with a partial reset that  have been requested"); throw
-           * new IllegalStateException("Legacy state for a partial reset"); }
-           */
+              .collect(Collectors.toSet());
+          final Set<StreamDescriptor> configStreamDescriptors = new HashSet<>(streamDescriptors);
+
+          if (!catalogStreamDescriptors.equals(configStreamDescriptors)) {
+            log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
+            throw new IllegalStateException("Try to perform a partial reset on a legacy state");
+          }
 
           isPartialReset = true;
         }
       }
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // No op, the new format is not supported
       isPartialReset = false;
     }
@@ -102,9 +107,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
         // Per stream, it will emit one message per stream being reset
         if (!streamDescriptors.isEmpty()) {
           try {
-            StreamDescriptor streamDescriptor = streamDescriptors.poll();
+            final StreamDescriptor streamDescriptor = streamDescriptors.poll();
             return Optional.of(getNullPerStreamMessage(streamDescriptor));
-          } catch (EmptyStackException e) {
+          } catch (final EmptyStackException e) {
             return Optional.empty();
           }
         } else {
@@ -140,7 +145,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // no op.
   }
 
-  private boolean hasState(List<AirbyteStateMessage> stateMessages, StreamDescriptor streamDescriptor) {
+  private boolean hasState(final List<AirbyteStateMessage> stateMessages, final StreamDescriptor streamDescriptor) {
     if (streamDescriptor == null) {
       return false;
     }
@@ -151,7 +156,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
         .count() != 0;
   }
 
-  private AirbyteMessage getNullPerStreamMessage(StreamDescriptor configStreamDescriptor) {
+  private AirbyteMessage getNullPerStreamMessage(final StreamDescriptor configStreamDescriptor) {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(
@@ -165,8 +170,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
                         .withStreamState(null)));
   }
 
-  private AirbyteMessage getNullGlobalMessage(Queue<StreamDescriptor> configStreamDescriptors, AirbyteStateMessage currentState) {
-    AirbyteGlobalState globalState = new AirbyteGlobalState();
+  private AirbyteMessage getNullGlobalMessage(final Queue<StreamDescriptor> configStreamDescriptors, final AirbyteStateMessage currentState) {
+    final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setStreamStates(new ArrayList<>());
 
     currentState.getGlobal().getStreamStates().forEach(exitingState -> globalState.getStreamStates()
