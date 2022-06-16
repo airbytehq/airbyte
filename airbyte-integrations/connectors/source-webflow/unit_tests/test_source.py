@@ -5,13 +5,13 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from source_webflow.source import SourceWebflow, Collections
+from source_webflow.source import SourceWebflow, CollectionsList
 
 
 def test_check_connection(mocker):
     source = SourceWebflow()
     fake_info_record = {"collection": "is_mocked"}
-    Collections.read_records = MagicMock(return_value=iter([fake_info_record]))
+    CollectionsList.read_records = MagicMock(return_value=iter([fake_info_record]))
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
     logger_mock.info.assert_called_once()
