@@ -179,9 +179,9 @@ class CollectionItems(WebflowStream):
     def path(self, **kwargs) -> str:
         """
         The path to get the "items" in the requested collection uses the "_id" of the collection in the URL.
-        See: https://developers.webflow.com/#item-model
+        See: https://developers.webflow.com/#items
 
-        return Collections/<collecrtion_id>/items
+        return collections/<collection_id>/items
         """
         path = f"collections/{self.collection_id}/items"
         return path
