@@ -250,7 +250,7 @@ class SourceWebflow(AbstractSource):
 
     """This is the main class that defines the methods that will be called by Airbyte infrastructure"""
 
-    def get_collection_name_to_id_dict(self, authenticator: str = None, site_id: str = None) -> Mapping[str, str]:
+    def _get_collection_name_to_id_dict(self, authenticator: str = None, site_id: str = None) -> Mapping[str, str]:
         """
         Most of the Webflow APIs require the collection id, but the streams that we are generating use the collection name.
         This function will return a dictionary containing collection_name: collection_id entries.
@@ -305,7 +305,7 @@ class SourceWebflow(AbstractSource):
     def generate_streams(self, authenticator: WebflowTokenAuthenticator, site_id: str) -> List[Stream]:
         """Generates a list of stream by their names."""
 
-        collection_name_to_id_dict = self.get_collection_name_to_id_dict(authenticator=authenticator, site_id=site_id)
+        collection_name_to_id_dict = self._get_collection_name_to_id_dict(authenticator=authenticator, site_id=site_id)
 
         for collection_name, collection_id in collection_name_to_id_dict.items():
             yield CollectionContents(

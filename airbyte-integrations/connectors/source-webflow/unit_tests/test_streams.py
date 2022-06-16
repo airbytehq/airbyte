@@ -42,7 +42,7 @@ def test_parse_response_of_collection_items(patch_base_class):
 
 
 def test_generate_streams(patch_base_class):
-    SourceWebflow.get_collection_name_to_id_dict = MagicMock(return_value={"name-1": "id-1", "name-2": "id-2"})
+    SourceWebflow._get_collection_name_to_id_dict = MagicMock(return_value={"name-1": "id-1", "name-2": "id-2"})
     source = SourceWebflow()
     config_mock = MagicMock()
     streams = source.generate_streams(config_mock, "fake site id")
