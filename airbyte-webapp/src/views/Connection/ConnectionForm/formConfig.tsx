@@ -62,7 +62,7 @@ function useDefaultTransformation(): OperationCreate {
       operatorType: OperatorType.dbt,
       dbt: {
         gitRepoUrl: "", // TODO: Does this need a value?
-        dockerImage: "fishtownanalytics/dbt:0.19.1",
+        dockerImage: "fishtownanalytics/dbt:1.0.0",
         dbtArguments: "run",
       },
     },
