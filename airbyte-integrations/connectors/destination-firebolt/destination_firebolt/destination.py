@@ -15,7 +15,7 @@ from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import UsernamePassword
 from firebolt.db import Connection, connect
 
-from .writer import FireboltS3Writer, FireboltSQLWriter
+from .writer import create_firebolt_wirter
 
 logger = getLogger("airbyte")
 
@@ -80,18 +80,7 @@ class DestinationFirebolt(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
 
         with establish_connection(config) as connection:
-            if config["loading_method"]["method"] == "S3":
-                logger.info("Using the S3 writing strategy")
-                writer = FireboltS3Writer(
-                    connection,
-                    config["loading_method"]["s3_bucket"],
-                    config["loading_method"]["aws_key_id"],
-                    config["loading_method"]["aws_key_secret"],
-                    config["loading_method"]["s3_region"],
-                )
-            else:
-                logger.info("Using the SQL writing strategy")
-                writer = FireboltSQLWriter(connection)
+            writer = create_firebolt_wirter(connection, config, logger)
 
             for configured_stream in configured_catalog.streams:
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
@@ -131,15 +120,9 @@ class DestinationFirebolt(Destination):
                 # We can only verify correctness of connection parameters on execution
                 with connection.cursor() as cursor:
                     cursor.execute("SELECT 1")
-                # Test access to the bucket
-                if config["loading_method"]["method"] == "S3":
-                    FireboltS3Writer(
-                        connection,
-                        config["loading_method"]["s3_bucket"],
-                        config["loading_method"]["aws_key_id"],
-                        config["loading_method"]["aws_key_secret"],
-                        config["loading_method"]["s3_region"],
-                    )
+                # Test access to the bucket, if S3 strategy is used
+                create_firebolt_wirter(connection, config, logger)
+
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
