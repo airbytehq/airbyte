@@ -55,19 +55,19 @@ definitions:
       - data
       - emitted_at
     properties:
+      namespace:
+        description: "namespace the data is associated with"
+        type: string
       stream:
-        description: "the name of this record's stream"
+        description: "stream the data is associated with"
         type: string
       data:
-        description: "the record data"
+        description: "record data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
-      namespace:
-        description: "the namespace of this record's stream"
-        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
@@ -82,7 +82,6 @@ definitions:
         description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-
   AirbyteStateType:
     type: string
     description: >
@@ -143,7 +142,7 @@ definitions:
       - message
     properties:
       level:
-        description: "the type of logging"
+        description: "log level"
         type: string
         enum:
           - FATAL
@@ -153,7 +152,7 @@ definitions:
           - DEBUG
           - TRACE
       message:
-        description: "the log message"
+        description: "log message"
         type: string
   AirbyteTraceMessage:
     type: object
@@ -380,10 +379,10 @@ definitions:
       # Connector Type Properties (Common to all connectors from same type)
       # Source Connectors Properties
       supportsIncremental:
-        description: If the connector supports incremental mode or not.
+        description: (deprecated) If the connector supports incremental mode or not.
         type: boolean
       # Destination Connectors Properties
-      # Normalization is currently implemented using dbt so it requires `supportsDBT` to be true for this to be true.
+      # Normalization is currently implemented using dbt, so it requires `supportsDBT` to be true for this to be true.
       supportsNormalization:
         description: If the connector supports normalization or not.
         type: boolean

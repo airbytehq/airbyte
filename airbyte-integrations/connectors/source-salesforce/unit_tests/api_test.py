@@ -215,7 +215,7 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
         res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
-        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": False})]
+        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
 
 
 def test_check_connection_rate_limit(stream_config):
@@ -427,7 +427,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [dict(i[1]) for i in stream.read_with_chunks(stream.download_data(url))]
+        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
         assert result == data
 
 
