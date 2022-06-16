@@ -156,7 +156,7 @@
 {% endmacro %}
 
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
-    datetimeoffset
+    datetime2
 {%- endmacro -%}
 
 {% macro clickhouse__type_timestamp_with_timezone() %}
