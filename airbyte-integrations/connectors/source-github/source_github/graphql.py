@@ -12,7 +12,7 @@ _schema_root = _schema.github_schema
 
 
 def get_query(owner, name, page_size, next_page_token):
-    kwargs = {"first": page_size}
+    kwargs = {"first": page_size, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
     if next_page_token:
         kwargs["after"] = next_page_token
 

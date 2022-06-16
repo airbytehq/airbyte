@@ -728,6 +728,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
+    is_sorted = "asc"
     http_method = "POST"
 
     def path(
