@@ -65,9 +65,27 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+  preprocess-matrix:
+    needs: start-publish-image-runner
+    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+    outputs:
+      connectorjson: ${{ steps.preprocess.outputs.connectorjson }}
+    steps:
+      - id: preprocess
+        run: |
+          start="[\""
+          replace="\",\""
+          end="\"]"
+          stripped_connector="$(echo "${{ github.event.inputs.connector }}" | tr -d ' ')"
+          middle=${stripped_connector//,/$replace}
+          full="$start$middle$end"
+          echo "::set-output name=connectorjson::$full"
   publish-image:
     timeout-minutes: 240
-    needs: start-publish-image-runner
+    needs: preprocess-matrix
+    strategy:
+      matrix:
+        connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
     steps:
@@ -89,7 +107,7 @@ jobs:
         with:
           regex_pattern: "^(connectors|bases)/[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
+          search_string: ${{ matrix.connector }}
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
@@ -126,18 +144,18 @@ jobs:
           source venv/bin/activate
           tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
-      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
+      - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
           source venv/bin/activate
-          ci_credentials ${{ github.event.inputs.connector }}
+          ci_credentials ${{ matrix.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Set Name and Version Environment Vars
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
           source tools/lib/lib.sh
-          DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
-          echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
+          DOCKERFILE=airbyte-integrations/${{ matrix.connector }}/Dockerfile
+          echo "IMAGE_NAME=$(echo ${{ matrix.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(github.event.inputs.connector, 'connectors')
@@ -151,10 +169,10 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
           SENTRY_PROJECT: airbyte-connectors
-      - name: Publish ${{ github.event.inputs.connector }}
+      - name: Publish ${{ matrix.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
