@@ -8,4 +8,3 @@ enum:
   - global
   - stream
   - legacy
-  - empty
