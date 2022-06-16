@@ -7,7 +7,7 @@ import { Input } from "components";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
+import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
 interface ConnectionNameProps {
   connection: WebBackendConnectionRead;
@@ -95,7 +95,7 @@ const StyledInput = styled(Input)`
   }
 `;
 
-const InputWithKeystroke = addEnterEscFuncForInput(StyledInput);
+const InputWithKeystroke = withKeystrokeHandler(StyledInput);
 
 const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   const { name } = connection;
