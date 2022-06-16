@@ -764,7 +764,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
         query = get_query(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
-        return {"query": query[6:]}
+        return {"query": query}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
