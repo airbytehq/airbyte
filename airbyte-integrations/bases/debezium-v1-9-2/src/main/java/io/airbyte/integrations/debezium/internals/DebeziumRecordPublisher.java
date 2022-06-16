@@ -76,7 +76,6 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           @Override
           public void taskStarted() {
             ConnectorCallback.super.taskStarted();
-            LOGGER.info("Debezium source task has started...");
             debeziumTracker.markAsStarted();
           }
         })

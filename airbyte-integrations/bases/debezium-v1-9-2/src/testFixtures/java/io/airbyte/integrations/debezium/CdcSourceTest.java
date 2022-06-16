@@ -571,13 +571,13 @@ public abstract class CdcSourceTest {
     }
     executeQuery(bulkInsert.get());
 
-    LOGGER.info("Starting read #2");
+    LOGGER.info("Starting read #2...");
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource().read(getConfig(), CONFIGURED_CATALOG, state1);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final JsonNode state2 = extractStateMessages(actualRecords2).get(0).getData();
     assertEquals(initialRecords + bulkInsertSize + 1, actualRecords2.size());
 
-    LOGGER.info("Starting read 3");
+    LOGGER.info("Starting read #3...");
     final AutoCloseableIterator<AirbyteMessage> read3 = getSource().read(getConfig(), CONFIGURED_CATALOG, state2);
     final List<AirbyteMessage> actualRecords3 = AutoCloseableIterators.toListAndClose(read3);
     final JsonNode state3 = extractStateMessages(actualRecords3).get(0).getData();

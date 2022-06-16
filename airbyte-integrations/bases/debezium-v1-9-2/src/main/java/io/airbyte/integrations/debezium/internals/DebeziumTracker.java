@@ -22,6 +22,7 @@ public class DebeziumTracker {
 
   public void markAsStarted() {
     this.started = true;
+    LOGGER.info("Debezium source task has started...");
   }
 
   public boolean isStarted() {
@@ -30,6 +31,9 @@ public class DebeziumTracker {
 
   public void incrementUpdateCounter() {
     this.updateCounter += 1;
+    if (this.updateCounter % 100000 == 0) {
+      LOGGER.info("Processed {} records", this.updateCounter);
+    }
   }
 
   public long getUpdateCounter() {
