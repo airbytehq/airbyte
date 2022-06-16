@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -236,7 +237,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = Jsons.jsonNode(stateMessages);
+    final JsonNode latestState = Jsons.jsonNode(List.of(Iterables.getLast(stateMessages)));
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
