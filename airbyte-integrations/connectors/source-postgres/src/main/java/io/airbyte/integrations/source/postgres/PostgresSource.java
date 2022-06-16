@@ -4,6 +4,16 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.MODE_KEY;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_KEY;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_MODE_KEY;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -19,7 +29,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -31,9 +40,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -43,16 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.MODE_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_MODE_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
@@ -97,10 +95,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         additionalParameters.add("sslmode=disable");
       } else {
         var parametersList = obtainConnectionOptions(config.get(SSL_MODE_KEY))
-                .entrySet()
-                .stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .toList();
+            .entrySet()
+            .stream()
+            .map(e -> e.getKey() + "=" + e.getValue())
+            .toList();
         additionalParameters.addAll(parametersList);
       }
     }
