@@ -146,7 +146,7 @@ public class StateGeneratorUtils {
 
   /**
    * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
-   * one that has both a non-{@code null} name and non-{@code null} namespace.
+   * one that has a non-{@code null} name <b>OR</b> non-{@code null} namespace.
    *
    * @param streamDescriptor A {@link StreamDescriptor} to be validated.
    * @return {@code true} if the provided {@link StreamDescriptor} is valid or {@code false} if it is
@@ -154,7 +154,7 @@ public class StateGeneratorUtils {
    */
   public static boolean isValidStreamDescriptor(final StreamDescriptor streamDescriptor) {
     if (streamDescriptor != null) {
-      return streamDescriptor.getName() != null && streamDescriptor.getNamespace() != null;
+      return streamDescriptor.getName() != null || streamDescriptor.getNamespace() != null;
     } else {
       return false;
     }

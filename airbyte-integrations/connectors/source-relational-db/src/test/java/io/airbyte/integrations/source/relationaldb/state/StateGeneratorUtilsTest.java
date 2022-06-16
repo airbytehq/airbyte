@@ -25,8 +25,8 @@ public class StateGeneratorUtilsTest {
 
     assertFalse(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor1));
     assertFalse(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor2));
-    assertFalse(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor3));
-    assertFalse(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor4));
+    assertTrue(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor3));
+    assertTrue(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor4));
     assertTrue(StateGeneratorUtils.isValidStreamDescriptor(streamDescriptor5));
   }
 
