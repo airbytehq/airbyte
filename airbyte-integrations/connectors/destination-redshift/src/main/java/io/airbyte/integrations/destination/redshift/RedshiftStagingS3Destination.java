@@ -28,6 +28,7 @@ import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperat
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
@@ -123,7 +124,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("uploading_method").get("encryption"));
+    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
+        EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
