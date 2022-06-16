@@ -547,6 +547,53 @@ public abstract class CdcSourceTest {
   }
 
   @Test
+  @DisplayName("When debezium is processing records, don't timeout.")
+  void testLargeLogs() throws Exception {
+    final int initialRecords = 10;
+    final Optional<String> initialInsert = getBulkInsertQuery(1, initialRecords);
+    if (initialInsert.isEmpty()) {
+      return;
+    }
+
+    executeQuery(String.format("TRUNCATE TABLE %s.%s", MODELS_SCHEMA, MODELS_STREAM_NAME));
+    executeQuery(initialInsert.get());
+
+    LOGGER.info("Starting read #1...");
+    final AutoCloseableIterator<AirbyteMessage> read1 = getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    final JsonNode state1 = extractStateMessages(actualRecords1).get(0).getData();
+    assertEquals(initialRecords + 1, actualRecords1.size());
+
+    final int bulkInsertSize = 500000;
+    final Optional<String> bulkInsert = getBulkInsertQuery(100, bulkInsertSize);
+    if (bulkInsert.isEmpty()) {
+      return;
+    }
+    executeQuery(bulkInsert.get());
+
+    LOGGER.info("Starting read #2");
+    final AutoCloseableIterator<AirbyteMessage> read2 = getSource().read(getConfig(), CONFIGURED_CATALOG, state1);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+    final JsonNode state2 = extractStateMessages(actualRecords2).get(0).getData();
+    assertEquals(initialRecords + bulkInsertSize + 1, actualRecords2.size());
+
+    LOGGER.info("Starting read 3");
+    final AutoCloseableIterator<AirbyteMessage> read3 = getSource().read(getConfig(), CONFIGURED_CATALOG, state2);
+    final List<AirbyteMessage> actualRecords3 = AutoCloseableIterators.toListAndClose(read3);
+    final JsonNode state3 = extractStateMessages(actualRecords3).get(0).getData();
+    assertEquals(1, actualRecords3.size());
+  }
+
+  /**
+   * Override this method and return a bulk insert query to enable large record test.
+   * @param startingId the ID of the first record to be inserted
+   * @param recordsToInsert total number of records to insert
+   */
+  protected Optional<String> getBulkInsertQuery(final int startingId, final int recordsToInsert) {
+    return Optional.empty();
+  }
+
+  // @Test
   void testCheck() throws Exception {
     final AirbyteConnectionStatus status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);

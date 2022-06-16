@@ -40,6 +40,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -233,6 +234,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
+  protected Optional<String> getBulkInsertQuery(final int startingId, final int recordsToInsert) {
+    return Optional.of(String.format(
+        "INSERT INTO %s.%s (%s) SELECT id from generate_series(%d, %d) as id;",
+        MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, startingId, recordsToInsert + startingId - 1));
+  }
+
+  @Override
   protected Source getSource() {
     return source;
   }
@@ -249,7 +257,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   public String createSchemaQuery(final String schemaName) {
-    return "CREATE SCHEMA " + schemaName + ";";
+    return "CREATE SCHEMA IF NOT EXISTS " + schemaName + ";";
   }
 
   @Override

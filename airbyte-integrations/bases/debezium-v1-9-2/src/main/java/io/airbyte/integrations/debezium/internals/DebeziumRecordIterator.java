@@ -92,7 +92,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
           continue;
         }
 
-        // when the offset has changed, it means debezium is processing the change record
+        // when the offset has changed, it means debezium is processing the records
         if (updateCounter != debeziumTracker.getUpdateCounter()) {
           LOGGER.info("Debezium engine has updates; wait for {} millis for more records", timeout.toMillis());
           updateCounter = debeziumTracker.getUpdateCounter();
