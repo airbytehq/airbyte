@@ -34,19 +34,13 @@ import org.apache.kafka.connect.util.SafeObjectInputStream;
 public class AirbyteFileOffsetBackingStore {
 
   private final Path offsetFilePath;
-  private long fileTimestamp;
 
   public AirbyteFileOffsetBackingStore(final Path offsetFilePath) {
     this.offsetFilePath = offsetFilePath;
-    this.fileTimestamp = System.currentTimeMillis();
   }
 
   public Path getOffsetFilePath() {
     return offsetFilePath;
-  }
-
-  public long getFileTimestamp() {
-    return fileTimestamp;
   }
 
   public Map<String, String> read() {
@@ -124,7 +118,6 @@ public class AirbyteFileOffsetBackingStore {
         raw.put(key, value);
       }
       os.writeObject(raw);
-      this.fileTimestamp = System.currentTimeMillis();
     } catch (final IOException e) {
       throw new ConnectException(e);
     }

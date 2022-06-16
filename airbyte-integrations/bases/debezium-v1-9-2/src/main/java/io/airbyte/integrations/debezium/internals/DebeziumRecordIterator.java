@@ -39,36 +39,36 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private final CdcTargetPosition targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
-  private final AirbyteFileOffsetBackingStore offsetManager;
   private final Duration firstRecordTimeout;
   private final Duration subsequentRecordTimeout;
+  private final DebeziumTracker debeziumTracker;
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
-  private long offsetTimestamp;
+  private long updateCounter;
 
   /**
-   * @param firstRecordTimeout the amount of time to wait before Debezium processes the first record.
+   * @param firstRecordTimeout      the amount of time to wait before Debezium processes the first record.
    * @param subsequentRecordTimeout the extra time to wait after Debezium has processed the first record.
    */
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
                                 final VoidCallable requestClose,
-                                final AirbyteFileOffsetBackingStore offsetManager,
                                 final Duration firstRecordTimeout,
-                                final Duration subsequentRecordTimeout) {
+                                final Duration subsequentRecordTimeout,
+                                final DebeziumTracker debeziumTracker) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
-    this.offsetManager = offsetManager;
     this.firstRecordTimeout = firstRecordTimeout;
     this.subsequentRecordTimeout = subsequentRecordTimeout;
+    this.debeziumTracker = debeziumTracker;
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.signalledClose = false;
-    this.offsetTimestamp = offsetManager.getFileTimestamp();
+    this.updateCounter = debeziumTracker.getUpdateCounter();
   }
 
   @Override
@@ -78,24 +78,30 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     // emitted.
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
+      final Duration timeout = receivedFirstRecord ? subsequentRecordTimeout : firstRecordTimeout;
       try {
-        final Duration timeout = receivedFirstRecord ? subsequentRecordTimeout : firstRecordTimeout;
-        next = queue.poll(timeout.getSeconds(), TimeUnit.SECONDS);
+        next = queue.poll(timeout.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
 
       if (next == null) {
+        // when the debezium source task has not started, keep waiting
+        if (!debeziumTracker.isStarted()) {
+          LOGGER.info("Waiting for Debezium source task to start...");
+          continue;
+        }
+
         // when the offset has changed, it means debezium is processing the change record
-        if (offsetTimestamp != offsetManager.getFileTimestamp()) {
-          LOGGER.info("The offset has changed; wait for {}s for more records", subsequentRecordTimeout);
-          offsetTimestamp = offsetManager.getFileTimestamp();
+        if (updateCounter != debeziumTracker.getUpdateCounter()) {
+          LOGGER.info("Debezium engine has updates; wait for {} millis for more records", timeout.toMillis());
+          updateCounter = debeziumTracker.getUpdateCounter();
           continue;
         }
 
         // if within the timeout, the consumer could not get a record, it is time to tell the producer
         // to shutdown
-        LOGGER.info("Closing cause next is returned as null");
+        LOGGER.info("Closing after {} millis cause next is returned as null", timeout.toMillis());
         requestClose();
         LOGGER.info("No record found. polling again.");
         continue;

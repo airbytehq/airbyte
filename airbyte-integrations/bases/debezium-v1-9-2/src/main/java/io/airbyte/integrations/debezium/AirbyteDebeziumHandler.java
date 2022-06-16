@@ -14,6 +14,7 @@ import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.integrations.debezium.internals.DebeziumTracker;
 import io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -80,9 +81,10 @@ public class AirbyteDebeziumHandler {
                                                                              final Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
+    final DebeziumTracker debeziumTracker = DebeziumTracker.getInstance();
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
-        schemaHistoryManager);
+        schemaHistoryManager, debeziumTracker);
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
@@ -91,9 +93,9 @@ public class AirbyteDebeziumHandler {
         targetPosition,
         publisher::hasClosed,
         publisher::close,
-        offsetManager,
         firstRecordTimeout,
-        subsequentRecordTimeout);
+        subsequentRecordTimeout,
+        debeziumTracker);
 
     // convert to airbyte message.
     final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators

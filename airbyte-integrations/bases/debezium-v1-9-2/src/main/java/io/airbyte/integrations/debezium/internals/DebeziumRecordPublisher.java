@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
+import io.debezium.engine.DebeziumEngine.ConnectorCallback;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
 import java.util.Optional;
@@ -28,8 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The purpose of this class is to intiliaze and spawn the debezium engine with the right properties
- * to fetch records
+ * The purpose of this class is to intiliaze and spawn the debezium engine with the right properties to fetch records
  */
 public class DebeziumRecordPublisher implements AutoCloseable {
 
@@ -40,6 +40,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
+  private final DebeziumTracker debeziumTracker;
 
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
@@ -52,12 +53,14 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                  final JsonNode config,
                                  final ConfiguredAirbyteCatalog catalog,
                                  final AirbyteFileOffsetBackingStore offsetManager,
-                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
+                                 final DebeziumTracker debeziumTracker) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
     this.offsetManager = offsetManager;
     this.schemaHistoryManager = schemaHistoryManager;
+    this.debeziumTracker = debeziumTracker;
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -69,6 +72,14 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     engine = DebeziumEngine.create(Json.class)
         .using(getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
+        .using(new ConnectorCallback() {
+          @Override
+          public void taskStarted() {
+            ConnectorCallback.super.taskStarted();
+            LOGGER.info("Debezium source task has started...");
+            debeziumTracker.markAsStarted();
+          }
+        })
         .notifying(e -> {
           // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
           // interacts with kafka. we want to ignore it.
@@ -76,6 +87,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
             boolean inserted = false;
+            debeziumTracker.incrementUpdateCounter();
             while (!inserted) {
               inserted = queue.offer(e);
             }
@@ -182,7 +194,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .map(ConfiguredAirbyteStream::getStream)
         .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .map(x -> StringUtils.escape(x, new char[]{','}, "\\,"))
         .collect(Collectors.joining(","));
   }
 
