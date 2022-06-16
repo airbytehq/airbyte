@@ -3,10 +3,10 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
@@ -20,6 +20,7 @@ SESSION_TOKEN = "session_token"
 
 class MetabaseAuth(HttpAuthenticator):
     def __init__(self, config: Mapping[str, Any]):
+        self.need_session_close = False
         self.api_url = config[API_URL]
         if USERNAME in config and PASSWORD in config:
             self.username = config[USERNAME]
@@ -39,6 +40,7 @@ class MetabaseAuth(HttpAuthenticator):
         response.raise_for_status()
         if response.ok:
             self.session_token = response.json()["id"]
+            self.need_session_close = True
             logging.getLogger("airbyte").info(f"New session token generated for {username}")
         else:
             raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
@@ -67,9 +69,25 @@ class MetabaseAuth(HttpAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-Metabase-Session": self.session_token}
 
+    def close_session(self):
+        if self.need_session_close:
+            response = requests.delete(
+                f"{self.api_url}session", headers=self.get_auth_header(), json={"metabase-session-id": self.session_token}
+            )
+            response.raise_for_status()
+            if response.ok:
+                logging.getLogger("airbyte").info("Session successfully closed")
+            else:
+                logging.getLogger("airbyte").info(f"Unable to close session {response.status_code}: {response.reason}")
+        else:
+            logging.getLogger("airbyte").info("Session was not opened by this connector.")
+
 
 class SourceMetabase(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def __init__(self):
+        self.authenticator = None
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = MetabaseAuth(config)
             return authenticator.has_valid_token(), None
@@ -77,10 +95,10 @@ class SourceMetabase(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = MetabaseAuth(config)
-        if not authenticator.has_valid_token():
+        self.authenticator = MetabaseAuth(config)
+        if not self.authenticator.has_valid_token():
             raise ConnectionError("Failed to connect to source")
-        args = {"authenticator": authenticator, API_URL: config[API_URL]}
+        args = {"authenticator": self.authenticator, API_URL: config[API_URL]}
         return [
             Activity(**args),
             Cards(**args),
@@ -88,3 +106,21 @@ class SourceMetabase(AbstractSource):
             Dashboards(**args),
             Users(**args),
         ]
+
+    # We override the read method to make sure we close the metabase session and logout
+    # so we don't keep too many active session_token active.
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: MutableMapping[str, Any] = None,
+    ) -> Iterator[AirbyteMessage]:
+        try:
+            yield from super().read(logger, config, catalog, state)
+        finally:
+            self.close_session()
+
+    def close_session(self):
+        if self.authenticator:
+            self.authenticator.close_session()
