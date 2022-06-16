@@ -547,7 +547,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.9"
+- dockerImage: "airbyte/source-amplitude:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -3637,7 +3637,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.69"
+- dockerImage: "airbyte/source-hubspot:0.1.70"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
