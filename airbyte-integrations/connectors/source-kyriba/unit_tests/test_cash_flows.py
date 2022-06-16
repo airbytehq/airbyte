@@ -27,16 +27,20 @@ def test_path(patch_base_class):
 def test_stream_slices_new(patch_base_class):
     stream = CashFlows(**config())
     stream.start_date = date(2021, 1, 1)
-    stream.end_date = date(2022, 3, 1)
+    stream.end_date = date(2021, 1, 3)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [
         {
             "startDate": "2021-01-01",
-            "endDate": "2022-01-01",
+            "endDate": "2021-01-01",
         },
         {
-            "startDate": "2022-01-02",
-            "endDate": "2022-03-01",
+            "startDate": "2021-01-02",
+            "endDate": "2021-01-02",
+        },
+        {
+            "startDate": "2021-01-03",
+            "endDate": "2021-01-03",
         },
     ]
     assert stream.stream_slices(**inputs) == expected_stream_slice
@@ -44,14 +48,18 @@ def test_stream_slices_new(patch_base_class):
 
 def test_stream_slices_state(patch_base_class):
     stream = CashFlows(**config())
-    stream.start_date = "2021-01-01"
-    stream.end_date = date.fromisoformat("2022-03-01")
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {"updateDateTime": "2022-01-01T00:00:00Z"}}
+    stream.start_date = date.fromisoformat("2021-01-01")
+    stream.end_date = date.fromisoformat("2021-01-03")
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {"updateDateTime": "2021-01-02T00:00:00Z"}}
     expected_stream_slice = [
         {
-            "startDate": "2022-01-01",
-            "endDate": "2022-03-01",
-        }
+            "startDate": "2021-01-02",
+            "endDate": "2021-01-02",
+        },
+        {
+            "startDate": "2021-01-03",
+            "endDate": "2021-01-03",
+        },
     ]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 

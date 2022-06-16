@@ -247,9 +247,8 @@ class CashFlows(IncrementalKyribaStream):
             start = self.start_date
         slices = []
         while start <= end_date:
-            # cash flow date range has to be less than a year
-            max_end = start + timedelta(days=1)
-            end = max_end if max_end < end_date else end_date
+            # use small slices to maintain state since the API is unreliable
+            end = start if start < end_date else end_date
             slices.append({"startDate": start.isoformat(), "endDate": end.isoformat()})
             start = end + timedelta(days=1)
         return slices
