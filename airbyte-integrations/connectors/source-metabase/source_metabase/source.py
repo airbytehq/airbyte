@@ -53,7 +53,6 @@ class MetabaseAuth(HttpAuthenticator):
                 self.get_new_session_token(self.username, self.password)
                 response = requests.get(f"{self.api_url}user/current", headers=self.get_auth_header())
                 response.raise_for_status()
-                return False
             else:
                 raise ConnectionError(f"Error while checking connection: {e}")
         if response.ok:
