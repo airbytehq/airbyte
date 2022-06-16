@@ -24,14 +24,12 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 public class OpenTelemetryMetricClient implements MetricClient {
 
   private Meter meter;
-  private MetricExporter metricExporter;
   private SdkMeterProvider meterProvider;
 
   @Override
@@ -80,24 +78,9 @@ public class OpenTelemetryMetricClient implements MetricClient {
                 .build())
         .setResource(resource)
         .build();
-    metricExporter = OtlpGrpcMetricExporter.builder()
+    MetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
         .setEndpoint(otelEndpoint).build();
-    initialize(metricEmittingApp, sdkTracerProvider, resource);
-  }
-
-  @VisibleForTesting
-  void initializeWithInMemoryExporter(MetricEmittingApp metricEmittingApp) {
-    Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, metricEmittingApp.getApplicationName()).build();
-    metricExporter = InMemoryMetricExporter.create();
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-        .setResource(resource)
-        .build();
-    initialize(metricEmittingApp, sdkTracerProvider, resource);
-  }
-
-  @VisibleForTesting
-  InMemoryMetricExporter getInMemoryMetricExporter() {
-    return (InMemoryMetricExporter) metricExporter;
+    initialize(metricEmittingApp, metricExporter, sdkTracerProvider, resource);
   }
 
   @VisibleForTesting
@@ -105,7 +88,8 @@ public class OpenTelemetryMetricClient implements MetricClient {
     return meterProvider;
   }
 
-  private void initialize(MetricEmittingApp metricEmittingApp, SdkTracerProvider sdkTracerProvider, Resource resource) {
+  @VisibleForTesting
+  void initialize(MetricEmittingApp metricEmittingApp, MetricExporter metricExporter, SdkTracerProvider sdkTracerProvider, Resource resource) {
     meterProvider = SdkMeterProvider.builder()
         .registerMetricReader(PeriodicMetricReader.builder(metricExporter).build())
         .setResource(resource)

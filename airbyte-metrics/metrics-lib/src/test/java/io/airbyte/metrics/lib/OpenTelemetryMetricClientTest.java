@@ -4,13 +4,16 @@
 
 package io.airbyte.metrics.lib;
 
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.google.common.collect.Iterables;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,14 +24,22 @@ class OpenTelemetryMetricClientTest {
 
   OpenTelemetryMetricClient openTelemetryMetricClient;
   private final static String TAG = "tag1";
+
+  private final static MetricEmittingApp METRIC_EMITTING_APP = MetricEmittingApps.WORKER;
   private InMemoryMetricExporter metricExporter;
   private SdkMeterProvider metricProvider;
 
   @BeforeEach
   void setUp() {
     openTelemetryMetricClient = new OpenTelemetryMetricClient();
-    openTelemetryMetricClient.initializeWithInMemoryExporter(MetricEmittingApps.WORKER);
-    metricExporter = openTelemetryMetricClient.getInMemoryMetricExporter();
+
+    Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, METRIC_EMITTING_APP.getApplicationName()).build();
+    metricExporter = InMemoryMetricExporter.create();
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+        .setResource(resource)
+        .build();
+    openTelemetryMetricClient.initialize(METRIC_EMITTING_APP, metricExporter, sdkTracerProvider, resource);
+
     metricProvider = openTelemetryMetricClient.getSdkMeterProvider();
   }
 
@@ -83,7 +94,7 @@ class OpenTelemetryMetricClientTest {
 
   @Test
   @DisplayName("Should send out histogram metric with correct metric name, description and value")
-  public void testNoInitializeNoEmitError() {
+  public void testHistogramSuccess() {
     openTelemetryMetricClient.distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 10);
     openTelemetryMetricClient.distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 30);
 
