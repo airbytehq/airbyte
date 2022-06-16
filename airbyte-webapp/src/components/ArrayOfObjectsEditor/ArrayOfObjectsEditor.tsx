@@ -28,12 +28,19 @@ const Content = styled.div`
   margin-bottom: 20px;
 `;
 
-export interface ArrayOfObjectsEditorProps<T extends { name: string }> {
+interface ItemBase {
+  name?: string;
+  description?: string;
+}
+
+export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
   items: T[];
   editableItemIndex?: number | string | null;
   children: (item?: T) => React.ReactNode;
   mainTitle?: React.ReactNode;
   addButtonText?: React.ReactNode;
+  renderItemName?: (item: T, index: number) => React.ReactNode | undefined;
+  renderItemDescription?: (item: T, index: number) => React.ReactNode | undefined;
   onStartEdit: (n: number) => void;
   onCancelEdit?: () => void;
   onDone?: () => void;
@@ -42,11 +49,13 @@ export interface ArrayOfObjectsEditorProps<T extends { name: string }> {
   disabled?: boolean;
 }
 
-export const ArrayOfObjectsEditor = <T extends { name: string } = { name: string }>({
+export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   onStartEdit,
   onDone,
   onRemove,
   onCancelEdit,
+  renderItemName = (item) => item.name,
+  renderItemDescription = (item) => item.description,
   items,
   editableItemIndex,
   children,
@@ -94,11 +103,12 @@ export const ArrayOfObjectsEditor = <T extends { name: string } = { name: string
       />
       {items.length ? (
         <ItemsList>
-          {items.map((item, key) => (
+          {items.map((item, index) => (
             <EditorRow
-              key={`form-item-${key}`}
-              name={item.name}
-              id={key}
+              key={`form-item-${index}`}
+              name={renderItemName(item, index)}
+              description={renderItemDescription(item, index)}
+              id={index}
               onEdit={onStartEdit}
               onRemove={onRemove}
               disabled={disabled}

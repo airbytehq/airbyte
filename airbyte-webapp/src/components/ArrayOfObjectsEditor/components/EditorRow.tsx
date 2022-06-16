@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import ToolTip from "components/ToolTip";
 
 const Content = styled.div`
   display: flex;
@@ -28,18 +29,19 @@ const DeleteButton = styled(Button)`
 `;
 
 interface EditorRowProps {
-  name: string;
+  name?: React.ReactNode;
+  description?: React.ReactNode;
   id: number;
   onEdit: (id: number) => void;
   onRemove: (id: number) => void;
   disabled?: boolean;
 }
 
-const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove, disabled }) => {
+const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
   const { formatMessage } = useIntl();
   const buttonLabel = formatMessage({ id: "form.delete" });
 
-  return (
+  const row = (
     <Content>
       <div>{name || id}</div>
       <div>
@@ -52,6 +54,8 @@ const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove, disab
       </div>
     </Content>
   );
+
+  return description ? <ToolTip control={row}>{description}</ToolTip> : row;
 };
 
 export { EditorRow };
