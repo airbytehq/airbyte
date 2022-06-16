@@ -22,7 +22,7 @@ class ConfigContainer(Dict[str, Any]):
         self.config_path = config_path
 
 
-class SingerSource(BaseSource[ConfigContainer]):
+class SingerSource(BaseSource[ConfigContainer, str, str]):
     def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
         """
         Persist raw_config in temporary directory to run the Source job
@@ -40,21 +40,13 @@ class SingerSource(BaseSource[ConfigContainer]):
         """
         return config
 
-    # Overriding to change an input catalog as path instead
-    # according to issue CDK: typing errors #9500, mypy raises error on this line
-    # 'Return type "str" of "read_catalog" incompatible with return type "ConfiguredAirbyteCatalog" in supertype "Source"'
-    # need to fix, ignored for now
-    def read_catalog(self, catalog_path: str) -> str:  # type: ignore
+    def read_catalog(self, catalog_path: str) -> str:
         """
         Since singer source don't need actual catalog object, we override this to return path only
         """
         return catalog_path
 
-    # Overriding to change an input state as path instead
-    # according to issue CDK: typing errors #9500, mypy raises error on this line
-    # 'Return type "str" of "read_state" incompatible with return type "Dict[str, Any]" in supertype "Source"'
-    # need to fix, ignored for now
-    def read_state(self, state_path: str) -> str:  # type: ignore
+    def read_state(self, state_path: str) -> str:
         """
         Since singer source don't need actual state object, we override this to return path only
         """
@@ -101,11 +93,7 @@ class SingerSource(BaseSource[ConfigContainer]):
         """
         return self._discover_internal(logger, config_container.config_path).airbyte_catalog
 
-    # according to issue CDK: typing errors #9500, mypy raises errors on this line
-    # 'Argument 3 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "ConfiguredAirbyteCatalog"'
-    # 'Argument 4 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Optional[MutableMapping[str, Any]]"'
-    # need to fix, ignored for now
-    def read(  # type: ignore
+    def read(
         self, logger: logging.Logger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
     ) -> Iterable[AirbyteMessage]:
         """
