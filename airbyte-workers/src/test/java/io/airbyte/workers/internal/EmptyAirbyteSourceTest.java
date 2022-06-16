@@ -10,12 +10,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +34,13 @@ public class EmptyAirbyteSourceTest {
   private final AirbyteMessage EMPTY_MESSAGE =
       new AirbyteMessage().withType(Type.STATE)
           .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject()));
+
+  private final ConfiguredAirbyteCatalog mAirbyteCatalog = new ConfiguredAirbyteCatalog()
+      .withStreams(Lists.newArrayList(
+          new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+          new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+          new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))
+      ));
 
   @BeforeEach
   public void init() {
@@ -48,7 +59,8 @@ public class EmptyAirbyteSourceTest {
     ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(new ArrayList<>());
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
-        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration));
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
@@ -79,7 +91,8 @@ public class EmptyAirbyteSourceTest {
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
-            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))));
+            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
@@ -138,7 +151,8 @@ public class EmptyAirbyteSourceTest {
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
-            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))));
+            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
@@ -184,7 +198,8 @@ public class EmptyAirbyteSourceTest {
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
-            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))));
+            .withState(Jsons.jsonNode(createGlobalState(streamDescriptors, Jsons.emptyObject()))))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
@@ -227,7 +242,8 @@ public class EmptyAirbyteSourceTest {
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
-            .withState(Jsons.jsonNode(createPerStreamState(streamDescriptors))));
+            .withState(Jsons.jsonNode(createPerStreamState(streamDescriptors))))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
@@ -268,7 +284,8 @@ public class EmptyAirbyteSourceTest {
     WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
-            .withState(Jsons.jsonNode(createPerStreamState(streamDescriptors))));
+            .withState(Jsons.jsonNode(createPerStreamState(streamDescriptors))))
+        .withCatalog(mAirbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
