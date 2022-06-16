@@ -116,22 +116,6 @@
 {% endmacro %}
 
 
-{# timestamp ------------------------------------------------- --#}
-{% macro mysql__type_timestamp() %}
-    time
-{% endmacro %}
-
-{%- macro sqlserver__type_timestamp() -%}
-    {#-- in TSQL timestamp is really datetime --#}
-    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
-    datetime
-{%- endmacro -%}
-
-{% macro clickhouse__type_timestamp() %}
-    DateTime64
-{% endmacro %}
-
-
 {# timestamp with time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_with_timezone() -%}
@@ -146,9 +130,10 @@
     timestamp
 {% endmacro %}
 
-{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
+{#-- MySQL doesnt allow cast operation with nullif to work with DATETIME so we have to use char --#}
+{#-- https://bugs.mysql.com/bug.php?id=77805 --#}
 {%- macro mysql__type_timestamp_with_timezone() -%}
-    char
+    char(1024)
 {%- endmacro -%}
 
 {% macro oracle__type_timestamp_with_timezone() %}
@@ -158,10 +143,6 @@
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
     datetime2
 {%- endmacro -%}
-
-{% macro clickhouse__type_timestamp_with_timezone() %}
-    DateTime64
-{% endmacro %}
 
 {% macro redshift__type_timestamp_with_timezone() %}
     TIMESTAMPTZ
@@ -178,9 +159,10 @@
     timestamp
 {% endmacro %}
 
-{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
+{#-- MySQL doesnt allow cast operation with nullif to work with DATETIME so we have to use char --#}
+{#-- https://bugs.mysql.com/bug.php?id=77805 --#}
 {%- macro mysql__type_timestamp_without_timezone() -%}
-    char
+    char(1024)
 {%- endmacro -%}
 
 {%- macro sqlserver__type_timestamp_without_timezone() -%}
@@ -212,11 +194,6 @@
     time
 {% endmacro %}
 
-{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
-{%- macro mysql__type_time_without_timezone() -%}
-    char
-{%- endmacro -%}
-
 {% macro oracle__type_time_without_timezone() %}
     varchar2(4000)
 {% endmacro %}
@@ -240,9 +217,8 @@
     time with time zone
 {% endmacro %}
 
-{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
 {%- macro mysql__type_time_with_timezone() -%}
-    char
+    char(1024)
 {%- endmacro -%}
 
 {%- macro sqlserver__type_time_with_timezone() -%}
