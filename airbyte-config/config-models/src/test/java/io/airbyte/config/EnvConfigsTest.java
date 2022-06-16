@@ -7,6 +7,7 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -409,6 +410,7 @@ class EnvConfigsTest {
     envMap.put(EnvConfigs.WORKER_ENVIRONMENT, WorkerEnvironment.KUBERNETES.name());
     final Map<String, String> expected = Map.of("AIRBYTE_VERSION", DEV,
         "AIRBYTE_ROLE", "",
+        "DEPLOYMENT_MODE", "OSS",
         "WORKER_ENVIRONMENT", "KUBERNETES");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
@@ -419,11 +421,13 @@ class EnvConfigsTest {
     envMap.put(EnvConfigs.AIRBYTE_ROLE, "UNIT_TEST");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1", "VAL1");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2", "VAL\"2WithQuotesand$ymbols");
+    envMap.put(EnvConfigs.DEPLOYMENT_MODE, DeploymentMode.CLOUD.name());
 
     final Map<String, String> expected = Map.of("ENV1", "VAL1",
         "ENV2", "VAL\"2WithQuotesand$ymbols",
         "AIRBYTE_VERSION", DEV,
         "AIRBYTE_ROLE", "UNIT_TEST",
+        "DEPLOYMENT_MODE", "CLOUD",
         "WORKER_ENVIRONMENT", "DOCKER");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
