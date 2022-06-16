@@ -130,4 +130,8 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
 }
