@@ -855,7 +855,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return archiveHandler.canImportDefinitions();
   }
 
-  private <T> T execute(final HandlerCall<T> call) {
+  private static <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {
