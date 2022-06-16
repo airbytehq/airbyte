@@ -291,9 +291,9 @@ class SourceWebflow(AbstractSource):
 
         try:
             # Check that authenticator can be retrieved
-            authenticator = self.get_authenticator(config)
+            auth = self.get_authenticator(config)
             site_id = config.get("site_id")
-            collections_stream = Collections(authenticator=authenticator, site_id=site_id)
+            collections_stream = Collections(authenticator=auth, site_id=site_id)
             collections_records = collections_stream.read_records(sync_mode="full_refresh")
             record = next(collections_records)
             logger.info(f"Successfully connected to Collections stream. Pulled one record: {record}")
@@ -302,7 +302,7 @@ class SourceWebflow(AbstractSource):
             return False, e
 
     def generate_streams(self, authenticator: WebflowTokenAuthenticator, site_id: str) -> List[Stream]:
-        """ "Generates a list of stream by their names."""
+        """Generates a list of stream by their names."""
 
         collection_name_to_id_dict = self.get_collection_name_to_id_dict(authenticator=authenticator, site_id=site_id)
 
