@@ -228,9 +228,9 @@ class SourceNetsuite(AbstractSource):
             duplicates = [k for k,v in Counter(record_types).items() if v>1]
             if duplicates:
                 return False, f'Duplicate record type: {", ".join(duplicates)}'
-            params = {"select": ",".join(record_types)}
-            url = base_url + metadata_path
-            session.get(url, params=params)
+            params = {"limit": 1}
+            url = base_url + record_path
+            [session.get(url + r, params=params) for r in record_types]
         else:
             # we could request the entire metadata catalog here, but this request returns much faster
             url = base_url + rest_path + "*"
