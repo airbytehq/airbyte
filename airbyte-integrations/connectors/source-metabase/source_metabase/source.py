@@ -19,8 +19,9 @@ SESSION_TOKEN = "session_token"
 
 
 class MetabaseAuth(HttpAuthenticator):
-    def __init__(self, config: Mapping[str, Any]):
+    def __init__(self, logger: logging.Logger, config: Mapping[str, Any]):
         self.need_session_close = False
+        self.logger = logger
         self.api_url = config[API_URL]
         if USERNAME in config and PASSWORD in config:
             self.username = config[USERNAME]
@@ -41,7 +42,7 @@ class MetabaseAuth(HttpAuthenticator):
         if response.ok:
             self.session_token = response.json()["id"]
             self.need_session_close = True
-            logging.getLogger("airbyte").info(f"New session token generated for {username}")
+            self.logger.info(f"New session token generated for {username}")
         else:
             raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
         return self.session_token
@@ -59,7 +60,7 @@ class MetabaseAuth(HttpAuthenticator):
                 raise ConnectionError(f"Error while checking connection: {e}")
         if response.ok:
             json_response = response.json()
-            logging.getLogger("airbyte").info(
+            self.logger.info(
                 f"Connection check for Metabase successful for {json_response['common_name']} login at {json_response['last_login']}"
             )
             return True
@@ -76,11 +77,11 @@ class MetabaseAuth(HttpAuthenticator):
             )
             response.raise_for_status()
             if response.ok:
-                logging.getLogger("airbyte").info("Session successfully closed")
+                self.logger.info("Session successfully closed")
             else:
-                logging.getLogger("airbyte").info(f"Unable to close session {response.status_code}: {response.reason}")
+                self.logger.info(f"Unable to close session {response.status_code}: {response.reason}")
         else:
-            logging.getLogger("airbyte").info("Session was not opened by this connector.")
+            self.logger.info("Session was not opened by this connector.")
 
 
 class SourceMetabase(AbstractSource):
@@ -90,7 +91,7 @@ class SourceMetabase(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = None
         try:
-            authenticator = MetabaseAuth(config)
+            authenticator = MetabaseAuth(logger, config)
             return authenticator.has_valid_token(), None
         except Exception as e:
             return False, e
