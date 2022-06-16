@@ -62,7 +62,8 @@ public class AirbyteTraceMessageUtilityTest {
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "you exploded the universe");
     }
-    Assertions.assertTrue(outContent.toString(StandardCharsets.UTF_8).contains("\\n\\tat"));
+    JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
+    Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
   }
 
   @AfterEach
