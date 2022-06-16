@@ -7,7 +7,7 @@ import { JobItem } from "components/JobItem/JobItem";
 import { Connector, ConnectorT } from "core/domain/connector";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
@@ -45,26 +45,29 @@ export const ConnectorCard: React.FC<
     setErrorStatusRequest(null);
   }, [props.selectedConnectorDefinitionSpecification, reset]);
 
-  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
-  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
+  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.NEW_SOURCE);
+  const trackNewDestinationAction = useTrackAction(
+    TrackActionNamespace.DESTINATION,
+    LegacyTrackActionType.NEW_DESTINATION
+  );
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
-    const trackAction = (action: string) => {
+    const trackAction = (action: string, actionTypes: TrackActionActions[]) => {
       if (!connector) {
         return;
       }
 
       if (props.formType === "source") {
-        trackNewSourceAction(action, {
+        trackNewSourceAction(action, actionTypes, {
           connector_source: connector?.name,
           connector_source_definition_id: Connector.id(connector),
         });
       } else {
-        trackNewDestinationAction(action, {
+        trackNewDestinationAction(action, actionTypes, {
           connector_destination: connector?.name,
           connector_destination_definition_id: Connector.id(connector),
         });
@@ -72,12 +75,12 @@ export const ConnectorCard: React.FC<
     };
 
     const testConnectorWithTracking = async () => {
-      trackAction("Test a connector");
+      trackAction("Test a connector", [TrackActionActions.TEST]);
       try {
         await testConnector(values);
-        trackAction("Tested connector - success");
+        trackAction("Tested connector - success", [TrackActionActions.TEST, TrackActionActions.SUCCESS]);
       } catch (e) {
-        trackAction("Tested connector - failure");
+        trackAction("Tested connector - failure", [TrackActionActions.TEST, TrackActionActions.FAILURE]);
         throw e;
       }
     };

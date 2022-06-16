@@ -2,9 +2,22 @@ import { useCallback } from "react";
 
 import { useAnalyticsService } from "./services/Analytics/useAnalyticsService";
 
-export const enum TrackActionType {
+export const enum LegacyTrackActionType {
   NEW_SOURCE = "New Source",
   NEW_DESTINATION = "New Destination",
+}
+
+export const enum TrackActionActions {
+  CREATE = "Create",
+  TEST = "Test",
+  SELECT = "Select",
+  SUCCESS = "Success",
+  FAILURE = "Failure",
+}
+
+export const enum TrackActionNamespace {
+  SOURCE = "Source",
+  DESTINATION = "Destination",
 }
 
 interface TrackActionProperties {
@@ -14,35 +27,19 @@ interface TrackActionProperties {
   connector_destination_definition_id?: string;
 }
 
-interface NewTrackActionProperties {
-  connector_source?: string;
-  connector_source_definition_id?: string;
-  connector_destination?: string;
-  connector_destination_definition_id?: string;
-}
-
-export const useTrackAction = (type: TrackActionType) => {
+export const useTrackAction = (namespace: TrackActionNamespace, type: LegacyTrackActionType) => {
   const analyticsService = useAnalyticsService();
 
   return useCallback(
-    (action: string, properties: TrackActionProperties) => {
-      analyticsService.track(`${type} - Action`, { action, ...properties });
-    },
-    [analyticsService, type]
-  );
-};
+    (action: string, actionTypes: TrackActionActions[], properties: TrackActionProperties) => {
+      const actionTypesString = actionTypes.toString().replaceAll(",", ".");
 
-export const useNewTrackAction = (type: TrackActionType) => {
-  const analyticsService = useAnalyticsService();
-
-  return useCallback(
-    (action: string, properties: NewTrackActionProperties) => {
-      analyticsService.track(`AIRBYTE.UI.${namespace}.${action_type}`, {
+      analyticsService.track(`Airbyte.UI.${namespace}.${actionTypesString}`, {
         action,
         ...properties,
         legacy_event_name: `${type} - Action`,
       });
     },
-    [analyticsService, type]
+    [analyticsService, namespace, type]
   );
 };
