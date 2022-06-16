@@ -4,13 +4,13 @@ A connection is a configuration for syncing data between a source and a destinat
 
 * Sync schedule: when to trigger a sync of the data.
 * Destination [Namespace](../namespaces.md) and stream names: where the data will end up being written.
-* A catalog selection: which [streams and fields](../catalog.md) to replicate from the source
+* A catalog selection: which [streams and fields](../airbyte-protocol.md#catalog) to replicate from the source
 * Sync mode: how streams should be replicated \(read and write\):
 * Optional transformations: how to convert Airbyte protocol messages \(raw JSON blob\) data into some other data representations. 
 
 ## Sync schedules
 
-Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../catalog.md).
+Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../airbyte-protocol.md#catalog).
 
 Syncs will be triggered by either:
 
@@ -65,7 +65,7 @@ A sync mode is therefore, a combination of a source and destination mode togethe
 
 ### Airbyte basic normalization
 
-As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyte-specification.md), a replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors.
+As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyte-protocol.md), a replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors.
 
 On top of this replication, Airbyte provides the option to enable or disable an additional transformation step at the end of the sync called [basic normalization](../basic-normalization.md). This operation is:
 
