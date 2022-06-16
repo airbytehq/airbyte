@@ -3608,7 +3608,6 @@ components:
           type: string
           description: Stream's name.
         jsonSchema:
-          description: Stream schema using Json Schema specs.
           $ref: "#/components/schemas/StreamJsonSchema"
         supportedSyncModes:
           type: array
@@ -3633,6 +3632,7 @@ components:
           type: string
           description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
     StreamJsonSchema:
+      description: Stream schema using Json Schema specs.
       type: object
     AirbyteStreamConfiguration:
       description: the mutable part of the stream to configure the destination
@@ -3697,7 +3697,6 @@ components:
         configId:
           type: string
         pagination:
-          type: object
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
       type: object
@@ -4254,10 +4253,8 @@ components:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
     OAuthConfiguration:
-      description: OAuth specific blob.
+      description: The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
     OAuthInputConfiguration:
-      description: The values required to configure OAuth flows.
-        The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
       $ref: "#/components/schemas/OAuthConfiguration"
     AdvancedAuth:
       type: object
