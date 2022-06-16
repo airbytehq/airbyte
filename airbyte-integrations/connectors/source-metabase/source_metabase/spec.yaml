@@ -5,7 +5,6 @@ connectionSpecification:
   type: object
   required:
     - instance_api_url
-    - session_token
   additionalProperties: true
   properties:
     instance_api_url:

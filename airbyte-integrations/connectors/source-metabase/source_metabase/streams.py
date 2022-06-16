@@ -42,6 +42,11 @@ class MetabaseStream(HttpStream, ABC):
         yield from response_json
 
 
+class Activity(MetabaseStream):
+    def path(self, **kwargs) -> str:
+        return "activity"
+
+
 class Cards(MetabaseStream):
     def path(self, **kwargs) -> str:
         return "card"
@@ -55,11 +60,6 @@ class Collections(MetabaseStream):
 class Dashboards(MetabaseStream):
     def path(self, **kwargs) -> str:
         return "dashboard"
-
-
-class PermissionMemberships(MetabaseStream):
-    def path(self, **kwargs) -> str:
-        return "permissions/membership"
 
 
 class Users(MetabaseStream):

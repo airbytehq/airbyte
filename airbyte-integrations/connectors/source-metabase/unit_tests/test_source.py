@@ -8,7 +8,7 @@ from source_metabase import SourceMetabase
 
 
 def test_source_streams():
-    with open("sample_files/config.json") as f:
+    with open("secrets/config.json") as f:
         config = json.load(f)
     streams = SourceMetabase().streams(config=config)
-    assert len(streams) == 4
+    assert len(streams) == 5
