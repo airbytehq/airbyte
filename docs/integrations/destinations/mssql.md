@@ -11,12 +11,6 @@
 
 ## Output Schema
 
-:::caution
-
-Tables in MSSQL destinations will be prefixed by `_airbyte_raw` due to the fact that MSSQL does not currently support basic normalization. This prefix cannot be removed and this is normal behavior.
-
-:::
-
 Each stream will be output into its own table in SQL Server. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.

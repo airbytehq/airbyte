@@ -6,7 +6,6 @@ package io.airbyte.workers.general;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -101,11 +100,13 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFail() {
+  public void testProcessFail() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
+
+    assertEquals(Status.FAILED, output.getStatus());
   }
 
   @Test
@@ -113,7 +114,9 @@ public class DefaultCheckConnectionWorkerTest {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
+
+    assertEquals(Status.FAILED, output.getStatus());
   }
 
   @Test

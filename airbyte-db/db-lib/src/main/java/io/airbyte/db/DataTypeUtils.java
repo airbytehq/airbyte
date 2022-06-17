@@ -25,6 +25,11 @@ public class DataTypeUtils {
 
   public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
+  public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS");
+  public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+  public static final DateTimeFormatter TIMETZ_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX");
+  public static final DateTimeFormatter TIMESTAMPTZ_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+
   // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
   public static DateFormat getDateFormat() {
     return new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset;

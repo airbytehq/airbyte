@@ -14,6 +14,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+from .graphql import get_query
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -191,7 +192,7 @@ class SemiIncrementalMixin:
     # records we can just stop and not process other record. This will increase speed of each incremental stream
     # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
     # supporting this.
-    is_sorted_descending = False
+    is_sorted = False
 
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
@@ -211,9 +212,8 @@ class SemiIncrementalMixin:
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        if not self.is_sorted_descending:
+        if self.is_sorted == "asc":
             return self.page_size
-        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -237,9 +237,10 @@ class SemiIncrementalMixin:
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if self.__slice_key not in self._starting_point_cache:
-            self._starting_point_cache[self.__slice_key] = self._get_starting_point(stream_state, stream_slice)
-        return self._starting_point_cache[self.__slice_key]
+        slice_value = stream_slice[self.__slice_key]
+        if slice_value not in self._starting_point_cache:
+            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[slice_value]
 
     def read_records(
         self,
@@ -255,7 +256,7 @@ class SemiIncrementalMixin:
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if cursor_value > start_point:
                 yield record
-            elif self.is_sorted_descending and cursor_value < start_point:
+            elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -352,7 +353,7 @@ class Repositories(SemiIncrementalMixin, Organizations):
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
-    is_sorted_descending = True
+    is_sorted = "desc"
     stream_base_params = {
         "sort": "updated",
         "direction": "desc",
@@ -436,7 +437,7 @@ class Events(SemiIncrementalMixin, GithubStream):
 
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+    API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
     """
 
     use_cache = True
@@ -470,16 +471,18 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         base_params = super().request_params(**kwargs)
         # The very first time we read this stream we want to read ascending so we can save state in case of
         # a halfway failure. But if there is state, we read descending to allow incremental behavior.
-        params = {"state": "all", "sort": "updated", "direction": "desc" if self.is_sorted_descending else "asc"}
+        params = {"state": "all", "sort": "updated", "direction": self.is_sorted}
 
         return {**base_params, **params}
 
     @property
-    def is_sorted_descending(self) -> bool:
+    def is_sorted(self) -> str:
         """
         Depending if there any state we read stream in ascending or descending order.
         """
-        return not self._first_read
+        if self._first_read:
+            return "asc"
+        return "desc"
 
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
@@ -498,7 +501,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
-    is_sorted_descending = True
+    is_sorted = "desc"
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -655,11 +658,12 @@ class Commits(IncrementalMixin, GithubStream):
 
 class Issues(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
+    API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
     """
 
     use_cache = True
     large_stream = True
+    is_sorted = "asc"
 
     stream_base_params = {
         "state": "all",
@@ -719,26 +723,55 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, AB
         )
 
 
-class PullRequestStats(PullRequestSubstream):
+class PullRequestStats(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
+    is_sorted = "asc"
+    http_method = "POST"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+        return "graphql"
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(record=response.json(), stream_slice=stream_slice)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
+        for record in nodes:
+            record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+            record["comments"] = record["comments"]["totalCount"]
+            record["commits"] = record["commits"]["totalCount"]
+            record["repository"] = record["repository"]["name"]
+            if record["merged_by"]:
+                record["merged_by"]["type"] = record["merged_by"].pop("__typename")
+            yield record
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        return {key: value for key, value in record.items() if key in self.record_keys}
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            return pageInfo["endCursor"]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        query = get_query(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        return {"query": query}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        base_headers = super().request_headers(**kwargs)
+        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
+        return {**base_headers, **headers}
 
 
 class Reviews(PullRequestSubstream):
@@ -906,7 +939,7 @@ class PullRequestCommentReactions(ReactionStream):
 
 class Deployments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/deployments#list-deployments
+    API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1056,7 +1089,7 @@ class ProjectCards(GithubStream):
 class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
+    API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1074,7 +1107,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record

@@ -23,18 +23,19 @@ from octavia_cli.apply import resources, yaml_loaders
 class TestResourceState:
     def test_init(self, mocker):
         mocker.patch.object(resources, "os")
-        state = resources.ResourceState("config_path", "resource_id", 123, "config_hash")
+        state = resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "config_hash")
         assert state.configuration_path == "config_path"
+        assert state.workspace_id == "workspace_id"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 123
         assert state.configuration_hash == "config_hash"
         assert state.path == resources.os.path.join.return_value
         resources.os.path.dirname.assert_called_with("config_path")
-        resources.os.path.join.assert_called_with(resources.os.path.dirname.return_value, "state.yaml")
+        resources.os.path.join.assert_called_with(resources.os.path.dirname.return_value, "state_workspace_id.yaml")
 
     @pytest.fixture
     def state(self):
-        return resources.ResourceState("config_path", "resource_id", 123, "config_hash")
+        return resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "config_hash")
 
     def test_as_dict(self, state):
         assert state.as_dict() == {
@@ -42,6 +43,7 @@ class TestResourceState:
             "resource_id": state.resource_id,
             "generation_timestamp": state.generation_timestamp,
             "configuration_hash": state.configuration_hash,
+            "workspace_id": state.workspace_id,
         }
 
     def test_save(self, mocker, state):
@@ -57,13 +59,18 @@ class TestResourceState:
     def test_create(self, mocker):
         mocker.patch.object(resources.time, "time", mocker.Mock(return_value=0))
         mocker.patch.object(resources.ResourceState, "_save")
-        state = resources.ResourceState.create("config_path", "my_hash", "resource_id")
+        state = resources.ResourceState.create("config_path", "my_hash", "workspace_id", "resource_id")
         assert isinstance(state, resources.ResourceState)
         resources.ResourceState._save.assert_called_once()
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 0
         assert state.configuration_hash == "my_hash"
+
+    def test_delete(self, mocker, state):
+        mocker.patch.object(resources.os, "remove")
+        state.delete()
+        resources.os.remove.assert_called_with(state.path)
 
     def test_from_file(self, mocker):
         mocker.patch.object(resources, "yaml")
@@ -72,15 +79,44 @@ class TestResourceState:
             "resource_id": "resource_id",
             "generation_timestamp": 0,
             "configuration_hash": "my_hash",
+            "workspace_id": "workspace_id",
         }
         with patch("builtins.open", mock_open(read_data="data")) as mock_file:
-            state = resources.ResourceState.from_file("state.yaml")
+            state = resources.ResourceState.from_file("state_workspace_id.yaml")
         resources.yaml.safe_load.assert_called_with(mock_file.return_value)
         assert isinstance(state, resources.ResourceState)
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 0
         assert state.configuration_hash == "my_hash"
+
+    def test__get_path_from_configuration_and_workspace_id(self, mocker):
+        mocker.patch.object(resources.os.path, "dirname", mocker.Mock(return_value="my_dir"))
+        state_path = resources.ResourceState._get_path_from_configuration_and_workspace_id("config_path", "workspace_id")
+        assert state_path == "my_dir/state_workspace_id.yaml"
+        resources.os.path.dirname.assert_called_with("config_path")
+
+    def test_from_configuration_path_and_workspace(self, mocker):
+        mocker.patch.object(resources.ResourceState, "_get_path_from_configuration_and_workspace_id")
+        mocker.patch.object(resources.ResourceState, "from_file")
+        state = resources.ResourceState.from_configuration_path_and_workspace("config_path", "workspace_id")
+        assert state == resources.ResourceState.from_file.return_value
+        resources.ResourceState.from_file.assert_called_with(
+            resources.ResourceState._get_path_from_configuration_and_workspace_id.return_value
+        )
+        resources.ResourceState._get_path_from_configuration_and_workspace_id.assert_called_with("config_path", "workspace_id")
+
+    def test_migrate(self, mocker):
+        mocker.patch.object(resources.ResourceState, "from_file")
+        mocker.patch.object(resources.ResourceState, "create")
+        new_state = resources.ResourceState.migrate("old_state_path", "workspace_id")
+        resources.ResourceState.from_file.assert_called_with("old_state_path")
+        old_state = resources.ResourceState.from_file.return_value
+        resources.ResourceState.create.assert_called_with(
+            old_state.configuration_path, old_state.configuration_hash, "workspace_id", old_state.resource_id
+        )
+        old_state.delete.assert_called_once()
+        assert new_state == resources.ResourceState.create.return_value
 
 
 @pytest.fixture
@@ -159,21 +195,41 @@ class TestBaseResource:
         resource._get_fn.assert_called_with(resource.api_instance, resource.get_payload)
 
     @pytest.mark.parametrize(
-        "state_path_is_file",
-        [True, False],
+        "state_path_is_file, legacy_state_path_is_file, confirm_migration",
+        [(True, False, False), (False, True, True), (False, True, False), (False, False, False)],
     )
-    def test_get_state_from_file(self, mocker, resource, state_path_is_file):
+    def test_get_state_from_file(self, mocker, resource, state_path_is_file, legacy_state_path_is_file, confirm_migration):
         mocker.patch.object(resources, "os")
+        mocker.patch.object(resources.click, "confirm", mocker.Mock(return_value=confirm_migration))
         mock_expected_state_path = mocker.Mock(is_file=mocker.Mock(return_value=state_path_is_file))
-        mocker.patch.object(resources, "Path", mocker.Mock(return_value=mock_expected_state_path))
+        mock_expected_legacy_state_path = mocker.Mock(is_file=mocker.Mock(return_value=legacy_state_path_is_file))
+        mocker.patch.object(resources, "Path", mocker.Mock(side_effect=[mock_expected_state_path, mock_expected_legacy_state_path]))
         mocker.patch.object(resources, "ResourceState")
-        state = resource._get_state_from_file(resource.configuration_path)
+
+        if legacy_state_path_is_file and not confirm_migration:
+            with pytest.raises(resources.InvalidStateError):
+                state = resource._get_state_from_file(resource.configuration_path, resource.workspace_id)
+        else:
+            state = resource._get_state_from_file(resource.configuration_path, resource.workspace_id)
+
         resources.os.path.dirname.assert_called_with(resource.configuration_path)
-        resources.os.path.join.assert_called_with(resources.os.path.dirname.return_value, "state.yaml")
+        resources.os.path.join.assert_has_calls(
+            [
+                mocker.call(resources.os.path.dirname.return_value, f"state_{resource.workspace_id}.yaml"),
+                mocker.call(resources.os.path.dirname.return_value, "state.yaml"),
+            ]
+        )
         resources.Path.assert_called_with(resources.os.path.join.return_value)
+        mock_expected_state_path.is_file.assert_called_once()
         if state_path_is_file:
             resources.ResourceState.from_file.assert_called_with(mock_expected_state_path)
             assert state == resources.ResourceState.from_file.return_value
+            mock_expected_legacy_state_path.is_file.assert_not_called()
+        elif legacy_state_path_is_file:
+            if confirm_migration:
+                mock_expected_legacy_state_path.is_file.assert_called_once()
+                resources.ResourceState.migrate.assert_called_with(mock_expected_legacy_state_path, resource.workspace_id)
+                assert state == resources.ResourceState.migrate.return_value
         else:
             assert state is None
 
@@ -202,7 +258,9 @@ class TestBaseResource:
         result, state = resource._create_or_update(operation_fn, payload)
         assert result == expected_results
         assert state == resources.ResourceState.create.return_value
-        resources.ResourceState.create.assert_called_with(resource.configuration_path, resource.configuration_hash, "resource_id")
+        resources.ResourceState.create.assert_called_with(
+            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id"
+        )
 
     @pytest.mark.parametrize(
         "response_status,expected_error",
@@ -234,11 +292,11 @@ class TestBaseResource:
     )
     def test__check_for_invalid_configuration_keys(self, configuration, invalid_keys, expect_error):
         if not expect_error:
-            result = resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
+            result = resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "Invalid configuration keys")
             assert result is None
         else:
-            with pytest.raises(resources.InvalidConfigurationError, match="You have some invalid keys: ") as error_info:
-                resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
+            with pytest.raises(resources.InvalidConfigurationError, match="Invalid configuration keys") as error_info:
+                resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "Invalid configuration keys")
             assert all([invalid_key in str(error_info) for invalid_key in invalid_keys])
 
 
@@ -269,7 +327,7 @@ class TestSourceAndDestination:
 class TestSource:
     @pytest.mark.parametrize(
         "state",
-        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
+        [None, resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "abc")],
     )
     def test_init(self, mocker, mock_api_client, local_configuration, state):
         assert resources.Source.__base__ == resources.SourceAndDestination
@@ -330,7 +388,7 @@ class TestSource:
 class TestDestination:
     @pytest.mark.parametrize(
         "state",
-        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
+        [None, resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "abc")],
     )
     def test_init(self, mocker, mock_api_client, local_configuration, state):
         assert resources.Destination.__base__ == resources.SourceAndDestination
@@ -372,8 +430,8 @@ class TestConnection:
         return {
             "definition_type": "connection",
             "resource_name": "my_connection",
-            "source_id": "my_source",
-            "destination_id": "my_destination",
+            "source_configuration_path": "my_source_configuration_path",
+            "destination_configuration_path": "my_destination_configuration_path",
             "configuration": {
                 "namespace_definition": "customformat",
                 "namespace_format": "foo",
@@ -496,7 +554,7 @@ class TestConnection:
 
     @pytest.mark.parametrize(
         "state",
-        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
+        [None, resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "abc")],
     )
     def test_init(self, mocker, mock_api_client, state, connection_configuration):
         assert resources.Connection.__base__ == resources.BaseResource
@@ -520,9 +578,63 @@ class TestConnection:
                 connection_id=state.resource_id, with_refreshed_catalog=False
             )
 
+    @pytest.mark.parametrize("file_not_found_error", [False, True])
+    def test_source_id(self, mocker, mock_api_client, connection_configuration, file_not_found_error):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        if file_not_found_error:
+            mocker.patch.object(
+                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError())
+            )
+        else:
+            mocker.patch.object(
+                resources.ResourceState,
+                "from_configuration_path_and_workspace",
+                mocker.Mock(return_value=mocker.Mock(resource_id="expected_source_id")),
+            )
+
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        if file_not_found_error:
+            with pytest.raises(resources.MissingStateError):
+                connection.source_id
+        else:
+            source_id = connection.source_id
+            assert source_id == "expected_source_id"
+        resources.ResourceState.from_configuration_path_and_workspace.assert_called_with(
+            connection_configuration["source_configuration_path"], connection.workspace_id
+        )
+
+    @pytest.mark.parametrize("file_not_found_error", [False, True])
+    def test_destination_id(self, mocker, mock_api_client, connection_configuration, file_not_found_error):
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        if file_not_found_error:
+            mocker.patch.object(
+                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError())
+            )
+        else:
+            mocker.patch.object(
+                resources.ResourceState,
+                "from_configuration_path_and_workspace",
+                mocker.Mock(return_value=mocker.Mock(resource_id="expected_destination_id")),
+            )
+
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        if file_not_found_error:
+            with pytest.raises(resources.MissingStateError):
+                connection.destination_id
+        else:
+            destination_id = connection.destination_id
+            assert destination_id == "expected_destination_id"
+        resources.ResourceState.from_configuration_path_and_workspace.assert_called_with(
+            connection_configuration["destination_configuration_path"], connection.workspace_id
+        )
+
     def test_create_payload_no_normalization(self, mocker, mock_api_client, connection_configuration):
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
+        mocker.patch.object(resources.Connection, "source_id", "source_id")
+        mocker.patch.object(resources.Connection, "destination_id", "destination_id")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         assert connection.create_payload == resources.WebBackendConnectionCreate(
             name=connection.resource_name,
@@ -535,6 +647,8 @@ class TestConnection:
     def test_create_payload_with_normalization(self, mocker, mock_api_client, connection_configuration_with_normalization):
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
+        mocker.patch.object(resources.Connection, "source_id", "source_id")
+        mocker.patch.object(resources.Connection, "destination_id", "destination_id")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_normalization, "bar.yaml")
         assert connection.create_payload == resources.WebBackendConnectionCreate(
             name=connection.resource_name,
@@ -547,6 +661,8 @@ class TestConnection:
     def test_update_payload_no_normalization(self, mocker, mock_api_client, connection_configuration):
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
+        mocker.patch.object(resources.Connection, "source_id", "source_id")
+        mocker.patch.object(resources.Connection, "destination_id", "destination_id")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         assert connection.update_payload == resources.WebBackendConnectionUpdate(
             connection_id=connection.resource_id,
@@ -557,6 +673,8 @@ class TestConnection:
     def test_update_payload_with_normalization(self, mocker, mock_api_client, connection_configuration_with_normalization):
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
+        mocker.patch.object(resources.Connection, "source_id", "source_id")
+        mocker.patch.object(resources.Connection, "destination_id", "destination_id")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_normalization, "bar.yaml")
         assert connection.update_payload == resources.WebBackendConnectionUpdate(
             connection_id=connection.resource_id,
@@ -627,6 +745,8 @@ class TestConnection:
 
     def test_create(self, mocker, mock_api_client, connection_configuration):
         mocker.patch.object(resources.Connection, "_create_or_update")
+        mocker.patch.object(resources.Connection, "source_id", "source_id")
+        mocker.patch.object(resources.Connection, "destination_id", "destination_id")
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         create_result = resource.create()
         assert create_result == resource._create_or_update.return_value

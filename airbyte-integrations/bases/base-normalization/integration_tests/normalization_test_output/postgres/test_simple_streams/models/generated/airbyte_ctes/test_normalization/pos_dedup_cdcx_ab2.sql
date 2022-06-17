@@ -19,5 +19,5 @@ select
 from {{ ref('pos_dedup_cdcx_ab1') }}
 -- pos_dedup_cdcx
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

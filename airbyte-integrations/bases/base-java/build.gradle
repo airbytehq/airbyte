@@ -18,8 +18,8 @@ dependencies {
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
     implementation 'org.bouncycastle:bctls-jdk15on:1.66'
 
-    implementation libs.testcontainers
-    implementation libs.testcontainers.jdbc
+    implementation libs.connectors.testcontainers
+    implementation libs.connectors.testcontainers.jdbc
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 

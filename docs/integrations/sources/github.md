@@ -137,6 +137,8 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.35  | 2022-06-16 | [13763](https://github.com/airbytehq/airbyte/pull/13763) | Use GraphQL for `pull_request_stats` stream                                                                |
+| 0.2.34  | 2022-06-14 | [13707](https://github.com/airbytehq/airbyte/pull/13707) | Fix API sorting, fix `get_starting_point` caching                                                          |
 | 0.2.33  | 2022-06-08 | [13558](https://github.com/airbytehq/airbyte/pull/13558) | Enable caching only for parent streams                                                                     |
 | 0.2.32  | 2022-06-07 | [13531](https://github.com/airbytehq/airbyte/pull/13531) | Fix different result from `get_starting_point` when reading by pages                                       |
 | 0.2.31  | 2022-05-24 | [13115](https://github.com/airbytehq/airbyte/pull/13115) | Add incremental support for streams `WorkflowRuns`                                                         |
