@@ -90,7 +90,9 @@ jobs:
       fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+    runs-on:
+      - ${{ needs.start-publish-image-runner.outputs.label }}
+      - ubuntu-latest
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
