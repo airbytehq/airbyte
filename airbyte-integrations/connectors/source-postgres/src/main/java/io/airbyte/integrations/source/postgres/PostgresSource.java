@@ -28,7 +28,6 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.AirbyteStateMessageListTypeReference;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -411,7 +409,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return stream;
   }
 
-  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream state
+  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+  // state
   @Override
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {

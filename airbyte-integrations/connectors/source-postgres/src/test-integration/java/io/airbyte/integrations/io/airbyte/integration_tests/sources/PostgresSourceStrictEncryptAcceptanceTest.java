@@ -134,4 +134,5 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   protected boolean supportsPerStream() {
     return true;
   }
+
 }

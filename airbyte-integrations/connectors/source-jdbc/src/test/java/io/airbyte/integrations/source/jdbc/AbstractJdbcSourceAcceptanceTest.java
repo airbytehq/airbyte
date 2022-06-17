@@ -129,7 +129,8 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
-    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream state
+    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+    // state
     @Override
     protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
       if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {

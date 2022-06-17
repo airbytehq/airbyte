@@ -42,7 +42,7 @@ public class StateManagerFactoryTest {
     });
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      StateManagerFactory.createStateManager(AirbyteStateType.LEGACY,null, catalog);
+      StateManagerFactory.createStateManager(AirbyteStateType.LEGACY, null, catalog);
     });
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -166,7 +166,8 @@ public class StateManagerFactoryTest {
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
 
-    Assertions.assertThrows(IllegalArgumentException.class, () ->  StateManagerFactory.createStateManager(AirbyteStateType.STREAM, List.of(airbyteStateMessage), catalog));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StateManagerFactory.createStateManager(AirbyteStateType.STREAM, List.of(airbyteStateMessage), catalog));
   }
 
   @Test

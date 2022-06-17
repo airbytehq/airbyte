@@ -27,11 +27,13 @@ public class StateManagerFactory {
   private StateManagerFactory() {}
 
   /**
-   * Creates a {@link StateManager} based on the provided state object and catalog.  This method will handle the
-   * conversion of the provided state to match the requested state manager based on the provided {@link AirbyteStateType}.
+   * Creates a {@link StateManager} based on the provided state object and catalog. This method will
+   * handle the conversion of the provided state to match the requested state manager based on the
+   * provided {@link AirbyteStateType}.
    *
    * @param supportedStateType The type of state supported by the connector.
-   * @param initialState The deserialized initial state that will be provided to the selected {@link StateManager}.
+   * @param initialState The deserialized initial state that will be provided to the selected
+   *        {@link StateManager}.
    * @param catalog The {@link ConfiguredAirbyteCatalog} for the connector that will utilize the state
    *        manager.
    * @return A newly created {@link StateManager} implementation based on the provided state.

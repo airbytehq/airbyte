@@ -139,4 +139,5 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   protected boolean supportsPerStream() {
     return true;
   }
+
 }

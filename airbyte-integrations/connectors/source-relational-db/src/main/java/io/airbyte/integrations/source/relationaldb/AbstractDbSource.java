@@ -535,6 +535,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * Generates an empty, initial state for use by the connector.
+   *
    * @param config The connector configuration.
    * @return The empty, initial state.
    */

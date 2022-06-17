@@ -138,4 +138,5 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   protected boolean supportsPerStream() {
     return true;
   }
+
 }
