@@ -19,6 +19,7 @@ jobs:
           - source-exchange-rates
           - source-google-analytics-v4
           - source-mailchimp
+          - source-zendesk-support
 
     steps:
       - uses: actions/checkout@v2
