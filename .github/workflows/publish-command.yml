@@ -402,16 +402,16 @@ jobs:
               "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
             },
             {
-              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
-              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+              "label": "${{ needs.start-publish-image-runner-2.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-2.outputs.ec2-instance-id }}",
             },
             {
-              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
-              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+              "label": "${{ needs.start-publish-image-runner-3.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-3.outputs.ec2-instance-id }}",
             },
             {
-              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
-              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+              "label": "${{ needs.start-publish-image-runner-4.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-4.outputs.ec2-instance-id }}",
             },
           ]
     runs-on: ubuntu-latest
