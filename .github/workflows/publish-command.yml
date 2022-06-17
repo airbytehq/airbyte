@@ -161,10 +161,14 @@ jobs:
   manual-label-test:
     needs: start-publish-image-runner-0
     runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    # ./config.sh --labels ${{ needs.start-publish-image-runner-0.outputs.label }},CUSTOMTESTLABEL
     steps:
       - id: label
         run: |
-          ./config.sh --labels ${{ needs.start-publish-image-runner-0.outputs.label }},CUSTOMTESTLABEL
+          ls
+          ls ../
+          pwd
+          cwd
   preprocess-matrix:
     needs: start-publish-image-runner-0
     runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
