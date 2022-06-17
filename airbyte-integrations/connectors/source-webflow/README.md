@@ -63,7 +63,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 First, make sure you build the latest Docker image. Execute the following from
 the source-webflow project directory (where Dockerfile can be found):
 ```
-docker build . -t airbyte/source-webflow:0.1.0-alpha
+docker build . -t airbyte/source-webflow:dev
 ```
 
 You can also build the connector image via Gradle:
@@ -76,10 +76,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-webflow:0.1.0-alpha spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-webflow:0.1.0-alpha check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-webflow:0.1.0-alpha discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-webflow:0.1.0-alpha read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-webflow:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-webflow:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-webflow:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-webflow:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
