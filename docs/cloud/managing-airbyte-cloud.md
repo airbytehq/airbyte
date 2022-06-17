@@ -93,7 +93,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     * Maximum: 999 credits
     :::
 
-    If you would like to purchase 1,000 credits or more at one time, reach out to [Sales](https://airbyte.com/talk-to-sales).
+    If you would like to buy a large amount of credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
 5. Fill out the payment information.
 
@@ -101,9 +101,11 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     
     Your payment is processed, and the Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
 
-    A receipt for your purchase is sent to your email. Invoices are not currently available.
+    A receipt for your purchase is sent to your email. For an invoice, reach out to [ar@airbyte.io](ar@airbyte.io)
 
-     :::note
-     Credits expire after one year if they are not used.
-     :::
+    :::note 
+    
+    Credits expire after one year if they are not used.
+    
+    :::
 
