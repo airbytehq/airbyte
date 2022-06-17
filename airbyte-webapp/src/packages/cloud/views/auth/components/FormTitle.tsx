@@ -1,7 +1,5 @@
-import styled from "styled-components";
+import React from "react";
 
-import { H1 } from "components";
+import styles from "./FormTitle.module.scss";
 
-export const FormTitle = styled(H1)`
-  color: ${({ theme }) => theme.redColor};
-`;
+export const FormTitle: React.FC = ({ children }) => <h1 className={styles.title}>{children}</h1>;
