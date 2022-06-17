@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Optional, Tuple
 
 import airbyte_api_client

@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from click.testing import CliRunner
 from octavia_cli import api_http_headers, entrypoint
@@ -45,7 +46,12 @@ def test_api_http_headers(vcr_cassette, file_based_headers, option_based_headers
         + ["list", "connectors", "sources"]
     )
     result = runner.invoke(entrypoint.octavia, command_options, obj={})
-    assert result.exit_code == 0
+    try:
+        assert result.exit_code == 0
+    except AssertionError as e:
+        print(result.output)
+        raise (e)
+
     for request in vcr_cassette.requests:
         for expected_header in expected_headers:
             assert request.headers[expected_header.name] == expected_header.value
