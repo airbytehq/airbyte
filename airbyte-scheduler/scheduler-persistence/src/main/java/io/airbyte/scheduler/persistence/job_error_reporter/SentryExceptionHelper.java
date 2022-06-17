@@ -17,7 +17,7 @@ public class SentryExceptionHelper {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
       }
-      if (stacktrace.contains(".java")) {
+      if (stacktrace.contains(".java")) { // TODO better heuristic
         return buildJavaSentryExceptions(stacktrace);
       }
 
