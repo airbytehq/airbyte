@@ -497,7 +497,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.8"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -614,19 +614,6 @@
                 examples:
                 - "data_sync/test"
                 order: 3
-              part_size_mb:
-                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes more\
-                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                minimum: 5
-                maximum: 525
-                examples:
-                - 5
-                order: 4
               keep_files_in_gcs-bucket:
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
@@ -638,7 +625,7 @@
                 enum:
                 - "Delete all tmp files from GCS"
                 - "Keep all tmp files in GCS"
-                order: 5
+                order: 4
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -1473,7 +1460,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.7"
+- dockerImage: "airbyte/destination-gcs:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1707,16 +1694,6 @@
                       enum:
                       - "snappy"
                       default: "snappy"
-              part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
-                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                examples:
-                - 5
           - title: "CSV: Comma-Separated Values"
             required:
             - "format_type"
@@ -1735,16 +1712,6 @@
                 enum:
                 - "No flattening"
                 - "Root level flattening"
-              part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
-                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                examples:
-                - 5
               compression:
                 title: "Compression"
                 type: "object"
@@ -1779,16 +1746,6 @@
                 enum:
                 - "JSONL"
                 default: "JSONL"
-              part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload (Optional)"
-                description: "This is the size of a \"Part\" being buffered in memory.\
-                  \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
-                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
-                type: "integer"
-                default: 5
-                examples:
-                - 5
               compression:
                 title: "Compression"
                 type: "object"
@@ -3882,7 +3839,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.7"
+- dockerImage: "airbyte/destination-s3:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
