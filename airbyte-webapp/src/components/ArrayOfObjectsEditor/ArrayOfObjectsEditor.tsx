@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import Modal, { ModalBody, ModalFooter } from "components/Modal";
+import Modal, { ModalBody, ModalFooter, ModalProps } from "components/Modal";
 
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 
@@ -43,6 +43,8 @@ export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
   onRemove: (index: number) => void;
   mode?: ConnectionFormMode;
   disabled?: boolean;
+  editModalSize?: ModalProps["size"];
+  editModalHeight: number;
 }
 
 export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
@@ -59,6 +61,8 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   addButtonText,
   mode,
   disabled,
+  editModalSize,
+  editModalHeight,
 }: ArrayOfObjectsEditorProps<T>): JSX.Element => {
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
@@ -67,8 +71,8 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
 
     return (
-      <Modal title={<FormattedMessage id="form.add" />} size="sm">
-        <ModalBody maxHeight={300}>{children(item)}</ModalBody>
+      <Modal title={<FormattedMessage id="form.add" />} size={editModalSize}>
+        <ModalBody maxHeight={editModalHeight}>{children(item)}</ModalBody>
         {onCancelEdit || onDone ? (
           <ModalFooter>
             {onCancelEdit && (

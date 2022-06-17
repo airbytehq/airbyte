@@ -44,6 +44,8 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
         onStartEdit?.();
       }}
       mode={mode}
+      editModalSize="xl"
+      editModalHeight={400}
     >
       {(editableItem) => (
         <TransformationForm
