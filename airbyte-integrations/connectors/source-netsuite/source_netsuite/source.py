@@ -95,14 +95,20 @@ class NetsuiteStream(HttpStream, ABC):
             # ensure there is a type and null has not already been added
             if property_type and "null" not in list(property_type):
                 record["type"] = [property_type, "null"]
+
             # Netsuite values can be the full name of the value and not match
             # the enum specified in the scheama
-            if record.get("enum"):
-                del record["enum"]
+            if record.get("enum"): del record["enum"]
+
+            # these parts of the schema is not used by Airybte
+            if record.get("x-ns-filterable"): del record["x-ns-filterable"]
+            if record.get("x-ns-custom-field"): del record["x-ns-custom-field"]
+            if record.get("nullable"): del record["nullable"]
+
             ref = record.get("$ref")
             if ref:
                 ns_link = ref == "/services/rest/record/v1/metadata-catalog/nsLink"
-                schema = self.get_schema(ref) if ns_link else self.ref_schema()
+                return self.get_schema(ref) if ns_link else self.ref_schema()
             else:
                 return {k: self.build_schema(v) for k, v in record.items()}
         else:
