@@ -136,8 +136,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         return;
       }
 
+      // this means that the current workflow is being cancelled so that a reset can be run instead.
+      if (workflowState.isCancelledForReset()) {
+        reportCancelledAndContinueWith(true, connectionUpdaterInput);
+      }
+
       if (workflowState.isCancelled()) {
-        reportCancelledAndContinueWith(connectionUpdaterInput);
+        // TODO: remove streams from streams_to_reset
+        reportCancelledAndContinueWith(false, connectionUpdaterInput);
       }
 
     } catch (final Exception e) {
@@ -399,13 +405,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
-    if (workflowState.isRunning()) {
-      workflowState.setCancelled(true);
-      workflowState.setSkipSchedulingNextRun(true);
-      cancellableSyncWorkflow.cancel();
-    } else {
-      workflowState.setSkipScheduling(true);
-    }
+    workflowState.setCancelledForReset(true);
+    cancellableSyncWorkflow.cancel();
   }
 
   @Override
@@ -450,7 +451,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
-    connectionUpdaterInput.setSkipScheduling(workflowState.isSkipSchedulingNextRun());
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
@@ -709,9 +709,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   /**
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
-  private void reportCancelledAndContinueWith(final ConnectionUpdaterInput connectionUpdaterInput) {
+  private void reportCancelledAndContinueWith(final boolean skipSchedulingNextRun, final ConnectionUpdaterInput connectionUpdaterInput) {
     reportCancelled();
     resetNewConnectionInput(connectionUpdaterInput);
+    connectionUpdaterInput.setSkipScheduling(skipSchedulingNextRun);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
