@@ -11,7 +11,8 @@
         },
         "paypal_reference_id_type": {
           "type": ["null", "string"],
-          "maxLength": 3
+          "maxLength": 3,
+          "minLength": 3
         },
         "protection_eligibility": {
           "type": ["null", "string"],
@@ -42,7 +43,8 @@
           "properties": {
             "currency_code": {
               "type": "string",
-              "maxLength": 3
+              "maxLength": 3,
+              "minLength": 3
             },
             "value": {
               "type": "number"
@@ -53,8 +55,9 @@
           "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": ["null", "string"],
-              "maxLength": 3
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
             },
             "value": {
               "type": ["null", "number"]
@@ -65,8 +68,9 @@
           "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": ["null", "string"],
-              "maxLength": 3
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
             },
             "value": {
               "type": ["null", "number"]
@@ -77,8 +81,9 @@
           "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": ["null", "string"],
-              "maxLength": 3
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
             },
             "value": {
               "type": ["null", "number"]
@@ -89,8 +94,9 @@
           "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": ["null", "string"],
-              "maxLength": 3
+              "type": "string",
+              "maxLength": 3,
+              "minLength": 3
             },
             "value": {
               "type": ["null", "number"]
@@ -217,8 +223,9 @@
                 "type": ["null", "object"],
                 "properties": {
                   "currency_code": {
-                    "type": ["null", "string"],
-                    "maxLength": 3
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
                   },
                   "value": {
                     "type": ["null", "number"]
@@ -229,8 +236,9 @@
                 "type": ["null", "object"],
                 "properties": {
                   "currency_code": {
-                    "type": ["null", "string"],
-                    "maxLength": 3
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
                   },
                   "value": {
                     "type": ["null", "number"]
@@ -246,8 +254,9 @@
                       "type": ["null", "object"],
                       "properties": {
                         "currency_code": {
-                          "type": ["null", "string"],
-                          "maxLength": 3
+                          "type": "string",
+                          "maxLength": 3,
+                          "minLength": 3
                         },
                         "value": {
                           "type": ["null", "number"]
@@ -261,8 +270,9 @@
                 "type": ["null", "object"],
                 "properties": {
                   "currency_code": {
-                    "type": ["null", "string"],
-                    "maxLength": 3
+                    "type": "string",
+                    "maxLength": 3,
+                    "minLength": 3
                   },
                   "value": {
                     "type": ["null", "number"]
@@ -332,7 +342,8 @@
                 "properties": {
                   "currency_code": {
                     "type": "string",
-                    "maxLength": 3
+                    "maxLength": 3,
+                    "minLength": 3
                   },
                   "value": {
                     "type": ["null", "number"]
