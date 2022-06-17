@@ -56,18 +56,18 @@ export const ConnectorCard: React.FC<
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
-    const trackAction = (action: string, actionTypes: TrackActionActions[]) => {
+    const trackAction = (action: string, actionType: TrackActionActions) => {
       if (!connector) {
         return;
       }
 
       if (props.formType === "source") {
-        trackNewSourceAction(action, actionTypes, {
+        trackNewSourceAction(action, actionType, {
           connector_source: connector?.name,
           connector_source_definition_id: Connector.id(connector),
         });
       } else {
-        trackNewDestinationAction(action, actionTypes, {
+        trackNewDestinationAction(action, actionType, {
           connector_destination: connector?.name,
           connector_destination_definition_id: Connector.id(connector),
         });
@@ -75,12 +75,12 @@ export const ConnectorCard: React.FC<
     };
 
     const testConnectorWithTracking = async () => {
-      trackAction("Test a connector", [TrackActionActions.TEST]);
+      trackAction("Test a connector", TrackActionActions.TEST);
       try {
         await testConnector(values);
-        trackAction("Tested connector - success", [TrackActionActions.TEST, TrackActionActions.SUCCESS]);
+        trackAction("Tested connector - success", TrackActionActions.SUCCESS);
       } catch (e) {
-        trackAction("Tested connector - failure", [TrackActionActions.TEST, TrackActionActions.FAILURE]);
+        trackAction("Tested connector - failure", TrackActionActions.FAILURE);
         throw e;
       }
     };

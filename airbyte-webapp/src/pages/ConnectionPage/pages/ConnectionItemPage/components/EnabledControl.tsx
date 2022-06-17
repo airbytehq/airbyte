@@ -51,7 +51,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
 
     const trackableActionString = `${trackableAction} connection`;
 
-    trackSourceAction(trackableActionString, [trackableAction], {
+    trackSourceAction(trackableActionString, trackableAction, {
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,

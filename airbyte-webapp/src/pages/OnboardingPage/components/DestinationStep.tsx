@@ -75,7 +75,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    trackNewDestinationAction("Select a connector", [TrackActionActions.SELECT], {
+    trackNewDestinationAction("Select a connector", TrackActionActions.SELECT, {
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });

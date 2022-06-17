@@ -75,7 +75,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
 
-    trackNewSourceAction("Select a connector", [TrackActionActions.SELECT], {
+    trackNewSourceAction("Select a connector", TrackActionActions.SELECT, {
       connector_source: sourceDefinition?.name,
       connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });

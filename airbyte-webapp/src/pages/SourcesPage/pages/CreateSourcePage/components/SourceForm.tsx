@@ -60,7 +60,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     if (afterSelectConnector) {
       afterSelectConnector();
     }
-    trackNewSourceAction("Select a connector", [TrackActionActions.SELECT], {
+    trackNewSourceAction("Select a connector", TrackActionActions.SELECT, {
       connector_source: connector?.name,
       connector_source_definition_id: sourceDefinitionId,
     });

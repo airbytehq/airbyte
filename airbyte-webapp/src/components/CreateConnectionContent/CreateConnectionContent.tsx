@@ -93,7 +93,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
     if (item) {
-      trackNewConnectionAction("Select a frequency", [TrackActionActions.FREQUENCY], {
+      trackNewConnectionAction("Select a frequency", TrackActionActions.FREQUENCY, {
         frequency: item.label,
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: source?.sourceDefinitionId,

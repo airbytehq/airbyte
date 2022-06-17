@@ -29,7 +29,7 @@ const useSyncActions = (): {
 
     const trackableActionString = `${trackableAction} connection`;
 
-    trackSourceAction(trackableActionString, [trackableAction], {
+    trackSourceAction(trackableActionString, trackableAction, {
       frequency: frequency?.type,
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,

@@ -13,8 +13,8 @@ export const enum TrackActionActions {
   CREATE = "Create",
   TEST = "Test",
   SELECT = "Select",
-  SUCCESS = "Success",
-  FAILURE = "Failure",
+  SUCCESS = "TestSuccess",
+  FAILURE = "TestFailure",
   FREQUENCY = "FrequencySet",
   SYNC = "FullRefreshSync",
   SCHEMA = "EditSchema",
@@ -52,15 +52,13 @@ export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: Leg
   return useCallback(
     (
       action: string,
-      actionTypes: TrackActionActions[], //actionType is typically one entry (ie: CREATE) but is sometimes nested (ie: TEST.SUCCESS)
+      actionType: TrackActionActions,
       properties: TrackConnectorActionProperties | TrackConnectionActionProperties
     ) => {
-      const actionTypesString = actionTypes.toString().replaceAll(",", ".");
-
       // Calls that did not exist in the legacy format will not have a legacy event name
       const legacyEventName = legacyType ? `${legacyType} - Action)` : "";
 
-      analyticsService.track(`Airbyte.UI.${namespace}.${actionTypesString}`, {
+      analyticsService.track(`Airbyte.UI.${namespace}.${actionType}`, {
         action,
         ...properties,
         legacy_event_name: legacyEventName,

@@ -93,7 +93,7 @@ export const useSyncConnection = () => {
   return useMutation((connection: WebBackendConnectionRead) => {
     const frequency = getFrequencyConfig(connection.schedule);
 
-    trackSourceAction("Full refresh sync", [TrackActionActions.SYNC], {
+    trackSourceAction("Full refresh sync", TrackActionActions.SYNC, {
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
@@ -146,7 +146,7 @@ const useCreateConnection = () => {
 
       const frequencyData = getFrequencyConfig(values.schedule);
 
-      trackNewConnectionAction("Set up connection", [TrackActionActions.CREATE], {
+      trackNewConnectionAction("Set up connection", TrackActionActions.CREATE, {
         frequency: frequencyData?.type || "",
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,

@@ -105,7 +105,7 @@ const useDeleteSource = () => {
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
-        trackSourceAction("Delete source", [TrackActionActions.DELETE], {
+        trackSourceAction("Delete source", TrackActionActions.DELETE, {
           connector_source: ctx.source.sourceName,
           connector_source_definition_id: ctx.source.sourceDefinitionId,
         });

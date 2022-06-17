@@ -99,7 +99,7 @@ const useDeleteDestination = () => {
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
-        trackDestinationAction("Delete destination", [TrackActionActions.DELETE], {
+        trackDestinationAction("Delete destination", TrackActionActions.DELETE, {
           connector_destination: ctx.destination.destinationName,
           connector_destination_definition_id: ctx.destination.destinationDefinitionId, //another change to match the data we send
         });

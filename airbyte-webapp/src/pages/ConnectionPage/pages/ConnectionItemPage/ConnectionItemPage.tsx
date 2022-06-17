@@ -34,7 +34,7 @@ const ConnectionItemPage: React.FC = () => {
   const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
 
   const onAfterSaveSchema = () => {
-    trackSourceAction("Edit schema", [TrackActionActions.SCHEMA], {
+    trackSourceAction("Edit schema", TrackActionActions.SCHEMA, {
       connector_source: source.sourceName,
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,

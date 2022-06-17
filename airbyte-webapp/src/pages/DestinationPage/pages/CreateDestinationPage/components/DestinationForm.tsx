@@ -63,7 +63,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       afterSelectConnector();
     }
 
-    trackNewDestinationAction("Select a connector", [TrackActionActions.SELECT], {
+    trackNewDestinationAction("Select a connector", TrackActionActions.SELECT, {
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });
