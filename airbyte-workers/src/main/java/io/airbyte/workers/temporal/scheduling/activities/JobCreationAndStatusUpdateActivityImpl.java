@@ -72,8 +72,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       failNonTerminalJobs(input.getConnectionId());
 
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
-      if (input.isReset()) {
+      final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
 
+      if (!streamsToReset.isEmpty()) {
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
         final StandardDestinationDefinition destinationDef =
@@ -86,7 +87,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           standardSyncOperations.add(standardSyncOperation);
         }
 
-        final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
         final Optional<Long> jobIdOptional =
             jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
 
