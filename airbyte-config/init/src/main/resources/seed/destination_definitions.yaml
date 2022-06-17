@@ -80,14 +80,14 @@
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
   icon: dynamodb.svg
   releaseStage: alpha
 - name: E2E Testing
   destinationDefinitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
   dockerRepository: airbyte/destination-e2e-test
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/e2e-test
   icon: airbyte.svg
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c

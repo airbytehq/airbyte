@@ -1160,7 +1160,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-dynamodb:0.1.3"
+- dockerImage: "airbyte/destination-dynamodb:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/dynamodb"
     connectionSpecification:
@@ -1241,7 +1241,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-e2e-test:0.2.2"
+- dockerImage: "airbyte/destination-e2e-test:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/e2e-test"
     connectionSpecification:
