@@ -17,10 +17,10 @@ from source_tiktok_marketing.streams import (
     AdvertisersReports,
     BasicReports,
     CampaignsReports,
-    ReportGranularity,
-    Hourly,
     Daily,
-    Lifetime
+    Hourly,
+    Lifetime,
+    ReportGranularity,
 )
 
 START_DATE = "2020-01-01"
