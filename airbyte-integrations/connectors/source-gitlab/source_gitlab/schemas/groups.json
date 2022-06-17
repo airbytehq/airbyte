@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "projects": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "path_with_namespace": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "path": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "visibility": {
+      "type": ["null", "string", "integer", "boolean"]
+    },
+    "share_with_group_lock": {
+      "type": ["null", "boolean"]
+    },
+    "require_two_factor_authentication": {
+      "type": ["null", "boolean"]
+    },
+    "two_factor_grace_period": {
+      "type": ["null", "integer"]
+    },
+    "project_creation_level": {
+      "type": ["null", "string"]
+    },
+    "auto_devops_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "subgroup_creation_level": {
+      "type": ["null", "string"]
+    },
+    "emails_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "mentions_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "lfs_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "default_branch_protection": {
+      "type": ["null", "integer"]
+    },
+    "avatar_url": {
+      "type": ["null", "string"]
+    },
+    "request_access_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "full_name": {
+      "type": ["null", "string"]
+    },
+    "full_path": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "ldap_cn": {
+      "type": ["null", "string"]
+    },
+    "ldap_access": {
+      "type": ["null", "string", "integer", "boolean"]
+    },
+    "shared_with_groups": {
+      "type": ["null", "array"]
+    },
+    "runners_token": {
+      "type": ["null", "string"]
+    },
+    "shared_projects": {
+      "type": ["null", "array"]
+    },
+    "shared_runners_minutes_limit": {
+      "type": ["null", "integer"]
+    },
+    "extra_shared_runners_minutes_limit": {
+      "type": ["null", "integer"]
+    },
+    "prevent_forking_outside_group": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
