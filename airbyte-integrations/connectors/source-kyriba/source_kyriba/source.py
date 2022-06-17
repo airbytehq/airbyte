@@ -49,7 +49,6 @@ class KyribaStream(HttpStream):
         super().__init__(self.client.login())
 
     primary_key = None
-    max_retries = 10
 
     @property
     def url_base(self) -> str:
@@ -66,7 +65,7 @@ class KyribaStream(HttpStream):
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=10)
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3)
     def should_retry(self, response: requests.Response) -> bool:
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires
