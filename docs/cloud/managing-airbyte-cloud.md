@@ -89,8 +89,8 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
     :::note 
     Purchase limits:
-        * Minimum: 100 credits
-        * Maximum: 999 credits
+    * Minimum: 100 credits
+    * Maximum: 999 credits
     :::
 
     If you would like to purchase 1,000 credits or more at one time, reach out to [Sales](https://airbyte.com/talk-to-sales).
@@ -106,3 +106,4 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
      :::note
      Credits expire after one year if they are not used.
      :::
+
