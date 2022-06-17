@@ -146,7 +146,10 @@ public class StateGeneratorUtils {
 
   /**
    * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
-   * one that has a non-{@code null} name <b>OR</b> non-{@code null} namespace.
+   * one that has a non-{@code null} name.
+   *
+   * See https://github.com/airbytehq/airbyte/blob/22b727c0ea213376b7164ffd8cdbbfa7fd74c26c/docs/understanding-airbyte/airbyte-protocol.md
+   * for more details
    *
    * @param streamDescriptor A {@link StreamDescriptor} to be validated.
    * @return {@code true} if the provided {@link StreamDescriptor} is valid or {@code false} if it is
@@ -154,7 +157,7 @@ public class StateGeneratorUtils {
    */
   public static boolean isValidStreamDescriptor(final StreamDescriptor streamDescriptor) {
     if (streamDescriptor != null) {
-      return streamDescriptor.getName() != null || streamDescriptor.getNamespace() != null;
+      return streamDescriptor.getName() != null;
     } else {
       return false;
     }
