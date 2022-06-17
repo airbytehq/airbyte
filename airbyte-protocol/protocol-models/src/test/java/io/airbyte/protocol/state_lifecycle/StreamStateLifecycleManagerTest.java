@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,13 +14,12 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.protocol.state_lifecycle.StreamStateLifecycleManager;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DestStreamStateLifecycleManagerTest {
+class StreamStateLifecycleManagerTest {
 
   private static final AirbyteMessage STREAM1_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)

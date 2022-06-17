@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -18,7 +18,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
- * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by
+ * This {@link StateLifecycleManager} handles any state where the state messages are scoped by
  * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
  * stream (no duplicates!).
  *
@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
  * were received. State messages across streams will be emitted in alphabetical order (primary sort
  * on namespace, secondary on name).
  */
-public class DestStreamStateLifecycleManager implements DestStateLifecycleManager {
+public class StreamStateLifecycleManager implements StateLifecycleManager {
 
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
 
-  public DestStreamStateLifecycleManager() {
+  public StreamStateLifecycleManager() {
     streamToLastPendingState = new HashMap<>();
     streamToLastFlushedState = new HashMap<>();
     streamToLastCommittedState = new HashMap<>();

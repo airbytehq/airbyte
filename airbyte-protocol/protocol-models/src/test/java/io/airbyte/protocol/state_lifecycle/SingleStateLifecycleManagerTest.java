@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,7 +15,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DestSingleStateLifecycleManagerTest {
+class SingleStateLifecycleManagerTest {
 
   private static final AirbyteMessage MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -24,11 +24,11 @@ class DestSingleStateLifecycleManagerTest {
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("b")));
 
-  private DestSingleStateLifecycleManager mgr;
+  private SingleStateLifecycleManager mgr;
 
   @BeforeEach
   void setup() {
-    mgr = new DestSingleStateLifecycleManager();
+    mgr = new SingleStateLifecycleManager();
   }
 
   /**

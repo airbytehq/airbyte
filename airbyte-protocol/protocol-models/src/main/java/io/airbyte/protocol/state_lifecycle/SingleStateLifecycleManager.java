@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -10,16 +10,17 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.function.Function;
 
 /**
- * This {@link DestStateLifecycleManager} handles any state where there is a guarantee that any
+ * This {@link StateLifecycleManager} handles any state where there is a guarantee that any
  * single state message represents the state for the ENTIRE connection. At the time of writing,
  * GLOBAL and LEGACY state types are the state type that match this pattern.
  *
  * Does NOT store duplicates. Because each state message represents the entire state for the
  * connection, it only stores (and emits) the LAST state it received at each phase.
  */
-public class DestSingleStateLifecycleManager implements DestStateLifecycleManager {
+public class SingleStateLifecycleManager implements StateLifecycleManager {
 
   private AirbyteMessage lastPendingState;
   private AirbyteMessage lastFlushedState;
@@ -37,6 +38,7 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void markPendingAsFlushed() {
+    Function.
     if (lastPendingState != null) {
       lastFlushedState = lastPendingState;
       lastPendingState = null;

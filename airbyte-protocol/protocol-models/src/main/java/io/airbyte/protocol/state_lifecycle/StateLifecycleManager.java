@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.Queue;
@@ -17,7 +17,7 @@ import java.util.Queue;
  * <li>committed - associated records have been committed</li>
  * </ol>
  */
-public interface DestStateLifecycleManager {
+public interface StateLifecycleManager {
 
   /**
    * Accepts a state into the manager. The state starts in a pending state.

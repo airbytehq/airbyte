@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
+package io.airbyte.protocol.state_lifecycle;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -24,17 +24,16 @@ import java.util.function.Supplier;
  *
  * Per the protocol, if state type is not set, assumes the LEGACY state type.
  */
-public class DefaultDestStateLifecycleManager implements DestStateLifecycleManager {
+public class DefaultStateLifecycleManager implements StateLifecycleManager {
 
   private AirbyteStateType stateType;
-  private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
+  private final Supplier<StateLifecycleManager> internalStateManagerSupplier;
 
-  public DefaultDestStateLifecycleManager() {
-    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager());
+  public DefaultStateLifecycleManager() {
+    this(new SingleStateLifecycleManager(), new StreamStateLifecycleManager());
   }
 
-  @VisibleForTesting
-  DefaultDestStateLifecycleManager(final DestStateLifecycleManager singleStateManager, final DestStateLifecycleManager streamStateManager) {
+  @VisibleForTesting DefaultStateLifecycleManager(final StateLifecycleManager singleStateManager, final StateLifecycleManager streamStateManager) {
     stateType = null;
     // allows us to delegate calls to the appropriate underlying state manager.
     internalStateManagerSupplier = () -> {
