@@ -60,6 +60,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Beta                 | Yes                 |
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
+| [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
 | [Google Analytics v4](sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
