@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_webflow.source import CollectionContents, WebflowStream, SourceWebflow
+from source_webflow.source import CollectionContents, SourceWebflow, WebflowStream
 
 
 @pytest.fixture
