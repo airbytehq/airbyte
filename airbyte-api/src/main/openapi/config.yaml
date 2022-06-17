@@ -4031,7 +4031,7 @@ components:
           items:
             $ref: "#/components/schemas/StreamState"
         globalState:
-          $ref: "#/components/schemas/AirbyteGlobalState"
+          $ref: "#/components/schemas/GlobalState"
     StateBlob:
       type: object
     StreamState:
@@ -4043,7 +4043,7 @@ components:
           $ref: "#/components/schemas/StreamDescriptor"
         streamState:
           $ref: "#/components/schemas/StateBlob"
-    AirbyteGlobalState:
+    GlobalState:
       type: object
       required:
         - streamStates

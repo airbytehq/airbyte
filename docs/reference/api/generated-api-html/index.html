@@ -681,19 +681,16 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "globalState" : {
-    "shared_state" : "{}",
     "streamStates" : [ {
       "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
-      },
-      "streamState" : "{}"
+      }
     }, {
       "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
-      },
-      "streamState" : "{}"
+      }
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -701,16 +698,13 @@ font-style: italic;
     "streamDescriptor" : {
       "name" : "name",
       "namespace" : "namespace"
-    },
-    "streamState" : "{}"
+    }
   }, {
     "streamDescriptor" : {
       "name" : "name",
       "namespace" : "namespace"
-    },
-    "streamState" : "{}"
-  } ],
-  "state" : "{}"
+    }
+  } ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -10667,7 +10661,6 @@ font-style: italic;
     <li><a href="#ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a></li>
     <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
-    <li><a href="#AirbyteGlobalState"><code>AirbyteGlobalState</code> - </a></li>
     <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
     <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
     <li><a href="#AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a></li>
@@ -10725,6 +10718,7 @@ font-style: italic;
     <li><a href="#FieldNameAndType"><code>FieldNameAndType</code> - </a></li>
     <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
     <li><a href="#FieldTypeUpdate"><code>FieldTypeUpdate</code> - </a></li>
+    <li><a href="#GlobalState"><code>GlobalState</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
@@ -10840,14 +10834,6 @@ font-style: italic;
     <div class='model-description'>describes the available schema (catalog).</div>
     <div class="field-items">
       <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamAndConfiguration">array[AirbyteStreamAndConfiguration]</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="AirbyteGlobalState"><code>AirbyteGlobalState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">shared_state (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
-<div class="param">streamStates </div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11108,9 +11094,9 @@ font-style: italic;
     <div class="field-items">
       <div class="param">stateType </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStateType">ConnectionStateType</a></span>  </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#StateBlob">StateBlob</a></span>  </div>
 <div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
-<div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteGlobalState">AirbyteGlobalState</a></span>  </div>
+<div class="param">globalState (optional)</div><div class="param-desc"><span class="param-type"><a href="#GlobalState">GlobalState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11403,6 +11389,14 @@ font-style: italic;
       <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
 <div class="param">oldType </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
 <div class="param">newType </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="GlobalState"><code>GlobalState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">shared_state (optional)</div><div class="param-desc"><span class="param-type"><a href="#StateBlob">StateBlob</a></span>  </div>
+<div class="param">streamStates </div><div class="param-desc"><span class="param-type"><a href="#StreamState">array[StreamState]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11987,7 +11981,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">streamDescriptor </div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
-<div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+<div class="param">streamState (optional)</div><div class="param-desc"><span class="param-type"><a href="#StateBlob">StateBlob</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
