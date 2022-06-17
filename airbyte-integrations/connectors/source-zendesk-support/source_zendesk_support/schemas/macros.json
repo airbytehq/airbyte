@@ -1,7 +1,7 @@
 {
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "position": {
       "type": ["null", "integer"]
@@ -58,5 +58,5 @@
       "type": ["null", "array"]
     }
   },
-  "type": ["null", "object"]
+  "type": ["object"]
 }
