@@ -67,10 +67,8 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
 
     return (
-      <Modal title={<FormattedMessage id="form.add" />}>
-        <ModalBody width={430} maxHeight={300}>
-          {children(item)}
-        </ModalBody>
+      <Modal title={<FormattedMessage id="form.add" />} size="sm">
+        <ModalBody maxHeight={300}>{children(item)}</ModalBody>
         {onCancelEdit || onDone ? (
           <ModalFooter>
             {onCancelEdit && (
