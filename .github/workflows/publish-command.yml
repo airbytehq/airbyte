@@ -357,25 +357,15 @@ jobs:
   #         body: |
   #           > :white_check_mark: ${{matrix.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   # In case of self-hosted EC2 errors, remove this block.
-  stop-publish-image-runner:
+  stop-publish-image-runner-0:
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     name: Stop Build EC2 Runner
     needs:
-      - start-publish-image-runner # required to get output from the start-runner job
+      - start-publish-image-runner-0 # required to get output from the start-runner job
+      - preprocess-matrix
       # - publish-image # required to wait when the main job is done
       - find_valid_pat
-    strategy:
-      fail-fast: false
-      matrix:
-        ec2-instance-id:
-          [
-            "${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-2.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-3.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-4.outputs.ec2-instance-id }}",
-          ]
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -388,5 +378,42 @@ jobs:
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-publish-image-runner.outputs.label }}
+          label: ${{ needs.start-publish-image-runner-0.outputs.label }}
+          ec2-instance-id: ${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}
+  stop-publish-image-runner-multi:
+    if: github.event.inputs.parallel == 'true'
+    name: Stop Build EC2 Runner
+    needs:
+      - start-publish-image-runner-0
+      - start-publish-image-runner-1
+      - start-publish-image-runner-2
+      - start-publish-image-runner-3
+      - start-publish-image-runner-4
+      - preprocess-matrix
+      # - publish-image # required to wait when the main job is done
+      - find_valid_pat
+    strategy:
+      fail-fast: false
+      matrix:
+        ec2-instance-id:
+          [
+            "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            "${{ needs.start-publish-image-runner-2.outputs.ec2-instance-id }}",
+            "${{ needs.start-publish-image-runner-3.outputs.ec2-instance-id }}",
+            "${{ needs.start-publish-image-runner-4.outputs.ec2-instance-id }}",
+          ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ needs.start-publish-image-runner-0.outputs.label }}
           ec2-instance-id: ${{ matrix.ec2-instance-id }}
