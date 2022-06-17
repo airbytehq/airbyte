@@ -144,7 +144,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        start_date = stream_state.get(self.cursor_field, self._start_date)
+        start_date = self.state.get(self.cursor_field, self._start_date)
         params[self.incremental_filter_field] = pendulum.parse(start_date).format(self.time_filter_template)
         return params
 
@@ -159,10 +159,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             super().read_records(sync_mode, cursor_field, stream_slice, stream_state), key=lambda x: x[self.cursor_field]
         )
         for record in sorted_records:
-            self._cursor_value = max(
-                str(pendulum.parse(record[self.cursor_field], strict=False)), stream_state.get(self.cursor_field, self._start_date)
-            )
-            yield record
+            record_cursor_time = str(pendulum.parse(record[self.cursor_field], strict=False))
+            self._cursor_value = max(record_cursor_time, self.state.get(self.cursor_field, self._start_date))
+            if record_cursor_time >= self._cursor_value:
+                yield record
 
 
 class TwilioNestedStream(TwilioStream):
