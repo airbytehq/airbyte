@@ -17,20 +17,12 @@ const FormContainer = styled.div`
   width: 100%;
 `;
 
-const Logo = styled.img`
-  margin-bottom: 37px;
-  display: block;
-`;
-
 const FormContent: React.FC<{ toLogin?: boolean }> = (props) => {
   return (
     <>
       <Header toLogin={props.toLogin} />
       <MainBlock>
-        <FormContainer>
-          <Logo src="/cloud-main-logo.svg" width={186} />
-          {props.children}
-        </FormContainer>
+        <FormContainer>{props.children}</FormContainer>
       </MainBlock>
       <GitBlock />
     </>
