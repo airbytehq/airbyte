@@ -4063,11 +4063,11 @@ components:
         - not_set
     CatalogDiff:
       type: object
-      description: "Describes the difference between two Airbyte catalogs."
+      description: Describes the difference between two Airbyte catalogs.
       required:
-        - transformations
+        - transforms
       properties:
-        transformations:
+        transforms:
           description: list of stream transformations. order does not matter.
           type: array
           items:
@@ -4103,46 +4103,44 @@ components:
           enum:
             - add_field
             - remove_field
-            - update_field_type
+            - update_field_schema
         addField:
-          $ref: "#/components/schemas/FieldNameAndType"
+          $ref: "#/components/schemas/FieldNameAndSchema"
         removeField:
-          $ref: "#/components/schemas/FieldNameAndType"
-        updateFieldType:
-          $ref: "#/components/schemas/FieldTypeUpdate"
-    FieldNameAndType:
+          $ref: "#/components/schemas/FieldNameAndSchema"
+        updateFieldSchema:
+          $ref: "#/components/schemas/FieldSchemaUpdate"
+    FieldNameAndSchema:
       type: object
       required:
         - fieldName
-        - fieldType
+        - fieldSchema
       properties:
         fieldName:
           type: array
           items:
             type: string
-        fieldType:
-          type: array
-          items:
-            type: string
-    FieldTypeUpdate:
+        fieldSchema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldSchemaUpdate:
       type: object
       required:
         - fieldName
-        - oldType
-        - newType
+        - oldSchema
+        - newSchema
       properties:
         fieldName:
           type: array
           items:
             type: string
-        oldType:
-          type: array
-          items:
-            type: string
-        newType:
-          type: array
-          items:
-            type: string
+        oldSchema:
+          $ref: "#/components/schemas/FieldSchema"
+        newSchema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldSchema:
+      description: JSONSchema representation of the field
+      type: object
+      additionalProperties: true
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object
