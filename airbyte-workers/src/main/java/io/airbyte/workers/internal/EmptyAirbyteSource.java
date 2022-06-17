@@ -46,19 +46,19 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
+  public void start(final WorkerSourceConfig workerSourceConfig, final Path jobRoot) throws Exception {
 
-    if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
+    if (workerSourceConfig == null || workerSourceConfig.getSourceConnectionConfiguration() == null) {
       // TODO: When the jobConfig is fully updated and tested, we can remove this extra check that makes
       // us compatible with running a reset with
       // a null config
       isResetBasedOnConfig = false;
     } else {
-      final ResetSourceConfiguration sourceConfiguration;
+      final ResetSourceConfiguration resetSourceConfiguration;
       try {
-        sourceConfiguration =
-            Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
-        streamsToReset.addAll(sourceConfiguration.getStreamsToReset());
+        resetSourceConfiguration =
+            Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
+        streamsToReset.addAll(resetSourceConfiguration.getStreamsToReset());
       } catch (final IllegalArgumentException e) {
         log.error("The configuration provided to the reset has an invalid format");
         throw new IllegalArgumentException("The reset configuration format is invalid", e);
@@ -70,11 +70,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
         // logic of populating this list is not implemented
         isResetBasedOnConfig = false;
       } else {
-        stateWrapper = StateMessageHelper.getTypedState(sourceConfig.getState().getState());
+        stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState());
 
         if (stateWrapper.isPresent() &&
             stateWrapper.get().getStateType() == StateType.LEGACY &&
-            !isResetAllStreamsInCatalog(sourceConfig)) {
+            !isResetAllStreamsInCatalog(workerSourceConfig)) {
           log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
           throw new IllegalStateException("Try to perform a partial reset on a legacy state");
         }
