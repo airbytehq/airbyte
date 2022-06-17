@@ -96,7 +96,7 @@ public class EmptyAirbyteSourceTest {
     Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
 
     /*
-     * The comparison could be what it is bellow but it makes it hard to see what is the diff. It has
+     * The comparison could be what it is below but it makes it hard to see what is the diff. It has
      * been break dow into multiples assertions. (same comment in the other tests)
      *
      * AirbyteStateMessage expectedState = new AirbyteStateMessage()
@@ -106,7 +106,7 @@ public class EmptyAirbyteSourceTest {
      * StreamDescriptor().withName("a")), new
      * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new
      * StreamDescriptor().withName("b")), new
-     * AirbyteStreamState().withStreamState(Jsons.emptyObject()).withStreamDescriptor(new
+     * AirbyteStreamState().withStreamState(null).withStreamDescriptor(new
      * StreamDescriptor().withName("c")) ) ) );
      *
      * Assertions.assertThat(stateMessage).isEqualTo(expectedState);
@@ -277,8 +277,7 @@ public class EmptyAirbyteSourceTest {
   }
 
   @Test
-  public void testLegacyWithNewConfig() throws Exception {
-    final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+  public void testLegacyWithNewConfigMissingStream() {
 
     final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
@@ -297,6 +296,29 @@ public class EmptyAirbyteSourceTest {
             .withState(Jsons.emptyObject()))
         .withCatalog(airbyteCatalogWithExtraStream);
 
+    Assertions.assertThatThrownBy(() -> emptyAirbyteSource.start(workerSourceConfig, null))
+        .isInstanceOf(IllegalStateException.class);
+
+  }
+
+  @Test
+  public void testLegacyWithNewConfig() throws Exception {
+    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+
+    final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
+        .withStreamsToReset(streamToReset);
+    final ConfiguredAirbyteCatalog airbyteCatalogWithExtraStream = new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
+
+    final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withState(new State()
+            .withState(Jsons.emptyObject()))
+        .withCatalog(airbyteCatalogWithExtraStream);
+
     emptyAirbyteSource.start(workerSourceConfig, null);
 
     final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
@@ -307,14 +329,8 @@ public class EmptyAirbyteSourceTest {
     Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
 
     final AirbyteStateMessage stateMessage = message.getState();
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.GLOBAL);
-    Assertions.assertThat(stateMessage.getGlobal().getSharedState()).isNull();
-    Assertions.assertThat(stateMessage.getGlobal().getStreamStates())
-        .map(streamState -> streamState.getStreamDescriptor())
-        .containsExactlyElementsOf(streamDescriptors);
-    Assertions.assertThat(stateMessage.getGlobal().getStreamStates())
-        .map(streamState -> streamState.getStreamState())
-        .containsOnlyNulls();
+    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();

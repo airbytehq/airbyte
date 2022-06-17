@@ -38,7 +38,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamDescriptors = new LinkedList<>();
-  private boolean isPartialReset;
+  private boolean isResetBasedOnConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
 
@@ -51,7 +51,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
     try {
       if (sourceConfig == null || sourceConfig.getSourceConnectionConfiguration() == null) {
-        isPartialReset = false;
+        isResetBasedOnConfig = false;
       } else {
         final ResetSourceConfiguration sourceConfiguration =
             Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
@@ -59,7 +59,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
         if (streamDescriptors.isEmpty()) {
           // TODO: This is done to be able to handle the transition period where we can have no stream being pass to the configuration because the
           //  logic of populating this list is not implemented
-          isPartialReset = false;
+          isResetBasedOnConfig = false;
         } else {
           stateWrapper = StateMessageHelper.getTypedState(sourceConfig.getState().getState());
 
@@ -70,12 +70,12 @@ public class EmptyAirbyteSource implements AirbyteSource {
             throw new IllegalStateException("Try to perform a partial reset on a legacy state");
           }
 
-          isPartialReset = true;
+          isResetBasedOnConfig = true;
         }
       }
     } catch (final IllegalArgumentException e) {
       // No op, the new format is not supported
-      isPartialReset = false;
+      isResetBasedOnConfig = false;
     }
     isStarted = true;
   }
@@ -97,11 +97,13 @@ public class EmptyAirbyteSource implements AirbyteSource {
       throw new IllegalStateException("The empty source has not been started.");
     }
 
-    if (isPartialReset) {
+    if (isResetBasedOnConfig) {
       if (stateWrapper.get().getStateType() == StateType.STREAM) {
         return emitStreamState();
-      } else {
+      } else if (stateWrapper.get().getStateType() == StateType.GLOBAL) {
         return emitGlobalState();
+      } else {
+        return emitLegacyState();
       }
     } else {
       return emitLegacyState();
