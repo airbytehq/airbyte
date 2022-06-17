@@ -181,7 +181,8 @@ jobs:
       fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-    runs-on: self-hosted # TODO: need to change this to run on custom label when I can implement that
+    # runs-on: self-hosted # TODO: need to change this to run on custom label when I can implement that
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
