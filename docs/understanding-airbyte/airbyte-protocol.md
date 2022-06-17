@@ -451,7 +451,7 @@ Messages are structs emitted by actors.
 ### StreamDescriptor
 A stream descriptor contains all information required to identify a Stream. A stream descriptor is considered valid if:
 
-* The `name` value required.  It may not be `null`.
+* The `name` value is required.  It may not be `null`.
 * The `namespace` value is optional.  It may be `null` if the stream does not have an associated namespace, otherwise must be populated.
 * Any UTF-8 string value is valid for both `name` and `namespace`, including the empty string (`""`) value.
 
