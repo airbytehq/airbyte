@@ -194,22 +194,17 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
-      log.info("JOB FAILURE! persising");
       final var jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
 
-      log.info("JOB FAILURE! notifying");
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
 
       final UUID connectionId = UUID.fromString(job.getScope());
       final AttemptFailureSummary failureSummary = input.getFailureSummary();
-
-      log.info("JOB FAILURE! report error");
       jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync());
-
     } catch (final IOException e) {
       throw new RetryableException(e);
     }

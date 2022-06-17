@@ -443,13 +443,10 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    LOGGER.info("GETTING ERR REPORTING CLIENT");
-    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy()); // we'll take inspo from trackingclient
-    LOGGER.info("CREATING THE ERROR REPORTER"); // for metadata to include
+    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy());
     final JobErrorReporter jobErrorReporter = new JobErrorReporter(configRepository, configs.getAirbyteVersionOrWarning(), client);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
-    LOGGER.info("CREATING THE WORKER APP");
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,

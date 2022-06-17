@@ -17,7 +17,10 @@ public class LoggingErrorReportingClient implements ErrorReportingClient {
 
   @Override
   public void report(final StandardWorkspace workspace, final FailureReason reason, final String dockerImage, final Map<String, String> metadata) {
-    LOGGER.info("Report error here for wkspc {}. Connector image: {}. Failure: {}. Metadata: {}", workspace.getWorkspaceId(), dockerImage, reason,
+    LOGGER.info("Report Job Error -> workspaceId: {}, dockerImage: {}, failureReason: {}, metadata: {}",
+        workspace.getWorkspaceId(),
+        dockerImage,
+        reason,
         metadata);
   }
 
