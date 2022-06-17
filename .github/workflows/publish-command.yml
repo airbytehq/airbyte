@@ -159,6 +159,9 @@ jobs:
     outputs:
       connectorjson: ${{ steps.preprocess.outputs.connectorjson }}
     steps:
+      # given a string input of a single connector or comma separated list of connectors e.g. connector1, connector2
+      # this step builds an array, by removing whitespace, add in quotation marks around connectors and braces [ ] at the start and end
+      # finally, it sets it as output from this job so we can use this array of connectors as our matrix strategy for publishing
       - id: preprocess
         run: |
           start="[\""
