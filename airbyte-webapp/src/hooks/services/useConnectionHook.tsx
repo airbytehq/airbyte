@@ -28,6 +28,7 @@ export const connectionsKeys = {
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
+  getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
 
 export interface ValuesProps {
@@ -215,6 +216,12 @@ const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
 
+const useGetConnectionState = (connectionId: string) => {
+  const service = useConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.getState(connectionId), () => service.getState(connectionId));
+};
+
 export {
   useConnectionList,
   useGetConnection,
@@ -222,4 +229,5 @@ export {
   useCreateConnection,
   useDeleteConnection,
   invalidateConnectionsList,
+  useGetConnectionState,
 };
