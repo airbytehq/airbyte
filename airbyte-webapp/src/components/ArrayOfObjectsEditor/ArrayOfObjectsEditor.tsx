@@ -10,7 +10,7 @@ import { EditorHeader } from "./components/EditorHeader";
 import { EditorRow } from "./components/EditorRow";
 
 const ItemsList = styled.div`
-  background: ${({ theme }) => theme.greyColor0};
+  background: ${({ theme }) => theme.grey50};
   border-radius: 4px;
 `;
 

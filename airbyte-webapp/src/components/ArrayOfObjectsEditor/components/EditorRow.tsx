@@ -1,7 +1,7 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
@@ -12,20 +12,16 @@ const Content = styled.div`
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  color: ${({ theme }) => theme.textColor};
-  font-weight: 500;
+  color: ${({ theme }) => theme.darkBlue};
+  font-weight: 400;
   font-size: 14px;
   line-height: 17px;
   padding: 5px 12px 6px 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+  border-bottom: 1px solid ${({ theme }) => theme.white};
 
   &:last-child {
-    border: none;
+    border-bottom: none;
   }
-`;
-
-const DeleteButton = styled(Button)`
-  margin-left: 7px;
 `;
 
 interface EditorRowProps {
@@ -39,18 +35,27 @@ interface EditorRowProps {
 
 const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
   const { formatMessage } = useIntl();
-  const buttonLabel = formatMessage({ id: "form.delete" });
 
   const row = (
     <Content>
       <div>{name || id}</div>
       <div>
-        <Button secondary onClick={() => onEdit(id)} type="button" disabled={disabled}>
-          <FormattedMessage id="form.edit" />
+        <Button
+          iconOnly
+          arial-label={formatMessage({ id: "form.edit" })}
+          onClick={() => onEdit(id)}
+          disabled={disabled}
+        >
+          <FontAwesomeIcon icon={faPencil} fixedWidth />
         </Button>
-        <DeleteButton iconOnly onClick={() => onRemove(id)} disabled={disabled} aria-label={buttonLabel}>
-          <FontAwesomeIcon icon={faTimes} />
-        </DeleteButton>
+        <Button
+          iconOnly
+          aria-label={formatMessage({ id: "form.delete" })}
+          onClick={() => onRemove(id)}
+          disabled={disabled}
+        >
+          <FontAwesomeIcon icon={faTimes} fixedWidth />
+        </Button>
       </div>
     </Content>
   );
