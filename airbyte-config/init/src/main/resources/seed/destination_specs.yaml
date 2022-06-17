@@ -996,7 +996,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.2"
+- dockerImage: "airbyte/destination-databricks:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
