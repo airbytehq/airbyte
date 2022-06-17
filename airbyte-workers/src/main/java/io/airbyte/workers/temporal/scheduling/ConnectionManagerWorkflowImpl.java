@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -17,6 +18,7 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.temporal.ConnectionManagerUtils;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
@@ -86,6 +88,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
 
+  static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
+
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
   private final WorkflowInternalState workflowInternalState = new WorkflowInternalState();
@@ -101,7 +105,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private final AutoDisableConnectionActivity autoDisableConnectionActivity =
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final CheckConnectionActivity checkActivity =
-      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -151,11 +155,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
 
-      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
-      // This catches cases where the temporal workflow was terminated and restarted while a job was
-      // actively running, leaving that job in an orphaned and non-terminal state.
-      ensureCleanJobState(connectionUpdaterInput);
-
       // workflow state is only ever set in test cases. for production cases, it will always be null.
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
@@ -170,6 +169,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (connectionUpdaterInput.isFromJobResetFailure()) {
         workflowState.setResetWithScheduling(true);
       }
+
+      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+      // This catches cases where the temporal workflow was terminated and restarted while a job was
+      // actively running, leaving that job in an orphaned and non-terminal state.
+      ensureCleanJobState(connectionUpdaterInput);
 
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
@@ -476,23 +480,52 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   /**
    * This is running a lambda function that takes {@param input} as an input. If the run of the lambda
-   * is thowing an exception, the workflow will be in a quarantined state and can then be manual
-   * un-quarantined or a retry of the failed lambda can be trigger through a signal method.
+   * throws an exception, the workflow will retried after a short delay.
    *
-   * We aimed to use this method for call of the temporal activity.
+   * Note that if the lambda activity is configured to have retries, the exception will only be caught
+   * after the activity has been retried the maximum number of times.
+   *
+   * This method is meant to be used for calling temporal activities.
    */
   private <INPUT, OUTPUT> OUTPUT runMandatoryActivityWithOutput(final Function<INPUT, OUTPUT> mapper, final INPUT input) {
     try {
       return mapper.apply(input);
     } catch (final Exception e) {
-      log.error("Failed to run an activity for the connection " + connectionId, e);
-      workflowState.setQuarantined(true);
-      workflowState.setRetryFailedActivity(false);
-      Workflow.await(() -> workflowState.isRetryFailedActivity());
-      log.error("Retrying an activity for the connection " + connectionId, e);
-      workflowState.setQuarantined(false);
-      workflowState.setRetryFailedActivity(false);
-      return runMandatoryActivityWithOutput(mapper, input);
+      log.error("[ACTIVITY-FAILURE] Connection " + connectionId +
+          " failed to run an activity. Connection manager workflow will be restarted after a delay of " +
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds() + " seconds.", e);
+      // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
+
+      // Wait a short delay before restarting workflow. This is important if, for example, the failing
+      // activity was configured to not have retries.
+      // Without this delay, that activity could cause the workflow to loop extremely quickly,
+      // overwhelming temporal.
+      log.info("Waiting {} seconds before restarting the workflow for connection {}, to prevent spamming temporal with restarts.",
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds(),
+          connectionId);
+      Workflow.await(WORKFLOW_FAILURE_RESTART_DELAY, () -> workflowState.isRetryFailedActivity());
+
+      // Accept a manual signal to retry the failed activity during this window
+      if (workflowState.isRetryFailedActivity()) {
+        log.info("Received RetryFailedActivity signal for connection {}. Retrying activity.", connectionId);
+        workflowState.setRetryFailedActivity(false);
+        return runMandatoryActivityWithOutput(mapper, input);
+      }
+
+      log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
+
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      // this ensures that the new workflow will still perform a reset if an activity failed while
+      // attempting to reset the connection
+      if (workflowState.isResetConnection()) {
+        newWorkflowInput.setResetConnection(true);
+        newWorkflowInput.setFromJobResetFailure(true);
+      }
+
+      Workflow.continueAsNew(newWorkflowInput);
+
+      throw new IllegalStateException("This statement should never be reached, as the ConnectionManagerWorkflow for connection "
+          + connectionId + " was continued as new.");
     }
   }
 

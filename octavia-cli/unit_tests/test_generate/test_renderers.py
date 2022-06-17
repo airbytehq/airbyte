@@ -300,8 +300,8 @@ class TestConnectionRenderer:
         connection_renderer.TEMPLATE.render.assert_called_with(
             {
                 "connection_name": connection_renderer.resource_name,
-                "source_id": mock_source.resource_id,
-                "destination_id": mock_destination.resource_id,
+                "source_configuration_path": mock_source.configuration_path,
+                "destination_configuration_path": mock_destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
                 "supports_normalization": connection_renderer.destination.definition.supports_normalization,
                 "supports_dbt": connection_renderer.destination.definition.supports_dbt,
@@ -317,8 +317,8 @@ class TestConnectionRenderer:
         connection_renderer.TEMPLATE.render.assert_called_with(
             {
                 "connection_name": connection_renderer.resource_name,
-                "source_id": connection_renderer.source.resource_id,
-                "destination_id": connection_renderer.destination.resource_id,
+                "source_configuration_path": connection_renderer.source.configuration_path,
+                "destination_configuration_path": connection_renderer.destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
                 "supports_normalization": connection_renderer.destination.definition.supports_normalization,
                 "supports_dbt": connection_renderer.destination.definition.supports_dbt,

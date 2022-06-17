@@ -63,7 +63,8 @@
   "form.destinationRetest": "Retest destination",
   "form.discardChanges": "Discard changes",
   "form.discardChangesConfirmation": "There are unsaved changes. Are you sure you want to discard your changes?",
-  "form.every": "Every {value}",
+  "form.every.minutes": "Every {value, plural, one {minute} other {# minutes}}",
+  "form.every.hours": "Every {value, plural, one {hour} other {# hours}}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
   "form.failedTests": "The connection tests failed.",
@@ -503,6 +504,10 @@
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
+
+  "frequency.manual": "Manual",
+  "frequency.minutes": "{value} min",
+  "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",

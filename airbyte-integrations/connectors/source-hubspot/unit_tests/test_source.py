@@ -11,18 +11,9 @@ import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
+from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import (
-    API,
-    PROPERTIES_PARAM_MAX_LENGTH,
-    Companies,
-    Deals,
-    Engagements,
-    Products,
-    Stream,
-    Workflows,
-    split_properties,
-)
+from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream, Workflows
 
 from .utils import read_full_refresh, read_incremental
 
@@ -206,21 +197,13 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
-    def test_splitting_properties(self, fake_properties_list):
-        """
-        Check that properties are split into multiple arrays
-        """
-        for slice_property in split_properties(fake_properties_list):
-            slice_length = [len(item) for item in slice_property]
-            assert sum(slice_length) <= PROPERTIES_PARAM_MAX_LENGTH
-
     def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
         test_stream = Companies(**common_params)
 
-        parsed_properties = list(split_properties(fake_properties_list))
+        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
@@ -236,7 +219,7 @@ class TestSplittingPropertiesFunctionality:
                     {
                         "json": {
                             "results": [
-                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
+                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
                                 for id in id_list
                             ],
                             "paging": {"next": {"after": id_list[-1]}} if len(id_list) == 100 else {},
@@ -244,10 +227,10 @@ class TestSplittingPropertiesFunctionality:
                         "status_code": 200,
                     }
                 ]
-                property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+                prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?limit=100&{property_param_set}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?limit=100&{prop_key}={prop_val}{f'&after={after_id}' if after_id else ''}",
                     record_responses,
                 )
             after_id = id_list[-1]
@@ -265,7 +248,7 @@ class TestSplittingPropertiesFunctionality:
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
 
-        parsed_properties = list(split_properties(fake_properties_list))
+        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
         test_stream = Products(**common_params)
@@ -275,7 +258,7 @@ class TestSplittingPropertiesFunctionality:
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
                             for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
                         ],
                         "paging": {},
@@ -283,8 +266,8 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
-            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
+            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
+            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
 
         stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
@@ -297,7 +280,7 @@ class TestSplittingPropertiesFunctionality:
         Check working stream `workflows` with large list of properties using new functionality with splitting properties
         """
 
-        parsed_properties = list(split_properties(fake_properties_list))
+        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
         test_stream = Deals(**common_params)
@@ -308,7 +291,7 @@ class TestSplittingPropertiesFunctionality:
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
                             for id in ids_list
                         ],
                         "paging": {},
@@ -317,8 +300,8 @@ class TestSplittingPropertiesFunctionality:
                 }
             ]
             test_stream._sync_mode = SyncMode.full_refresh
-            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
-            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
+            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
+            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
             test_stream._sync_mode = None
             ids_list.append("1092593513")
 

@@ -1,17 +1,18 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.39.17-alpha",
+  "version": "0.39.20-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "BUILD_PATH='./build/app' react-scripts build",
     "test": "react-scripts test",
     "test:coverage": "npm test -- --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
-    "storybook": "start-storybook -p 9009 -s public --quiet",
+    "storybook": "start-storybook -p 9009 --quiet",
+    "build:storybook": "build-storybook -o 'build/storybook'",
     "lint": "eslint --ext js,ts,tsx src",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
@@ -31,6 +32,7 @@
     "firebase": "^9.8.2",
     "flat": "^5.0.2",
     "formik": "^2.2.9",
+    "framer-motion": "^6.3.11",
     "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
     "query-string": "^6.13.1",
@@ -41,7 +43,6 @@
     "react-intl": "^5.24.8",
     "react-lazylog": "^4.5.3",
     "react-markdown": "^7.0.1",
-    "react-pose": "^4.0.10",
     "react-query": "^3.39.1",
     "react-reflex": "^4.0.9",
     "react-router-dom": "^6.3.0",
