@@ -18,7 +18,7 @@ AIRBYTE_URL = "http://localhost:8000"
 @pytest.fixture(scope="module")
 def vcr_config():
     return {
-        "record_mode": "all",
+        "record_mode": "rewrite",
         "match_on": ["method", "scheme", "host", "port", "path", "query", "headers"],
     }
 
@@ -40,8 +40,8 @@ def option_based_headers():
     return ["Another-Custom-Header", "Bar"], [api_http_headers.ApiHttpHeader("Another-Custom-Header", "Bar")]
 
 
-@pytest.mark.vcr()
-def test_api_http_headers(vcr_cassette, file_based_headers, option_based_headers):
+@pytest.mark.vcr
+def test_api_http_headers(vcr, file_based_headers, option_based_headers):
     raw_option_based_headers, expected_option_based_headers = option_based_headers
     custom_api_http_headers_yaml_file_path, expected_file_based_headers = file_based_headers
     expected_headers = expected_option_based_headers + expected_file_based_headers
@@ -53,7 +53,7 @@ def test_api_http_headers(vcr_cassette, file_based_headers, option_based_headers
     )
 
     result = runner.invoke(entrypoint.octavia, command_options, obj={})
-    for request in vcr_cassette.requests:
+    for request in vcr.requests:
         for expected_header in expected_headers:
             assert request.headers[expected_header.name] == expected_header.value
     assert result.exit_code == 0
