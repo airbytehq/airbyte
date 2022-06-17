@@ -159,8 +159,8 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: airbyte-publisher-runner
   preprocess-matrix:
-    needs: start-publish-image-runner
-    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+    needs: start-publish-image-runner-0
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
     outputs:
       connectorjson: ${{ steps.preprocess.outputs.connectorjson }}
     steps:
@@ -176,14 +176,14 @@ jobs:
   # publish-image:
   #   timeout-minutes: 240
   #   needs:
-  #     - start-publish-image-runner
+  #     - start-publish-image-runner-0
   #     - preprocess-matrix
   #   strategy:
   #     max-parallel: 5
   #     fail-fast: false
   #     matrix:
   #       connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-  #   runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+  #   runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
   #   environment: more-secrets
   #   steps:
   #     - name: Link comment to workflow run
