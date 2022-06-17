@@ -2692,7 +2692,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-meilisearch:0.2.12"
+- dockerImage: "airbyte/destination-meilisearch:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/meilisearch"
     connectionSpecification:
@@ -4769,7 +4769,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.4"
+- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
