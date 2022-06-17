@@ -33,9 +33,10 @@ public class StateMessageHelper {
       try {
         stateMessages = Jsons.object(state, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
-        return Optional.of(new StateWrapper()
-            .withStateType(StateType.LEGACY)
-            .withLegacyState(state));
+        return Optional.of(getLegacyStateWrapper(state));
+      }
+      if (stateMessages.stream().anyMatch(streamMessage -> !streamMessage.getAdditionalProperties().isEmpty())) {
+        return Optional.of(getLegacyStateWrapper(state));
       }
       if (stateMessages.size() == 1 && stateMessages.get(0).getStateType() == AirbyteStateType.GLOBAL) {
         return Optional.of(new StateWrapper()
@@ -52,4 +53,9 @@ public class StateMessageHelper {
     }
   }
 
+  private static StateWrapper getLegacyStateWrapper(final JsonNode state) {
+    return new StateWrapper()
+        .withStateType(StateType.LEGACY)
+        .withLegacyState(state);
+  }
 }
