@@ -30,7 +30,16 @@ import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.impl.DSL;
 
+/**
+ * State Persistence
+ *
+ * Handle persisting States to the Database.
+ *
+ * Supports migration from Legacy to Global or Stream. Other type migrations need to go through a
+ * reset. (an exception will be thrown)
+ */
 public class StatePersistence {
+
   private final ExceptionWrappingDatabase database;
 
   public StatePersistence(final Database database) {
@@ -47,8 +56,9 @@ public class StatePersistence {
   public Optional<StateWrapper> getCurrentState(final UUID connectionId) throws IOException {
     final List<StateRecord> records = this.database.query(ctx -> getStateRecords(ctx, connectionId));
 
-    if (records.isEmpty())
+    if (records.isEmpty()) {
       return Optional.empty();
+    }
 
     return switch (records.stream().findFirst().get().type) {
       case GLOBAL -> Optional.of(buildGlobalState(records));
@@ -58,8 +68,7 @@ public class StatePersistence {
   }
 
   /**
-   * Create or update the states described in the StateWrapper
-   * Null states will be deleted.
+   * Create or update the states described in the StateWrapper. Null states will be deleted.
    *
    * @param connectionId
    * @param state

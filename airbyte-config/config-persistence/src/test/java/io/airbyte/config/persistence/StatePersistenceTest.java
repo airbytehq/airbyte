@@ -106,7 +106,6 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertEquals(newGlobalState, storedGlobalState);
   }
 
-
   @Test
   public void testLegacyMigrationToStream() throws IOException {
     final StateWrapper state0 = new StateWrapper()
