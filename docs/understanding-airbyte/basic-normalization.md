@@ -353,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.6 | 2022-06-16 | []() | |
 |                 | 0.2.5 | 2022-06-15 | [\#11470](https://github.com/airbytehq/airbyte/pull/11470) | Upgrade MySQL to dbt 1.0.0 |
 |                 | 0.2.4 | 2022-06-14 | [\#12846](https://github.com/airbytehq/airbyte/pull/12846) | CDC correctly deletes propagates deletions to final tables |
 |                 | 0.2.3 | 2022-06-10 | [\#11204](https://github.com/airbytehq/airbyte/pull/11204) | MySQL: add support for SSh tunneling |
