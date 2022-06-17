@@ -1,0 +1,31 @@
+.container {
+  height: 100vh;
+  background-image: url(/../public/person-photo.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: grayscale(100%);
+}
+
+.overlay {
+  position: relative;
+  display: inline-block;
+
+  &:after {
+    background-image: linear-gradient(
+      45deg,
+      rgb(254, 106, 77) 10%,
+      rgba(255, 106, 77, 0.8) 30%,
+      rgba(97, 94, 255, 0.8) 80%,
+      rgb(97, 94, 255) 100%
+    );
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+    content: "";
+    position: absolute;
+    top: 0;
+    z-index: 3;
+  }
+}
