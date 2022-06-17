@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H5, Card, CodeEditor } from "components";
+import { H5, Card } from "components";
 
 import { useGetConnectionState } from "hooks/services/useConnectionHook";
 
@@ -24,7 +24,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
       <H5 bold>
         <FormattedMessage id={"tables.connectionState.title"} />
       </H5>
-      <CodeEditor code={stateString} language={state?.state ? "json" : undefined} />
+      <pre style={{ maxHeight: 200, overflowY: "scroll" }}>{stateString}</pre>
     </Card>
   );
 };
