@@ -24,7 +24,7 @@ tests:
         recordings: ["date_created"]
         messages: ["date_sent"]
         message_media: ["date_created"]
-        alerts: ["date_updated"]
+        alerts: ["date_generated"]
   full_refresh:
     - config_path: "secrets/config.json"
       # `constant_records_catalog.json` does not contain the available phone numbers streams,

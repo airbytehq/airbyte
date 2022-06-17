@@ -97,15 +97,13 @@ class TwilioStream(HttpStream, ABC):
 
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
-    cursor_field = "date_updated"
     time_filter_template = "YYYY-MM-DD HH:mm:ss[Z]"
 
     def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = start_date
+        self._start_date = start_date if start_date is not None else "1970-01-01T00:00:00Z"
         self._lookback_window = lookback_window
         self._cursor_value = None
-        self._state = {}
 
     @property
     @abstractmethod
@@ -115,23 +113,29 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         """
 
     @property
-    def start_date_with_lookback_window(self):
-        return self._get_start_date_with_lookback_window(self._start_date)
-
-    def _get_start_date_with_lookback_window(self, start_date: str) -> str:
-        start_date_with_lookback_window = pendulum.parse(start_date) - pendulum.duration(minutes=self._lookback_window)
-        return str(start_date_with_lookback_window)
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        """State getter, the result can be stored by the source"""
+    def state(self) -> Mapping[str, Any]:
+        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
         if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
+            return {
+                self.cursor_field: self._cursor_value,
+            }
+
         return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        """State setter, ignore state if current settings mismatch saved state"""
+        self._cursor_value = value.get(self.cursor_field)
+
+    # def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    #     """
+    #     Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+    #     and returning an updated state object.
+    #     """
+    #     latest_benchmark = str(pendulum.parse(latest_record[self.cursor_field], strict=False))
+    #     if current_stream_state.get(self.cursor_field):
+    #         return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+    #     return {self.cursor_field: latest_benchmark}
 
     # def get_request_date(self, stream_state):
     #     request_date = self._start_date
@@ -142,8 +146,9 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     #         if lookback_date > self._start_date:
     #             request_date = lookback_date
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
+    def request_params(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        kwargs.pop("stream_state")
+        params = super().request_params(stream_state=self.state, **kwargs)
         start_date = self.state.get(self.cursor_field, self._start_date)
         params[self.incremental_filter_field] = pendulum.parse(start_date).format(self.time_filter_template)
         return params
@@ -155,14 +160,12 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        sorted_records = sorted(
-            super().read_records(sync_mode, cursor_field, stream_slice, stream_state), key=lambda x: x[self.cursor_field]
-        )
+        sorted_records = sorted(super().read_records(sync_mode, cursor_field, stream_slice, self.state), key=lambda x: x[self.cursor_field])
         for record in sorted_records:
-            record_cursor_time = str(pendulum.parse(record[self.cursor_field], strict=False))
-            self._cursor_value = max(record_cursor_time, self.state.get(self.cursor_field, self._start_date))
-            if record_cursor_time >= self._cursor_value:
-                yield record
+            self._cursor_value = max(
+                str(pendulum.parse(record[self.cursor_field], strict=False)), self.state.get(self.cursor_field, self._start_date)
+            )
+            yield record
 
 
 class TwilioNestedStream(TwilioStream):
@@ -298,7 +301,7 @@ class Calls(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
 
     parent_stream = Accounts
-    incremental_filter_field = "EndTime>"
+    incremental_filter_field = "EndTime>="
     cursor_field = "end_time"
     time_filter_template = "YYYY-MM-DD"
 
@@ -307,21 +310,9 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateUpdated>"
+    incremental_filter_field = "DateUpdated>="
+    cursor_field = "date_updated"
     time_filter_template = "YYYY-MM-DD"
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        records = response.json().get(self.data_field, [])
-        if stream_state.get(self.cursor_field):
-            for record in records:
-                if pendulum.from_format(record[self.cursor_field], self.time_filter_template) <= pendulum.parse(
-                    stream_state[self.cursor_field]
-                ):
-                    yield record
-        yield from records
 
 
 class ConferenceParticipants(TwilioNestedStream):
@@ -428,8 +419,8 @@ class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
 
     parent_stream = Accounts
     incremental_filter_field = "StartDate"
-    time_filter_template = "YYYY-MM-DD"
     cursor_field = "start_date"
+    time_filter_template = "YYYY-MM-DD"
     path_name = "Records"
     primary_key = [["account_sid"], ["category"]]
     changeable_fields = ["as_of"]
@@ -448,6 +439,7 @@ class Alerts(IncrementalTwilioStream):
 
     url_base = TWILIO_MONITOR_URL_BASE
     incremental_filter_field = "StartDate"
+    cursor_field = "date_generated"
 
     def path(self, **kwargs):
         return self.name.title()
