@@ -24,6 +24,10 @@ on:
         description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
         required: true
         default: "true"
+      parallel:
+        description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
+        required: true
+        default: "false"
 
 jobs:
   find_valid_pat:
@@ -90,9 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-    runs-on:
-      - ${{ needs.start-publish-image-runner.outputs.label }}
-      - ubuntu-latest
+    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
