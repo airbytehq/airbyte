@@ -31,7 +31,6 @@ public class WorkflowState {
   private boolean resetConnection = false;
   private boolean continueAsReset = false;
   private boolean retryFailedActivity = false;
-  private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
   private boolean resetWithScheduling = false;
@@ -108,14 +107,6 @@ public class WorkflowState {
     this.retryFailedActivity = retryFailedActivity;
   }
 
-  public void setQuarantined(final boolean quarantined) {
-    final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.QUARANTINED,
-        quarantined);
-    stateChangedListener.addEvent(id, event);
-    this.quarantined = quarantined;
-  }
-
   public void setSuccess(final boolean success) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.SUCCESS,
@@ -153,7 +144,6 @@ public class WorkflowState {
     this.setContinueAsReset(false);
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
-    this.setQuarantined(false);
     this.setCancelledForReset(false);
   }
 

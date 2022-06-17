@@ -444,17 +444,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);
   }
 
-  @Override
-  public QuarantinedInformation getQuarantinedInformation() {
-    final Long jobId = workflowInternalState.getJobId();
-    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
-    return new QuarantinedInformation(
-        connectionId,
-        jobId == null ? NON_RUNNING_JOB_ID : jobId,
-        attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber,
-        workflowState.isQuarantined());
-  }
-
   /**
    * return true if the workflow is in a state that require it to continue. If the state is to process
    * an update or delete the workflow, it won't continue with a run of the {@link SyncWorkflow} but it
