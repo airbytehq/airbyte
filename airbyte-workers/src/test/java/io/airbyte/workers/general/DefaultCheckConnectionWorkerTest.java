@@ -115,7 +115,6 @@ public class DefaultCheckConnectionWorkerTest {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
