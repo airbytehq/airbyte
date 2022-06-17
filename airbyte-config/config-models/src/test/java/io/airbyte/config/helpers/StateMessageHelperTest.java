@@ -37,9 +37,7 @@ public class StateMessageHelperTest {
   public void testLegacyInList() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(
         Lists.newArrayList(
-            Map.of("Any", "value")
-        )
-    ));
+            Map.of("Any", "value"))));
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }

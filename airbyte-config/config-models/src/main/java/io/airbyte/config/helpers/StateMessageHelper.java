@@ -58,4 +58,5 @@ public class StateMessageHelper {
         .withStateType(StateType.LEGACY)
         .withLegacyState(state);
   }
+
 }
