@@ -43,7 +43,6 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -74,7 +73,6 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
-  private final FeatureFlags featureFlags;
   private final EventRunner eventRunner;
   private final ConfigRepository configRepository;
 
@@ -222,15 +220,17 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
-    final Map<String, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
+    // We can't directly use s.getStream() as the key, because it contains a bunch of other fields
+    // so instead we just define a quick-and-dirty record class.
+    final Map<Stream, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
         .stream()
-        .collect(toMap(s -> s.getStream().getName(), s -> s));
+        .collect(toMap(s -> new Stream(s.getStream().getName(), s.getStream().getNamespace()), s -> s));
 
     final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
     for (final AirbyteStreamAndConfiguration s : discovered.getStreams()) {
       final AirbyteStream stream = s.getStream();
-      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getName());
+      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(new Stream(stream.getName(), stream.getNamespace()));
       final AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
@@ -286,28 +286,13 @@ public class WebBackendConnectionsHandler {
 
     ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
-    if (!featureFlags.usesNewScheduler()) {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-      if (needReset) {
-        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
-        // wait for this to execute
-        schedulerHandler.resetConnection(connectionId);
 
-        // just create the job
-        schedulerHandler.syncConnection(connectionId);
-      }
-    } else {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-      if (needReset) {
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-      }
+    if (needReset) {
+      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);
@@ -341,11 +326,6 @@ public class WebBackendConnectionsHandler {
     originalOperationIds.removeAll(operationIds);
     operationsHandler.deleteOperationsForConnection(connectionRead.getConnectionId(), originalOperationIds);
     return operationIds;
-  }
-
-  private UUID getWorkspaceIdForConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final UUID sourceId = connectionsHandler.getConnection(connectionId).getSourceId();
-    return getWorkspaceIdForSource(sourceId);
   }
 
   private UUID getWorkspaceIdForSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -427,6 +407,15 @@ public class WebBackendConnectionsHandler {
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
         .status(webBackendConnectionSearch.getStatus());
+  }
+
+  /**
+   * Equivalent to {@see io.airbyte.integrations.base.AirbyteStreamNameNamespacePair}. Intentionally
+   * not using that class because it doesn't make sense for airbyte-server to depend on
+   * base-java-integration.
+   */
+  private record Stream(String name, String namespace) {
+
   }
 
 }

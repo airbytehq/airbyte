@@ -51,13 +51,13 @@ const webhookValidationSchema = yup.object().shape({
   sendOnFailure: yup.boolean(),
 });
 
-type WebHookFormProps = {
+interface WebHookFormProps {
   webhook: WebhookPayload;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: WebhookPayload) => void;
   onTest: (data: WebhookPayload) => void;
-};
+}
 
 const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
   const formatMessage = useIntl().formatMessage;

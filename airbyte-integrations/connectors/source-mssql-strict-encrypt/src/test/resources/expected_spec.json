@@ -106,9 +106,9 @@
             "properties": {
               "replication_type": {
                 "type": "string",
-                "const": "Standard",
-                "enum": ["Standard"],
-                "default": "Standard",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
                 "order": 0
               }
             }

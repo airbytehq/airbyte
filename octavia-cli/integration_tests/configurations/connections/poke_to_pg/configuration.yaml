@@ -1,8 +1,8 @@
 # Configuration for connection poke_to_pg
 definition_type: connection
 resource_name: poke_to_pg
-source_id: TO_UPDATE_FROM_TEST
-destination_id: TO_UPDATE_FROM_TEST
+source_configuration_path: TO_UPDATE_FROM_TEST
+destination_configuration_path: TO_UPDATE_FROM_TEST
 
 # EDIT THE CONFIGURATION BELOW!
 configuration:
@@ -354,8 +354,6 @@ configuration:
                   - integer
             type: object
           name: pokemon
-          namespace: null
-          source_defined_cursor: null
           source_defined_primary_key: []
           supported_sync_modes:
             - full_refresh

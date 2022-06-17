@@ -24,7 +24,7 @@ class SpecFormatTest {
 
   @Test
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
-    final ConfigPersistence configPersistence = YamlSeedConfigPersistence.getDefault();
+    final ConfigPersistence configPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
     final List<JsonNode> sourceSpecs = configPersistence.listConfigs(
         ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)

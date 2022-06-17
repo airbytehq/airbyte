@@ -125,7 +125,7 @@ public class ArchiveHandlerTest {
     jobDatabase = databaseProviders.createNewJobsDatabase();
     configDatabase = databaseProviders.createNewConfigsDatabase();
     jobPersistence = new DefaultJobPersistence(jobDatabase);
-    seedPersistence = YamlSeedConfigPersistence.getDefault();
+    seedPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
@@ -145,7 +145,7 @@ public class ArchiveHandlerTest {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        YamlSeedConfigPersistence.getDefault(),
+        seedPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
         true);

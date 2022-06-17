@@ -159,7 +159,7 @@ The nice thing about this approach is that you are running your source exactly a
 
 Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.yaml`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/spec.yaml) of what the `spec.yaml` looks like for the stripe source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
 
