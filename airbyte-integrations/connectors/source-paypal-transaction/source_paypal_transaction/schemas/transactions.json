@@ -119,7 +119,8 @@
           "maxLength": 127
         },
         "custom_field": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 127
         }
       }
     },
