@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/airbyte/connector-errors/error.py", line 31, in read_records
+    failing_method()
+  File "/airbyte/connector-errors/error.py", line 36, in failing_method
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://airbyte.com
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/airbyte/connector-errors/error.py", line 39, in <module>
+    main()
+  File "/airbyte/connector-errors/error.py", line 13, in main
+    sync_mode("incremental")
+  File "/airbyte/connector-errors/error.py", line 17, in sync_mode
+    incremental()
+  File "/airbyte/connector-errors/error.py", line 33, in incremental
+    raise RuntimeError("My other error") from err
+RuntimeError: My other error
