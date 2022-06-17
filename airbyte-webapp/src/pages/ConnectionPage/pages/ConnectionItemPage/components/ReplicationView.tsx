@@ -69,8 +69,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const connection = useMemo(() => {
     if (activeUpdatingSchemaMode && connectionWithRefreshCatalog) {
-      // merge with connectionFormValues:
-      //
+      // merge connectionFormValues (unsaved previous form state) with the refreshed connection data:
+      // 1. if there is a namespace definition, format, prefix, or schedule in connectionFormValues,
+      //    use those and fill in the rest from the database
+      // 2. otherwise, use the values from the database
+      // 3. if none of the above, use the default values.
       return {
         ...connectionWithRefreshCatalog,
         namespaceDefinition:
