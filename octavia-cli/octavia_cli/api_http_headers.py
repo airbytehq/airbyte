@@ -82,9 +82,8 @@ def merge_api_headers(
     """
     if option_based_api_http_headers and api_http_headers_file_path:
         click.echo(
-            "ℹ️ - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
+            "ℹ️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
         )
-
     option_based_headers = (
         deserialize_option_based_headers(option_based_api_http_headers) if option_based_api_http_headers is not None else []
     )

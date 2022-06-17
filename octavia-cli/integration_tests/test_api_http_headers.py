@@ -2,9 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 from click.testing import CliRunner
 from octavia_cli import api_http_headers, entrypoint
+
+logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from vcrpy
+vcr_log = logging.getLogger("vcr")
+vcr_log.setLevel(logging.WARN)
 
 AIRBYTE_URL = "http://localhost:8000"
 
@@ -12,7 +18,7 @@ AIRBYTE_URL = "http://localhost:8000"
 @pytest.fixture(scope="module")
 def vcr_config():
     return {
-        "record_mode": "once",
+        "record_mode": "all",
         "match_on": ["method", "scheme", "host", "port", "path", "query", "headers"],
     }
 
@@ -45,12 +51,9 @@ def test_api_http_headers(vcr_cassette, file_based_headers, option_based_headers
         + raw_option_based_headers
         + ["list", "connectors", "sources"]
     )
-    result = runner.invoke(entrypoint.octavia, command_options, obj={})
-    try:
-        assert result.exit_code == 0
-    except AssertionError:
-        raise Exception(result.output)
 
+    result = runner.invoke(entrypoint.octavia, command_options, obj={})
     for request in vcr_cassette.requests:
         for expected_header in expected_headers:
             assert request.headers[expected_header.name] == expected_header.value
+    assert result.exit_code == 0
