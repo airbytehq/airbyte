@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Optional, Tuple
 
 import airbyte_api_client
@@ -138,7 +139,7 @@ def get_workspace_id(api_client, user_defined_workspace_id):
 def get_anonymous_data_collection(api_client, workspace_id):
     api_instance = workspace_api.WorkspaceApi(api_client)
     api_response = api_instance.get_workspace(WorkspaceIdRequestBody(workspace_id), _check_return_type=False)
-    return api_response.anonymous_data_collection
+    return api_response.get("anonymous_data_collection", True)
 
 
 def add_commands_to_octavia():
