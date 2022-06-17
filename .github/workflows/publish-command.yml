@@ -370,7 +370,7 @@ jobs:
     needs:
       - start-publish-image-runner-0 # required to get output from the start-runner job
       - preprocess-matrix
-      - publish-image # required to wait when the main job is done
+      # - publish-image # required to wait when the main job is done
       - find_valid_pat
     runs-on: ubuntu-latest
     steps:
@@ -397,7 +397,7 @@ jobs:
       - start-publish-image-runner-3
       - start-publish-image-runner-4
       - preprocess-matrix
-      - publish-image # required to wait when the main job is done
+      # - publish-image # required to wait when the main job is done
       - find_valid_pat
     strategy:
       fail-fast: false
