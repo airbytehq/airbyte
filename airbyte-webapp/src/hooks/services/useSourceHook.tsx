@@ -107,7 +107,7 @@ const useDeleteSource = () => {
       onSuccess: (_data, ctx) => {
         trackSourceAction("Delete source", [TrackActionActions.DELETE], {
           connector_source: ctx.source.sourceName,
-          connector_source_definition_id: ctx.source.sourceDefinitionId, //another change to match the data we're sending
+          connector_source_definition_id: ctx.source.sourceDefinitionId,
         });
 
         queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));

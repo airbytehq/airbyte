@@ -36,7 +36,7 @@ const ConnectionItemPage: React.FC = () => {
   const onAfterSaveSchema = () => {
     trackSourceAction("Edit schema", [TrackActionActions.SCHEMA], {
       connector_source: source.sourceName,
-      connector_source_definition_id: source.sourceDefinitionId, //todo: ask natalie if this _should_ be changed or if I should make the call more flexible to use the old (incorrect?) label
+      connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.type,

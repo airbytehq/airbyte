@@ -53,7 +53,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
 
     trackSourceAction(trackableActionString, [trackableAction], {
       connector_source: connection.source?.sourceName,
-      connector_source_definition_id: connection.source?.sourceDefinitionId, //another place I'm changing a label... clarify if that's ok
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,

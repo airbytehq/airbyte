@@ -90,13 +90,17 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
+    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
     if (item) {
-      trackNewConnectionAction("Select a frequency", [TrackActionActions.FREQUENCY, TrackActionActions.SELECT], {
+      trackNewConnectionAction("Select a frequency", [TrackActionActions.FREQUENCY], {
         frequency: item.label,
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: source?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id: destination?.destinationDefinitionId,
+        available_streams: connection.syncCatalog.streams.length,
+        enabled_streams: enabledStreams,
       });
     }
   };
