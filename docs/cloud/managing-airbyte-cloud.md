@@ -108,4 +108,3 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     Credits expire after one year if they are not used.
     
     :::
-
