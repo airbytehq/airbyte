@@ -338,7 +338,7 @@ public class DefaultJobCreatorTest {
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
     when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+    final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
@@ -352,7 +352,7 @@ public class DefaultJobCreatorTest {
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+        .withResetConnection(jobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
@@ -381,7 +381,7 @@ public class DefaultJobCreatorTest {
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
     when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+    final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
@@ -395,7 +395,7 @@ public class DefaultJobCreatorTest {
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+        .withResetConnection(jobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());

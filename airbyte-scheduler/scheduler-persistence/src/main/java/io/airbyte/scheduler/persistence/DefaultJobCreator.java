@@ -127,7 +127,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   // TODO (https://github.com/airbytehq/airbyte/issues/13620): update this method implementation
-  //  to fetch and serialize the new per-stream state format into a State object
+  // to fetch and serialize the new per-stream state format into a State object
   private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
     return configRepository.getConnectionState(connectionId);
   }
