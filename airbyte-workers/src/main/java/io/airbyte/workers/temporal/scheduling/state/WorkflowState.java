@@ -35,11 +35,9 @@ public class WorkflowState {
   private boolean retryFailedActivity = false;
   private boolean quarantined = false;
   private boolean success = true;
-  @Deprecated
-  private final boolean cancelledForReset = false;
+  private boolean cancelledForReset = false;
   @Deprecated
   private final boolean resetWithScheduling = false;
-  private boolean skipSchedulingNextRun = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -113,12 +111,12 @@ public class WorkflowState {
     this.success = success;
   }
 
-  public void setSkipSchedulingNextRun(final boolean skipSchedulingNextRun) {
+  public void setCancelledForReset(final boolean cancelledForReset) {
     final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.SKIP_SCHEDULING_NEXT_RUN,
-        skipSchedulingNextRun);
+        StateField.CANCELLED_FOR_RESET,
+        cancelledForReset);
     stateChangedListener.addEvent(id, event);
-    this.skipSchedulingNextRun = skipSchedulingNextRun;
+    this.cancelledForReset = cancelledForReset;
   }
 
   // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
@@ -133,7 +131,6 @@ public class WorkflowState {
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
     this.setQuarantined(false);
-    this.setSkipSchedulingNextRun(false);
   }
 
 }
