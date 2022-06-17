@@ -5,3 +5,6 @@
 /airbyte-webapp/package.json
 /airbyte-webapp/package-lock.json
 /airbyte-protocol/ @airbytehq/protocol-reviewers
+# Protocol related items
+/airbyte-protocol/ @airbytehq/protocol-reviewers
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
