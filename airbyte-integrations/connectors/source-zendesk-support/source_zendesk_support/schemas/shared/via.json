@@ -1,0 +1,65 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "channel": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "from": {
+          "type": ["null", "object"],
+          "properties": {
+            "ticket_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "integer"]
+              }
+            },
+            "subject": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "address": {
+              "type": ["null", "string"]
+            },
+            "original_recipients": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "ticket_id": {
+              "type": ["null", "integer"]
+            },
+            "deleted": {
+              "type": ["null", "boolean"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "to": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "address": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "rel": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
