@@ -92,9 +92,9 @@ public class CursorManager<S> {
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
     final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get()
         .stream()
-        .collect(Collectors.toMap(namespacePairFunction, a -> a));
+        .collect(Collectors.toMap(namespacePairFunction,Function.identity()));
     final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream> pairToConfiguredAirbyteStream = catalog.getStreams().stream()
-        .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, s -> s));
+        .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, Function.identity()));
 
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
       final Optional<S> stateOptional = Optional.ofNullable(pairToState.get(pair));
