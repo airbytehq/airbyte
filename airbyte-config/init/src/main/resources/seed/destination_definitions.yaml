@@ -169,7 +169,7 @@
 - name: MeiliSearch
   destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
   icon: meilisearch.svg
   releaseStage: alpha
