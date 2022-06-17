@@ -86,8 +86,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     return initialConnection;
   }, [activeUpdatingSchemaMode, connectionWithRefreshCatalog, initialConnection, connectionFormValues]);
 
-  // const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
-
   const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
     if (!connection) {
       // onSubmit should only be called when a connection object exists.
