@@ -2,54 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "advertisers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ads",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["modify_time"],
-        "source_defined_primary_key": [["ad_id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "campaigns",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["modify_time"],
-        "source_defined_primary_key": [["campaign_id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_groups",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["modify_time"],
-        "source_defined_primary_key": [["adgroup_id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-
-    {
-      "stream": {
-        "name": "ads_reports",
+        "name": "ads_reports_lifetime",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -60,7 +13,7 @@
     },
     {
       "stream": {
-        "name": "advertisers_reports",
+        "name": "advertisers_reports_lifetime",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -71,7 +24,7 @@
     },
     {
       "stream": {
-        "name": "ad_groups_reports",
+        "name": "ad_groups_reports_lifetime",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -82,7 +35,7 @@
     },
     {
       "stream": {
-        "name": "campaigns_reports",
+        "name": "campaigns_reports_lifetime",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -94,7 +47,7 @@
 
     {
       "stream": {
-        "name": "advertisers_audience_reports",
+        "name": "advertisers_audience_reports_lifetime",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

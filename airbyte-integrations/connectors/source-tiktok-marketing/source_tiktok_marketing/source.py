@@ -18,6 +18,7 @@ from .spec import (
     SourceTiktokMarketingSpec,
 )
 from .streams import (
+    BasicReports,
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
@@ -34,9 +35,17 @@ from .streams import (
     CampaignsAudienceReportsByCountry,
     CampaignsReports,
     ReportGranularity,
+    Hourly,
+    Daily,
+    Lifetime
 )
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+
+def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
+    """Fabric method to generate final class with name like: AdsReports + Hourly"""
+    report_class_name = f"{report.__name__}{granularity.__name__}"
+    return type(report_class_name, (granularity, report), {})
 
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
@@ -116,43 +125,27 @@ class SourceTiktokMarketing(AbstractSource):
 
         # 1. Basic streams:
         streams = [
-            Advertisers(**args),
             AdvertiserIds(**args),
+            Advertisers(**args),
             Ads(**args),
             AdGroups(**args),
             Campaigns(**args),
         ]
 
         # 2. Basic report streams:
-        report_granularity = config.get("report_granularity") or ReportGranularity.default()
-        report_args = dict(report_granularity=report_granularity, **args)
-        streams.extend(
-            [
-                AdsReports(**report_args),
-                AdGroupsReports(**report_args),
-                CampaignsReports(**report_args),
-            ]
-        )
+        reports = [AdsReports, AdGroupsReports, CampaignsReports]
+        if not args["advertiser_id"]:
+            # 2.1 streams work only in prod env
+            reports.extend([AdvertisersReports, AdvertisersAudienceReports])
+
+        for Report in reports:
+            for Granularity in [Hourly, Daily, Lifetime]:
+                streams.append(get_report_stream(Report, Granularity)(**args))
 
         # 3. Audience report streams:
-        if not report_granularity == ReportGranularity.LIFETIME:
-            # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
-            # Audience report only supports lifetime metrics at the ADVERTISER level.
-            streams.extend(
-                [
-                    AdsAudienceReports(**report_args),
-                    AdGroupAudienceReports(**report_args),
-                    CampaignsAudienceReportsByCountry(**report_args),
-                ]
-            )
-
-        # 4. streams work only in prod env
-        if not args["advertiser_id"]:
-            streams.extend(
-                [
-                    AdvertisersReports(**report_args),
-                    AdvertisersAudienceReports(**report_args),
-                ]
-            )
+        # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
+        for Report in [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]:
+            for Granularity in [Hourly, Daily]:
+                streams.append(get_report_stream(Report, Granularity)(**args))
 
         return streams

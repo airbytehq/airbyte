@@ -49,12 +49,12 @@ tests:
     - config_path: "secrets/prod_config_day.json"
       configured_catalog_path: "integration_tests/streams_all_incremental.json"
       future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 600
+      timeout_seconds: 1200
       cursor_paths:
-        ads_reports: [ "dimensions", "stat_time_day" ]
-        advertisers_reports: [ "dimensions", "stat_time_day" ]
-        campaigns_reports: [ "dimensions", "stat_time_day" ]
-        ad_groups_reports: [ "dimensions", "stat_time_day" ]
+        ads_reports_daily: [ "dimensions", "stat_time_day" ]
+        advertisers_reports_daily: [ "dimensions", "stat_time_day" ]
+        campaigns_reports_daily: [ "dimensions", "stat_time_day" ]
+        ad_groups_reports_daily: [ "dimensions", "stat_time_day" ]
 
     # audience report streams have unexpected and inexplicable test failure caused by problem with schema (KeyError: 'properties'),
     # It happens ONLY when incremental tests are run together with discovery tests.
@@ -64,10 +64,10 @@ tests:
       future_state_path: "integration_tests/abnormal_state.json"
       timeout_seconds: 600
       cursor_paths:
-        ad_group_audience_reports: [ "dimensions", "stat_time_day" ]
-        ads_audience_reports: [ "dimensions", "stat_time_day" ]
-        advertisers_audience_reports: [ "dimensions", "stat_time_day" ]
-        campaigns_audience_reports_by_country: [ "dimensions", "stat_time_day" ]
+        ad_group_audience_reports_daily: [ "dimensions", "stat_time_day" ]
+        ads_audience_reports_daily: [ "dimensions", "stat_time_day" ]
+        advertisers_audience_reports_daily: [ "dimensions", "stat_time_day" ]
+        campaigns_audience_reports_by_country_daily: [ "dimensions", "stat_time_day" ]
 
   full_refresh:
     # DAY granularity:
