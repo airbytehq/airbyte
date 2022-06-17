@@ -449,10 +449,10 @@ For forwards compatibility all messages should allow for unknown properties (in 
 Messages are structs emitted by actors.
 
 ### StreamDescriptor
-A stream descriptor contains all information required to identify a Stream. A stream descriptor is considered valid if:
+A stream descriptor contains all information required to identify a Stream:
 
-* The `name` value is required.  It may not be `null`.
-* The `namespace` value is optional.  It may be `null` if the stream does not have an associated namespace, otherwise must be populated.
+* The `name` of the stream (required).  It may not be `null`.
+* The `namespace` of the stream (optional).  It may be `null` if the stream does not have an associated namespace, otherwise must be populated.
 * Any UTF-8 string value is valid for both `name` and `namespace`, including the empty string (`""`) value.
 
 This is the new pattern for referring to a stream. As structs are updated, they are moved ot use this pattern. Structs that have not been updated still refer to streams by having top-level fields called `stream_name` and `namespace`.
