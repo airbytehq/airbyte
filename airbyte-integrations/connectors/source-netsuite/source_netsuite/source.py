@@ -95,6 +95,10 @@ class NetsuiteStream(HttpStream, ABC):
             # ensure there is a type and null has not already been added
             if property_type and "null" not in list(property_type):
                 record["type"] = [property_type, "null"]
+            # Netsuite values can be the full name of the value and not match
+            # the enum specified in the scheama
+            if record.get("enum"):
+                del record["enum"]
             ref = record.get("$ref")
             if ref:
                 ns_link = ref == "/services/rest/record/v1/metadata-catalog/nsLink"
