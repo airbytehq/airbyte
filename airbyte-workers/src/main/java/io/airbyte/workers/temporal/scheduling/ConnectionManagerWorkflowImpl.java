@@ -51,6 +51,8 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
+import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
+import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
@@ -89,6 +91,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
 
+  private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
+  private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
+
   static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
@@ -107,6 +112,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final CheckConnectionActivity checkActivity =
       Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final StreamResetActivity streamResetActivity =
+      Workflow.newActivityStub(StreamResetActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -142,7 +149,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       if (workflowState.isCancelled()) {
-        // TODO: remove streams from streams_to_reset
+        deleteResetJobStreams();
         reportCancelledAndContinueWith(false, connectionUpdaterInput);
       }
 
@@ -256,6 +263,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           workflowInternalState.getAttemptNumber(),
           standardSyncOutput));
     }
+
+    deleteResetJobStreams();
 
     resetNewConnectionInput(connectionUpdaterInput);
   }
@@ -737,6 +746,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               attemptNumber,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
+  }
+
+  private void deleteResetJobStreams() {
+    final int deleteResetJobStreamsVersion =
+        Workflow.getVersion(DELETE_RESET_JOB_STREAMS_TAG, Workflow.DEFAULT_VERSION, DELETE_RESET_JOB_STREAMS_CURRENT_VERSION);
+
+    if (deleteResetJobStreamsVersion < DELETE_RESET_JOB_STREAMS_CURRENT_VERSION) {
+      return;
+    }
+
+    runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob, new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
   }
 
 }
