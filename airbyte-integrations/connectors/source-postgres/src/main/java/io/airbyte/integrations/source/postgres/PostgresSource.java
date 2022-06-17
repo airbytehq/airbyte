@@ -7,9 +7,9 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.MODE_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_MODE_KEY;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -90,11 +90,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean()) {
-      if (DISABLE.equals(config.get(SSL_MODE_KEY).get(MODE_KEY).asText())) {
+    if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
+      if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
         additionalParameters.add("sslmode=disable");
       } else {
-        var parametersList = obtainConnectionOptions(config.get(SSL_MODE_KEY))
+        var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
             .entrySet()
             .stream()
             .map(e -> e.getKey() + "=" + e.getValue())

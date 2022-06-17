@@ -5,9 +5,9 @@
 package io.airbyte.integrations.destination.postgres;
 
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.MODE_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_KEY;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.SSL_MODE_KEY;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -50,11 +50,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     final Map<String, String> additionalParameters = new HashMap<>();
-    if (!config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean()) {
-      if (DISABLE.equals(config.get(SSL_MODE_KEY).get(MODE_KEY).asText())) {
+    if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
+      if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
         additionalParameters.put("sslmode", DISABLE);
       } else {
-        additionalParameters.putAll(obtainConnectionOptions(config.get(SSL_MODE_KEY)));
+        additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
       }
     }
     return additionalParameters;
