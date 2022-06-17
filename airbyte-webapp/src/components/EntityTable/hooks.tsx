@@ -1,4 +1,5 @@
 import { getFrequencyConfig } from "config/utils";
+import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
@@ -13,17 +14,11 @@ const useSyncActions = (): {
   const analyticsService = useAnalyticsService();
 
   const changeStatus = async (connection: WebBackendConnectionRead) => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      prefix: connection.prefix,
-      schedule: connection.schedule || null,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      operations: connection.operations,
-      name: connection.name,
-      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-    });
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      })
+    );
 
     const frequency = getFrequencyConfig(connection.schedule);
 

@@ -189,16 +189,16 @@ const useUpdateConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    (conn: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = conn.withRefreshedCatalog
-        ? { withRefreshedCatalog: conn.withRefreshedCatalog }
+    (connectionUpdate: WebBackendConnectionUpdate) => {
+      const withRefreshedCatalogCleaned = connectionUpdate.withRefreshedCatalog
+        ? { withRefreshedCatalog: connectionUpdate.withRefreshedCatalog }
         : null;
 
-      return service.update({ ...conn, ...withRefreshedCatalogCleaned });
+      return service.update({ ...connectionUpdate, ...withRefreshedCatalogCleaned });
     },
     {
-      onSuccess: (data) => {
-        queryClient.setQueryData(connectionsKeys.detail(data.connectionId), data);
+      onSuccess: (connection) => {
+        queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
       },
     }
   );
