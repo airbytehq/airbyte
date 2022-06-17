@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -98,13 +98,14 @@ class TwilioStream(HttpStream, ABC):
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     cursor_field = "date_updated"
-    time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
+    time_filter_template = "YYYY-MM-DD HH:mm:ss[Z]"
 
     def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
         self._lookback_window = lookback_window
         self._cursor_value = None
+        self._state = {}
 
     @property
     @abstractmethod
@@ -114,27 +115,53 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         """
 
     @property
-    def state(self) -> Mapping[str, Any]:
+    def start_date_with_lookback_window(self):
+        return self._get_start_date_with_lookback_window(self._start_date)
+
+    def _get_start_date_with_lookback_window(self, start_date: str) -> str:
+        start_date_with_lookback_window = pendulum.parse(start_date) - pendulum.duration(minutes=self._lookback_window)
+        return str(start_date_with_lookback_window)
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, the result can be stored by the source"""
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
-        else:
-            return {self.cursor_field: self._start_date}
+        return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = value[self.cursor_field]
 
+    # def get_request_date(self, stream_state):
+    #     request_date = self._start_date
+    #     if stream_state.get(self.cursor_field):
+    #         request_date = stream_state[self.cursor_field]
+    #     if self._lookback_window > 0:
+    #         lookback_date = pendulum.parse(request_date) - pendulum.duration(minutes=self._lookback_window)
+    #         if lookback_date > self._start_date:
+    #             request_date = lookback_date
+
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        start_date = stream_state[self.cursor_field] if stream_state.get(self.cursor_field) else self._start_date
-        if start_date:
-            start_date_with_lookback_window = pendulum.parse(start_date, strict=False) - pendulum.duration(minutes=self._lookback_window)
-            params[self.incremental_filter_field] = start_date_with_lookback_window.strftime(self.time_filter_template)
+        start_date = stream_state.get(self.cursor_field, self._start_date)
+        params[self.incremental_filter_field] = pendulum.parse(start_date).format(self.time_filter_template)
         return params
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
-            self._cursor_value = pendulum.parse(record[self.cursor_field], strict=False)
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        sorted_records = sorted(
+            super().read_records(sync_mode, cursor_field, stream_slice, stream_state), key=lambda x: x[self.cursor_field]
+        )
+        for record in sorted_records:
+            self._cursor_value = max(
+                str(pendulum.parse(record[self.cursor_field], strict=False)), stream_state.get(self.cursor_field, self._start_date)
+            )
             yield record
 
 
@@ -273,6 +300,7 @@ class Calls(TwilioNestedStream, IncrementalTwilioStream):
     parent_stream = Accounts
     incremental_filter_field = "EndTime>"
     cursor_field = "end_time"
+    time_filter_template = "YYYY-MM-DD"
 
 
 class Conferences(TwilioNestedStream, IncrementalTwilioStream):
@@ -280,7 +308,7 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
 
     parent_stream = Accounts
     incremental_filter_field = "DateUpdated>"
-    time_filter_template = "%Y-%m-%d"
+    time_filter_template = "YYYY-MM-DD"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
@@ -289,7 +317,9 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
         records = response.json().get(self.data_field, [])
         if stream_state.get(self.cursor_field):
             for record in records:
-                if pendulum.parse(record[self.cursor_field], strict=False) <= pendulum.parse(stream_state[self.cursor_field], strict=False):
+                if pendulum.from_format(record[self.cursor_field], self.time_filter_template) <= pendulum.parse(
+                    stream_state[self.cursor_field]
+                ):
                     yield record
         yield from records
 
@@ -398,7 +428,7 @@ class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
 
     parent_stream = Accounts
     incremental_filter_field = "StartDate"
-    time_filter_template = "%Y-%m-%d"
+    time_filter_template = "YYYY-MM-DD"
     cursor_field = "start_date"
     path_name = "Records"
     primary_key = [["account_sid"], ["category"]]
