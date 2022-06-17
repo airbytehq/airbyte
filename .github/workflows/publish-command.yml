@@ -285,7 +285,7 @@ jobs:
     name: Stop Build EC2 Runner
     needs:
       - start-publish-image-runner # required to get output from the start-runner job
-      - publish-image # required to wait when the main job is done
+      # - publish-image # required to wait when the main job is done
       - find_valid_pat
     strategy:
       fail-fast: false
