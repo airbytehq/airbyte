@@ -47,11 +47,12 @@ public class JobErrorReporter {
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
     LOGGER.info("reportSyncJobFailure");
     final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
-        .filter(failure -> failure.getMetadata().getAdditionalProperties().containsKey("from_trace_message")).toList();
+        .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey("from_trace_message"))
+        .toList();
 
     final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
 
-    for(final FailureReason failureReason : traceMessageFailures) {
+    for (final FailureReason failureReason : traceMessageFailures) {
       final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
 
       final HashMap<String, String> metadata = new HashMap<>();
@@ -60,7 +61,7 @@ public class JobErrorReporter {
       metadata.put(FAILURE_ORIGIN_META_KEY, failureOrigin.value());
       metadata.put(FAILURE_TYPE_META_KEY, failureReason.getFailureType().value());
 
-      if(failureOrigin == FailureOrigin.SOURCE) {
+      if (failureOrigin == FailureOrigin.SOURCE) {
         final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
         final String dockerImage = jobSyncConfig.getSourceDockerImage();
 
@@ -69,7 +70,7 @@ public class JobErrorReporter {
         metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
 
         errorReportingClient.report(workspace, failureReason, dockerImage, metadata);
-      } else if(failureOrigin == FailureOrigin.DESTINATION) {
+      } else if (failureOrigin == FailureOrigin.DESTINATION) {
         final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
         final String dockerImage = jobSyncConfig.getDestinationDockerImage();
 

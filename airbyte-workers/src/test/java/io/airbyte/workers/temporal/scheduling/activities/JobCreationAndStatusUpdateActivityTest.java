@@ -35,6 +35,7 @@ import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -93,6 +94,9 @@ public class JobCreationAndStatusUpdateActivityTest {
 
   @Mock
   private JobTracker mJobtracker;
+
+  @Mock
+  private JobErrorReporter mJobErrorReporter;
 
   @Mock
   private ConfigRepository mConfigRepository;
@@ -293,10 +297,18 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
+      final Job mJob = Mockito.mock(Job.class);
+      Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
+      Mockito.when(mJob.getConfig()).thenReturn(new JobConfig());
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason", failureSummary));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
       Mockito.verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      Mockito.verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
     @Test
