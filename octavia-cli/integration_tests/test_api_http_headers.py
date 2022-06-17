@@ -48,9 +48,8 @@ def test_api_http_headers(vcr_cassette, file_based_headers, option_based_headers
     result = runner.invoke(entrypoint.octavia, command_options, obj={})
     try:
         assert result.exit_code == 0
-    except AssertionError as e:
-        print(result.output)
-        raise (e)
+    except AssertionError:
+        raise Exception(result.output)
 
     for request in vcr_cassette.requests:
         for expected_header in expected_headers:
