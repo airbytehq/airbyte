@@ -1,4 +1,4 @@
-name: Publish Connector Image
+name: TEMP testing command
 on:
   workflow_dispatch:
     inputs:
