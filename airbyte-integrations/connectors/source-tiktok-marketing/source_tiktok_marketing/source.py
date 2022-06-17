@@ -18,7 +18,6 @@ from .spec import (
     SourceTiktokMarketingSpec,
 )
 from .streams import (
-    BasicReports,
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
@@ -31,16 +30,18 @@ from .streams import (
     Advertisers,
     AdvertisersAudienceReports,
     AdvertisersReports,
+    BasicReports,
     Campaigns,
     CampaignsAudienceReportsByCountry,
     CampaignsReports,
-    ReportGranularity,
-    Hourly,
     Daily,
-    Lifetime
+    Hourly,
+    Lifetime,
+    ReportGranularity,
 )
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+
 
 def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
     """Fabric method to generate final class with name like: AdsReports + Hourly"""
