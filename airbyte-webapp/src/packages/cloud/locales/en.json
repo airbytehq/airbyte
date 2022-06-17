@@ -3,7 +3,7 @@
   "login.DontHaveAccount": "Don’t have an account?",
   "login.login": "Log in",
   "login.signup": "Sign up",
-  "login.loginTitle": "Sign in to Airbyte",
+  "login.loginTitle": "Log in to Airbyte",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
   "login.yourEmail.placeholder": "work.email@example.com",
