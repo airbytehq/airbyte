@@ -53,7 +53,7 @@
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/cassandra
   icon: cassandra.svg
   releaseStage: alpha
@@ -141,7 +141,7 @@
 - name: Local CSV
   destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv
   icon: file.svg
   releaseStage: alpha
