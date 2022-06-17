@@ -183,7 +183,7 @@ jobs:
       fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    runs-on: self-hosted
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
@@ -381,7 +381,7 @@ jobs:
           label: ${{ needs.start-publish-image-runner-0.outputs.label }}
           ec2-instance-id: ${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}
   stop-publish-image-runner-multi:
-    if: github.event.inputs.parallel == 'true'
+    if: ${{ always() && github.event.inputs.parallel == 'true' }}
     name: Stop Build EC2 Runner
     needs:
       - start-publish-image-runner-0
@@ -395,12 +395,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ec2-instance-id:
+        ec2-instance:
           [
-            "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-2.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-3.outputs.ec2-instance-id }}",
-            "${{ needs.start-publish-image-runner-4.outputs.ec2-instance-id }}",
+            {
+              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            },
           ]
     runs-on: ubuntu-latest
     steps:
@@ -415,5 +427,5 @@ jobs:
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-publish-image-runner-0.outputs.label }}
-          ec2-instance-id: ${{ matrix.ec2-instance-id }}
+          label: ${{ matrix.ec2-instance.label }}
+          ec2-instance-id: ${{ matrix.ec2-instance.id }}
