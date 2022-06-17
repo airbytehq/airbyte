@@ -165,7 +165,7 @@ jobs:
     steps:
       - id: label
         run: |
-          ls /actions-runner/
+          /actions-runner/config.sh --labels ${{ needs.start-publish-image-runner-0.outputs.label }},$GITHUB_RUN_ID-publisher
   preprocess-matrix:
     needs: start-publish-image-runner-0
     runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
