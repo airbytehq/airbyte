@@ -60,14 +60,10 @@ public class EmptyAirbyteSource implements AirbyteSource {
             Jsons.object(sourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
         streamsToReset.addAll(sourceConfiguration.getStreamsToReset());
       } catch (final IllegalArgumentException e) {
-        // This should never happen because the object has the additional properties set to true.
         log.error("The configuration provided to the reset has an invalid format");
         throw new IllegalArgumentException("The reset configuration format is invalid", e);
       }
-      if (!sourceConfiguration.getAdditionalProperties().isEmpty()) {
-        log.error("The configuration provided to the reset has an invalid format");
-        throw new IllegalArgumentException("Unexpected configuration format");
-      }
+
       if (streamsToReset.isEmpty()) {
         // TODO: This is done to be able to handle the transition period where we can have no stream being
         // pass to the configuration because the
