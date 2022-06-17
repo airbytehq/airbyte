@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,20 @@ public class EmptyAirbyteSourceTest {
     emptyAirbyteSource.start(new WorkerSourceConfig(), null);
 
     legacyStateResult();
+  }
+
+  @Test
+  public void testLegacyWithEmptyConfig() throws Exception {
+    emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.emptyObject()), null);
+
+    legacyStateResult();
+  }
+
+  @Test
+  public void testLegacyWithWrongConfigFormat() throws Exception {
+    Assertions.assertThatThrownBy(() -> emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.jsonNode(
+        Map.of("what", "ever"))), null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
