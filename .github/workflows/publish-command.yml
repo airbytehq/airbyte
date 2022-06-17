@@ -256,7 +256,7 @@ jobs:
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
         run: |
-          curl -sL https://sentry.io/get-cli/ | bash
+          curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors')
         run: |
