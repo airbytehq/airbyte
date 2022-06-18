@@ -84,5 +84,5 @@
     }
   },
   "type": "object",
-  "required": "id"
+  "required": ["id"]
 }
