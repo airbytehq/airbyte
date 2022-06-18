@@ -42,5 +42,5 @@
     "attachments": { "$ref": "attachments.json" }
   },
   "type": "object",
-  "required": "id"
+  "required": ["id"]
 }
