@@ -115,7 +115,9 @@
     },
     "payment_method_types": {
       "type": ["null", "array"],
-      "card": { "type": ["null", "string"] }
+      "items": {
+        "type": ["null", "string"] 
+      }
     },
     "payment_status": { "type": ["null", "string"] },
     "phone_number_collection": {
