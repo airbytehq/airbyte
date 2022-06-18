@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["integer"]
+      "type": "integer"
     },
     "assignee_id": {
       "type": ["null", "integer"]
