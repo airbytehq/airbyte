@@ -80,7 +80,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "description": {
       "type": ["null", "string"]
@@ -98,5 +98,6 @@
       "type": ["null", "integer"]
     }
   },
-  "type": ["null", "object"]
+  "type": "object",
+  "required": "id"
 }
