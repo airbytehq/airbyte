@@ -58,5 +58,6 @@
       "type": ["null", "array"]
     }
   },
-  "type": "object"
+  "type": "object",
+  "required": "id"
 }
