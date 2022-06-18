@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object", "string"],
+  "type": "object",
+  "required": ["id"],
   "properties": {
     "nickname": {
       "type": ["null", "string"]
@@ -55,7 +56,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "trial_period_days": {
       "type": ["null", "integer"]
