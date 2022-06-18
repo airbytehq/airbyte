@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "server_received_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "app": {
+      "type": ["null", "integer"]
+    },
+    "device_carrier": {
+      "type": ["null", "string"]
+    },
+    "$schema": {
+      "type": ["null", "integer"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "event_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "os_version": {
+      "type": ["null", "string"]
+    },
+    "amplitude_id": {
+      "type": ["null", "integer"]
+    },
+    "processed_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user_creation_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "version_name": {
+      "type": ["null", "string"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    },
+    "paying": {
+      "type": ["null", "boolean"]
+    },
+    "dma": {
+      "type": ["null", "string"]
+    },
+    "group_properties": {
+      "type": ["null", "object"]
+    },
+    "user_properties": {
+      "type": ["null", "object"]
+    },
+    "client_upload_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "$insert_id": {
+      "type": ["null", "string"]
+    },
+    "event_type": {
+      "type": ["null", "string"]
+    },
+    "library": {
+      "type": ["null", "string"]
+    },
+    "amplitude_attribution_ids": {
+      "type": ["null", "string"]
+    },
+    "device_type": {
+      "type": ["null", "string"]
+    },
+    "device_manufacturer": {
+      "type": ["null", "string"]
+    },
+    "start_version": {
+      "type": ["null", "string"]
+    },
+    "location_lng": {
+      "type": ["null", "number"]
+    },
+    "server_upload_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "event_id": {
+      "type": ["null", "integer"]
+    },
+    "location_lat": {
+      "type": ["null", "number"]
+    },
+    "os_name": {
+      "type": ["null", "string"]
+    },
+    "amplitude_event_type": {
+      "type": ["null", "string"]
+    },
+    "device_brand": {
+      "type": ["null", "string"]
+    },
+    "groups": {
+      "type": ["null", "object"]
+    },
+    "event_properties": {
+      "type": ["null", "object"]
+    },
+    "data": {
+      "type": ["null", "object"]
+    },
+    "device_id": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "device_model": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "is_attribution_event": {
+      "type": ["null", "boolean"]
+    },
+    "adid": {
+      "type": ["null", "string"]
+    },
+    "session_id": {
+      "type": ["null", "number"]
+    },
+    "device_family": {
+      "type": ["null", "string"]
+    },
+    "sample_rate": {
+      "type": ["null", "string", "number"]
+    },
+    "idfa": {
+      "type": ["null", "string"]
+    },
+    "client_event_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

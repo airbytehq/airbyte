@@ -21,6 +21,7 @@ jobs:
           - source-mailchimp
           - source-zendesk-support
           - source-stripe
+          - source-amplitude
 
     steps:
       - uses: actions/checkout@v2
