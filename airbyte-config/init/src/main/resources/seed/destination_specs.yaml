@@ -4948,7 +4948,7 @@
     supported_destination_sync_modes:
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-scylla:0.1.1"
+- dockerImage: "airbyte/destination-scylla:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/scylla"
     connectionSpecification:
