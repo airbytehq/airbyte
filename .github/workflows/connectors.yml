@@ -20,6 +20,7 @@ jobs:
           - source-google-analytics-v4
           - source-mailchimp
           - source-zendesk-support
+          - source-stripe
 
     steps:
       - uses: actions/checkout@v2

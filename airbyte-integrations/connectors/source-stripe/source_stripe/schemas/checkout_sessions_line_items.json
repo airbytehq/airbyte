@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": { "type": ["null", "string"] },
+    "checkout_session_id": { "type": ["null", "string"] },
+    "checkout_session_expires_at": { "type": ["null", "integer"] },
+    "object": { "type": ["null", "string"] },
+    "amount_subtotal": { "type": ["null", "integer"] },
+    "amount_total": { "type": ["null", "integer"] },
+    "currency": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": { "type": ["null", "integer"] },
+          "discount": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "string"] },
+              "coupon": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": { "type": ["null", "string"] },
+                  "amount_off": { "type": ["null", "integer"] },
+                  "currency": { "type": ["null", "string"] },
+                  "duration": { "type": ["null", "string"] },
+                  "duration_in_months": { "type": ["null", "integer"] },
+                  "metadata": {
+                    "type": ["null", "object"],
+                    "properties": {}
+                  },
+                  "name": { "type": ["null", "string"] },
+                  "percent_off": { "type": ["null", "number"] },
+                  "object": { "type": ["null", "string"] },
+                  "applies_to": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "products": {
+                        "type": ["null", "array"],
+                        "items": { "type": ["null", "string"] }
+                      }
+                    }
+                  },
+                  "created": { "type": ["null", "integer"] },
+                  "livemode": { "type": ["null", "boolean"] },
+                  "max_redemptions": { "type": ["null", "integer"] },
+                  "redeem_by": { "type": ["null", "integer"] },
+                  "times_redeemed": { "type": ["null", "integer"] },
+                  "valid": { "type": ["null", "boolean"] }
+                }
+              },
+              "customer": { "type": ["null", "string"] },
+              "end": { "type": ["null", "integer"] },
+              "start": { "type": ["null", "integer"] },
+              "subscription": { "type": ["null", "string"] },
+              "object": { "type": ["null", "string"] },
+              "checkout_session": { "type": ["null", "string"] },
+              "invoice": { "type": ["null", "string"] },
+              "invoice_item": { "type": ["null", "string"] },
+              "promotion_code": { "type": ["null", "string"] }
+            }
+          }
+        }
+      }
+    },
+    "price": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "object": { "type": ["null", "string"] },
+        "active": { "type": ["null", "boolean"] },
+        "billing_scheme": { "type": ["null", "string"] },
+        "created": { "type": ["null", "integer"] },
+        "currency": { "type": ["null", "string"] },
+        "livemode": { "type": ["null", "boolean"] },
+        "lookup_key": { "type": ["null", "string"] },
+        "metadata": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "nickname": { "type": ["null", "string"] },
+        "product": { "type": ["null", "string"] },
+        "recurring": {
+          "type": ["null", "object"],
+          "properties": {
+            "aggregate_usage": { "type": ["null", "string"] },
+            "interval": { "type": ["null", "string"] },
+            "interval_count": { "type": ["null", "integer"] },
+            "usage_type": { "type": ["null", "string"] }
+          }
+        },
+        "tax_behavior": { "type": ["null", "string"] },
+        "tiers": {
+          "type": ["null", "object"],
+          "properties": {
+            "flat_amount": { "type": ["null", "integer"] },
+            "flat_amount_decimal": { "type": ["null", "string"] },
+            "unit_amount": { "type": ["null", "integer"] },
+            "unit_amount_decimal": { "type": ["null", "string"] },
+            "up_to": { "type": ["null", "integer"] }
+          }
+        },
+        "tiers_mode": { "type": ["null", "string"] },
+        "transform_quantity": {
+          "type": ["null", "object"],
+          "properties": {
+            "divide_by": { "type": ["null", "integer"] },
+            "round": { "type": ["null", "string"] }
+          }
+        },
+        "type": { "type": ["null", "string"] },
+        "unit_amount": { "type": ["null", "integer"] },
+        "unit_amount_decimal": { "type": ["null", "string"] }
+      }
+    },
+    "quantity": { "type": ["null", "integer"] },
+    "taxes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": { "types": ["null", "integer"] },
+          "rate": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "string"] },
+              "object": { "type": ["null", "string"] },
+              "active": { "type": ["null", "boolean"] },
+              "country": { "type": ["null", "string"] },
+              "created": { "type": ["null", "integer"] },
+              "description": { "type": ["null", "string"] },
+              "display_name": { "type": ["null", "string"] },
+              "inclusive": { "type": ["null", "boolean"] },
+              "jurisdiction": { "type": ["null", "string"] },
+              "livemode": { "type": ["null", "boolean"] },
+              "metadata": {
+                "type": ["null", "object"],
+                "properties": {}
+              },
+              "percentage": { "type": ["null", "number"] },
+              "state": { "type": ["null", "string"] },
+              "tax_type": { "type": ["null", "string"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}
