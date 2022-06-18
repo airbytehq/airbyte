@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "required": ["id"],
+  "required": ["name"],
   "properties": {
     "count": {
       "type": ["null", "integer"]
