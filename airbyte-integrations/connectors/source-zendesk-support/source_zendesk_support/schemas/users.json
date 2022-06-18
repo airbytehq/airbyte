@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": "id",
   "properties": {
     "verified": {
       "type": ["null", "boolean"]
@@ -133,7 +134,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "created_at": {
       "type": ["null", "string"],
