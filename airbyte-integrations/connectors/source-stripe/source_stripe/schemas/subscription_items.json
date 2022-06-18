@@ -135,7 +135,7 @@
       "type": ["null", "number"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "status": {
       "type": ["null", "string"]
