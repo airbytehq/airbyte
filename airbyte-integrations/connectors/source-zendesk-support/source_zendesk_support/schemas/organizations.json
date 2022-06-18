@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "required": "id",
+  "required": ["id"],
   "properties": {
     "group_id": {
       "type": ["null", "integer"]
