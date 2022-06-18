@@ -19,10 +19,10 @@
         "title": "Subdomain",
         "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
       },
-     
-            "title": "API Token",
-            "type": "object",
-            "required": ["email", "api_token"],
+      "credentials": {
+        "title": "Authentication *",
+        "type": "object",
+        "required": ["email", "api_token"],
             "additionalProperties": true,
             "properties": {
               "credentials": {
@@ -41,7 +41,7 @@
                 "description": "The value of the API token generated. See the docs for more information: https://go.estuary.dev/VHDFYJ",
                 "airbyte_secret": true
               }
-         
+         }
       }
     }
   }
