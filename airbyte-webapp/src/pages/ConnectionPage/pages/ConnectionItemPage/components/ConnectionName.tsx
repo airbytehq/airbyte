@@ -73,7 +73,7 @@ const InputContainer = styled.div`
 `;
 
 const Name = styled.div`
-  flex-grow: 1;
+  width: 100%;
 `;
 
 const H2 = styled.h2`
@@ -83,6 +83,7 @@ const H2 = styled.h2`
   text-align: center;
   color: #1a194d;
   margin: 10px;
+  word-wrap: break-word;
 `;
 
 const StyledInput = styled(Input)`
