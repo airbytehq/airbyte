@@ -67,7 +67,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
           .withMessage(
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
     }
-    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, s3Config.getBucketPath());
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
