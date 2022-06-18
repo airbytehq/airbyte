@@ -23,12 +23,12 @@
         "title": "Authentication *",
         "type": "object",
         "required": ["email", "api_token"],
-            "additionalProperties": true,
-            "properties": {
-              "credentials": {
-                "type": "string",
-                "const": "api_token",
-                "order": 0
+        "additionalProperties": true,
+        "properties": {
+           "credentials": {
+               "type": "string",
+               "const": "api_token",
+               "order": 0
               },
               "email": {
                 "title": "Email",
@@ -41,8 +41,8 @@
                 "description": "The value of the API token generated. See the docs for more information: https://go.estuary.dev/VHDFYJ",
                 "airbyte_secret": true
               }
-         }
-      }
+            }
+          }      
     }
   }
 }
