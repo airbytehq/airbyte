@@ -61,7 +61,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["checkout_session_expires_at"]
-    }
+    },
     {
       "stream": {
         "name": "coupons",

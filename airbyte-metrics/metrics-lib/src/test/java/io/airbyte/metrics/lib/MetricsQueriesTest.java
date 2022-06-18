@@ -177,18 +177,38 @@ public class MetricsQueriesTest {
 
     @Test
     void runningJobsShouldReturnCorrectCount() throws SQLException {
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
+              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
+              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+              .execute());
+      final UUID activeConnectionId = UUID.randomUUID();
+      final UUID inactiveConnectionId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.STATUS, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID,
+                  CONNECTION.DESTINATION_ID, CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
+              .values(activeConnectionId, StatusType.active, NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true)
+              .values(inactiveConnectionId, StatusType.inactive, NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true)
+              .execute());
+
       // non-pending jobs
       configDb.transaction(
-          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, activeConnectionId.toString(), JobStatus.pending).execute());
       configDb.transaction(
-          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, activeConnectionId.toString(), JobStatus.failed).execute());
       configDb.transaction(
-          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, activeConnectionId.toString(), JobStatus.running).execute());
       configDb.transaction(
-          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, activeConnectionId.toString(), JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(5L, inactiveConnectionId.toString(), JobStatus.running).execute());
 
       final var res = configDb.query(MetricQueries::numberOfRunningJobs);
-      assertEquals(2, res);
+      assertEquals(2, configDb.query(MetricQueries::numberOfRunningJobs));
+      assertEquals(1, configDb.query(MetricQueries::numberOfOrphanRunningJobs));
     }
 
     @Test

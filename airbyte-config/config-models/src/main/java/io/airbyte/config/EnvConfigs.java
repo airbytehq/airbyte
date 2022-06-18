@@ -111,7 +111,9 @@ public class EnvConfigs implements Configs {
 
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
-  public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
+  public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
+  public static final String ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS";
+  public static final String WORKFLOW_FAILURE_RESTART_DELAY_SECONDS = "WORKFLOW_FAILURE_RESTART_DELAY_SECONDS";
 
   private static final String SHOULD_RUN_GET_SPEC_WORKFLOWS = "SHOULD_RUN_GET_SPEC_WORKFLOWS";
   private static final String SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS = "SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS";
@@ -121,6 +123,9 @@ public class EnvConfigs implements Configs {
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
+
+  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -164,6 +169,7 @@ public class EnvConfigs implements Configs {
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      DEPLOYMENT_MODE, (instance) -> instance.getDeploymentMode().name(),
       WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
 
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
@@ -646,6 +652,15 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
   }
 
+  @Override
+  public String getMetricClient() {
+    return getEnvOrDefault(METRIC_CLIENT, "");
+  }
+
+  public String getOtelCollectorEndpoint() {
+    return getEnvOrDefault(OTEL_COLLECTOR_ENDPOINT, "");
+  }
+
   /**
    * There are two types of environment variables available to the job container:
    * <ul>
@@ -830,13 +845,23 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public int getDelayBetweenActivityAttempts() {
-    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  public int getInitialDelayBetweenActivityAttemptsSeconds() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS, "30"));
+  }
+
+  @Override
+  public int getMaxDelayBetweenActivityAttemptsSeconds() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public int getWorkflowFailureRestartDelaySeconds() {
+    return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
   }
 
   @Override
   public int getActivityNumberOfAttempt() {
-    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "5"));
   }
 
   // Helpers

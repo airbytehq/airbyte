@@ -243,6 +243,17 @@ public interface Configs {
   String getJobMainContainerMemoryLimit();
 
   /**
+   * Get datadog or OTEL metric client for Airbyte to emit metrics. Allows empty value
+   */
+  String getMetricClient();
+
+  /**
+   * If choosing OTEL as the metric client, Airbyte will emit metrics and traces to this provided
+   * endpoint.
+   */
+  String getOtelCollectorEndpoint();
+
+  /**
    * Defines a default map of environment variables to use for any launched job containers. The
    * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
    * an empty map.
@@ -497,9 +508,19 @@ public interface Configs {
   int getMaxActivityTimeoutSecond();
 
   /**
-   * Get the duration in second between 2 activity attempts
+   * Get initial delay in seconds between two activity attempts
    */
-  int getDelayBetweenActivityAttempts();
+  int getInitialDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get maximum delay in seconds between two activity attempts
+   */
+  int getMaxDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get the delay in seconds between an activity failing and the workflow being restarted
+   */
+  int getWorkflowFailureRestartDelaySeconds();
 
   /**
    * Get number of attempts of the non long running activities

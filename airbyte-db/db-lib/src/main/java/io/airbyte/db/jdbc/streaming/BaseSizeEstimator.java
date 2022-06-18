@@ -8,7 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 
 /**
- * Fetch size (number of rows) = target buffer byte size / mean row byte size
+ * Fetch size (number of rows) = target buffer byte size / max row byte size
  */
 public abstract class BaseSizeEstimator implements FetchSizeEstimator {
 
@@ -18,8 +18,7 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
   private final int defaultFetchSize;
   private final int maxFetchSize;
 
-  // mean byte size per row
-  protected double meanByteSize = 0.0;
+  protected double maxRowByteSize = 0.0;
 
   protected BaseSizeEstimator(final long targetBufferByteSize,
                               final int minFetchSize,
@@ -54,18 +53,18 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
    * inclusively.
    */
   protected int getBoundedFetchSize() {
-    if (meanByteSize <= 0.0) {
+    if (maxRowByteSize <= 0.0) {
       return defaultFetchSize;
     }
-    final long rawFetchSize = Math.round(targetBufferByteSize / meanByteSize);
+    final long rawFetchSize = Math.round(targetBufferByteSize / maxRowByteSize);
     if (rawFetchSize > Integer.MAX_VALUE) {
       return maxFetchSize;
     }
     return Math.max(minFetchSize, Math.min(maxFetchSize, (int) rawFetchSize));
   }
 
-  double getMeanRowByteSize() {
-    return meanByteSize;
+  double getMaxRowByteSize() {
+    return maxRowByteSize;
   }
 
 }

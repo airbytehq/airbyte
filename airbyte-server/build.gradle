@@ -36,7 +36,7 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.postgresql
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 

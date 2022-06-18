@@ -35,7 +35,7 @@ class BaseSizeEstimatorTest {
     public void accept(final Object o) {}
 
     public void setMeanByteSize(final double meanByteSize) {
-      this.meanByteSize = meanByteSize;
+      this.maxRowByteSize = meanByteSize;
     }
 
   }

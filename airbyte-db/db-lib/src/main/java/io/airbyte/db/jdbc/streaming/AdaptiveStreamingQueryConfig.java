@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +17,11 @@ import org.slf4j.LoggerFactory;
 public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveStreamingQueryConfig.class);
+  // log fetch size change after there are LOG_ENTRY_SIZE
+  // adjustments to prevent excessive logging
+  private static final int LOG_ENTRY_SIZE = 10;
 
+  private final List<Integer> fetchSizeChanges = new ArrayList<>(LOG_ENTRY_SIZE);
   private final FetchSizeEstimator fetchSizeEstimator;
   private int currentFetchSize;
 
@@ -36,10 +42,17 @@ public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
   public void accept(final ResultSet resultSet, final Object rowData) throws SQLException {
     fetchSizeEstimator.accept(rowData);
     final Optional<Integer> newFetchSize = fetchSizeEstimator.getFetchSize();
+
     if (newFetchSize.isPresent() && currentFetchSize != newFetchSize.get()) {
       currentFetchSize = newFetchSize.get();
       resultSet.setFetchSize(currentFetchSize);
-      LOGGER.info("Updated fetch size: {} rows", currentFetchSize);
+
+      if (fetchSizeChanges.size() < LOG_ENTRY_SIZE) {
+        fetchSizeChanges.add(currentFetchSize);
+      } else {
+        LOGGER.info("Last {} fetch size updates: {}", LOG_ENTRY_SIZE, fetchSizeChanges);
+        fetchSizeChanges.clear();
+      }
     }
   }
 
