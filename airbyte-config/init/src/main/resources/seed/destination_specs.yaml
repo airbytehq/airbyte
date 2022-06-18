@@ -3433,7 +3433,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-pulsar:0.1.1"
+- dockerImage: "airbyte/destination-pulsar:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pulsar"
     connectionSpecification:
