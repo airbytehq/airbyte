@@ -901,7 +901,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "invoice_prefix": {
       "type": ["null", "string"]
