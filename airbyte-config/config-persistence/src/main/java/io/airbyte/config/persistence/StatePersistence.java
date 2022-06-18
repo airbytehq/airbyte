@@ -60,7 +60,7 @@ public class StatePersistence {
       return Optional.empty();
     }
 
-    return switch (records.stream().findFirst().get().type) {
+    return switch (getStateType(connectionId, records)) {
       case GLOBAL -> Optional.of(buildGlobalState(records));
       case STREAM -> Optional.of(buildStreamState(records));
       default -> Optional.of(buildLegacyState(records));
@@ -195,6 +195,26 @@ public class StatePersistence {
               namespace != null ? STATE.NAMESPACE.eq(namespace) : STATE.NAMESPACE.isNull())
           .execute();
     }
+  }
+
+  /**
+   * Get the StateType for a given list of StateRecords
+   *
+   * @param connectionId The connectionId of the records, used to add more debugging context if an
+   *        error is detected
+   * @param records The list of StateRecords to process, must not be empty
+   * @return the StateType of the records
+   * @throws IOException If StateRecords have inconsistent types
+   */
+  private io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(final UUID connectionId, final List<StateRecord> records)
+      throws IOException {
+    final List<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types = records.stream().map(r -> r.type).distinct().toList();
+    if (types.size() == 1) {
+      return types.get(0);
+    }
+
+    throw new IOException("Inconsistent StateTypes for connectionId " + connectionId +
+        " (" + String.join(", ", types.stream().map(io.airbyte.db.instance.configs.jooq.generated.enums.StateType::getLiteral).toList()) + ")");
   }
 
   /**

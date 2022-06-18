@@ -34,7 +34,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+import org.jooq.JSONB;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -431,6 +433,50 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     statePersistence.updateOrCreateState(connectionId, fullReset);
     final Optional<StateWrapper> fullResetResult = statePersistence.getCurrentState(connectionId);
     Assertions.assertTrue(fullResetResult.isEmpty());
+  }
+
+  @Test
+  public void testInconsistentTypeUpdates() throws IOException {
+    final StateWrapper streamState = new StateWrapper()
+        .withStateType(StateType.STREAM)
+        .withStateMessages(Arrays.asList(
+            new AirbyteStateMessage()
+                .withStateType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
+                    .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
+            new AirbyteStateMessage()
+                .withStateType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withName("s2"))
+                    .withStreamState(Jsons.deserialize("\"state s2\"")))));
+    statePersistence.updateOrCreateState(connectionId, streamState);
+
+    Assertions.assertThrows(IOException.class, () -> {
+      final StateWrapper globalState = new StateWrapper()
+          .withStateType(StateType.GLOBAL)
+          .withGlobal(new AirbyteStateMessage()
+              .withStateType(AirbyteStateType.GLOBAL)
+              .withGlobal(new AirbyteGlobalState()
+                  .withSharedState(Jsons.deserialize("\"my global state\""))
+                  .withStreamStates(Arrays.asList(
+                      new AirbyteStreamState()
+                          .withStreamDescriptor(new StreamDescriptor().withName(""))
+                          .withStreamState(Jsons.deserialize("\"empty name state\"")),
+                      new AirbyteStreamState()
+                          .withStreamDescriptor(new StreamDescriptor().withName("").withNamespace(""))
+                          .withStreamState(Jsons.deserialize("\"empty name and namespace state\""))))));
+      statePersistence.updateOrCreateState(connectionId, globalState);
+    });
+
+    // We should be guarded against those cases let's make sure we don't make things worse if we're in
+    // an inconsistent state
+    dslContext.insertInto(DSL.table("state"))
+        .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field("state"))
+        .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
+        .execute();
+    Assertions.assertThrows(IOException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
+    Assertions.assertThrows(IOException.class, () -> statePersistence.getCurrentState(connectionId));
   }
 
   @BeforeEach
