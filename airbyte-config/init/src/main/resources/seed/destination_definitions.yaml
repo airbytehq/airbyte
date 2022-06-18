@@ -218,7 +218,7 @@
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
   dockerRepository: airbyte/destination-redis
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redis
   icon: redis.svg
   releaseStage: alpha
