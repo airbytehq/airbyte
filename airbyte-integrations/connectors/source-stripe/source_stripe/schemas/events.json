@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["id"],
   "properties": {
     "created": {
       "type": ["null", "integer"]
@@ -9,7 +10,7 @@
       "properties": {}
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "api_version": {
       "type": ["null", "string"]
