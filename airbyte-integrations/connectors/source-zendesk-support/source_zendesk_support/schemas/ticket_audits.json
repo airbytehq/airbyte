@@ -273,33 +273,7 @@
           }
         },
         "flags_options": {
-          "type": ["null", "object"],
-          "properties": {
-            "2": {
-              "type": ["null", "object"],
-              "properties": {
-                "trusted": {
-                  "type": ["null", "boolean"]
-                }
-              }
-            },
-            "11": {
-              "type": ["null", "object"],
-              "properties": {
-                "trusted": {
-                  "type": ["null", "boolean"]
-                },
-                "message": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "user": {
-                      "type": ["null", "string"]
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "type": ["null", "object"]
         },
         "flags": {
           "type": ["null", "array"],
