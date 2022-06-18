@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": ["null", "object"],
+  "type": "object",
+  "required": "id",
   "properties": {
-    "id": { "type": ["null", "string"] },
+    "id": { "type": "string" },
     "checkout_session_id": { "type": ["null", "string"] },
     "checkout_session_expires_at": { "type": ["null", "integer"] },
     "object": { "type": ["null", "string"] },
@@ -122,7 +123,7 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "amount": { "types": ["null", "integer"] },
+          "amount": { "type": ["null", "integer"] },
           "rate": {
             "type": ["null", "object"],
             "properties": {
