@@ -13,15 +13,13 @@ connectionSpecification:
       type: string
       title: Account ID
       description: >-
-        Your Stripe account ID (starts with 'acct_', find yours <a
-        href="https://dashboard.stripe.com/settings/account">here</a>).
+        Your Stripe account ID (starts with 'acct_', find yours here https://dashboard.stripe.com/settings/account
       order: 0
     client_secret:
       type: string
       title: Secret Key
       description: >-
-        Stripe API key (usually starts with 'sk_live_'; find yours <a
-        href="https://dashboard.stripe.com/apikeys">here</a>).
+        Stripe API key (usually starts with 'sk_live_'; find yours here https://dashboard.stripe.com/apikeys
       airbyte_secret: true
       order: 1
     start_date:
