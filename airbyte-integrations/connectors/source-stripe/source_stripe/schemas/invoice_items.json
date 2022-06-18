@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": ["id"],
   "properties": {
     "amount": {
       "type": ["null", "integer"]
@@ -128,7 +129,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "livemode": {
       "type": ["null", "boolean"]
