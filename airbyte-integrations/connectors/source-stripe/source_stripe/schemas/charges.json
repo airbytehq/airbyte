@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": "id",
   "properties": {
     "metadata": {
       "type": ["null", "object"],
@@ -331,7 +332,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["string"]
+      "type": "string"
     },
     "object": {
       "type": ["null", "string"]
