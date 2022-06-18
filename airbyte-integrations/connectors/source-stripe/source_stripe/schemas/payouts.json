@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "statement_description": {
       "type": ["null", "string"]
@@ -125,5 +125,6 @@
       "type": ["null", "string"]
     }
   },
-  "type": ["null", "object"]
+  "type": "object",
+  "required": ["id"]
 }
