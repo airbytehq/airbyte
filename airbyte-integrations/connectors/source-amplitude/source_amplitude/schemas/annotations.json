@@ -11,7 +11,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "label": {
       "type": ["null", "string"]
