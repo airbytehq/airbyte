@@ -1,11 +1,11 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "count": {
       "type": ["null", "integer"]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": "string"
     }
   }
 }
