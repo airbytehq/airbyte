@@ -1,7 +1,7 @@
 {
   "properties": {
     "id": {
-      "type": ["integer"]
+      "type": "integer"
     },
     "url": {
       "type": ["null", "string"]
