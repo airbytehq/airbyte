@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": "id",
   "properties": {
     "events": {
       "type": ["null", "array"],
@@ -338,7 +339,7 @@
       }
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "created_at": {
       "type": ["null", "string"],
