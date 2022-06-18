@@ -31,7 +31,7 @@
       "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "group_id": {
       "type": ["null", "integer"]
@@ -181,5 +181,6 @@
       "type": ["null", "integer"]
     }
   },
-  "type": ["null", "object"]
+  "type": "object",
+  "required": "id"
 }
