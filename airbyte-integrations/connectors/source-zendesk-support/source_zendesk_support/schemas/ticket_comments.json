@@ -11,7 +11,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "ticket_id": {
       "type": ["null", "integer"]
@@ -41,5 +41,6 @@
     "metadata": { "$ref": "metadata.json" },
     "attachments": { "$ref": "attachments.json" }
   },
-  "type": ["null", "object"]
+  "type": "object",
+  "required": "id"
 }
