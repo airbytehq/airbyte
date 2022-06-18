@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": ["null", "object"],
+  "type": "object",
+  "required": "id",
   "properties": {
-    "id": { "type": ["null", "string"] },
+    "id": {"type": "string"},
     "object": { "type": ["null", "string"] },
     "after_expiration": {
       "type": ["null", "object"],
