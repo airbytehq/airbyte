@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": ["id"],
   "properties": {
     "created": {
       "type": ["null", "integer"]
@@ -36,7 +37,7 @@
       "type": ["null", "number"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "webhooks_delivered_at": {
       "type": ["null", "number"]
