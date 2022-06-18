@@ -83,5 +83,6 @@
       "format": "date-time"
     }
   },
-  "type": "object"
+  "type": "object",
+  "required": "id"
 }
