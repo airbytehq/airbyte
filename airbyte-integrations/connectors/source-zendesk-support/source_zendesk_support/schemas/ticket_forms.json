@@ -39,7 +39,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "restricted_brand_ids": {
       "type": ["null", "array"],
@@ -54,5 +54,6 @@
       }
     }
   },
-  "type": ["null", "object"]
+  "type": "object",
+  "required": "id"
 }
