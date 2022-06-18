@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "events": {
       "type": ["null", "array"],
@@ -194,7 +194,7 @@
                         "type": ["null", "array"]
                       },
                       "id": {
-                        "type": ["null", "integer"]
+                        "type": "integer"
                       },
                       "ticket_id": {
                         "type": ["null", "integer"]
