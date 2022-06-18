@@ -36,7 +36,7 @@
       }
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "trial_start": {
       "type": ["null", "integer"]
