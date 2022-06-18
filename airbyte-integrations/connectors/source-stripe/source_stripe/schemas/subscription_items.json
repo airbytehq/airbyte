@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "requried": ["id"],
+  "required": ["id"],
   "properties": {
     "metadata": {
       "type": ["null", "object"],
