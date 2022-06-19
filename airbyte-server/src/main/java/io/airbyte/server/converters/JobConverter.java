@@ -22,10 +22,12 @@ import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.LogRead;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -33,6 +35,8 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
@@ -41,11 +45,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobConverter {
-
-  private static final int LOG_TAIL_SIZE = 1000000;
 
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -58,13 +61,13 @@ public class JobConverter {
   public JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
-  public JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
-                                          final SourceDefinitionRead sourceDefinitionRead,
-                                          final DestinationDefinitionRead destinationDefinitionRead,
-                                          final AirbyteVersion airbyteVersion) {
+  public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
+                                                 final SourceDefinitionRead sourceDefinitionRead,
+                                                 final DestinationDefinitionRead destinationDefinitionRead,
+                                                 final AirbyteVersion airbyteVersion) {
     return new JobDebugRead()
         .id(jobInfoRead.getJob().getId())
         .configId(jobInfoRead.getJob().getConfigId())
@@ -84,10 +87,45 @@ public class JobConverter {
             .id(job.getId())
             .configId(configId)
             .configType(configType)
+            .streams(extractStreamNamesFromCatalogIfSync(job).orElse(null))
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).collect(Collectors.toList()));
+  }
+
+  /**
+   * If the job is of type SYNC or RESET, extracts the stream names that were in the catalog.
+   * Otherwise, returns an empty optional.
+   *
+   * @param job - job whose streams to extract
+   * @return stream descriptors of streams in the catalog used by job
+   */
+  private static Optional<List<StreamDescriptor>> extractStreamNamesFromCatalogIfSync(final Job job) {
+    return extractCatalogIfSyncOrReset(job)
+        .map(CatalogHelpers::extractStreamDescriptors)
+        .map(streamDescriptor -> streamDescriptor.stream().map(ProtocolConverters::streamDescriptorToApi).toList());
+  }
+
+  /**
+   * If the job is of type SYNC or RESET, extracts the configured catalog. Otherwise, returns an empty
+   * optional.
+   *
+   * @param job - job whose catalog to extract
+   * @return catalog used by job
+   */
+  private static Optional<ConfiguredAirbyteCatalog> extractCatalogIfSyncOrReset(final Job job) {
+    if (job.getConfigType() == ConfigType.SYNC) {
+      return Optional.of(job.getConfig()
+          .getSync()
+          .getConfiguredAirbyteCatalog());
+    } else if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
+      return Optional.of(job.getConfig()
+          .getResetConnection()
+          .getConfiguredAirbyteCatalog());
+    } else {
+      return Optional.empty();
+    }
   }
 
   public AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {

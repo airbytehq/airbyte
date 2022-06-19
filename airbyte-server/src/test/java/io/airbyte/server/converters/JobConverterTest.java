@@ -26,27 +26,33 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.LogRead;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
-import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobOutput.OutputType;
+import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,10 +66,7 @@ class JobConverterTest {
   private static final String JOB_CONFIG_ID = "123";
   private static final JobStatus JOB_STATUS = JobStatus.RUNNING;
   private static final AttemptStatus ATTEMPT_STATUS = AttemptStatus.RUNNING;
-  private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
-  private static final JobConfig JOB_CONFIG = new JobConfig()
-      .withConfigType(CONFIG_TYPE)
-      .withCheckConnection(new JobCheckConnectionConfig());
+  private static final JobConfig.ConfigType CONFIG_TYPE = ConfigType.SYNC;
   private static final Path LOG_PATH = Path.of("log_path");
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
   private static final long RECORDS_EMITTED = 15L;
@@ -75,6 +78,12 @@ class JobConverterTest {
   private static final long FAILURE_TIMESTAMP = System.currentTimeMillis();
   private static final String FAILURE_STACKTRACE = "stacktrace";
   private static final boolean PARTIAL_SUCCESS = false;
+
+  private static final JobConfig JOB_CONFIG = new JobConfig()
+      .withConfigType(CONFIG_TYPE)
+      .withSync(new JobSyncConfig().withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog().withStreams(List.of(
+          new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("users")),
+          new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("accounts"))))));
 
   private static final JobOutput JOB_OUTPUT = new JobOutput()
       .withOutputType(OutputType.SYNC)
@@ -103,8 +112,11 @@ class JobConverterTest {
           .job(new JobRead()
               .id(JOB_ID)
               .configId(JOB_CONFIG_ID)
+              .streams(List.of(
+                  new StreamDescriptor().name("users"),
+                  new StreamDescriptor().name("accounts")))
               .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
-              .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
+              .configType(JobConfigType.SYNC)
               .createdAt(CREATED_AT)
               .updatedAt(CREATED_AT))
           .attempts(Lists.newArrayList(new AttemptInfoRead()
@@ -149,7 +161,7 @@ class JobConverterTest {
           .id(JOB_ID)
           .configId(JOB_CONFIG_ID)
           .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
-          .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
+          .configType(JobConfigType.SYNC)
           .airbyteVersion(airbyteVersion.serialize())
           .sourceDefinition(sourceDefinitionRead)
           .destinationDefinition(destinationDefinitionRead);
@@ -198,17 +210,17 @@ class JobConverterTest {
 
   @Test
   public void testGetDebugJobInfoRead() {
-    assertEquals(JOB_DEBUG_INFO, jobConverter.getDebugJobInfoRead(JOB_INFO, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion));
+    assertEquals(JOB_DEBUG_INFO, JobConverter.getDebugJobInfoRead(JOB_INFO, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion));
   }
 
   @Test
   public void testGetJobWithAttemptsRead() {
-    assertEquals(JOB_WITH_ATTEMPTS_READ, jobConverter.getJobWithAttemptsRead(job));
+    assertEquals(JOB_WITH_ATTEMPTS_READ, JobConverter.getJobWithAttemptsRead(job));
   }
 
   @Test
   public void testGetJobRead() {
-    final JobWithAttemptsRead jobReadActual = jobConverter.getJobWithAttemptsRead(job);
+    final JobWithAttemptsRead jobReadActual = JobConverter.getJobWithAttemptsRead(job);
     assertEquals(JOB_WITH_ATTEMPTS_READ, jobReadActual);
   }
 
