@@ -54,7 +54,7 @@ public class ConfigurationApiTest {
         mock(EventRunner.class),
         mock(Flyway.class),
         mock(Flyway.class));
-    assertTrue(configurationApi.canImportDefinitons());
+    assertTrue(configurationApi.canImportDefinitions());
   }
 
 }

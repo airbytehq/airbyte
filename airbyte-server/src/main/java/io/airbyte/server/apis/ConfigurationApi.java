@@ -127,6 +127,7 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -149,6 +150,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final ConnectionsHandler connectionsHandler;
   private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
+  private final StateHandler stateHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final HealthCheckHandler healthCheckHandler;
@@ -196,7 +198,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         workerEnvironment,
         logConfigs,
         eventRunner);
-
+    stateHandler = new StateHandler(configRepository);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
@@ -725,12 +727,12 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
+    return execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
+    return getStateType(connectionIdRequestBody);
   }
 
   // SCHEDULER
@@ -851,7 +853,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
   }
 
-  public boolean canImportDefinitons() {
+  public boolean canImportDefinitions() {
     return archiveHandler.canImportDefinitions();
   }
 
