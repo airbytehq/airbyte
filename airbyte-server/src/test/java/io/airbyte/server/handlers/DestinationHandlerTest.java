@@ -256,14 +256,14 @@ class DestinationHandlerTest {
         destinationDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(destinationConnection.getConfiguration());
 
-    when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
+    when(ConnectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
     DestinationReadList actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
     assertEquals(1, actualDestinationRead.getDestinations().size());
     assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
     verify(secretsProcessor)
         .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
 
-    when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(false);
+    when(ConnectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(false);
     actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
     assertEquals(0, actualDestinationRead.getDestinations().size());
   }

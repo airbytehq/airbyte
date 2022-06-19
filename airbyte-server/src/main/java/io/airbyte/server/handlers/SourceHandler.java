@@ -54,7 +54,7 @@ public class SourceHandler {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
+    validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -194,7 +194,7 @@ public class SourceHandler {
     for (final SourceConnection sci : configRepository.listSourceConnection()) {
       if (!sci.getTombstone()) {
         final SourceRead sourceRead = buildSourceRead(sci.getSourceId());
-        if (connectionsHandler.matchSearch(sourceSearch, sourceRead)) {
+        if (ConnectionsHandler.matchSearch(sourceSearch, sourceRead)) {
           reads.add(sourceRead);
         }
       }

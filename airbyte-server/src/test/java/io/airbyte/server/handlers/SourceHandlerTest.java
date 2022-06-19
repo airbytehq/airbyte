@@ -279,12 +279,12 @@ class SourceHandlerTest {
         secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(sourceConnection.getConfiguration());
 
-    when(connectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(true);
+    when(ConnectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(true);
     SourceReadList actualSourceReadList = sourceHandler.searchSources(new SourceSearch());
     assertEquals(1, actualSourceReadList.getSources().size());
     assertEquals(expectedSourceRead, actualSourceReadList.getSources().get(0));
 
-    when(connectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(false);
+    when(ConnectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(false);
     actualSourceReadList = sourceHandler.searchSources(new SourceSearch());
     assertEquals(0, actualSourceReadList.getSources().size());
   }

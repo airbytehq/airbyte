@@ -60,7 +60,7 @@ public class DestinationHandler {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
+    validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -234,7 +234,7 @@ public class DestinationHandler {
     for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getTombstone()) {
         final DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
-        if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
+        if (ConnectionsHandler.matchSearch(destinationSearch, destinationRead)) {
           reads.add(destinationRead);
         }
       }

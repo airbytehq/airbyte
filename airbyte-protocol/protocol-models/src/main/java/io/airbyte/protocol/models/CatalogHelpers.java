@@ -69,6 +69,64 @@ public class CatalogHelpers {
   }
 
   /**
+   * Converts a {@link ConfiguredAirbyteCatalog} into an {@link AirbyteCatalog}. This is possible
+   * because the latter is a subset of the former.
+   *
+   * @param configuredCatalog - catalog to convert
+   * @return - airbyte catalog
+   */
+  public static AirbyteCatalog configuredCatalogToCatalog(final ConfiguredAirbyteCatalog configuredCatalog) {
+    return new AirbyteCatalog().withStreams(
+        configuredCatalog.getStreams()
+            .stream()
+            .map(ConfiguredAirbyteStream::getStream)
+            .collect(Collectors.toList()));
+  }
+
+  /**
+   * Extracts {@link StreamDescriptor} for a given {@link AirbyteStream}
+   *
+   * @param airbyteStream stream
+   * @return stream descriptor
+   */
+  public static StreamDescriptor extractDescriptor(final ConfiguredAirbyteStream airbyteStream) {
+    return extractDescriptor(airbyteStream.getStream());
+  }
+
+  /**
+   * Extracts {@link StreamDescriptor} for a given {@link ConfiguredAirbyteStream}
+   *
+   * @param airbyteStream stream
+   * @return stream descriptor
+   */
+  public static StreamDescriptor extractDescriptor(final AirbyteStream airbyteStream) {
+    return new StreamDescriptor().withName(airbyteStream.getName()).withNamespace(airbyteStream.getNamespace());
+  }
+
+  /**
+   * Extracts {@link StreamDescriptor}s for each stream in a given {@link ConfiguredAirbyteCatalog}
+   *
+   * @param configuredCatalog catalog
+   * @return list of stream descriptors
+   */
+  public static List<StreamDescriptor> extractStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
+    return extractStreamDescriptors(configuredCatalogToCatalog(configuredCatalog));
+  }
+
+  /**
+   * Extracts {@link StreamDescriptor}s for each stream in a given {@link AirbyteCatalog}
+   *
+   * @param catalog catalog
+   * @return list of stream descriptors
+   */
+  public static List<StreamDescriptor> extractStreamDescriptors(final AirbyteCatalog catalog) {
+    return catalog.getStreams()
+        .stream()
+        .map(abStream -> new StreamDescriptor().withName(abStream.getName()).withNamespace(abStream.getNamespace()))
+        .toList();
+  }
+
+  /**
    * Convert a Catalog into a ConfiguredCatalog. This applies minimum default to the Catalog to make
    * it a valid ConfiguredCatalog.
    *
