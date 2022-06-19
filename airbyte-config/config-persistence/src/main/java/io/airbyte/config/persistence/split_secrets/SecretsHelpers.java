@@ -177,6 +177,7 @@ public class SecretsHelpers {
             .stream()
             .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
         .stream()
+        .map(JsonPaths::mapJsonSchemaPathToJsonPath)
         .sorted()
         .toList();
   }
