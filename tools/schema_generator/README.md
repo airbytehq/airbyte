@@ -1,6 +1,16 @@
 # Schema Generator
 Util for generating catalog schema from a connector `read` command output.
 
+## Prerequisites
+
+To use this tool you first need to:
+
+- Define all your streams.
+- Create schema files for each stream, containing only `{}` (valid json files). See [this doc section](https://docs.airbyte.com/connector-development/cdk-python/schemas#static-schemas) for instructions on how to name these files.
+- Build you container docker image.
+
+Going through all the steps above should enable you to run the `read` command of your connector using the docker image, which is the input for this tool.
+
 ## Usage
 
 First install the tools in it's own virtual environment:
