@@ -3729,7 +3729,12 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
-        streams:
+        resetConfig:
+          $ref: "#/components/schemas/ResetConfig"
+    ResetConfig:
+      type: object
+      properties:
+        streamsToReset:
           type: array
           items:
             $ref: "#/components/schemas/StreamDescriptor"

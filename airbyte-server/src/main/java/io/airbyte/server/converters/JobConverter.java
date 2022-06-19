@@ -21,8 +21,8 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.ResetConfig;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
-import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -35,8 +35,6 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
@@ -87,7 +85,7 @@ public class JobConverter {
             .id(job.getId())
             .configId(configId)
             .configType(configType)
-            .streams(extractStreamNamesFromCatalogIfSync(job).orElse(null))
+            .resetConfig(extractResetConfigIfReset(job).orElse(null))
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
@@ -95,34 +93,19 @@ public class JobConverter {
   }
 
   /**
-   * If the job is of type SYNC or RESET, extracts the stream names that were in the catalog.
-   * Otherwise, returns an empty optional.
+   * If the job is of type RESET, extracts the part of the reset config that we expose in the API.
+   * Otherwise, returns empty optional.
    *
-   * @param job - job whose streams to extract
-   * @return stream descriptors of streams in the catalog used by job
+   * @param job - job
+   * @return api representation of reset config
    */
-  private static Optional<List<StreamDescriptor>> extractStreamNamesFromCatalogIfSync(final Job job) {
-    return extractCatalogIfSyncOrReset(job)
-        .map(CatalogHelpers::extractStreamDescriptors)
-        .map(streamDescriptor -> streamDescriptor.stream().map(ProtocolConverters::streamDescriptorToApi).toList());
-  }
-
-  /**
-   * If the job is of type SYNC or RESET, extracts the configured catalog. Otherwise, returns an empty
-   * optional.
-   *
-   * @param job - job whose catalog to extract
-   * @return catalog used by job
-   */
-  private static Optional<ConfiguredAirbyteCatalog> extractCatalogIfSyncOrReset(final Job job) {
+  private static Optional<ResetConfig> extractResetConfigIfReset(final Job job) {
     if (job.getConfigType() == ConfigType.SYNC) {
-      return Optional.of(job.getConfig()
-          .getSync()
-          .getConfiguredAirbyteCatalog());
-    } else if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
-      return Optional.of(job.getConfig()
-          .getResetConnection()
-          .getConfiguredAirbyteCatalog());
+      return Optional.ofNullable(
+          new ResetConfig().streamsToReset(job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset()
+              .stream()
+              .map(ProtocolConverters::streamDescriptorToApi)
+              .toList()));
     } else {
       return Optional.empty();
     }
