@@ -26,7 +26,6 @@ from .streams import (
     Ads,
     AdsAudienceReports,
     AdsReports,
-    AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
     AdvertisersReports,
@@ -126,7 +125,6 @@ class SourceTiktokMarketing(AbstractSource):
 
         # 1. Basic streams:
         streams = [
-            AdvertiserIds(**args),
             Advertisers(**args),
             Ads(**args),
             AdGroups(**args),
