@@ -25,6 +25,7 @@ import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.ResetConfig;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.commons.enums.Enums;
@@ -37,7 +38,9 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobOutput.OutputType;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
@@ -52,6 +55,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -112,9 +116,6 @@ class JobConverterTest {
           .job(new JobRead()
               .id(JOB_ID)
               .configId(JOB_CONFIG_ID)
-              .streams(List.of(
-                  new StreamDescriptor().name("users"),
-                  new StreamDescriptor().name("accounts")))
               .status(io.airbyte.api.model.generated.JobStatus.RUNNING)
               .configType(JobConfigType.SYNC)
               .createdAt(CREATED_AT)
@@ -204,31 +205,56 @@ class JobConverterTest {
   }
 
   @Test
-  public void testGetJobInfoRead() {
+  void testGetJobInfoRead() {
     assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
   }
 
   @Test
-  public void testGetDebugJobInfoRead() {
+  void testGetDebugJobInfoRead() {
     assertEquals(JOB_DEBUG_INFO, JobConverter.getDebugJobInfoRead(JOB_INFO, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion));
   }
 
   @Test
-  public void testGetJobWithAttemptsRead() {
+  void testGetJobWithAttemptsRead() {
     assertEquals(JOB_WITH_ATTEMPTS_READ, JobConverter.getJobWithAttemptsRead(job));
   }
 
   @Test
-  public void testGetJobRead() {
+  void testGetJobRead() {
     final JobWithAttemptsRead jobReadActual = JobConverter.getJobWithAttemptsRead(job);
     assertEquals(JOB_WITH_ATTEMPTS_READ, jobReadActual);
   }
 
   @Test
-  public void testEnumConversion() {
+  void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
     assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.generated.AttemptStatus.class));
+  }
+
+  // this test intentionally only looks at the reset config as the rest is the same here.
+  @Test
+  void testRestIncludesResetConfig() {
+    final JobConfig resetConfig = new JobConfig()
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(
+            new io.airbyte.config.StreamDescriptor().withName("users"),
+            new io.airbyte.config.StreamDescriptor().withName("accounts")))));
+    final Job resetJob = new Job(
+        JOB_ID,
+        ConfigType.RESET_CONNECTION,
+        JOB_CONFIG_ID,
+        resetConfig,
+        Collections.emptyList(),
+        JobStatus.SUCCEEDED,
+        CREATED_AT,
+        CREATED_AT,
+        CREATED_AT);
+
+    final ResetConfig expectedResetConfig = new ResetConfig().streamsToReset(List.of(
+        new StreamDescriptor().name("users"),
+        new StreamDescriptor().name("accounts")));
+    assertEquals(expectedResetConfig, jobConverter.getJobInfoRead(resetJob).getJob().getResetConfig());
   }
 
 }

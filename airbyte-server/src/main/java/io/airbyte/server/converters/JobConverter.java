@@ -100,7 +100,7 @@ public class JobConverter {
    * @return api representation of reset config
    */
   private static Optional<ResetConfig> extractResetConfigIfReset(final Job job) {
-    if (job.getConfigType() == ConfigType.SYNC) {
+    if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
       return Optional.ofNullable(
           new ResetConfig().streamsToReset(job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset()
               .stream()

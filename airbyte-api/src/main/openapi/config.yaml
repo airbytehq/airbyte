@@ -3733,6 +3733,7 @@ components:
           $ref: "#/components/schemas/ResetConfig"
     ResetConfig:
       type: object
+      description: contains information about how a reset was configured. only populated if the job was a reset.
       properties:
         streamsToReset:
           type: array
