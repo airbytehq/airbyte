@@ -556,25 +556,6 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testGetCurrentState() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 1)));
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
-  }
-
-  @Test
-  void testGetCurrentStateEmpty() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.empty());
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
-  }
-
-  @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
