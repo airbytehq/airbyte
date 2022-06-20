@@ -213,6 +213,14 @@
   icon: dixa.svg
   sourceType: api
   releaseStage: alpha
+- name: Dockerhub
+  sourceDefinitionId: 72d405a3-56d8-499f-a571-667c03406e43
+  dockerRepository: airbyte/source-dockerhub
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dockerhub
+  icon: dockerhub.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
