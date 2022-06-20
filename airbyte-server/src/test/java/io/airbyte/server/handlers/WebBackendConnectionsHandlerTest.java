@@ -21,6 +21,7 @@ import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStatus;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
@@ -49,6 +50,9 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.StreamDescriptor;
+import io.airbyte.api.model.generated.StreamTransform;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
@@ -228,6 +232,8 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing())
+        .catalogDiff(new CatalogDiff().transforms(List.of(
+            new StreamTransform().transformType(TransformTypeEnum.REMOVE_STREAM).removeStream(new StreamDescriptor().name("users-data1")))))
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -350,7 +356,6 @@ class WebBackendConnectionsHandlerTest {
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     return wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
-
   }
 
   @Test

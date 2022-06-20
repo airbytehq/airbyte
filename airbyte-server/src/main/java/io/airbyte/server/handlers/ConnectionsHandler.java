@@ -261,8 +261,8 @@ public class ConnectionsHandler {
 
   public static CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
-        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocol(oldCatalog)),
-        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocol(newCatalog)))
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
         .stream()
         .map(CatalogDiffConverters::streamTransformToApi)
         .toList());
@@ -316,7 +316,7 @@ public class ConnectionsHandler {
   }
 
   // todo (cgardens) - make this static. requires removing one bad dependency in SourceHandlerTest
-  public static boolean matchSearch(final SourceSearch sourceSearch, final SourceRead sourceRead) {
+  public boolean matchSearch(final SourceSearch sourceSearch, final SourceRead sourceRead) {
     final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
     final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
 
@@ -325,7 +325,7 @@ public class ConnectionsHandler {
 
   // todo (cgardens) - make this static. requires removing one bad dependency in
   // DestinationHandlerTest
-  public static boolean matchSearch(final DestinationSearch destinationSearch, final DestinationRead destinationRead) {
+  public boolean matchSearch(final DestinationSearch destinationSearch, final DestinationRead destinationRead) {
     final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);
     final DestinationRead destinationReadFromSearch = destinationMatcher.match(destinationRead);
 

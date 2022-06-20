@@ -200,7 +200,7 @@ public class ConnectionHelpers {
 
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-        .stream(generateBasicApiStream())
+        .stream(generateBasicApiStream(String.valueOf(1)))
         .config(generateBasicApiStreamConfig())));
   }
 
@@ -208,7 +208,7 @@ public class ConnectionHelpers {
     final List<AirbyteStreamAndConfiguration> streamAndConfigurations = new ArrayList<>();
     for (int i = 0; i < streamsCount; i++) {
       streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
-          .stream(generateBasicApiStream())
+          .stream(generateBasicApiStream(String.valueOf(i)))
           .config(generateBasicApiStreamConfig()));
     }
     return new AirbyteCatalog().streams(streamAndConfigurations);
@@ -225,8 +225,12 @@ public class ConnectionHelpers {
   }
 
   private static AirbyteStream generateBasicApiStream() {
+    return generateBasicApiStream(null);
+  }
+
+  private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
     return new AirbyteStream()
-        .name(STREAM_NAME)
+        .name(STREAM_NAME + (nameSuffix == null ? "" : nameSuffix))
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
