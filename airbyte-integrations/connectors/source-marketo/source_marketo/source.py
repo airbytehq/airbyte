@@ -186,7 +186,7 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             status, export_id = export.get("status", "").lower(), export.get("exportId")
             if status != "created" or not export_id:
-                self.logger.warning(f"Filed to create export job for data slice {date_slice}!")
+                self.logger.warning(f"Failed to create export job for data slice {date_slice}!")
                 continue
             date_slice["id"] = export_id
             yield date_slice
