@@ -1132,8 +1132,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        break_point = pendulum.now("UTC").replace(microsecond=0) - pendulum.duration(days=self.re_run_period)
-        break_point = min(start_point, break_point.to_iso8601_string())
+        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
