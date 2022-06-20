@@ -301,7 +301,7 @@ class Calls(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
 
     parent_stream = Accounts
-    incremental_filter_field = "EndTime>="
+    incremental_filter_field = "endTime>="
     cursor_field = "end_time"
     time_filter_template = "YYYY-MM-DD"
 
@@ -310,8 +310,8 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateUpdated>="
-    cursor_field = "date_updated"
+    incremental_filter_field = "dateCreated>="
+    cursor_field = "date_created"
     time_filter_template = "YYYY-MM-DD"
 
 
@@ -338,7 +338,7 @@ class Recordings(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateCreated>"
+    incremental_filter_field = "dateCreated>"
     cursor_field = "date_created"
 
 
@@ -358,7 +358,7 @@ class Messages(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateSent>"
+    incremental_filter_field = "dateSent>"
     cursor_field = "date_sent"
 
 
@@ -369,7 +369,7 @@ class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
     data_field = "media_list"
     subresource_uri_key = "media"
     media_exist_validation = {"num_media": "0"}
-    incremental_filter_field = "DateCreated>"
+    incremental_filter_field = "dateCreated>"
     cursor_field = "date_created"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -418,7 +418,7 @@ class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "StartDate"
+    incremental_filter_field = "startDate"
     cursor_field = "start_date"
     time_filter_template = "YYYY-MM-DD"
     path_name = "Records"
@@ -438,7 +438,7 @@ class Alerts(IncrementalTwilioStream):
     """https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources"""
 
     url_base = TWILIO_MONITOR_URL_BASE
-    incremental_filter_field = "StartDate"
+    incremental_filter_field = "startDate"
     cursor_field = "date_generated"
 
     def path(self, **kwargs):
