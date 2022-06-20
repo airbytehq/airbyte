@@ -413,13 +413,13 @@ export interface ActorDefinitionResourceRequirements {
   jobSpecific?: JobTypeResourceLimit[];
 }
 
-export interface ConnectionStateObject {
+export interface StateBlob {
   [key: string]: any;
 }
 
 export interface ConnectionState {
   connectionId: ConnectionId;
-  state?: ConnectionStateObject;
+  state?: StateBlob;
 }
 
 export type CheckConnectionReadStatus = typeof CheckConnectionReadStatus[keyof typeof CheckConnectionReadStatus];
