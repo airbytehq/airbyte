@@ -147,6 +147,7 @@ class PostgresSourceSSLTest {
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("ssl", true)
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
 

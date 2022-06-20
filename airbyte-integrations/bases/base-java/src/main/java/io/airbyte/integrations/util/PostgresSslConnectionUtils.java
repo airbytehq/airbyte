@@ -123,11 +123,12 @@ public class PostgresSslConnectionUtils {
 
   private static void createCaCertificate(final String caCertificate,
                                           final String clientKeyPassword,
-                                          final Runtime run) throws IOException, InterruptedException {
+                                          final Runtime run)
+      throws IOException, InterruptedException {
     createCertificateFile(CA_CERTIFICATE, caCertificate);
     // add CA certificate to the custom keystore
     runProcess("keytool -import -alias rds-root -keystore customkeystore"
-            + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
+        + " -file " + CA_CERTIFICATE + " -storepass " + clientKeyPassword + " -noprompt", run);
   }
 
   private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {
