@@ -317,4 +317,5 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
             .size());
   }
+
 }
