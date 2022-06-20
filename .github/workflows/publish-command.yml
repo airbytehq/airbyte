@@ -64,7 +64,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner-phlairTest
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -86,7 +86,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner-phlairTest
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -108,7 +108,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner-phlairTest
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -130,7 +130,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner-phlairTest
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -152,7 +152,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner-phlairTest
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}

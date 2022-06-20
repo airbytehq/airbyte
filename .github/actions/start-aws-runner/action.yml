@@ -41,7 +41,7 @@ runs:
         aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: supertopher/ec2-github-runner@base64v1.0.10
+      uses: airbytehq/ec2-github-runner@base64v1.0.10
       with:
         mode: start
         github-token: ${{ inputs.github-token }}
@@ -49,6 +49,7 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
+        label: ${{ github.run_id }}-publisher
         aws-resource-tags: >
           [
             {"Key": "BuildType", "Value": "oss"},
