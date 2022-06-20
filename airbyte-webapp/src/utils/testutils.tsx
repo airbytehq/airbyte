@@ -10,9 +10,9 @@ import { ServicesProvider } from "core/servicesProvider";
 import { FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
-type WrapperProps = {
+interface WrapperProps {
   children?: React.ReactElement;
-};
+}
 
 export async function render<
   Q extends Queries = typeof queries,

@@ -9,28 +9,10 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-configurations {
-    /*
-     * For some reason, the MariaDb testcontainer does not start properly on
-     * newer versions of the testcontainers library.  Therefore, pin the version
-     * to the known working version to ensure that the tests continue to work.
-     */
-    testRuntimeClasspath {
-        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
-        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
-        resolutionStrategy.force 'org.testcontainers:mariadb:1.16.2'
-    }
-    integrationTestRuntimeClasspath {
-        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
-        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
-        resolutionStrategy.force 'org.testcontainers:mariadb:1.16.2'
-    }
-}
-
 dependencies {
-    implementation project(':airbyte-db:lib')
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
@@ -40,5 +22,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mariadb-columnstore')
-    integrationTestJavaImplementation "org.testcontainers:mariadb:1.16.2"
+    integrationTestJavaImplementation libs.connectors.testcontainers.mariadb
 }

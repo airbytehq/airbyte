@@ -21,11 +21,11 @@ const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
   }
 `;
 
-type IProps = {
+interface IProps {
   lowToLarge?: boolean;
   wasActive?: boolean;
   onClick: () => void;
-};
+}
 
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (

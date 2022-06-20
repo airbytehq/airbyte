@@ -15,6 +15,7 @@
     }
   },
   "rules": {
+    "curly": "error",
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "import/order": [
@@ -47,6 +48,7 @@
         "ts-expect-error": "allow-with-description"
       }
     ],
+    "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
     "@typescript-eslint/ban-types": ["warn"]
   },
   "parser": "@typescript-eslint/parser",
