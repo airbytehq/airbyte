@@ -40,9 +40,13 @@ public class SshBastionContainer {
 
     return Jsons.jsonNode(builderWithSchema
         .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host", bastion.getHost())
+            .put("tunnel_host",
+                Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) network).getName())
+                    .getIpAddress()))
             .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", bastion.getFirstMappedPort())
+            .put("tunnel_port", bastion.getExposedPorts().get(0))
             .put("tunnel_user", SSH_USER)
             .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
             .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
