@@ -82,7 +82,6 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -109,7 +108,6 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
   private EventRunner eventRunner;
-  private ConnectionHelper connectionHelper;
   private ConfigRepository configRepository;
 
   @BeforeEach
@@ -122,7 +120,6 @@ class WebBackendConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     eventRunner = mock(EventRunner.class);
-    connectionHelper = mock(ConnectionHelper.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
         sourceHandler,
         destinationHandler,
@@ -233,7 +230,9 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing())
         .catalogDiff(new CatalogDiff().transforms(List.of(
-            new StreamTransform().transformType(TransformTypeEnum.REMOVE_STREAM).removeStream(new StreamDescriptor().name("users-data1")))))
+            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                .addStream(new StreamDescriptor().name("users-data1"))
+                .updateStream(null))))
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -473,10 +472,12 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionCreate!\nCongratulations, but you're not done yet..\n"
-            + "\tYou should update WebBackendConnectionsHandler::toConnectionCreate\n"
-            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionCreate\n"
-            + "Then you can add the field name here to make this test pass. Cheers!";
+        """
+        If this test is failing, it means you added a field to ConnectionCreate!
+        Congratulations, but you're not done yet..
+        \tYou should update WebBackendConnectionsHandler::toConnectionCreate
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionCreate
+        Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
 
@@ -492,10 +493,12 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet..\n"
-            + "\tYou should update WebBackendConnectionsHandler::toConnectionUpdate\n"
-            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate\n"
-            + "Then you can add the field name here to make this test pass. Cheers!";
+        """
+        If this test is failing, it means you added a field to ConnectionUpdate!
+        Congratulations, but you're not done yet..
+        \tYou should update WebBackendConnectionsHandler::toConnectionUpdate
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate
+        Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
 

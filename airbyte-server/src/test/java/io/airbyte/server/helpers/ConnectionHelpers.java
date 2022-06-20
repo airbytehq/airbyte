@@ -35,7 +35,8 @@ import java.util.UUID;
 
 public class ConnectionHelpers {
 
-  private static final String STREAM_NAME = "users-data";
+  private static final String STREAM_NAME_BASE = "users-data";
+  private static final String STREAM_NAME = STREAM_NAME_BASE + "0";
   private static final String FIELD_NAME = "id";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
@@ -200,7 +201,7 @@ public class ConnectionHelpers {
 
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-        .stream(generateBasicApiStream(String.valueOf(1)))
+        .stream(generateBasicApiStream(null))
         .config(generateBasicApiStreamConfig())));
   }
 
@@ -230,7 +231,7 @@ public class ConnectionHelpers {
 
   private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
     return new AirbyteStream()
-        .name(STREAM_NAME + (nameSuffix == null ? "" : nameSuffix))
+        .name(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix)
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
