@@ -13,7 +13,6 @@ class S3DestinationConfigTest {
 
   private static final S3DestinationConfig CONFIG = S3DestinationConfig.create("test-bucket", "test-path", "test-region")
       .withEndpoint("test-endpoint")
-      .withPartSize(19)
       .withPathFormat("${STREAM_NAME}/${NAMESPACE}")
       .withAccessKeyCredential("test-key", "test-secret")
       .get();
@@ -29,7 +28,6 @@ class S3DestinationConfigTest {
     final String newBucketPath = "new-path";
     final String newBucketRegion = "new-region";
     final String newEndpoint = "new-endpoint";
-    final int newPartSize = 29;
     final String newKey = "new-key";
     final String newSecret = "new-secret";
 
@@ -39,7 +37,6 @@ class S3DestinationConfigTest {
         .withBucketRegion(newBucketRegion)
         .withEndpoint(newEndpoint)
         .withAccessKeyCredential(newKey, newSecret)
-        .withPartSize(newPartSize)
         .get();
 
     assertNotEquals(CONFIG, modifiedConfig);

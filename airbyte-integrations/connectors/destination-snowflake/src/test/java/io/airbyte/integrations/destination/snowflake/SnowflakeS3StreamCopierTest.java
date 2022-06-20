@@ -30,8 +30,6 @@ import org.junit.jupiter.api.Test;
 
 class SnowflakeS3StreamCopierTest {
 
-  private static final int PART_SIZE = 5;
-
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
 
@@ -52,7 +50,6 @@ class SnowflakeS3StreamCopierTest {
         "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
-        .withPartSize(PART_SIZE)
         .get();
 
     copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
