@@ -43,9 +43,18 @@
         "updatedAt": {
             "type": ["null", "string"]
         },
-         "event":{
+        "event":{
             "type":["null","string"]
-         }
+        },
+        "arrivalDatetime":{
+        	"type":["null","string"]
+        },
+        "status":{
+        	"type":["null","string"]
+        },
+        "guestStatus":{
+        	"type":["null","string"]
+        }
       }
 }
 

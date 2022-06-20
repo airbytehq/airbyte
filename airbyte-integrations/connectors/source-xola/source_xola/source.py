@@ -202,12 +202,24 @@ class Orders(IncrementalXolaStream):
                     resp["travelers"] = ""
                 
                 if "source" in data.keys(): resp["source"] = data["source"]
-                if "createdBy" in data.keys(): resp["createdBy"] = data["createdBy"]
+                
+                if "createdBy" in data.keys():
+                    if isinstance(data["createdBy"], dict):
+                        resp["createdBy"] = data["createdBy"]["id"]
+                    else:
+                        resp["createdBy"] = data["createdBy"]
+                else:
+                    resp["createdBy"] = ""
+                
                 if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
                 if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
                 if "type" in data.keys(): resp["type"] = data["type"]
+                if "arrivalDatetime" in data.keys(): resp["arrivalDatetime"] = data["arrivalDatetime"]
+                if "status" in data.keys(): resp["status"] = data["status"]
+                if "guestStatus" in data.keys(): resp["guestStatus"] = data["guestStatus"]
+                
                 modified_response.append(resp)
             except:
                 pass
@@ -312,6 +324,12 @@ class Users(IncrementalXolaStream):
                                         organiserAdded = True
                                         if resp["user_id"].empty(): resp["user_id"] = user_resp["user_id"]
                                         modified_response.append(resp)
+                                elif resp["customerEmail"] == user_resp["customerEmail"]:
+                                    # TODO - Need to finalize and update it.
+                                    resp["customerEmail"] = ""
+                                    if resp["user_id"] == user_resp["user_id"]: resp["user_id"] = ""
+                                    
+                                    modified_response.append(resp)
                                 else:
                                     modified_response.append(resp)
                                     
