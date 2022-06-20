@@ -49,7 +49,7 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
-        label: publisher-pool-${{ github.run_id }}
+        label: runner-pool-${{ github.run_id }}
         aws-resource-tags: >
           [
             {"Key": "BuildType", "Value": "oss"},
