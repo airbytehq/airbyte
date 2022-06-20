@@ -146,8 +146,65 @@ class Parameters(HydroVuStream):
         r = response.json()
 
         parameters = r['parameters']
-        
+
+        self.parameters = parameters
+
         yield parameters
+
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        #schema['dynamically_determined_property'] = "property"
+        #schema['dynamically_determined_property'] = "properties"
+
+        schema["properties"] = {}
+
+
+        for key, value in self.parameters.items():
+            #print ("=========")
+            #print (key)
+            #print (value)
+
+            #schema["properties"][key] = value
+
+            schema["properties"][key] = {"type": "string"}
+
+
+        return schema
+
+
+
+    """
+    #def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, Any]:
+
+        '''
+        schema: Dict[str, Any] = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+    
+            },
+        }
+        '''
+
+
+        schema = super.get_json_schema()
+
+
+        for key, value in self.parameters.items():
+            print ("=========")
+            print (key)
+            print (value)
+
+
+
+            schema["properties"][key] = value
+
+
+        return schema
+
+    """
 
 
 class Units(HydroVuStream):
