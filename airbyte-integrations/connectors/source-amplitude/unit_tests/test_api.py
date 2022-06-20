@@ -130,9 +130,8 @@ class TestIncrementalStreams:
         [
             (ActiveUsers, {}),
             (AverageSessionLength, {}),
-            (Events, {}),
         ],
-        ids=["ActiveUsers", "AverageSessionLength", "Events"],
+        ids=["ActiveUsers", "AverageSessionLength"],
     )
     def test_next_page_token(self, requests_mock, stream_cls, expected):
         days_ago = pendulum.now().subtract(days=2)
@@ -176,7 +175,12 @@ class TestEventsStream:
     def test_stream_slices(self):
         stream = Events(pendulum.now().isoformat())
         now = pendulum.now()
-        expected = [{"start": now.strftime(stream.date_template), "end": stream._get_end_date(now).strftime(stream.date_template)}]
+        expected = [
+            {
+                "start": now.strftime(stream.date_template),
+                "end": stream._get_end_date(now).add(**stream.time_interval).subtract(hours=1).strftime(stream.date_template),
+            }
+        ]
         assert expected == stream.stream_slices()
 
     def test_request_params(self):

@@ -234,7 +234,7 @@ public class ConnectionManagerUtils {
     return "connection_manager_" + connectionId;
   }
 
-  static ConnectionUpdaterInput buildStartWorkflowInput(final UUID connectionId) {
+  public static ConnectionUpdaterInput buildStartWorkflowInput(final UUID connectionId) {
     return ConnectionUpdaterInput.builder()
         .connectionId(connectionId)
         .jobId(null)
