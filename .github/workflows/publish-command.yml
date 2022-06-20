@@ -186,8 +186,7 @@ jobs:
       fail-fast: false
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
-    # runs-on: self-hosted # TODO: need to change this to run on custom label when I can implement that
-    runs-on: ${{ github.run_id }}-publisher
+    runs-on: runner-pool-${{ github.run_id }}
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
