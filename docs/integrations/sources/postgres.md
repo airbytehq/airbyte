@@ -125,17 +125,7 @@ We recommend using a user specifically for Airbyte's replication so you can mini
 
 We recommend using a `pgoutput` plugin as it is the standard logical decoding plugin in Postgres. In case the replication table contains a lot of big JSON blobs and table size exceeds 1 GB, we recommend using a `wal2json` instead. Please note that `wal2json` may require additional installation for Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc. For more information read [wal2json documentation](https://github.com/eulerto/wal2json).
 
-#### 4. Create replication slot
-
-Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
-
-```text
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
-```
-
-If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
-
-#### 5. Create publications and replication identities for tables
+#### 4. Create publications and replication identities for tables
 
 For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
@@ -144,6 +134,16 @@ Please note that:
 - The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+
+#### 5. Create replication slot
+
+Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
+
+```text
+SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
+```
+
+If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
 #### 6. Start syncing
 
