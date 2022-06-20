@@ -91,7 +91,7 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------|
-| `0.1.4` | 2022-06-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Process failing creation of export jobs    |
+| `0.1.4` | 2022-06-20 | [13930](https://github.com/airbytehq/airbyte/pull/13930) | Process failing creation of export jobs    |
 | `0.1.3` | 2021-12-10 | [8429](https://github.com/airbytehq/airbyte/pull/8578)   | Updated titles and descriptions            |
 | `0.1.2` | 2021-12-03 | [8483](https://github.com/airbytehq/airbyte/pull/8483)   | Improve field conversion to conform schema |
 | `0.1.1` | 2021-11-29 | [0000](https://github.com/airbytehq/airbyte/pull/0000)   | Fix timestamp value format issue           |
