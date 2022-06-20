@@ -764,14 +764,24 @@ class FinanceStream(AmazonSPStream, ABC):
         if next_page_token:
             return dict(next_page_token)
 
-        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
-
         # for finance APIs, end date-time must be no later than two minutes before the request was submitted
         end_date = pendulum.now("utc").subtract(minutes=2, seconds=10).strftime(DATE_TIME_FORMAT)
         if self._replication_end_date:
             end_date = self._replication_end_date
 
-        params[self.replication_end_date_field] = end_date
+        # start date and end date should not be more than 180 days apart.
+        start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=180)).strftime(
+            DATE_TIME_FORMAT
+        )
+
+        # logging to make sure user knows taken start date
+        logger.info("start date used: %s", start_date)
+
+        params = {
+            self.replication_start_date_field: start_date,
+            self.replication_end_date_field: end_date,
+            self.page_size_field: self.page_size,
+        }
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
