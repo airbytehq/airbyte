@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -16,8 +17,12 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.5'
+    id 'com.github.spotbugs' version '5.0.6'
+    id 'version-catalog'
+    id 'maven-publish'
 }
+
+apply from: "$rootDir/publish-repositories.gradle"
 
 repositories {
     mavenCentral()
@@ -100,6 +105,7 @@ def createSpotlessTarget = { pattern ->
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
         'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+        'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -142,11 +148,13 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
-        def arch = System.getProperty("os.arch").toLowerCase()
+        def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
         def isArm64 = arch == "aarch64" || arch == "arm64"
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
+        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -155,7 +163,33 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('JDK_VERSION', jdkVersion)
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('NGINX_IMAGE', nginxImage)
+        buildArgs.put('JDK_IMAGE', openjdkImage)
         buildArgs.put('VERSION', buildVersion)
+    })
+}
+
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
+    // generate a unique task name based on the directory name.
+    return task ("publishArtifact-$subproject.name" {
+        apply plugin: 'maven-publish'
+        publishing {
+            repositories {
+                publications {
+                    "$subproject.name"(MavenPublication) {
+                        from subproject.components.java
+
+                        // use the subproject group and name with the assumption there are no identical subproject
+                        // names, group names or subproject group/name combination.
+                        groupId = "$subproject.group"
+                        artifactId = "$subproject.name"
+                        version = "$buildVersion"
+                        repositories.add(rootProject.repositories.getByName('cloudrepo'))
+                    }
+                }
+            }
+        }
     })
 }
 
@@ -190,6 +224,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
+    apply plugin: 'pmd'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -200,14 +235,49 @@ subprojects {
             // TODO(Issue-4915): Remove this when upstream is merged in.
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
+        maven {
+            url 'https://jitpack.io'
+        }
     }
 
     pmd {
         consoleOutput = true
-
+        ignoreFailures = false
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
+        toolVersion = '6.43.0'
+    }
+
+    jacoco {
+        toolVersion = "0.8.7"
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            html.required = true
+            xml.required = true
+            csv.required = false
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        violationRules {
+            failOnViolation = false
+            rule {
+                element = 'CLASS'
+                excludes = ['**/*Test*', '**/generated*']
+                limit {
+                    counter = 'BRANCH'
+                    minimum = 0.8
+                }
+                limit {
+                    counter = 'INSTRUCTION'
+                    minimum = 0.8
+                }
+            }
+        }
     }
 
     def integrationTagName = 'platform-integration'
@@ -217,7 +287,20 @@ subprojects {
         cloudStorageTestTagName = 'cloud-storage'
     }
 
+    spotbugs {
+        ignoreFailures = false
+        effort = 'max'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        reportLevel = 'high'
+        showProgress = false
+        toolVersion = '4.6.0'
+    }
+
     test {
+        jacoco {
+            enabled = true
+            excludes = ['**/*Test*', '**/generated*']
+        }
         useJUnitPlatform {
             excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
         }
@@ -260,11 +343,6 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
-    spotbugs {
-        reportLevel = 'high'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
-    }
-
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -275,56 +353,46 @@ subprojects {
 
 
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
-        implementation 'com.fasterxml.jackson.core:jackson-databind'
-        implementation 'com.fasterxml.jackson.core:jackson-annotations'
-        implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
-        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+        implementation libs.bundles.jackson
 
-        implementation 'com.google.guava:guava:30.1.1-jre'
+        implementation libs.guava
 
-        implementation 'commons-io:commons-io:2.7'
+        implementation libs.commons.io
 
-        implementation 'org.apache.commons:commons-compress:1.20'
-        implementation 'org.apache.commons:commons-lang3:3.11'
+        implementation libs.bundles.apache
 
-        implementation 'org.slf4j:slf4j-api:1.7.30'
+        implementation libs.slf4j.api
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
-        implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
-        implementation 'org.apache.logging.log4j:log4j-web:2.17.1'
+        implementation libs.bundles.log4j
 
         // Bridges from other logging implementations to SLF4J
-        implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
-        implementation 'org.slf4j:jcl-over-slf4j:1.7.30' //JCL bridge
-        implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
+        implementation libs.bundles.slf4j
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.6.0'
-        implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
-        implementation 'com.google.cloud:google-cloud-storage:2.2.2'
+        implementation libs.appender.log4j2
+        implementation libs.aws.java.sdk.s3
+        implementation libs.google.cloud.storage
 
-        implementation 'software.amazon.awssdk:s3:2.16.84'
+        implementation libs.s3
 
         // Lombok dependencies
-        compileOnly 'org.projectlombok:lombok:1.18.22'
-        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.22'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
 
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
-        testImplementation 'org.assertj:assertj-core:3.21.0'
+        testRuntimeOnly libs.junit.jupiter.engine
+        testImplementation libs.bundles.junit
+        testImplementation libs.assertj.core
 
-        testImplementation 'org.junit-pioneer:junit-pioneer:1.6.2'
+        testImplementation libs.junit.pioneer
 
         // adds owasp plugin
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+        spotbugsPlugins libs.findsecbugs.plugin
+        implementation libs.spotbugs.annotations
     }
 
     tasks.withType(Tar) {
@@ -335,7 +403,21 @@ subprojects {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/spotbugs/
+        reports {
+            xml.required = false
+            html.required = true
+        }
+    }
+
+    tasks.withType(Pmd) {
+        exclude '**/generated/**'
+        exclude '**/jooq/**'
+    }
+
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    check.dependsOn 'jacocoTestCoverageVerification'
 }
 
 task('generate') {
@@ -355,6 +437,9 @@ subprojects {
 
     if (pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
+        license {
+            header rootProject.file("LICENSE_SHORT")
+        }
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
             header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)
@@ -381,8 +466,7 @@ task('generate-docker') {
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')
-    dependsOn(':airbyte-scheduler:app:assemble')
-    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-db:db-lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
     dependsOn(':airbyte-temporal:assemble')
 }
@@ -394,50 +478,24 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// TODO: Davin will turn this back on.
-//// Configure what subprojects to publish.
-//String[] toPublish = [
-//        ':airbyte-analytics',
-//        ':airbyte-api',
-//        ':airbyte-commons',
-//        ':airbyte-commons-docker',
-//        ':airbyte-config:init',
-//        ':airbyte-config:models',
-//        ':airbyte-config:persistence',
-//        ':airbyte-db:lib',
-//        ':airbyte-json-validation',
-//        ':airbyte-notification',
-//        ':airbyte-protocol:models',
-//        ':airbyte-scheduler:client',
-//        ':airbyte-scheduler:models',
-//        ':airbyte-scheduler:persistence',
-//        ':airbyte-server',
-//        ':airbyte-workers'
-//]
-//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-//    apply plugin: 'maven-publish'
-//
-//    publishing {
-//        repositories {
-//            publications {
-//                // This block is present so Gradle knows to publish a Maven jar.
-//                maven(MavenPublication) {
-//                    from components.java
-//                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-//                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-//                }
-//            }
-//
-//            maven {
-//                credentials {
-//                    name 'cloudrepo'
-//                    username System.getenv('CLOUDREPO_USER')
-//                    password System.getenv('CLOUDREPO_PASSWORD')
-//                }
-//                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-//            }
-//
-//            mavenLocal()
-//        }
-//    }
-//}
+// definition for publishing
+catalog {
+    versionCatalog {
+        from(files("deps.toml"))
+    }
+}
+
+publishing {
+    publications {
+        // This block is present for dependency catalog publishing.
+        maven(MavenPublication) {
+            groupId = 'io.airbyte'
+            artifactId = 'oss-catalog'
+
+            from components.versionCatalog
+            // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+            // e.g. the subproject :airbyte-scheduler:scheduler-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
+        }
+    }
+    repositories.add(rootProject.repositories.getByName('cloudrepo'))
+}

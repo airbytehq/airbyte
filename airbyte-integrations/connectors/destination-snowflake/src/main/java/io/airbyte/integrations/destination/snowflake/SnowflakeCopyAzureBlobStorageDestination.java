@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -17,15 +17,19 @@ import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageStrea
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
+import javax.sql.DataSource;
 
 public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector)
-      throws Exception {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final DataSource dataSource = getDataSource(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
-        getDatabase(config),
+        dataSource,
+        getDatabase(dataSource),
         getSqlOperations(),
         getNameTransformer(),
         getAzureBlobConfig(config.get("loading_method")),
@@ -35,7 +39,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) throws Exception {
+  public void checkPersistence(final JsonNode config) {
     AzureBlobStorageStreamCopier.attemptAzureBlobWriteAndDelete(getAzureBlobConfig(config.get("loading_method")));
   }
 
@@ -45,8 +49,13 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) throws Exception {
-    return SnowflakeDatabase.getDatabase(config);
+  public DataSource getDataSource(final JsonNode config) {
+    return SnowflakeDatabase.createDataSource(config);
+  }
+
+  @Override
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
+    return SnowflakeDatabase.getDatabase(dataSource);
   }
 
   @Override

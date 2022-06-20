@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -30,10 +30,13 @@ from .rate_limiting import default_backoff_handler
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
+DEFAULT_ENCODING = "utf-8"
+
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    encoding = DEFAULT_ENCODING
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -44,6 +47,23 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+
+    def decode(self, chunk):
+        """
+        Most Salesforce instances use UTF-8, but some use ISO-8859-1.
+        By default, we'll decode using UTF-8, and fallback to ISO-8859-1 if it doesn't work.
+        See implementation considerations for more details https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/implementation_considerations.htm
+        """
+        if self.encoding == DEFAULT_ENCODING:
+            try:
+                decoded = chunk.decode(self.encoding)
+                return decoded
+            except UnicodeDecodeError as e:
+                self.encoding = "ISO-8859-1"
+                self.logger.info(f"Could not decode chunk. Falling back to {self.encoding} encoding. Error: {e}")
+                return self.decode(chunk)
+        else:
+            return chunk.decode(self.encoding)
 
     @property
     def name(self) -> str:
@@ -274,7 +294,7 @@ class BulkSalesforceStream(SalesforceStream):
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
             with open(tmp_file, "w") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(chunk.decode("utf-8")))
+                    data_file.writelines(self.filter_null_bytes(self.decode(chunk)))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file
@@ -288,12 +308,12 @@ class BulkSalesforceStream(SalesforceStream):
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding="utf-8") as data:
+            with open(path, "r", encoding=self.encoding) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
-                    for n, row in enumerate(chunk, 1):
-                        yield n, row
+                    for row in chunk:
+                        yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
@@ -362,12 +382,15 @@ class BulkSalesforceStream(SalesforceStream):
 
             count = 0
             record: Mapping[str, Any] = {}
-            for count, record in self.read_with_chunks(self.download_data(url=job_full_url)):
+            for record in self.read_with_chunks(self.download_data(url=job_full_url)):
+                count += 1
                 yield record
             self.delete_job(url=job_full_url)
 
             if count < self.page_size:
-                # this is a last page
+                # Salesforce doesn't give a next token or something to know the request was
+                # the last page. The connectors will sync batches in `page_size` and
+                # considers that batch is smaller than the `page_size` it must be the last page.
                 break
 
             next_page_token = self.next_page_token(record)

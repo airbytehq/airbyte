@@ -3,12 +3,12 @@ import styled from "styled-components";
 
 import { getIcon } from "utils/imageUtils";
 
-type IProps = {
+interface IProps {
   img?: string;
   className?: string;
   num?: number;
   small?: boolean;
-};
+}
 
 export const Content = styled.div<{ small?: boolean }>`
   height: 25px;

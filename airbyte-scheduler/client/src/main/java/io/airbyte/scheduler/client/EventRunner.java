@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.util.Set;
 import java.util.UUID;
 
 public interface EventRunner {
 
-  void createNewSchedulerWorkflow(final UUID connectionId);
+  void createConnectionManagerWorkflow(final UUID connectionId);
 
-  ManualSyncSubmissionResult startNewManualSync(final UUID connectionId);
+  ManualOperationResult startNewManualSync(final UUID connectionId);
 
-  ManualSyncSubmissionResult startNewCancelation(final UUID connectionId);
+  ManualOperationResult startNewCancellation(final UUID connectionId);
 
-  ManualSyncSubmissionResult resetConnection(final UUID connectionId);
+  ManualOperationResult resetConnection(final UUID connectionId);
 
-  ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId);
+  ManualOperationResult synchronousResetConnection(final UUID connectionId);
 
   void deleteConnection(final UUID connectionId);
 

@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import { ResourceTypes } from "./types";
 
-type PlaceholderProps = {
+interface PlaceholderProps {
   resource: ResourceTypes;
-};
+}
 
 const Img = styled.img<PlaceholderProps>`
   max-height: ${({ resource }) =>

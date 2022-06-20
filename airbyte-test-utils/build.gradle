@@ -1,12 +1,17 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    api project(':airbyte-db:db-lib')
+    api libs.junit.jupiter.api
 
-    implementation 'org.testcontainers:postgresql:1.15.3'
-    implementation "org.testcontainers:cockroachdb:1.15.3"
+    // Mark as compile only to avoid leaking transitively to connectors
+    compileOnly libs.platform.testcontainers.jdbc
+    compileOnly libs.platform.testcontainers.postgresql
+    compileOnly libs.platform.testcontainers.cockroachdb
 
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation libs.platform.testcontainers.jdbc
+    testImplementation libs.platform.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.cockroachdb
 }

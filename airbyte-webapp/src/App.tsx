@@ -1,9 +1,9 @@
 import React, { Suspense } from "react";
-import { IntlProvider } from "react-intl";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
 import { ApiServices } from "core/ApiServices";
+import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
@@ -35,18 +35,6 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider
-    locale="en"
-    messages={en}
-    defaultRichTextElements={{
-      b: (chunk) => <strong>{chunk}</strong>,
-    }}
-  >
-    {children}
-  </IntlProvider>
-);
-
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
@@ -71,7 +59,7 @@ const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={en}>
           <StoreProvider>
             <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
@@ -85,7 +73,7 @@ const App: React.FC = () => {
               </Suspense>
             </ServicesProvider>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );

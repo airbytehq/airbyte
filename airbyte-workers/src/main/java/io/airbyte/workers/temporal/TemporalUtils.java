@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -66,7 +66,8 @@ public class TemporalUtils {
   private static final Configs configs = new EnvConfigs();
   public static final RetryOptions RETRY = RetryOptions.newBuilder()
       .setMaximumAttempts(configs.getActivityNumberOfAttempt())
-      .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttempts()))
+      .setInitialInterval(Duration.ofSeconds(configs.getInitialDelayBetweenActivityAttemptsSeconds()))
+      .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
 
   public static final String DEFAULT_NAMESPACE = "default";

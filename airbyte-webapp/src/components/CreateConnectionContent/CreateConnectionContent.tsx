@@ -6,16 +6,15 @@ import styled from "styled-components";
 
 import { Button, ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import JobItem from "components/JobItem";
+import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
-import { Connection } from "core/domain/connection";
-import { Destination, Source } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -33,15 +32,15 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-type IProps = {
+interface CreateConnectionContentProps {
   additionBottomControls?: React.ReactNode;
-  source: Source;
-  destination: Destination;
-  afterSubmitConnection?: (connection: Connection) => void;
+  source: SourceRead;
+  destination: DestinationRead;
+  afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
   noTitles?: boolean;
-};
+}
 
-const CreateConnectionContent: React.FC<IProps> = ({
+const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,
@@ -66,10 +65,9 @@ const CreateConnectionContent: React.FC<IProps> = ({
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
       values,
-      source: source,
-      destination: destination,
+      source,
+      destination,
       sourceDefinition: {
-        name: source?.name ?? "",
         sourceDefinitionId: source?.sourceDefinitionId ?? "",
       },
       destinationDefinition: {
@@ -98,14 +96,14 @@ const CreateConnectionContent: React.FC<IProps> = ({
   };
 
   if (schemaErrorStatus) {
-    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
+    const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        {jobInfo && <JobItem jobInfo={jobInfo} />}
+        {job && <JobItem job={job} />}
       </ContentCard>
     );
   }
@@ -117,6 +115,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
       ) : (
         <Suspense fallback={<LoadingSchema />}>
           <ConnectionForm
+            mode="create"
             connection={connection}
             additionBottomControls={additionBottomControls}
             onDropDownSelect={onSelectFrequency}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -20,11 +20,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
-public class SpecFormatTest {
+class SpecFormatTest {
 
   @Test
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
-    final ConfigPersistence configPersistence = YamlSeedConfigPersistence.getDefault();
+    final ConfigPersistence configPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
     final List<JsonNode> sourceSpecs = configPersistence.listConfigs(
         ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)

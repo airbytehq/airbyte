@@ -8,10 +8,10 @@ import styled from "styled-components";
 
 import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
-import ResetDataModal from "components/ResetDataModal";
-import { ModalTypes } from "components/ResetDataModal/types";
 
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { toWebBackendConnectionUpdate } from "core/domain/connection";
+import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectionLoad,
   useResetConnection,
@@ -21,7 +21,7 @@ import {
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
-interface Props {
+interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
 }
@@ -48,17 +48,10 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) => {
-  const [isModalOpen, setIsUpdateModalOpen] = useState(false);
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    namespaceDefinition: ConnectionNamespaceDefinition.Source,
-    namespaceFormat: "",
-    schedule: null,
-    prefix: "",
-    syncCatalog: { streams: [] },
-  });
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -75,11 +68,21 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
   const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
   const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
-    const initialSyncSchema = connection?.syncCatalog;
+    if (!connection) {
+      // onSubmit should only be called when a connection object exists.
+      return;
+    }
+
+    const initialSyncSchema = connection.syncCatalog;
+    const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
     await updateConnection({
+      ...connectionAsUpdate,
       ...values,
       connectionId,
+      // Use the name and status from the initial connection because
+      // The status can be toggled and the name can be changed in-between refreshing the schema
+      name: initialConnection.name,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
     });
@@ -96,15 +99,22 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
     formikHelpers?.resetForm({ values });
   };
 
-  const onSubmitResetModal = async () => {
-    setIsUpdateModalOpen(false);
-    await onSubmit(currentValues);
+  const openResetDataModal = (values: ValuesProps) => {
+    openConfirmationModal({
+      title: "connection.updateSchema",
+      text: "connection.updateSchemaText",
+      submitButtonText: "connection.updateSchema",
+      submitButtonDataId: "refresh",
+      onSubmit: async () => {
+        await onSubmit(values);
+        closeConfirmationModal();
+      },
+    });
   };
 
   const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
-      setCurrentValues(values);
-      setIsUpdateModalOpen(true);
+      openResetDataModal(values);
     } else {
       await onSubmit(values);
     }
@@ -143,7 +153,7 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            isEditMode
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
@@ -156,15 +166,6 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
           <LoadingSchema />
         )}
       </Card>
-      {isModalOpen ? (
-        <ResetDataModal
-          onClose={() => setIsUpdateModalOpen(false)}
-          onSubmit={onSubmitResetModal}
-          modalType={ModalTypes.UPDATE_SCHEMA}
-        />
-      ) : null}
     </Content>
   );
 };
-
-export default ReplicationView;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -24,6 +26,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
 
 public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -91,34 +94,38 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("ssl", false)
         .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(
+    final DataSource dataSource = DataSourceFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s/%s",
+        ClickHouseSource.DRIVER_CLASS,
+        String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickHouseSource.DRIVER_CLASS);
+            config.get("port").asInt(),
+            config.get("database").asText()));
 
-    final String table1 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME);
-    final String createTable1 =
-        String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table1);
-    final String table2 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME2);
-    final String createTable2 =
-        String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table2);
-    database.execute(connection -> {
-      connection.createStatement().execute(createTable1);
-      connection.createStatement().execute(createTable2);
-    });
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
-    final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
-    database.execute(connection -> {
-      connection.createStatement().execute(insertTestData);
-      connection.createStatement().execute(insertTestData2);
-    });
+      final String table1 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME);
+      final String createTable1 =
+          String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table1);
+      final String table2 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME2);
+      final String createTable2 =
+          String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table2);
+      database.execute(connection -> {
+        connection.createStatement().execute(createTable1);
+        connection.createStatement().execute(createTable2);
+      });
 
-    database.close();
+      final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
+      final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
+      database.execute(connection -> {
+        connection.createStatement().execute(insertTestData);
+        connection.createStatement().execute(insertTestData2);
+      });
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @Override

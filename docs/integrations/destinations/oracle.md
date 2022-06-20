@@ -92,6 +92,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.17  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.16  | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
 | 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                            |
 | 0.1.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
@@ -111,6 +112,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request                                            | Subject                                                                                                                     |
 |:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------|
+| 0.1.5  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                    |
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                  |
 | 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                                                   |

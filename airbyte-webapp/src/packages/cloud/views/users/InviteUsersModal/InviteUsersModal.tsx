@@ -42,6 +42,13 @@ const FormRow = styled(Row)`
   margin-bottom: 8px;
 `;
 
+const ROLE_OPTIONS = [
+  {
+    value: "admin",
+    label: "admin",
+  },
+];
+
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
 }> = (props) => {
@@ -49,12 +56,9 @@ export const InviteUsersModal: React.FC<{
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
   const { mutateAsync: invite } = inviteUserLogic;
-  const roleOptions = [
-    {
-      value: "admin",
-      label: "admin",
-    },
-  ];
+
+  const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
+
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
@@ -65,7 +69,7 @@ export const InviteUsersModal: React.FC<{
           users: [
             {
               email: "",
-              role: roleOptions[0].value,
+              role: ROLE_OPTIONS[0].value,
             },
           ],
         }}
@@ -88,11 +92,13 @@ export const InviteUsersModal: React.FC<{
                       <FormattedMessage id="modals.addUser.email.label" />
                     </H5>
                   </Cell>
-                  <Cell>
-                    <H5>
-                      <FormattedMessage id="modals.addUser.role.label" />
-                    </H5>
-                  </Cell>
+                  {isRoleVisible && (
+                    <Cell>
+                      <H5>
+                        <FormattedMessage id="modals.addUser.role.label" />
+                      </H5>
+                    </Cell>
+                  )}
                 </FormHeader>
                 <FieldArray
                   name="users"
@@ -105,22 +111,24 @@ export const InviteUsersModal: React.FC<{
                               {({ field }: FieldProps<string>) => <Input {...field} placeholder="email@company.com" />}
                             </Field>
                           </Cell>
-                          <Cell>
-                            <Field name={`users[${index}].role`}>
-                              {({ field }: FieldProps) => {
-                                return (
-                                  <DropDown
-                                    isDisabled
-                                    value={field.value}
-                                    placeholder={formatMessage({
-                                      id: "modals.addUser.role.placeholder",
-                                    })}
-                                    options={roleOptions}
-                                  />
-                                );
-                              }}
-                            </Field>
-                          </Cell>
+                          {isRoleVisible && (
+                            <Cell>
+                              <Field name={`users[${index}].role`}>
+                                {({ field }: FieldProps) => {
+                                  return (
+                                    <DropDown
+                                      isDisabled
+                                      value={field.value}
+                                      placeholder={formatMessage({
+                                        id: "modals.addUser.role.placeholder",
+                                      })}
+                                      options={ROLE_OPTIONS}
+                                    />
+                                  );
+                                }}
+                              </Field>
+                            </Cell>
+                          )}
                         </FormRow>
                       ))}
                       <Button
@@ -129,7 +137,7 @@ export const InviteUsersModal: React.FC<{
                         onClick={() =>
                           arrayHelpers.push({
                             email: "",
-                            role: roleOptions[0].value,
+                            role: ROLE_OPTIONS[0].value,
                           })
                         }
                         secondary

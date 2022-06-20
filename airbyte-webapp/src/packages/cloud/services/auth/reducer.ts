@@ -11,18 +11,20 @@ export const actions = {
 
 type Actions = ActionType<typeof actions>;
 
-export type AuthServiceState = {
+export interface AuthServiceState {
   inited: boolean;
   currentUser: User | null;
   emailVerified: boolean;
   loading: boolean;
-};
+  loggedOut: boolean;
+}
 
 export const initialState: AuthServiceState = {
   inited: false,
   currentUser: null,
   emailVerified: false,
   loading: false,
+  loggedOut: false,
 };
 
 export const authStateReducer = createReducer<AuthServiceState, Actions>(initialState)
@@ -39,6 +41,7 @@ export const authStateReducer = createReducer<AuthServiceState, Actions>(initial
       emailVerified: action.payload.emailVerified,
       inited: true,
       loading: false,
+      loggedOut: false,
     };
   })
   .handleAction(actions.emailVerified, (state, action): AuthServiceState => {
@@ -52,5 +55,6 @@ export const authStateReducer = createReducer<AuthServiceState, Actions>(initial
       ...state,
       currentUser: null,
       emailVerified: false,
+      loggedOut: true,
     };
   });

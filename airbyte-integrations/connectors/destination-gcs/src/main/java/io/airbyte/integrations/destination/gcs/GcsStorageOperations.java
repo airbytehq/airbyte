@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -9,7 +9,9 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,11 @@ public class GcsStorageOperations extends S3StorageOperations {
       LOGGER.info("Deleting object {}", keyToDelete.getKey());
       s3Client.deleteObject(bucket, keyToDelete.getKey());
     }
+  }
+
+  @Override
+  protected Map<String, String> getMetadataMapping() {
+    return new HashMap<>();
   }
 
 }

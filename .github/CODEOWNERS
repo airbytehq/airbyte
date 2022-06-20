@@ -4,3 +4,6 @@
 ## Exclude the package(-lock).json from code ownership to prevent version bump PRs from triggering codeowners review
 /airbyte-webapp/package.json
 /airbyte-webapp/package-lock.json
+# Protocol related items
+/airbyte-protocol/ @airbytehq/protocol-reviewers
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers

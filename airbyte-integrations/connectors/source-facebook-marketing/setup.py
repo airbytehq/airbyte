@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.49",
+    "airbyte-cdk~=0.1.56",
     "cached_property==1.5.2",
     "facebook_business==13.0.0",
     "pendulum>=2,<3",

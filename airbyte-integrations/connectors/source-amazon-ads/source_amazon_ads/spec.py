@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import List
@@ -23,20 +23,20 @@ class AmazonAdsConfig(BaseModel):
 
     client_id: str = Field(
         title="Client ID",
-        description="The Client ID of your Amazon Ads developer application.",
+        description='The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.',
         order=1,
     )
 
     client_secret: str = Field(
         title="Client Secret",
-        description="The Client Secret of your Amazon Ads developer application.",
+        description='The client secret of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.',
         airbyte_secret=True,
         order=2,
     )
 
     refresh_token: str = Field(
         title="Refresh Token",
-        description='Amazon Ads Refresh Token. See the <a href="https://docs.airbyte.com/integrations/sources/amazon-ads">docs</a> for more information on how to obtain this token.',
+        description='Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a> for more information on how to obtain this token.',
         airbyte_secret=True,
         order=3,
     )
@@ -50,7 +50,7 @@ class AmazonAdsConfig(BaseModel):
 
     report_wait_timeout: int = Field(
         title="Report Wait Timeout *",
-        description="Timeout duration in minutes for Reports. Eg. 30",
+        description="Timeout duration in minutes for Reports. Default is 30 minutes.",
         default=30,
         examples=[30, 120],
         order=5,
@@ -58,7 +58,7 @@ class AmazonAdsConfig(BaseModel):
 
     report_generation_max_retries: int = Field(
         title="Report Generation Maximum Retries *",
-        description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
+        description="Maximum retries Airbyte will attempt for fetching report data. Default is 5.",
         default=5,
         examples=[5, 10, 15],
         order=6,

@@ -41,7 +41,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 6. Submit the form
 
 **For Airbyte OSS:**
-1. Navigate to the Airbute Open Source dashboard
+1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter the API access token from Prerequisites
 4. Enter the ID of the spreadsheet you want to sync
@@ -68,7 +68,7 @@ For example, having a spreadsheet `Customers`, the connector would introduce a s
 ## Important highlights
 The Smartsheet Source is written to pull data from a single Smartsheet spreadsheet. Unlike Google Sheets, Smartsheets only allows one sheet per Smartsheet - so a given Airbyte connector instance can sync only one sheet at a time. To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
 
-**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-specification.md).
+**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-protocol.md).
 
 ## Data type map
 The data type mapping adopted by this connector is based on the Smartsheet [documentation](https://smartsheet-platform.github.io/api-docs/index.html?python#column-types).
@@ -88,6 +88,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.12  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
 | 0.1.11  | 2022-04-27 | [12203](https://github.com/airbytehq/airbyte/pull/12203) | Doc improvements                                          |
 | 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
 | 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |

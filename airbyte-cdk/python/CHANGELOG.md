@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.60
+- Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
+
+## 0.1.59
+- Add `Stream.get_error_display_message()` to retrieve user-friendly messages from exceptions encountered while reading streams.
+- Add default error error message retrieval logic for `HTTPStream`s following common API patterns.
+
+## 0.1.58
+`TypeTransformer.default_convert` catch `TypeError`
+
+## 0.1.57
+Update protocol models to support per-stream state: [#12829](https://github.com/airbytehq/airbyte/pull/12829).
+
+## 0.1.56
+- Update protocol models to include `AirbyteTraceMessage`
+- Emit an `AirbyteTraceMessage` on uncaught exceptions
+- Add `AirbyteTracedException`
+
 ## 0.1.55
 Add support for reading the spec from a YAML file (`spec.yaml`) 
 

@@ -105,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.36.6-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.20-alpha
 ```
 
 ### Using `docker-compose`
@@ -138,11 +138,33 @@ docker-compose run octavia-cli <command>`
 
 ### `octavia` command flags
 
-| **Flag**                                 | **Description**                                  | **Env Variable**           | **Default**                                            |
-|------------------------------------------|--------------------------------------------------|----------------------------|--------------------------------------------------------|
-| `--airbyte-url`                          | Airbyte instance URL.                            | `AIRBYTE_URL`              | `http://localhost:8000`                                |
-| `--workspace-id`                         | Airbyte workspace id.                            | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
-| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data. | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
+| **Flag**                                   | **Description**                                                                   | **Env Variable**             | **Default**                                            |
+|--------------------------------------------|-----------------------------------------------------------------------------------|------------------------------|--------------------------------------------------------|
+| `--airbyte-url`                            | Airbyte instance URL.                                                             | `AIRBYTE_URL`                | `http://localhost:8000`                                |
+| `--workspace-id`                           | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`       | The first workspace id found on your Airbyte instance. |
+| `--enable-telemetry/--disable-telemetry`   | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY`   | True                                                   |
+| `--api-http-header`                        | HTTP Header value pairs passed while calling Airbyte's API | not supported.       | None                         | None                                                   |
+| `--api-http-headers-file-path`             | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                         | None                                                   |
+
+#### Using custom HTTP headers
+You can set custom HTTP headers to send to Airbyte's API with options:          
+```bash
+octavia --api-http-header Header-Name Header-Value --api-http-header Header-Name-2 Header-Value-2 list connectors sources
+```
+
+You can also use a custom YAML file (one is already created on init in `api_http_headers.yaml`) to declare the HTTP headers to send to the API:
+```yaml
+headers:
+  Authorization: Basic foobar==
+  User-Agent: octavia-cli/0.0.0
+```
+Environment variable expansion is available in this Yaml file
+```yaml
+headers:
+  Authorization: Bearer ${MY_API_TOKEN}
+```
+
+**Options based headers are overriding file based headers if an header is declared in both.**
 
 ### `octavia` subcommands
 
@@ -188,7 +210,7 @@ NAME                            DOCKER REPOSITORY                              D
 Airtable                        airbyte/source-airtable                        0.1.1             14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
 AWS CloudTrail                  airbyte/source-aws-cloudtrail                  0.1.4             6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
 Amazon Ads                      airbyte/source-amazon-ads                      0.1.3             c6b0a29e-1da9-4512-9002-7bfd0cba2246
-Amazon Seller Partner           airbyte/source-amazon-seller-partner           0.2.15            e55879a8-0ef8-4557-abcf-ab34c53ec460
+Amazon Seller Partner           airbyte/source-amazon-seller-partner           0.2.16            e55879a8-0ef8-4557-abcf-ab34c53ec460
 ```
 
 #### `octavia list connectors destinations`
@@ -281,10 +303,10 @@ $ octavia generate destination 25c5221d-dce2-4163-ade9-739ef790f503 my_db
 Generate a YAML configuration for a connection.
 The YAML file will be stored at `./connections/<connection_name>/configuration.yaml`.
 
-| **Option**      | **Required** | **Description**                                                                            |
-|-----------------|--------------|--------------------------------------------------------------------------------------------|
-| `--source`      | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
-| `--destination` | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
+| **Option**        | **Required** | **Description**                                                                            |
+|-------------------|--------------|--------------------------------------------------------------------------------------------|
+| `--source`        | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
+| `--destination`   | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
 
 | **Argument**      | **Description**                                          |
 |-------------------|----------------------------------------------------------|
@@ -319,7 +341,7 @@ $ octavia apply
 ❓ - Do you want to update weather? [y/N]: y
 ✍️ - Running update because a diff was detected between local and remote resource.
 🎉 - Successfully updated weather on your Airbyte instance!
-💾 - New state for weather stored at ./sources/weather/state.yaml.
+💾 - New state for weather stored at ./sources/weather/state_<workspace_id>.yaml.
 🐙 - my_db exists on your Airbyte instance, let's check if we need to update it!
 😴 - Did not update because no change detected.
 🐙 - weather_to_pg exists on your Airbyte instance, let's check if we need to update it!
@@ -328,7 +350,7 @@ $ octavia apply
 ❓ - Do you want to update weather_to_pg? [y/N]: y
 ✍️ - Running update because a diff was detected between local and remote resource.
 🎉 - Successfully updated weather_to_pg on your Airbyte instance!
-💾 - New state for weather_to_pg stored at ./connections/weather_to_pg/state.yaml.
+💾 - New state for weather_to_pg stored at ./connections/weather_to_pg/state_<workspace_id>.yaml.
 ```
 
 ## Contributing
@@ -362,8 +384,12 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description       | PR                                                       |
-|---------|------------|-------------------|----------------------------------------------------------|
-| 0.36.2  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68 | 2022-04-12 | Add telemetry     | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61 | 2022-04-07 | Alpha release     | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version  | Date       | Description                                        | PR                                                       |
+|----------|------------|----------------------------------------------------|----------------------------------------------------------|
+| 0.39.19  | 2022-06-16 | Allow connection management on multiple workspaces | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
+| 0.39.19  | 2022-06-15 | Allow users to set custom HTTP headers             | [#12893](https://github.com/airbytehq/airbyte/pull/12893)  |
+| 0.39.14  | 2022-05-12 | Enable normalization on connection                 | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
+| 0.37.0   | 2022-05-05 | Use snake case in connection fields                | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
+| 0.35.68  | 2022-04-15 | Improve telemetry                                  | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68  | 2022-04-12 | Add telemetry                                      | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61  | 2022-04-07 | Alpha release                                      | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|

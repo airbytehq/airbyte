@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -25,6 +25,7 @@ NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
 NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
+NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
 
 
 class DbtIntegrationTest(object):
@@ -131,10 +132,12 @@ class DbtIntegrationTest(object):
                 "MYSQL_INITDB_SKIP_TZINFO=yes",
                 "-e",
                 f"MYSQL_DATABASE={config['database']}",
+                "-e",
+                "MYSQL_ROOT_HOST=%",
                 "-p",
                 f"{config['port']}:3306",
                 "-d",
-                "mysql",
+                "mysql/mysql-server",
             ]
             print("Executing: ", " ".join(commands))
             subprocess.call(commands)
@@ -223,14 +226,21 @@ class DbtIntegrationTest(object):
         Ref: https://altinity.com/blog/2019/3/15/clickhouse-networking-part-1
         """
         start_db = True
+        port = 8123
+        tcp_port = 9000
         if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT):
             port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT))
             start_db = False
-        else:
+        if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT):
+            tcp_port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT))
+            start_db = False
+        if start_db:
             port = self.find_free_port()
+            tcp_port = self.find_free_port()
         config = {
             "host": "localhost",
             "port": port,
+            "tcp-port": tcp_port,
             "database": self.target_schema,
             "username": "default",
             "password": "",
@@ -248,7 +258,7 @@ class DbtIntegrationTest(object):
                 "--ulimit",
                 "nofile=262144:262144",
                 "-p",
-                "9000:9000",  # Python clickhouse driver use native port
+                f"{config['tcp-port']}:9000",  # Python clickhouse driver use native port
                 "-p",
                 f"{config['port']}:8123",  # clickhouse JDBC driver use HTTP port
                 "-d",
@@ -326,6 +336,7 @@ class DbtIntegrationTest(object):
                 "credentials_json": json.dumps(credentials),
                 "dataset_id": self.target_schema,
                 "project_id": credentials["project_id"],
+                "dataset_location": "US",
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
@@ -336,10 +347,7 @@ class DbtIntegrationTest(object):
         else:
             profiles_config["schema"] = self.target_schema
         if destination_type.value == DestinationType.CLICKHOUSE.value:
-            # Python ClickHouse driver uses native port 9000, which is different
-            # from official ClickHouse JDBC driver
             clickhouse_config = copy(profiles_config)
-            clickhouse_config["port"] = 9000
             profiles_yaml = config_generator.transform(destination_type, clickhouse_config)
         else:
             profiles_yaml = config_generator.transform(destination_type, profiles_config)
@@ -359,7 +367,8 @@ class DbtIntegrationTest(object):
                             line = input_data.readline()
                             if not line:
                                 break
-                            process.stdin.write(line)
+                            if not line.startswith(b"#"):
+                                process.stdin.write(line)
                 process.stdin.close()
 
             thread = threading.Thread(target=writer)
@@ -410,7 +419,7 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
-        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-mysql"):
+        if normalization_image.startswith("airbyte/normalization-oracle"):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]

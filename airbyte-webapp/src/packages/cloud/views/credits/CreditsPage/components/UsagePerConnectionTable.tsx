@@ -28,9 +28,9 @@ const UsageValue = styled.div`
   min-width: 53px;
 `;
 
-type UsagePerConnectionTableProps = {
+interface UsagePerConnectionTableProps {
   creditConsumption: CreditConsumptionByConnector[];
-};
+}
 
 type FullTableProps = CreditConsumptionByConnector & {
   creditsConsumedPercent: number;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -127,6 +127,17 @@ public class Jsons {
 
   public static byte[] toBytes(final JsonNode jsonNode) {
     return serialize(jsonNode).getBytes(Charsets.UTF_8);
+  }
+
+  /**
+   * Use string length as an estimation for byte size, because all ASCII characters are one byte long
+   * in UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can convert
+   * the string to byte[] and use the length of the byte[]. However, this conversion is expensive in
+   * memory consumption. Given that the byte size of the serialized JSON is already an estimation of
+   * the actual size of the JSON object, using a cheap operation seems an acceptable compromise.
+   */
+  public static int getEstimatedByteSize(final JsonNode jsonNode) {
+    return serialize(jsonNode).length();
   }
 
   public static Set<String> keys(final JsonNode jsonNode) {
