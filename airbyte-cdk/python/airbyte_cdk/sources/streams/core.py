@@ -112,6 +112,9 @@ class Stream(ABC):
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
 
+        if self.namespace:
+            stream.namespace = self.namespace
+            
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
