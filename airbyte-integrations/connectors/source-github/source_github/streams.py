@@ -1113,6 +1113,9 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
 
+    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+    re_run_period = 32
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
 
@@ -1120,6 +1123,26 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        break_point = pendulum.now("UTC").replace(microsecond=0) - pendulum.duration(days=self.re_run_period)
+        break_point = min(start_point, break_point.to_iso8601_string())
+        for record in super(SemiIncrementalMixin, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            cursor_value = record[self.cursor_field]
+            created_at = record["created_at"]
+            if cursor_value > start_point:
+                yield record
+            if created_at < break_point:
+                break
 
 
 class TeamMembers(GithubStream):
