@@ -69,6 +69,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ github.run_id }}-publisher
   start-publish-image-runner-1:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 1
@@ -90,6 +91,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ github.run_id }}-publisher
   start-publish-image-runner-2:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 2
@@ -111,6 +113,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ github.run_id }}-publisher
   start-publish-image-runner-3:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 3
@@ -132,6 +135,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ github.run_id }}-publisher
   start-publish-image-runner-4:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 4
@@ -153,6 +157,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          label: ${{ github.run_id }}-publisher
   preprocess-matrix:
     needs: start-publish-image-runner-0
     runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
@@ -182,7 +187,7 @@ jobs:
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
     # runs-on: self-hosted # TODO: need to change this to run on custom label when I can implement that
-    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    runs-on: ${{ github.run_id }}-publisher
     environment: more-secrets
     steps:
       - name: Link comment to workflow run
