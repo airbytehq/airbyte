@@ -1,12 +1,13 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "type": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "workspace_id": {
       "type": ["null", "string"]

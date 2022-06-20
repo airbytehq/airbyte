@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "assigned_to": {
@@ -101,7 +102,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "notified_at": {
       "type": ["null", "integer"]

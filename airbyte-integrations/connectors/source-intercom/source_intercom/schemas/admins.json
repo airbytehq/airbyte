@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "admin_ids": {
@@ -37,7 +38,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "job_title": {
       "type": ["null", "string"]

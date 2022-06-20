@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
+  "required": ["name"],
   "additionalProperties": false,
   "properties": {
     "type": {
@@ -9,7 +10,7 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "full_name": {
       "type": ["null", "string"]

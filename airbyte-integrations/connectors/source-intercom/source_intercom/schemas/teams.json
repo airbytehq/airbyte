@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["name"],
   "additionalProperties": false,
   "properties": {
     "admin_ids": {
@@ -19,7 +20,7 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "type": {
       "type": ["null", "string"]

@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "assignee": {
@@ -289,7 +290,7 @@
       ]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "open": {
       "type": ["null", "boolean"]

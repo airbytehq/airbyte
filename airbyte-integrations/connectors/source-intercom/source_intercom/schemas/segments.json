@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "created_at": {
@@ -9,7 +10,7 @@
       "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "name": {
       "type": ["null", "string"]
