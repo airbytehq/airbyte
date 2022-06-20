@@ -49,6 +49,8 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
+        # this adds a label to group any EC2 runners spun up within the same action run
+        # this enables creating a pool of runners to run multiple/matrix jobs on in parallel
         label: runner-pool-${{ github.run_id }}
         aws-resource-tags: >
           [
