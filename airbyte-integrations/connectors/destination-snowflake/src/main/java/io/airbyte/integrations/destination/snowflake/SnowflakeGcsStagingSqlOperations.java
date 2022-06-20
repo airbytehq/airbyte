@@ -179,6 +179,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   private void removeBlob(String file) {
     final var blobId = BlobId.of(gcsConfig.getBucketName(), file);
     storageClient.delete(blobId);
+    fullObjectKeys.remove(file);
   }
 
   @Override
