@@ -31,6 +31,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
+import io.airbyte.config.State;
 import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -42,6 +43,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -333,7 +335,10 @@ public class DefaultJobCreatorTest {
           configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
         });
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+    final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
+    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+
+    final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
@@ -342,22 +347,26 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)))
+        .withState(connectionState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+        .withResetConnection(jobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
-    final long jobId = jobCreator.createResetConnectionJob(
+    final Optional<Long> jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
-        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)).orElseThrow();
-    assertEquals(JOB_ID, jobId);
+        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2));
+
+    verify(jobPersistence).enqueueJob(expectedScope, jobConfig);
+    assertTrue(jobId.isPresent());
+    assertEquals(JOB_ID, jobId.get());
   }
 
   @Test
@@ -369,7 +378,10 @@ public class DefaultJobCreatorTest {
           configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
         });
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+    final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
+    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+
+    final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
@@ -378,21 +390,25 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)))
+        .withState(connectionState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+        .withResetConnection(jobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
-    assertTrue(jobCreator.createResetConnectionJob(
+    final Optional<Long> jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
-        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)).isEmpty());
+        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2));
+
+    verify(jobPersistence).enqueueJob(expectedScope, jobConfig);
+    assertTrue(jobId.isEmpty());
   }
 
 }
