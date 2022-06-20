@@ -22,6 +22,7 @@ jobs:
           - source-zendesk-support
           - source-stripe
           - source-amplitude
+          - source-intercom
 
     steps:
       - uses: actions/checkout@v2
