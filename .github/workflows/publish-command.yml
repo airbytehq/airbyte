@@ -188,7 +188,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :clock2: Publishing the following connectors:<br>${{ steps.preprocess.outputs.connectorjson }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Create table header
         uses: peter-evans/create-or-update-comment@v1
         with:
