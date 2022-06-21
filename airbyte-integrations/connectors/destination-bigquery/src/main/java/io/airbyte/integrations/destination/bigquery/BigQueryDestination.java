@@ -284,7 +284,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             avroFormatConfig,
             recordFormatterCreator,
             getAvroSchemaCreator(),
-            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
+            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX, catalog.getStreams().size()));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(

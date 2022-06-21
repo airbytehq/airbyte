@@ -131,7 +131,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         getDatabase(getDataSource(config)),
         new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, catalog.getStreams().size())),
         config,
         catalog,
         isPurgeStagingData(config));
