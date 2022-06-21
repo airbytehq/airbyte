@@ -5,7 +5,7 @@
 import base64
 from typing import Tuple
 
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 
 class HttpBasicAuthenticator(TokenAuthenticator):
