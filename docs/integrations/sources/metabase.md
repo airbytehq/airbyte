@@ -37,8 +37,8 @@ This Source is capable of syncing the following Streams:
 ### Requirements
 
 * Credentials:
-  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary.
-  * `session_token` - Credential token to authenticate requests sent to Metabase API   
+  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account everytime this is being used to open a new session.
+  * `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.   
 * `instance_api_url` - URL to interact with metabase instance API
 
 ### Setup guide
@@ -63,6 +63,8 @@ Note that these credentials tokens may expire after 14 days by default, and you 
 
 If you are hosting your own metabase instance, you can configure this session duration on your metabase server by setting the environment variable MAX_SESSION_AGE (value is in minutes).
 
+If the connector is supplied with only username and password, a session_token will be generated everytime an
+authenticated query is running, which might trigger security alerts on the user's metabase account.
 
 ## Changelog
 

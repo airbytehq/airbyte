@@ -27,7 +27,10 @@ Because of this, the connector configuration needs to be supplied with the sessi
 edit its own configuration with the new value everytime it runs.
 
 A consequence of this limitation is that the configuration of the connector will have to be updated when the credential token expires
-(every 14 days). Unless, the airbyte-server is able to refresh this token and persist the value of the new token.
+(every 14 days). Unless, the airbyte-server is able to refresh this token and persist the value of the new token. 
+
+If the connector is supplied with only username and password, a session_token will be generated everytime an 
+authenticated query is running, which might trigger security alerts on the user's account.
 
 All the API from metabase don't seem to support incremental sync modes as they don't expose cursor field values or pagination.
 So all streams only support full refresh sync modes for the moment.
