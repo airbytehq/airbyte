@@ -105,8 +105,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     return new StagingConsumerFactory().create(
         outputRecordCollector,
