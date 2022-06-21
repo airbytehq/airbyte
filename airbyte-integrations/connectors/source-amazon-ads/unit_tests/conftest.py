@@ -12,6 +12,7 @@ def config():
         "client_secret": "test_client_secret",
         "scope": "test_scope",
         "refresh_token": "test_refresh",
+        "region": "NA",
     }
 
 

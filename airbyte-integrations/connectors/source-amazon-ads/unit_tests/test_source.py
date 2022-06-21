@@ -34,7 +34,7 @@ def test_discover(config):
 
 def test_spec():
     source = SourceAmazonAds()
-    spec = source.spec()
+    spec = source.spec(None)
     assert isinstance(spec, ConnectorSpecification)
 
 
