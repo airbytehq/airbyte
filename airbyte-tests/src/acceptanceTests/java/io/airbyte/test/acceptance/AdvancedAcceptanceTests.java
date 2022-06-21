@@ -67,6 +67,7 @@ import io.airbyte.db.Database;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.test.utils.SchemaTableNamePair;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.File;
@@ -300,7 +301,7 @@ public class AdvancedAcceptanceTests {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
   }
