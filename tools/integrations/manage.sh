@@ -54,6 +54,11 @@ cmd_build() {
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
+
+    if test "$path" == "airbyte-integrations/bases/base-normalization"; then
+      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
+    fi
+
     ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
 }

@@ -4,6 +4,7 @@ import React, { ChangeEvent, useState } from "react";
 
 import { Input } from "components";
 
+import { buildConnectionUpdate } from "core/domain/connection";
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
@@ -53,15 +54,7 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
       setLoading(true);
 
       await updateConnection({
-        connectionId: connection.connectionId,
-        syncCatalog: connection.syncCatalog,
-        prefix: connection.prefix,
-        schedule: connection.schedule || null,
-        namespaceDefinition: connection.namespaceDefinition,
-        namespaceFormat: connection.namespaceFormat,
-        operations: connection.operations,
-        status: connection.status,
-        name: connectionNameTrimmed,
+        buildConnectionUpdate(connection, { name: connectionNameTrimmed });,
       });
 
       setConnectionName(connectionNameTrimmed);
