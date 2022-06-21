@@ -1,7 +1,8 @@
 import { FieldArray, useField } from "formik";
 import React, { useMemo } from "react";
+import { FormattedMessage } from "react-intl";
 
-import { ArrayOfObjectsEditor } from "components";
+import { ArrayOfObjectsEditor, Button, ModalBody, ModalFooter } from "components";
 import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
@@ -90,24 +91,46 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                   startValue: index < items.length ? items : null,
                 })
               }
-              onDone={() => removeUnfinishedFlow(path)}
-              onCancelEdit={() => {
-                removeUnfinishedFlow(path);
-
-                if (flow.startValue) {
-                  form.setValue(flow.startValue);
-                }
-              }}
               onRemove={arrayHelpers.remove}
               items={items}
               renderItemName={renderItemName}
               renderItemDescription={renderItemDescription}
               disabled={disabled}
               editModalSize="sm"
-              editModalHeight={300}
             >
               {() => (
-                <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} disabled={disabled} skipAppend />
+                <ModalBody maxHeight={300}>
+                  <FormSection
+                    blocks={formField.properties}
+                    path={`${path}.${flow.id}`}
+                    disabled={disabled}
+                    skipAppend
+                  />
+                  <ModalFooter>
+                    <Button
+                      onClick={() => {
+                        removeUnfinishedFlow(path);
+
+                        if (flow.startValue) {
+                          form.setValue(flow.startValue);
+                        }
+                      }}
+                      type="button"
+                      secondary
+                      disabled={disabled}
+                    >
+                      <FormattedMessage id="form.cancel" />
+                    </Button>
+                    <Button
+                      onClick={() => removeUnfinishedFlow(path)}
+                      type="button"
+                      data-testid="done-button"
+                      disabled={disabled}
+                    >
+                      <FormattedMessage id="form.done" />
+                    </Button>
+                  </ModalFooter>
+                </ModalBody>
               )}
             </ArrayOfObjectsEditor>
           )}
