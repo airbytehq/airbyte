@@ -88,7 +88,12 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={CloudRoutes.ResetPassword} $light data-testid="reset-password-link">
+                <Link
+                  to={CloudRoutes.ResetPassword}
+                  className={styles.forgotPassword}
+                  $light
+                  data-testid="reset-password-link"
+                >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
