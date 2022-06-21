@@ -57,14 +57,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
       isResetBasedForConfig = false;
     } else {
       final ResetSourceConfiguration resetSourceConfiguration;
-      try {
-        resetSourceConfiguration =
-            Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
-        streamsToReset.addAll(resetSourceConfiguration.getStreamsToReset());
-      } catch (final IllegalArgumentException e) {
-        log.error("The configuration provided to the reset has an invalid format");
-        throw new IllegalArgumentException("The reset configuration format is invalid", e);
-      }
+      resetSourceConfiguration = parseResetSourceConfigurationAndLogError(workerSourceConfig);
+      streamsToReset.addAll(resetSourceConfiguration.getStreamsToReset());
 
       if (streamsToReset.isEmpty()) {
         // TODO: This is done to be able to handle the transition period where we can have no stream being
@@ -228,4 +222,14 @@ public class EmptyAirbyteSource implements AirbyteSource {
                 .withGlobal(globalState));
   }
 
+
+  private ResetSourceConfiguration parseResetSourceConfigurationAndLogError(final WorkerSourceConfig workerSourceConfig) {
+    try {
+      return
+          Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
+    } catch (final IllegalArgumentException e) {
+      log.error("The configuration provided to the reset has an invalid format");
+      throw e;
+    }
+  }
 }
