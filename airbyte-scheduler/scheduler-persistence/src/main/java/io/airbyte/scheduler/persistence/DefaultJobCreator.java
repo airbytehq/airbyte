@@ -102,8 +102,17 @@ public class DefaultJobCreator implements JobCreator {
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
-      configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
-      configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+      final StreamDescriptor streamDescriptor = new StreamDescriptor()
+          .withName(configuredAirbyteStream.getStream().getName())
+          .withNamespace(configuredAirbyteStream.getStream().getNamespace());
+      if (streamsToReset.contains(streamDescriptor)) {
+        configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+        configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+      } else {
+        // set sync mode to full_refresh/append so that these streams are NOT affected in the destination
+        configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+        configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
+      }
     });
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
