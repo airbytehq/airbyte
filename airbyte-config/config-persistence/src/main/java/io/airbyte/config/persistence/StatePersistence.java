@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
@@ -146,8 +148,8 @@ public class StatePersistence {
       boolean hasState = ctx.selectFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              streamName != null ? STATE.STREAM_NAME.eq(streamName) : STATE.STREAM_NAME.isNull(),
-              namespace != null ? STATE.NAMESPACE.eq(namespace) : STATE.NAMESPACE.isNull())
+              isNullOrEquals(STATE.STREAM_NAME, streamName),
+              isNullOrEquals(STATE.NAMESPACE, namespace))
           .fetch().isNotEmpty();
 
       final JSONB jsonbState = JSONB.valueOf(Jsons.serialize(state));
@@ -181,8 +183,8 @@ public class StatePersistence {
             .set(STATE.STATE_, jsonbState)
             .where(
                 STATE.CONNECTION_ID.eq(connectionId),
-                streamName != null ? STATE.STREAM_NAME.eq(streamName) : STATE.STREAM_NAME.isNull(),
-                namespace != null ? STATE.NAMESPACE.eq(namespace) : STATE.NAMESPACE.isNull())
+                isNullOrEquals(STATE.STREAM_NAME, streamName),
+                isNullOrEquals(STATE.NAMESPACE, namespace))
             .execute();
       }
 
@@ -191,10 +193,23 @@ public class StatePersistence {
       ctx.deleteFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              streamName != null ? STATE.STREAM_NAME.eq(streamName) : STATE.STREAM_NAME.isNull(),
-              namespace != null ? STATE.NAMESPACE.eq(namespace) : STATE.NAMESPACE.isNull())
+              isNullOrEquals(STATE.STREAM_NAME, streamName),
+              isNullOrEquals(STATE.NAMESPACE, namespace))
           .execute();
     }
+  }
+
+  /**
+   * Helper function to handle null or equal case for the optional strings
+   *
+   * We need to have an explicit check for null values because NULL != "something" is NULL , not a boolean.
+   *
+   * @param field the targeted field
+   * @param value the value to check
+   * @return The Condition that performs the desired check
+   */
+  private static Condition isNullOrEquals(final Field<String> field, final String value) {
+    return value != null ? field.eq(value) : field.isNull();
   }
 
   /**
