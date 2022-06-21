@@ -31,9 +31,9 @@ interface StreamHeaderProps {
   stream: SyncSchemaStream;
   destName: string;
   destNamespace: string;
-  availableSyncModes: {
+  availableSyncModes: Array<{
     value: SyncSchema;
-  }[];
+  }>;
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
   primitiveFields: SyncSchemaField[];
@@ -158,7 +158,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               pathType={pkType}
               paths={paths}
               path={primaryKey}
-              isMulti={true}
+              isMulti
               placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
               onPathChange={onPrimaryKeyChange}
             />

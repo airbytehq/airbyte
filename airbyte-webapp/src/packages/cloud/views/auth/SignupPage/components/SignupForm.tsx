@@ -196,8 +196,8 @@ export const SignupForm: React.FC = () => {
           }
         })
       }
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
     >
       {({ isValid, isSubmitting, values }) => (
         <Form>
