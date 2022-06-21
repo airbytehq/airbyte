@@ -158,16 +158,14 @@ public class AirbyteAcceptanceTestHelper {
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
+
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
     }
 
     if (IS_KUBE) {
       kubernetesClient = new DefaultKubernetesClient();
     }
-
-    sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-        .withUsername(SOURCE_USERNAME)
-        .withPassword(SOURCE_PASSWORD);
-    sourcePsql.start();
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
@@ -189,11 +187,6 @@ public class AirbyteAcceptanceTestHelper {
     }
 
     this.apiClient = apiClient;
-    // new AirbyteApiClient(
-    // new ApiClient().setScheme("http")
-    // .setHost("localhost")
-    // .setPort(8001)
-    // .setBasePath("/api"));
 
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
@@ -208,11 +201,6 @@ public class AirbyteAcceptanceTestHelper {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
-
-    if (!IS_GKE) {
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-      destinationPsql.start();
-    }
   }
 
   public void stopDbAndContainers() {
