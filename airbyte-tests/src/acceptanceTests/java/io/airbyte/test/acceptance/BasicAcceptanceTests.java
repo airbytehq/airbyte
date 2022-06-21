@@ -57,8 +57,8 @@ public class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
-  private static final AirbyteAcceptanceTestHelper airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHelper(); // todo, init with api client
-  private static AirbyteApiClient apiClient; // todo let users pass this in
+  private static final AirbyteAcceptanceTestHelper airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHelper();
+  private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
   private static PostgreSQLContainer sourcePsql;
 
