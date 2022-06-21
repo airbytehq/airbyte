@@ -1,22 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import Modal, { ModalProps } from "components/Modal";
 
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 
+import styles from "./ArrayOfObjectsEditor.module.scss";
 import { EditorHeader } from "./components/EditorHeader";
 import { EditorRow } from "./components/EditorRow";
-
-const ItemsList = styled.div`
-  background: ${({ theme }) => theme.grey50};
-  border-radius: 4px;
-`;
-
-const Content = styled.div`
-  margin-bottom: 20px;
-`;
 
 interface ItemBase {
   name?: string;
@@ -67,7 +58,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
 
   return (
     <>
-      <Content>
+      <div className={styles.container}>
         <EditorHeader
           itemsCount={items.length}
           onAddItem={onAddItem}
@@ -77,7 +68,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
           disabled={disabled}
         />
         {items.length ? (
-          <ItemsList>
+          <div className={styles.list}>
             {items.map((item, index) => (
               <EditorRow
                 key={`form-item-${index}`}
@@ -89,9 +80,9 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
                 disabled={disabled}
               />
             ))}
-          </ItemsList>
+          </div>
         ) : null}
-      </Content>
+      </div>
       {mode !== "readonly" && isEditable && renderEditModal()}
     </>
   );
