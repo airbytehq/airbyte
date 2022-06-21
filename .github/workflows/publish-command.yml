@@ -176,11 +176,39 @@ jobs:
           middle=${stripped_connector//,/$replace}
           full="$start$middle$end"
           echo "::set-output name=connectorjson::$full"
+      - name: Print start message on github comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: Publishing the following connectors:<br>${{ steps.preprocess.outputs.connectorjson }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  create-success-and-fails-comment-table:
+    name: Set up table in git comment
+    if: github.event.inputs.comment-id
+    needs: start-publish-image-runner-0
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    steps:
+      - name: Create table header
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            <br>
+
+            | Connector | Published | Definitions generated |
+      - name: Create table separator
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            | --- | --- | --- |
   publish-image:
     timeout-minutes: 240
     needs:
       - start-publish-image-runner-0
       - preprocess-matrix
+      - create-success-and-fails-comment-table
     strategy:
       max-parallel: 5
       fail-fast: false
@@ -189,13 +217,6 @@ jobs:
     runs-on: runner-pool-${{ github.run_id }}
     environment: more-secrets
     steps:
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: ${{matrix.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -228,6 +249,7 @@ jobs:
       - name: Install Pyenv and Tox
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
+          rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
           pip install --quiet tox==3.24.4
@@ -287,20 +309,6 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
           SENTRY_PROJECT: airbyte-connectors
-      - name: Add Published Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :rocket: Successfully published ${{matrix.connector}}
-      - name: Add Published Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: Failed to publish ${{matrix.connector}}
       - name: Check if connector in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
@@ -338,27 +346,43 @@ jobs:
           git commit -m "auto-bump connector version"
           git pull origin ${{ github.event.inputs.gitref }}
           git push origin ${{ github.event.inputs.gitref }}
-      - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
+        id: auto-bump
+      - name: Process outcomes into emojis
+        if: ${{ always() && github.event.inputs.comment-id }}
+        run: |
+          if [[ ${{ steps.publish.outcome }} = "success" ]]; then
+            echo "PUBLISH_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
+          else
+            echo "PUBLISH_OUTCOME=:x:" >> $GITHUB_ENV
+          fi
+          if [[ ${{ steps.auto-bump.outcome }} = "success" ]]; then
+            echo "AUTO_BUMP_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
+          else
+            echo "AUTO_BUMP_OUTCOME=:x:" >> $GITHUB_ENV
+          fi
+      - name: Add connector outcome line to table
+        if: ${{ always() && github.event.inputs.comment-id }}
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :rocket: Auto-bumped version for ${{matrix.connector}}
-      - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && !success()
+            | ${{ matrix.connector }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
+  add-helpful-info-to-git-comment:
+    if: ${{ always() && github.event.inputs.comment-id }}
+    name: Add extra info to git comment
+    needs:
+      - start-publish-image-runner-0 # required to get output from the start-runner job
+      - publish-image # required to wait when the main job is done
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    steps:
+      - name: Add hint for manual seed definition update
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :x: Couldn't auto-bump version for ${{matrix.connector}}
-      - name: Add Final Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :white_check_mark: ${{matrix.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            <br>
+
+            if you have connectors that successfully published but failed definition generation, follow [step 4 here ▶️](https://docs.airbyte.com/connector-development/#publishing-a-connector)
   # In case of self-hosted EC2 errors, remove this block.
   stop-publish-image-runner-0:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
@@ -368,6 +392,7 @@ jobs:
       - preprocess-matrix
       - publish-image # required to wait when the main job is done
       - find_valid_pat
+      - add-helpful-info-to-git-comment
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
