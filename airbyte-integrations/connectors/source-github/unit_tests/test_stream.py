@@ -73,7 +73,7 @@ def test_internal_server_error_retry(time_mock):
         (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
 )
-@patch('time.time', return_value=1655804424.0)
+@patch("time.time", return_value=1655804424.0)
 def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status

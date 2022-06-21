@@ -60,9 +60,14 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.headers.get("Retry-After") or response.status_code in (
-            requests.codes.SERVER_ERROR,
-            requests.codes.BAD_GATEWAY,
+        retry_flag = (
+            response.headers.get("X-RateLimit-Remaining") == "0"
+            or response.headers.get("Retry-After")
+            or response.status_code
+            in (
+                requests.codes.SERVER_ERROR,
+                requests.codes.BAD_GATEWAY,
+            )
         )
         if retry_flag:
             self.logger.info(
