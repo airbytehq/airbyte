@@ -305,6 +305,8 @@ public class WebBackendConnectionsHandler {
     if (needReset) {
       ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
           webBackendConnectionUpdate.getConnectionId(),
+          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
+          // streams, instead of all
           configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
       verifyManualOperationResult(manualOperationResult);
       manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
