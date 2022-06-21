@@ -228,7 +228,7 @@ public class StatePersistence {
     }
 
     throw new IllegalStateException("Inconsistent StateTypes for connectionId " + connectionId +
-        " (" + String.join(", ", types.stream().map(io.airbyte.db.instance.configs.jooq.generated.enums.StateType::getLiteral).toList()) + ")");
+        " (" + String.join(", ", types.stream().map(stateType -> stateType.getLiteral()).toList()) + ")");
   }
 
   /**
