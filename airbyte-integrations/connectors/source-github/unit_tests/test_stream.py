@@ -757,6 +757,7 @@ def test_streams_read_full_refresh():
     assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
 
 
+@pytest.mark.skip()
 @responses.activate
 def test_stream_reviews_incremental_read():
 

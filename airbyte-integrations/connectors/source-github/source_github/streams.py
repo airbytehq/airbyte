@@ -4,17 +4,16 @@
 
 import time
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-from .graphql import get_query
+from .graphql import get_query_pull_requests, get_query_reviews
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -684,45 +683,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/pulls/comments"
 
 
-# Pull request substreams
-
-
-class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
-    def __init__(self, parent: PullRequests, **kwargs):
-        super().__init__(parent=parent, **kwargs)
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override the parent PullRequests stream configuration to always fetch records in ascending order
-        """
-        parent_state = deepcopy(stream_state) or {}
-        parent_state[PullRequests.first_read_override_key] = True
-        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
-        for parent_stream_slice in parent_stream_slices:
-            yield {
-                "pull_request_updated_at": parent_stream_slice["parent"]["updated_at"],
-                "pull_request_number": parent_stream_slice["parent"]["number"],
-                "repository": parent_stream_slice["parent"]["repository"],
-            }
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        We've already determined the list of pull requests to run the stream against.
-        Skip the start_point_map and cursor_field logic in SemiIncrementalMixin.read_records.
-        """
-        yield from super(SemiIncrementalMixin, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-
-
 class PullRequestStats(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
@@ -764,7 +724,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
-        query = get_query(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        query = get_query_pull_requests(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
         return {"query": query}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -774,30 +734,52 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         return {**base_headers, **headers}
 
 
-class Reviews(PullRequestSubstream):
+class Reviews(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
     """
 
+    is_sorted = "asc"
+    http_method = "POST"
     cursor_field = "pull_request_updated_at"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+        return "graphql"
 
-    # Set the parent stream state's cursor field before fetching its records
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_state = deepcopy(stream_state) or {}
-        for repository in self.repositories:
-            if repository in parent_state and self.cursor_field in parent_state[repository]:
-                parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
-        yield from super().stream_slices(stream_state=parent_state, **kwargs)
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record[self.cursor_field] = stream_slice[self.cursor_field]
-        return record
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json()["data"]["repository"]
+        repository_name = repository["owner"]["login"] + "/" + repository["name"]
+        for pull_request in repository["pullRequests"]["nodes"]:
+            for record in pull_request["reviews"]["nodes"]:
+                record["repository"] = repository_name
+                record["pull_request_updated_at"] = pull_request["updated_at"]
+                record["pull_request_url"] = pull_request["url"]
+                if record["commit"]:
+                    record["commit_id"] = record.pop("commit")["oid"]
+                record["user"]["type"] = record["user"].pop("__typename")
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            return pageInfo["endCursor"]
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        query = get_query_reviews(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        return {"query": query}
 
 
 class PullRequestCommits(GithubStream):
