@@ -437,7 +437,6 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,

@@ -4,10 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.StreamDescriptor;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -763,7 +763,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return;
     }
 
-    runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob, new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
+    runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob,
+        new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
   }
 
 }
