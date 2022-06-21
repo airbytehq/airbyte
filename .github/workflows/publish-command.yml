@@ -176,19 +176,19 @@ jobs:
           middle=${stripped_connector//,/$replace}
           full="$start$middle$end"
           echo "::set-output name=connectorjson::$full"
-      - name: Print start message on github comment
+  write-initial-output-to-comment:
+    name: Set up git comment
+    if: github.event.inputs.comment-id
+    needs: start-publish-image-runner-0
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    steps:
+      - name: Print start message
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: Publishing the following connectors:<br>${{ steps.preprocess.outputs.connectorjson }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-  create-success-and-fails-comment-table:
-    name: Set up table in git comment
-    if: github.event.inputs.comment-id
-    needs: start-publish-image-runner-0
-    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
-    steps:
       - name: Create table header
         uses: peter-evans/create-or-update-comment@v1
         with:
@@ -208,7 +208,7 @@ jobs:
     needs:
       - start-publish-image-runner-0
       - preprocess-matrix
-      - create-success-and-fails-comment-table
+      - write-initial-output-to-comment
     strategy:
       max-parallel: 5
       fail-fast: false
