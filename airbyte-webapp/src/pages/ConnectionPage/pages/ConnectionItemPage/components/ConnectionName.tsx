@@ -43,13 +43,13 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   };
 
   const updateConnectionAsync = async () => {
-    if (connectionName === undefined || connection.name === connectionName.trim() || !connectionName.trim()) {
+    const connectionNameTrimmed = connectionName?.trim();
+    if (!connectionNameTrimmed || connection.name === connectionNameTrimmed) {
       setConnectionName(connectionNameBackup);
       setEditingState(false);
       return;
     }
 
-    const connectionNameTrimmed = connectionName.trim();
     try {
       setLoading(true);
 

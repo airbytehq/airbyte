@@ -1,7 +1,7 @@
 import * as React from "react";
 
 interface InProps {
-  readonly onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  readonly onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }
 
 interface Callbacks {
