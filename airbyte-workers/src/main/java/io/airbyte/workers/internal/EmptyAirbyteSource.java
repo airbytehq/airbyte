@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StateType;
@@ -37,8 +38,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamsToReset = new LinkedList<>();
-  // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need to remove this variable and the associated
-  //  checks
+  // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need
+  // to remove this variable and the associated
+  // checks
   private boolean isResetBasedForConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
@@ -50,41 +52,33 @@ public class EmptyAirbyteSource implements AirbyteSource {
   @Override
   public void start(final WorkerSourceConfig workerSourceConfig, final Path jobRoot) throws Exception {
 
-    if (workerSourceConfig == null || workerSourceConfig.getSourceConnectionConfiguration() == null) {
-      // TODO: When the jobConfig is fully updated and tested, we can remove this extra check that makes
-      // us compatible with running a reset with
-      // a null config
-      isResetBasedForConfig = false;
-    } else {
-      final ResetSourceConfiguration resetSourceConfiguration;
-      try {
-        resetSourceConfiguration =
-            Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
-        streamsToReset.addAll(resetSourceConfiguration.getStreamsToReset());
-      } catch (final IllegalArgumentException e) {
-        log.error("The configuration provided to the reset has an invalid format");
-        throw new IllegalArgumentException("The reset configuration format is invalid", e);
-      }
+    // TODO: When the jobConfig is fully updated and tested, we can remove this extra check that makes
+    // us compatible with running a reset with a null config
+    isResetBasedForConfig = workerSourceConfig != null && workerSourceConfig.getSourceConnectionConfiguration() != null && !streamsToReset.isEmpty();
 
-      if (streamsToReset.isEmpty()) {
-        // TODO: This is done to be able to handle the transition period where we can have no stream being
-        // pass to the configuration because the
-        // logic of populating this list is not implemented
-        isResetBasedForConfig = false;
-      } else {
-        stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState());
+    if (isResetBasedForConfig) {
+      final ResetSourceConfiguration resetSourceConfiguration = parseResetConfig(workerSourceConfig.getSourceConnectionConfiguration());
+      streamsToReset.addAll(resetSourceConfiguration.getStreamsToReset());
 
-        if (stateWrapper.isPresent() &&
-            stateWrapper.get().getStateType() == StateType.LEGACY &&
-            !isResetAllStreamsInCatalog(workerSourceConfig)) {
-          log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
-          throw new IllegalStateException("Try to perform a partial reset on a legacy state");
-        }
+      stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState());
 
-        isResetBasedForConfig = true;
+      if (stateWrapper.isPresent() &&
+          stateWrapper.get().getStateType() == StateType.LEGACY &&
+          !isResetAllStreamsInCatalog(workerSourceConfig)) {
+        log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
+        throw new IllegalStateException("Try to perform a partial reset on a legacy state");
       }
     }
     isStarted = true;
+  }
+
+  private static ResetSourceConfiguration parseResetConfig(final JsonNode json) {
+    try {
+      return Jsons.object(json, ResetSourceConfiguration.class);
+    } catch (final IllegalArgumentException e) {
+      log.error("The configuration provided to the reset has an invalid format");
+      throw new IllegalArgumentException("The reset configuration format is invalid", e);
+    }
   }
 
   // always finished. it has no data to send.
