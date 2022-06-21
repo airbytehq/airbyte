@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
- * delicate data syncing to S3) and {@code partSize} (used by certain bulk-load database
- * operations).
+ * delicate data syncing to S3)
  */
 public class S3DestinationConfig {
 
@@ -33,8 +32,6 @@ public class S3DestinationConfig {
   private final String bucketRegion;
   private final String pathFormat;
   private final S3CredentialConfig credentialConfig;
-  @Deprecated
-  private final Integer partSize;
   private final S3FormatConfig formatConfig;
 
   private final Object lock = new Object();
@@ -46,7 +43,6 @@ public class S3DestinationConfig {
                              final String bucketRegion,
                              final String pathFormat,
                              final S3CredentialConfig credentialConfig,
-                             final Integer partSize,
                              final S3FormatConfig formatConfig,
                              final AmazonS3 s3Client) {
     this.endpoint = endpoint;
@@ -56,7 +52,6 @@ public class S3DestinationConfig {
     this.pathFormat = pathFormat;
     this.credentialConfig = credentialConfig;
     this.formatConfig = formatConfig;
-    this.partSize = partSize;
     this.s3Client = s3Client;
   }
 
@@ -68,7 +63,6 @@ public class S3DestinationConfig {
     return new Builder(config.getBucketName(), config.getBucketPath(), config.getBucketRegion())
         .withEndpoint(config.getEndpoint())
         .withCredentialConfig(config.getS3CredentialConfig())
-        .withPartSize(config.getPartSize())
         .withFormatConfig(config.getFormatConfig());
   }
 
@@ -88,10 +82,6 @@ public class S3DestinationConfig {
 
     if (config.has("s3_endpoint")) {
       builder = builder.withEndpoint(config.get("s3_endpoint").asText());
-    }
-
-    if (config.has("part_size")) {
-      builder = builder.withPartSize(config.get("part_size").asInt());
     }
 
     final S3CredentialConfig credentialConfig;
@@ -133,10 +123,6 @@ public class S3DestinationConfig {
 
   public S3CredentialConfig getS3CredentialConfig() {
     return credentialConfig;
-  }
-
-  public Integer getPartSize() {
-    return partSize;
   }
 
   public S3FormatConfig getFormatConfig() {
@@ -217,7 +203,6 @@ public class S3DestinationConfig {
 
     private String endpoint = "";
     private String pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT;
-    private int partSize = S3DestinationConstants.DEFAULT_PART_SIZE_MB;
 
     private String bucketName;
     private String bucketPath;
@@ -257,11 +242,6 @@ public class S3DestinationConfig {
       return this;
     }
 
-    public Builder withPartSize(final int partSize) {
-      this.partSize = partSize;
-      return this;
-    }
-
     public Builder withFormatConfig(final S3FormatConfig formatConfig) {
       this.formatConfig = formatConfig;
       return this;
@@ -290,7 +270,6 @@ public class S3DestinationConfig {
           bucketRegion,
           pathFormat,
           credentialConfig,
-          partSize,
           formatConfig,
           s3Client);
     }
