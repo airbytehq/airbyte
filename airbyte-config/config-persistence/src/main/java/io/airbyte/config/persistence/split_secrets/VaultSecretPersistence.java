@@ -53,20 +53,6 @@ final public class VaultSecretPersistence implements SecretPersistence {
     }
   }
 
-  /**
-   * This creates a vault client using a vault agent which uses AWS IAM for auth using engine version 2.
-   */
-  private static Vault getVaultClient(final String address) throws VaultException {
-    val config = new VaultConfig()
-        .address(address)
-        .engineVersion(2)
-        .build();
-    return new Vault(config);
-  }
-
-  /**
-   * Vault client for testing
-   */
   private static Vault getVaultClient(final String address, final String token) throws VaultException {
     val config = new VaultConfig()
         .address(address)
