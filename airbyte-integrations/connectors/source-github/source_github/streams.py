@@ -61,7 +61,11 @@ class GithubStream(HttpStream, ABC):
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
         retry_flag = (
+            # Rate limit HTTP headers
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
             response.headers.get("X-RateLimit-Remaining") == "0"
+            # Secondary rate limits
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
             or response.headers.get("Retry-After")
             or response.status_code
             in (
