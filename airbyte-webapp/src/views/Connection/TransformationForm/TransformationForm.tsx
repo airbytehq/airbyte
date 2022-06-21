@@ -9,6 +9,7 @@ import * as yup from "yup";
 import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
+import { useConfig } from "config";
 import { OperationService } from "core/domain/connection";
 import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useGetService } from "core/servicesProvider";
@@ -77,6 +78,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
   isNewTransformation,
 }) => {
   const { formatMessage } = useIntl();
+  const config = useConfig();
   const operationService = useGetService<OperationService>("OperationService");
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
@@ -140,7 +142,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
               label={<FormattedMessage id="form.entrypoint" />}
               {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.dbtArguments")}
               message={
-                <a href="https://docs.getdbt.com/reference/dbt-commands" target="_blanc">
+                <a href={config.links.dbtCommandsReference} target="_blank" rel="noreferrer">
                   <FormattedMessage id="form.entrypoint.docs" />
                 </a>
               }
