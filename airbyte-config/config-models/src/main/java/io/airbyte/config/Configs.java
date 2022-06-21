@@ -171,7 +171,36 @@ public interface Configs {
    */
   boolean runDatabaseMigrationOnStartup();
 
+  // Temporal Cloud - Internal-Use Only
+
+  /**
+   * Define if Temporal Cloud should be used. Internal-use only.
+   */
+  boolean temporalCloudEnabled();
+
+  /**
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use
+   * only.
+   */
+  String getTemporalCloudHost();
+
+  /**
+   * Temporal Cloud namespace. Internal-use only.
+   */
+  String getTemporalCloudNamespace();
+
+  /**
+   * Temporal Cloud client cert for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientCert();
+
+  /**
+   * Temporal Cloud client key for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientKey();
+
   // Airbyte Services
+
   /**
    * Define the url where Temporal is hosted at. Please include the port. Airbyte services use this
    * information.
