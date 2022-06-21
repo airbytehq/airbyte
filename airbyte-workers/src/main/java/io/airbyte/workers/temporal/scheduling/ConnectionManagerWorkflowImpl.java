@@ -148,6 +148,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         reportCancelledAndContinueWith(true, connectionUpdaterInput);
       }
 
+      // "Cancel" button was pressed on a job
       if (workflowState.isCancelled()) {
         deleteResetJobStreams();
         reportCancelledAndContinueWith(false, connectionUpdaterInput);
@@ -340,7 +341,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
-    if (sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) || checkFailure.isFailed()) {
+    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
+      // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped");
     } else {
       log.info("SOURCE CHECK: Starting");
@@ -372,6 +374,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     return checkFailure;
+  }
+
+  private boolean isResetJob(final IntegrationLauncherConfig sourceLauncherConfig) {
+    return sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB);
   }
 
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
