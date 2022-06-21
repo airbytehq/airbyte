@@ -39,13 +39,14 @@ To create a dedicated read only Salesforce user:
 To set up Salesforce as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click + **new source**.
-3. On the Set up the source page, enter the name for the Salesforce connector and select **Salesforce** from the Source type dropdown.
-4. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-6. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
-7. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
-8. Click **Set up source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown. 
+4. For Name, enter a name for the Salesforce connector.
+5. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
+8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
+9. Click **Set up source**.
 
 ### For Airbyte OSS
 
@@ -57,7 +58,7 @@ To set up Salesforce as a source in Airbyte Open Source:
     2. When running a curl command, run it with the `-L` option to follow any redirects.
     3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
-2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](link to previous section).
+2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
 
 ## Supported sync modes
 
@@ -68,8 +69,9 @@ The Salesforce source connector supports the following sync modes:
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-**Incremental Deletes Sync**
-<br/>The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
+### Incremental Deletes Sync
+
+The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
 
 ## Performance considerations
 
@@ -117,6 +119,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.10   | 2022-06-09 | [13658](https://github.com/airbytehq/airbyte/pull/13658)     | Correct logic to sync stream larger than page size   |
 | 1.0.9   | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)     | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions                                                     |
 | 1.0.8   | 2022-05-04 | [12576](https://github.com/airbytehq/airbyte/pull/12576)     | Decode responses as utf-8 and fallback to ISO-8859-1 if needed                                                                   |
 | 1.0.7   | 2022-05-03 | [12552](https://github.com/airbytehq/airbyte/pull/12552)     | Decode responses as ISO-8859-1 instead of utf-8                                                                                  |

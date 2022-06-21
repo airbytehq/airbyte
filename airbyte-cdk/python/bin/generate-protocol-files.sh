@@ -4,7 +4,7 @@ set -e
 
 [ -z "$ROOT_DIR" ] && exit 1
 
-YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
+YAML_DIR=airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol
 OUTPUT_DIR=airbyte-cdk/python/airbyte_cdk/models
 
 function main() {

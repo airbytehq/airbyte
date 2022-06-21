@@ -17,7 +17,7 @@ factory = DeclarativeComponentFactory()
 
 parser = YamlParser()
 
-input_config = {"apikey": "verysecrettoken"}
+input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}
 
 
 def test_factory():
@@ -52,12 +52,39 @@ authenticator:
     assert authenticator._tokens == ["verysecrettoken"]
 
 
+def test_list_based_stream_slicer_with_values_refd():
+    content = """
+    repositories: ["airbyte", "airbyte-cloud"]
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "*ref(repositories)"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_list_based_stream_slicer_with_values_defined_in_config():
+    content = """
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
 def test_full_config():
     content = """
 decoder:
   class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 extractor:
-  class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
   decoder: "*ref(decoder)"
 metadata_paginator:
   class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"

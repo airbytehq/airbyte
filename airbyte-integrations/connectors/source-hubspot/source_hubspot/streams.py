@@ -5,11 +5,10 @@
 
 import sys
 import time
-import urllib.parse
 from abc import ABC, abstractmethod
-from functools import lru_cache, partial
+from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -22,10 +21,7 @@ from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
-
-# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
-# so it was decided to limit the length of the `properties` parameter to 15000 characters.
-PROPERTIES_PARAM_MAX_LENGTH = 15000
+from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -57,22 +53,6 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
-
-
-def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
-    summary_length = 0
-    local_properties = []
-    for property_ in properties_list:
-        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
-            yield local_properties
-            local_properties = []
-            summary_length = 0
-
-        local_properties.append(property_)
-        summary_length += len(property_) + len(urllib.parse.quote(","))
-
-    if local_properties:
-        yield local_properties
 
 
 def retry_connection_handler(**kwargs):
@@ -220,6 +200,7 @@ class Stream(HttpStream, ABC):
     offset = 0
     primary_key = None
     filter_old_records: bool = True
+    denormalize_records: bool = False  # one record from API response can result in multiple records emitted
 
     @property
     @abstractmethod
@@ -249,6 +230,13 @@ class Stream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.url
+
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        if "v1" in self.url:
+            return APIv1Property(properties)
+        return APIv3Property(properties)
 
     def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
         super().__init__(**kwargs)
@@ -281,12 +269,12 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        params: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if params:
-            request_params.update(params)
+        if properties:
+            request_params.update(properties.as_url_param())
 
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -312,34 +300,30 @@ class Stream(HttpStream, ABC):
 
     def _read_stream_records(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Tuple[dict, Any]:
+    ) -> Tuple[List, Any]:
 
-        # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-        #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
-        #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+        #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
+        #  (issues #3977 and #5835). We will need to fix this code when the HubSpot developers add the ability to use a special parameter
+        #  to get all properties for an entity. According to HubSpot Community
+        #  (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
         #  and the official documentation, this does not exist at the moment.
 
-        stream_records = {}
+        group_by_pk = self.primary_key and not self.denormalize_records
+        post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
-        for properties in split_properties(properties_list):
-            params = {"properties": ",".join(properties)}
-
+        properties = self._property_wrapper
+        for chunk in properties.split():
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
             )
-
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
-                if record["id"] not in stream_records:
-                    stream_records[record["id"]] = record
-                elif stream_records[record["id"]].get("properties"):
-                    stream_records[record["id"]]["properties"].update(record.get("properties", {}))
+                post_processor.add_record(record)
 
-        return stream_records, response
+        return post_processor.flat, response
 
     def read_records(
         self,
@@ -356,18 +340,19 @@ class Stream(HttpStream, ABC):
             with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
                 while not pagination_complete:
 
-                    properties_list = list(self.properties.keys())
-                    if properties_list:
-                        stream_records, response = self._read_stream_records(
-                            properties_list=properties_list,
+                    properties = self._property_wrapper
+                    if properties and properties.too_many_properties:
+                        records, response = self._read_stream_records(
                             stream_slice=stream_slice,
                             stream_state=stream_state,
                             next_page_token=next_page_token,
                         )
-                        records = [value for key, value in stream_records.items()]
                     else:
                         response = self.handle_request(
-                            stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token
+                            stream_slice=stream_slice,
+                            stream_state=stream_state,
+                            next_page_token=next_page_token,
+                            properties=properties,
                         )
                         records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
@@ -382,11 +367,18 @@ class Stream(HttpStream, ABC):
                 # Always return an empty generator just in case no records were ever yielded
                 yield from []
         except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 403:
-                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
-            else:
-                raise e
+            raise e
+
+    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+        body = response.json()
+        if body.get("category") == "MISSING_SCOPES":
+            if "errors" in body:
+                errors = body["errors"]
+                if len(errors) > 0:
+                    error = errors[0]
+                    missing_scopes = error.get("context", {}).get("requiredScopes")
+                    return f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for. Missing scopes {missing_scopes}"
+        return super().parse_response_error_message(response)
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
@@ -781,12 +773,12 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def _process_search(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Tuple[dict, requests.Response]:
+    ) -> Tuple[List, requests.Response]:
         stream_records = {}
+        properties_list = list(self.properties.keys())
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
@@ -804,7 +796,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record
 
-        return stream_records, raw_response
+        return list(stream_records.values()), raw_response
 
     def read_records(
         self,
@@ -820,25 +812,19 @@ class CRMSearchStream(IncrementalStream, ABC):
         latest_cursor = None
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
             while not pagination_complete:
-                properties_list = list(self.properties.keys())
-
                 if self.state:
-                    stream_records, raw_response = self._process_search(
-                        properties_list,
+                    records, raw_response = self._process_search(
                         next_page_token=next_page_token,
                         stream_state=stream_state,
                         stream_slice=stream_slice,
                     )
 
                 else:
-                    stream_records, raw_response = self._read_stream_records(
-                        properties_list=properties_list,
+                    records, raw_response = self._read_stream_records(
                         stream_slice=stream_slice,
                         stream_state=stream_state,
                         next_page_token=next_page_token,
                     )
-
-                records = [value for key, value in stream_records.items()]
                 records = self._filter_old_records(records)
                 records = self._flat_associations(records)
 
@@ -1307,17 +1293,23 @@ class PropertyHistory(IncrementalStream):
     url = "/contacts/v1/lists/recently_updated/contacts/recent"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
+    entity = "contacts"
     data_field = "contacts"
     page_field = "vid-offset"
     page_filter = "vidOffset"
+    denormalize_records = True
     limit = 100
     scopes = {"crm.objects.contacts.read"}
 
-    def list(self, fields) -> Iterable:
-        properties = self._api.get("/properties/v2/contact/properties")
-        properties_list = [single_property["name"] for single_property in properties]
-        params = {"propertyMode": "value_and_history", "property": properties_list}
-        yield from self.read(partial(self._api.get, url=self.url), params)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update(propertyMode="value_and_history")
+        return params
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
@@ -1335,7 +1327,6 @@ class PropertyHistory(IncrementalStream):
                     continue
                 if versions:
                     for version in versions:
-                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_rfc3339_string()
                         version["property"] = key
                         version["vid"] = vid
                         yield version
@@ -1426,7 +1417,7 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
     primary_key = "id"
-    scopes = set()
+    scopes = {"crm.objects.feedback_submissions.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):

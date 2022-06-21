@@ -13,6 +13,10 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This file will soon be removed. Any change to this file should also be duplicated to
+ * PostgresSourceStrictEncrypt.java in the source-postgres module.
+ */
 public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);

@@ -9,8 +9,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
@@ -18,5 +18,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-sftp')
-    integrationTestJavaImplementation "org.testcontainers:testcontainers:1.15.3"
+    testImplementation libs.connectors.testcontainers
 }
