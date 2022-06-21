@@ -53,9 +53,7 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     try {
       setLoading(true);
 
-      await updateConnection({
-        buildConnectionUpdate(connection, { name: connectionNameTrimmed });,
-      });
+      await updateConnection(buildConnectionUpdate(connection, { name: connectionNameTrimmed }));
 
       setConnectionName(connectionNameTrimmed);
       setConnectionNameBackup(connectionNameTrimmed);
