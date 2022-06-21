@@ -37,6 +37,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamsToReset = new LinkedList<>();
+  // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need to remove this variable and the associated
+  //  checks
   private boolean isResetBasedForConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
@@ -183,14 +185,14 @@ public class EmptyAirbyteSource implements AirbyteSource {
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setStreamStates(new ArrayList<>());
 
-    currentState.getGlobal().getStreamStates().forEach(exitingState -> globalState.getStreamStates()
+    currentState.getGlobal().getStreamStates().forEach(existingState -> globalState.getStreamStates()
         .add(
             new AirbyteStreamState()
-                .withStreamDescriptor(exitingState.getStreamDescriptor())
+                .withStreamDescriptor(existingState.getStreamDescriptor())
                 .withStreamState(
                     streamsToReset.contains(new StreamDescriptor()
-                        .withName(exitingState.getStreamDescriptor().getName())
-                        .withNamespace(exitingState.getStreamDescriptor().getNamespace())) ? null : exitingState.getStreamState())));
+                        .withName(existingState.getStreamDescriptor().getName())
+                        .withNamespace(existingState.getStreamDescriptor().getNamespace())) ? null : existingState.getStreamState())));
 
     // If all the streams in the current state have been reset, we consider this to be a full reset, so
     // reset the shared state as well

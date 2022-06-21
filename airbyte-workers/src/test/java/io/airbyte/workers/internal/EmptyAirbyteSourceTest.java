@@ -238,7 +238,7 @@ public class EmptyAirbyteSourceTest {
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
-    streamToReset.forEach(this::testRightStreamState);
+    streamToReset.forEach(this::testReceiveNullStreamState);
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
@@ -261,7 +261,7 @@ public class EmptyAirbyteSourceTest {
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
-    streamToReset.forEach(this::testRightStreamState);
+    streamToReset.forEach(this::testReceiveNullStreamState);
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
@@ -285,7 +285,7 @@ public class EmptyAirbyteSourceTest {
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 
-    streamToReset.forEach(this::testRightStreamState);
+    streamToReset.forEach(this::testReceiveNullStreamState);
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
@@ -351,7 +351,7 @@ public class EmptyAirbyteSourceTest {
         .isEmpty();
   }
 
-  private void testRightStreamState(final io.airbyte.config.StreamDescriptor streamDescriptor) {
+  private void testReceiveNullStreamState(final io.airbyte.config.StreamDescriptor streamDescriptor) {
     final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
     Assertions.assertThat(maybeMessage)
         .isNotEmpty();
