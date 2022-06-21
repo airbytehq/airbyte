@@ -137,7 +137,9 @@ The UI currently allows selecting any tables for CDC. If a table is selected tha
 
 #### 5. Create replication slot
 
-Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
+Next, you will need to create a replication slot. It's important to create the publication first (as in step 4) before creating the replication slot. Otherwise, you can run into exceptions if there is any update to the database between the creation of the two.
+
+Here is the query used to create a replication slot called `airbyte_slot`:
 
 ```text
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
