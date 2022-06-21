@@ -448,7 +448,6 @@ public class WorkerApp {
     final JobErrorReporter jobErrorReporter =
         new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
-    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,

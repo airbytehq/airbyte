@@ -12,7 +12,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,4 +48,5 @@ public class StreamResetActivityImpl implements StreamResetActivity {
       throw new RetryableException(e);
     }
   }
+
 }
