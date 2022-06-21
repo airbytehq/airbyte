@@ -147,7 +147,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
 
     await updateConnection(
       buildConnectionUpdate(connection, {
-        operations: operations,
+        operations,
       })
     );
 
