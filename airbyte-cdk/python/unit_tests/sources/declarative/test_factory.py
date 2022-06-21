@@ -6,8 +6,8 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
-from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
-    InterpolatedRequestParameterProvider,
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -26,15 +26,19 @@ def test_factory():
     offset_request_parameters:
       offset: "{{ next_page_token['offset'] }}"
       limit: "*ref(limit)"
-    offset_pagination_request_parameters:
-      class_name: airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
+    request_options:
+      class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
       request_parameters: "*ref(offset_request_parameters)"
+      request_body_json:
+        body_offset: "{{ next_page_token['offset'] }}"
     """
     config = parser.parse(content)
-    offset_pagination_request_parameters = factory.create_component(config["offset_pagination_request_parameters"], input_config)()
-    assert type(offset_pagination_request_parameters) == InterpolatedRequestParameterProvider
-    assert offset_pagination_request_parameters._interpolator._config == input_config
-    assert offset_pagination_request_parameters._interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    request_options_provider = factory.create_component(config["request_options"], input_config)()
+    assert type(request_options_provider) == InterpolatedRequestOptionsProvider
+    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator._interpolator._mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
 def test_interpolate_config():
@@ -89,8 +93,8 @@ metadata_paginator:
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
-request_parameters_provider:
-  class_name: airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
+request_options_provider:
+  class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ options['name'] }}"
@@ -99,7 +103,7 @@ requester:
   authenticator:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
-  request_parameters_provider: "*ref(request_parameters_provider)"
+  request_parameters_provider: "*ref(request_options_provider)"
   retrier:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 retriever:
