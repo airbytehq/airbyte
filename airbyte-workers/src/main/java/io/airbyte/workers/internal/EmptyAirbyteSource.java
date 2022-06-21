@@ -39,8 +39,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamsToReset = new LinkedList<>();
   // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need
-  // to remove this variable and the associated
-  // checks
+  // to remove this variable and the associated checks
+  /**
+   * In the legacy version the config was empty. The new one has a populated config. This variable
+   * encapsulates whether we are in the legacy version or not.
+   */
   private boolean isResetBasedForConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
