@@ -158,6 +158,9 @@ public class AirbyteAcceptanceTestHelper {
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
+
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
     }
 
     if (IS_KUBE) {
@@ -230,10 +233,10 @@ public class AirbyteAcceptanceTestHelper {
       database.query(context -> context.execute(query.toString()));
     } else {
       PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-    }
 
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
+    }
   }
 
   public void cleanup() {
