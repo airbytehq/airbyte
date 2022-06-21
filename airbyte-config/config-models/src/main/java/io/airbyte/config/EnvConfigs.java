@@ -159,6 +159,7 @@ public class EnvConfigs implements Configs {
 
   private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
   private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -339,6 +340,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getVaultPrefix() {
     return getEnvOrDefault(VAULT_PREFIX, "");
+  }
+
+  @Override
+  public String getVaultToken() {
+    return getEnvOrDefault(VAULT_AUTH_TOKEN, "");
   }
 
   // Database

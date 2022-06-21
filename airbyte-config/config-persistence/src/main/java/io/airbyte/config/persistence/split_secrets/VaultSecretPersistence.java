@@ -20,14 +20,6 @@ final public class VaultSecretPersistence implements SecretPersistence {
   private final Vault vault;
   private final String pathPrefix;
 
-  public VaultSecretPersistence(final String address, final String prefix) {
-    this.vault = Exceptions.toRuntime(() -> getVaultClient(address));
-    this.pathPrefix = prefix;
-  }
-
-  /**
-   * Constructor for testing
-   */
   public VaultSecretPersistence(final String address, final String prefix, final String token) {
     this.vault = Exceptions.toRuntime(() -> getVaultClient(address, token));
     this.pathPrefix = prefix;
