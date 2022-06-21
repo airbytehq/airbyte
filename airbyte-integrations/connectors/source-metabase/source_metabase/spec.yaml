@@ -12,6 +12,8 @@ connectionSpecification:
       title: Metabase Instance API URL
       description: >-
         URL to your metabase instance API
+      examples:
+        - "http://localhost:3000/api/"
       order: 0
     username:
       type: string

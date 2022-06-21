@@ -54,6 +54,7 @@ class MetabaseAuth(HttpAuthenticator):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
+                self.logger.warn(f"Unable to connect to Metabase source due to {str(e)}, retrying with a new session_token...")
                 self.get_new_session_token(self.username, self.password)
                 response = requests.get(f"{self.api_url}user/current", headers=self.get_auth_header())
                 response.raise_for_status()
@@ -87,24 +88,24 @@ class MetabaseAuth(HttpAuthenticator):
 
 class SourceMetabase(AbstractSource):
     def __init__(self):
-        self.authenticator = None
+        self.session = None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        authenticator = None
+        session = None
         try:
-            authenticator = MetabaseAuth(logger, config)
-            return authenticator.has_valid_token(), None
+            session = MetabaseAuth(logger, config)
+            return session.has_valid_token(), None
         except Exception as e:
             return False, e
         finally:
-            if authenticator:
-                authenticator.close_session()
+            if session:
+                session.close_session()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        self.authenticator = MetabaseAuth(logging.getLogger("airbyte"), config)
-        if not self.authenticator.has_valid_token():
+        self.session = MetabaseAuth(logging.getLogger("airbyte"), config)
+        if not self.session.has_valid_token():
             raise ConnectionError("Failed to connect to source")
-        args = {"authenticator": self.authenticator, API_URL: config[API_URL]}
+        args = {"authenticator": self.session, API_URL: config[API_URL]}
         return [
             Activity(**args),
             Cards(**args),
@@ -128,5 +129,5 @@ class SourceMetabase(AbstractSource):
             self.close_session()
 
     def close_session(self):
-        if self.authenticator:
-            self.authenticator.close_session()
+        if self.session:
+            self.session.close_session()

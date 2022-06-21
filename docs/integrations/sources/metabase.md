@@ -68,4 +68,4 @@ If you are hosting your own metabase instance, you can configure this session du
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752) | New Source: Metabase |
+| 0.1.0 | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752) |  Initial (alpha) release |

@@ -15,31 +15,22 @@ class MetabaseStream(HttpStream, ABC):
         self.instance_api_url = instance_api_url
 
     primary_key = "id"
+    response_entity = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Override this method to define a pagination strategy.
-
-        The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
-
-        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
-        """
         return None
 
     @property
     def url_base(self) -> str:
         return self.instance_api_url
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json
+        if self.response_entity:
+            result = response_json.get(self.response_entity, [])
+        else:
+            result = response_json
+        yield from result
 
 
 class Activity(MetabaseStream):
@@ -63,16 +54,8 @@ class Dashboards(MetabaseStream):
 
 
 class Users(MetabaseStream):
+
+    response_entity = "data"
+
     def path(self, **kwargs) -> str:
         return "user"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield from response_json.get("data", [])
