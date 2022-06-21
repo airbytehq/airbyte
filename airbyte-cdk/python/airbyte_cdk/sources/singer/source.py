@@ -23,13 +23,13 @@ class ConfigContainer(Dict[str, Any]):
 
 
 class SingerSource(BaseSource[ConfigContainer, str, str]):
-    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
+    def configure(self, config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
         """
         Persist raw_config in temporary directory to run the Source job
         This can be overridden if extra temporary files need to be persisted in the temp dir
         """
         config_path = os.path.join(temp_dir, "config.json")
-        config = ConfigContainer(self.transform_config(raw_config), config_path)
+        config = ConfigContainer(self.transform_config(config), config_path)
         self.write_config(config, config_path)
         return config
 
@@ -81,29 +81,29 @@ class SingerSource(BaseSource[ConfigContainer, str, str]):
         )
         return catalogs
 
-    def check(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: ConfigContainer) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
-        return self.check_config(logger, config_container.config_path, config_container)
+        return self.check_config(logger, config.config_path, config)
 
-    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: ConfigContainer) -> AirbyteCatalog:
         """
         Implements the parent class discover method.
         """
-        return self._discover_internal(logger, config_container.config_path).airbyte_catalog
+        return self._discover_internal(logger, config.config_path).airbyte_catalog
 
     def read(
-        self, logger: logging.Logger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
+        self, logger: logging.Logger, config: ConfigContainer, catalog_path: str, state_path: str = None
     ) -> Iterable[AirbyteMessage]:
         """
         Implements the parent class read method.
         """
-        catalogs = self._discover_internal(logger, config_container.config_path)
+        catalogs = self._discover_internal(logger, config.config_path)
         masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
-        read_cmd = self.read_cmd(logger, config_container.config_path, selected_singer_catalog_path, state_path)
+        read_cmd = self.read_cmd(logger, config.config_path, selected_singer_catalog_path, state_path)
         return SingerHelper.read(logger, read_cmd)
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
@@ -162,8 +162,8 @@ class BaseSingerSource(SingerSource):
 
         return f"{self.tap_cmd} {cmd}"
 
-    def discover(self, logger: logging.Logger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
+    def discover(self, logger: logging.Logger, config: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config)
         if self.force_full_refresh:
             return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
         return catalog
