@@ -6,7 +6,7 @@ from pytest import fixture
 
 
 @fixture
-def test_config():
+def config():
     return {
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
