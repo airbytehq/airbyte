@@ -344,7 +344,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getVaultToken() {
-    return getEnvOrDefault(VAULT_AUTH_TOKEN, "");
+    return getEnv(VAULT_AUTH_TOKEN);
   }
 
   // Database
