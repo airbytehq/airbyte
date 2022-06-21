@@ -144,7 +144,16 @@ class Events(IncrementalAmplitudeStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
-        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        except zipfile.BadZipFile as e:
+            self.logger.exception(e)
+            self.logger.error(
+                f"Received an invalid zip file in response to URL: {response.request.url}."
+                f"The size of the response body is: {len(response.content)}"
+            )
+            return []
+
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):

@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import { Input } from "components";
 
+import { buildConnectionUpdate } from "core/domain/connection";
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
@@ -133,17 +134,11 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
     // Update only when the name is changed
     if (connection.name !== connectionName) {
       setLoading(true);
-      await updateConnection({
-        connectionId: connection.connectionId,
-        syncCatalog: connection.syncCatalog,
-        prefix: connection.prefix,
-        schedule: connection.schedule || null,
-        namespaceDefinition: connection.namespaceDefinition,
-        namespaceFormat: connection.namespaceFormat,
-        operations: connection.operations,
-        status: connection.status,
-        name: connectionName,
-      });
+      await updateConnection(
+        buildConnectionUpdate(connection, {
+          name: connectionName,
+        })
+      );
       setLoading(false);
     }
 

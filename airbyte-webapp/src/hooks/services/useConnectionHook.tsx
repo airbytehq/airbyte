@@ -28,6 +28,7 @@ export const connectionsKeys = {
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
+  getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
 
 export interface ValuesProps {
@@ -189,16 +190,16 @@ const useUpdateConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    (conn: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = conn.withRefreshedCatalog
-        ? { withRefreshedCatalog: conn.withRefreshedCatalog }
+    (connectionUpdate: WebBackendConnectionUpdate) => {
+      const withRefreshedCatalogCleaned = connectionUpdate.withRefreshedCatalog
+        ? { withRefreshedCatalog: connectionUpdate.withRefreshedCatalog }
         : null;
 
-      return service.update({ ...conn, ...withRefreshedCatalogCleaned });
+      return service.update({ ...connectionUpdate, ...withRefreshedCatalogCleaned });
     },
     {
-      onSuccess: (data) => {
-        queryClient.setQueryData(connectionsKeys.detail(data.connectionId), data);
+      onSuccess: (connection) => {
+        queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
       },
     }
   );
@@ -215,6 +216,12 @@ const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
 
+const useGetConnectionState = (connectionId: string) => {
+  const service = useConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.getState(connectionId), () => service.getState(connectionId));
+};
+
 export {
   useConnectionList,
   useGetConnection,
@@ -222,4 +229,5 @@ export {
   useCreateConnection,
   useDeleteConnection,
   invalidateConnectionsList,
+  useGetConnectionState,
 };
