@@ -1114,7 +1114,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     record_slice_key = ["repository", "full_name"]
 
     # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
-    re_run_period = 32
+    re_run_period = 32 # days
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
