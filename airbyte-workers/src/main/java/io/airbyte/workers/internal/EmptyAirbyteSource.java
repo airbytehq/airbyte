@@ -37,7 +37,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamsToReset = new LinkedList<>();
-  private boolean isResetBasedOnConfig;
+  private boolean isResetBasedForConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
 
@@ -52,7 +52,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
       // TODO: When the jobConfig is fully updated and tested, we can remove this extra check that makes
       // us compatible with running a reset with
       // a null config
-      isResetBasedOnConfig = false;
+      isResetBasedForConfig = false;
     } else {
       final ResetSourceConfiguration resetSourceConfiguration;
       try {
@@ -68,7 +68,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
         // TODO: This is done to be able to handle the transition period where we can have no stream being
         // pass to the configuration because the
         // logic of populating this list is not implemented
-        isResetBasedOnConfig = false;
+        isResetBasedForConfig = false;
       } else {
         stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState());
 
@@ -79,7 +79,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
           throw new IllegalStateException("Try to perform a partial reset on a legacy state");
         }
 
-        isResetBasedOnConfig = true;
+        isResetBasedForConfig = true;
       }
     }
     isStarted = true;
@@ -102,7 +102,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
       throw new IllegalStateException("The empty source has not been started.");
     }
 
-    if (isResetBasedOnConfig) {
+    if (isResetBasedForConfig) {
       if (stateWrapper.get().getStateType() == StateType.STREAM) {
         return emitStreamState();
       } else if (stateWrapper.get().getStateType() == StateType.GLOBAL) {
