@@ -4,10 +4,6 @@
 name: Terminate Zombie Build Instances
 
 on:
-  push:
-    branches:
-#      for testing
-      - toph_fixes_zombie_pipeline
   workflow_dispatch:
   schedule:
     - cron: "0 */1 * * *"
