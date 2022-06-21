@@ -84,7 +84,7 @@ public class StatePersistence {
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
     if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != state.getStateType()) {
-      throw new IOException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + state.getStateType() +
+      throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + state.getStateType() +
           "'. Migration of StateType need to go through an explicit reset.");
     }
 
@@ -221,14 +221,13 @@ public class StatePersistence {
    * @return the StateType of the records
    * @throws IOException If StateRecords have inconsistent types
    */
-  private io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(final UUID connectionId, final List<StateRecord> records)
-      throws IOException {
+  private io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(final UUID connectionId, final List<StateRecord> records) {
     final List<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types = records.stream().map(r -> r.type).distinct().toList();
     if (types.size() == 1) {
       return types.get(0);
     }
 
-    throw new IOException("Inconsistent StateTypes for connectionId " + connectionId +
+    throw new IllegalStateException("Inconsistent StateTypes for connectionId " + connectionId +
         " (" + String.join(", ", types.stream().map(io.airbyte.db.instance.configs.jooq.generated.enums.StateType::getLiteral).toList()) + ")");
   }
 

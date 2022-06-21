@@ -452,7 +452,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
     statePersistence.updateOrCreateState(connectionId, streamState);
 
-    Assertions.assertThrows(IOException.class, () -> {
+    Assertions.assertThrows(IllegalStateException.class, () -> {
       final StateWrapper globalState = new StateWrapper()
           .withStateType(StateType.GLOBAL)
           .withGlobal(new AirbyteStateMessage()
@@ -475,8 +475,8 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field("state"))
         .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
         .execute();
-    Assertions.assertThrows(IOException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
-    Assertions.assertThrows(IOException.class, () -> statePersistence.getCurrentState(connectionId));
+    Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
+    Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.getCurrentState(connectionId));
   }
 
   @BeforeEach
