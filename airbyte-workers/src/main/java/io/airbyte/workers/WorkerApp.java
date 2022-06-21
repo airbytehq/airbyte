@@ -42,6 +42,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_error_reporter.ErrorReportingClient;
+import io.airbyte.scheduler.persistence.job_error_reporter.ErrorReportingClientFactory;
 import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
@@ -443,8 +444,8 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final ErrorReportingClient client = ErrorReportingClient.getClient(configs.getErrorReportingStrategy());
-    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configRepository, configs.getAirbyteVersionOrWarning(), client);
+    final ErrorReportingClient errorReportingClient = ErrorReportingClientFactory.getClient(configs.getErrorReportingStrategy());
+    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configRepository, configs.getAirbyteVersionOrWarning(), errorReportingClient);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
     new WorkerApp(

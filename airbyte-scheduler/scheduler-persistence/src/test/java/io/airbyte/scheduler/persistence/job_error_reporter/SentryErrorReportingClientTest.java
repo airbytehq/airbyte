@@ -4,8 +4,9 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SentryErrorReportingClientTest {
 
@@ -19,6 +20,7 @@ public class SentryErrorReportingClientTest {
   @Test
   void testReport() {
     // TODO
+    Assertions.assertEquals(1, 1);
   }
 
 }

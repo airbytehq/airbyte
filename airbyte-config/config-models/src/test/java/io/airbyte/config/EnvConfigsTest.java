@@ -178,6 +178,27 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testErrorReportingStrategy() {
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, null);
+    assertEquals(Configs.ErrorReportingStrategy.LOGGING, config.getErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, "abc");
+    assertEquals(Configs.ErrorReportingStrategy.LOGGING, config.getErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, "logging");
+    assertEquals(Configs.ErrorReportingStrategy.LOGGING, config.getErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, "sentry");
+    assertEquals(Configs.ErrorReportingStrategy.SENTRY, config.getErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, "LOGGING");
+    assertEquals(Configs.ErrorReportingStrategy.LOGGING, config.getErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.ERROR_REPORTING_STRATEGY, "SENTRY");
+    assertEquals(Configs.ErrorReportingStrategy.SENTRY, config.getErrorReportingStrategy());
+  }
+
+  @Test
   void testDeploymentMode() {
     envMap.put(EnvConfigs.DEPLOYMENT_MODE, null);
     assertEquals(Configs.DeploymentMode.OSS, config.getDeploymentMode());
