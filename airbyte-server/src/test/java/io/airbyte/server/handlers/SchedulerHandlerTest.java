@@ -50,6 +50,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -76,6 +77,7 @@ import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,6 +116,8 @@ class SchedulerHandlerTest {
       .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+
+  private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("1");
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
@@ -603,7 +607,7 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testResetConnection() throws IOException {
+  void testResetConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
@@ -613,7 +617,11 @@ class SchedulerHandlerTest {
         .jobId(Optional.of(jobId))
         .build();
 
-    when(eventRunner.resetConnection(connectionId))
+    final List<StreamDescriptor> streamDescriptors = List.of(STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(connectionId))
+        .thenReturn(streamDescriptors);
+
+    when(eventRunner.resetConnection(connectionId, streamDescriptors))
         .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
@@ -621,7 +629,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(eventRunner).resetConnection(connectionId);
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
   }
 
   @Test
