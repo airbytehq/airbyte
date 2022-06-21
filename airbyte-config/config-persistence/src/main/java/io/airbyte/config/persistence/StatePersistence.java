@@ -202,7 +202,7 @@ public class StatePersistence {
   /**
    * Helper function to handle null or equal case for the optional strings
    *
-   * We need to have an explicit check for null values because NULL != "something" is NULL , not a boolean.
+   * We need to have an explicit check for null values because NULL != "str" is NULL, not a boolean.
    *
    * @param field the targeted field
    * @param value the value to check
