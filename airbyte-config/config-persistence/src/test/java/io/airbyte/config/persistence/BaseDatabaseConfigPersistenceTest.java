@@ -115,7 +115,6 @@ class BaseDatabaseConfigPersistenceTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-    container.getJdbcUrl()
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
   }
 
