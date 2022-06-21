@@ -24,7 +24,7 @@
   padding: 0 variables.$spacing-xl;
 
   div {
-    flex-grow: 1;
+    width: 100%;
 
     h2 {
       font-weight: 700;
@@ -33,6 +33,7 @@
       text-align: center;
       color: colors.$dark-blue-900;
       margin: variables.$spacing-m;
+      word-wrap: break-word;
     }
   }
 
