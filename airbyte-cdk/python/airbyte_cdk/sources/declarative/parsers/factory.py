@@ -5,16 +5,31 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping
+from typing import Any, Mapping, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
+from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
+from airbyte_cdk.sources.declarative.extractors.jq import JqExtractor
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 
 class_registry = {
     "jq": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
     "NextPageUrlPaginator": "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator",
     "TokenAuthenticator": "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator",
+}
+
+default_implementations_registry = {
+    Requester: HttpRequester,
+    Retriever: SimpleRetriever,
+    SchemaLoader: JsonSchema,
+    HttpExtractor: JqExtractor,
 }
 
 
@@ -34,11 +49,14 @@ class DeclarativeComponentFactory:
         return self.build(class_name, config, **kwargs)
 
     def build(self, class_name: str, config, **kwargs):
-        fqcn = class_name
-        split = fqcn.split(".")
-        module = ".".join(split[:-1])
-        class_name = split[-1]
-        class_ = getattr(importlib.import_module(module), class_name)
+        if isinstance(class_name, str):
+            fqcn = class_name
+            split = fqcn.split(".")
+            module = ".".join(split[:-1])
+            class_name = split[-1]
+            class_ = getattr(importlib.import_module(module), class_name)
+        else:
+            class_ = class_name
 
         # create components in options before propagating them
         if "options" in kwargs:
@@ -68,8 +86,12 @@ class DeclarativeComponentFactory:
             print(v)
             try:
                 t = k
-                print(f"t: {t}")
-                expected_type = parent_class.expected_type(k)
+                type_hints = get_type_hints(parent_class.__init__)
+                print(f"type_hints: {type_hints}")
+                interface = type_hints.get(t)
+                print(f"interface: {interface}")
+                expected_type = default_implementations_registry.get(interface)
+
                 print(f"expected_type for {k}: {expected_type}")
                 if expected_type:
                     v["class_name"] = expected_type

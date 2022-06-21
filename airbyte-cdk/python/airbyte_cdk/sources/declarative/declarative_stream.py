@@ -12,22 +12,15 @@ from airbyte_cdk.sources.streams.core import Stream
 
 
 class DeclarativeStream(Stream):
-    @classmethod
-    def expected_type(cls, name):
-        return {
-            "retriever": "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever",
-            "schema_loader": "airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema",
-        }.get(name)
-
     """
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
 
-    def __init__(self, name, schema_loader: SchemaLoader, retriever, cursor_field=None):
+    def __init__(self, name, schema_loader: SchemaLoader, retriever: Retriever, cursor_field=None):
         self._name = name
         self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
-        self._retriever: Retriever = retriever
+        self._retriever = retriever
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

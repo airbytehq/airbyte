@@ -18,20 +18,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
-    @classmethod
-    def expected_type(cls, name):
-        return {
-            "requester": "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester",
-            "extractor": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
-        }.get(name)
-
     def __init__(
         self,
         name,
         requester: Requester,
         paginator: Paginator,
         extractor: HttpExtractor,
-        stream_slicer: StreamSlicer = None,
+        stream_slicer: StreamSlicer = SingleSlice(),
         state: State = None,
     ):
         self._name = name
@@ -39,7 +32,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._extractor = extractor
         super().__init__(self._requester.get_authenticator())
-        self._iterator: StreamSlicer = stream_slicer or SingleSlice()
+        self._stream_slicer = stream_slicer
         state = state or DictState()
         self._state: State = state
         state.deep_copy()
@@ -250,7 +243,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # FIXME: this is not passing the cursor field because it is always known at init time
-        return self._iterator.stream_slices(sync_mode, stream_state)
+        return self._stream_slicer.stream_slices(sync_mode, stream_state)
 
     def get_state(self) -> MutableMapping[str, Any]:
         return self._state.get_stream_state()
