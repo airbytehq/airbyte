@@ -62,9 +62,10 @@ public class EmptyAirbyteSourceTest {
 
   @Test
   public void testLegacyWithWrongConfigFormat() throws Exception {
-    Assertions.assertThatThrownBy(() -> emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.jsonNode(
-        Map.of("what", "ever"))), null))
-        .isInstanceOf(IllegalArgumentException.class);
+    emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.jsonNode(
+        Map.of("not", "expected"))), null);
+
+    legacyStateResult();
   }
 
   @Test
