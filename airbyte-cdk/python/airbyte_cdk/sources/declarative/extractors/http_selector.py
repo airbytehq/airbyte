@@ -9,9 +9,9 @@ import requests
 from airbyte_cdk.sources.declarative.types import Record
 
 
-class HttpExtractor(ABC):
+class HttpSelector(ABC):
     @abstractmethod
-    def extract_records(
+    def select_records(
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
