@@ -86,12 +86,27 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
 @responses.activate
 @patch("time.sleep")
 def test_retry_after(time_mock):
+    first_request = True
+
+    def request_callback(request):
+        nonlocal first_request
+        if first_request:
+            first_request = False
+            return (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "")
+        return (HTTPStatus.OK, {}, '{"login": "airbytehq"}')
+
+    responses.add_callback(
+        responses.GET,
+        "https://api.github.com/orgs/airbytehq",
+        callback=request_callback,
+        content_type="application/json",
+    )
+
     stream = Organizations(organizations=["airbytehq"])
-    responses.add("GET", "https://api.github.com/orgs/airbytehq", json={"login": "airbytehq"}, headers={"Retry-After": "10"})
     read_full_refresh(stream)
-    assert time_mock.call_args[0][0] == 10
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
 
 
 @responses.activate
