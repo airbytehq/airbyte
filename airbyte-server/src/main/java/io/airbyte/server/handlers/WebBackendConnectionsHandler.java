@@ -220,15 +220,17 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
-    final Map<String, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
+    // We can't directly use s.getStream() as the key, because it contains a bunch of other fields
+    // so instead we just define a quick-and-dirty record class.
+    final Map<Stream, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
         .stream()
-        .collect(toMap(s -> s.getStream().getName(), s -> s));
+        .collect(toMap(s -> new Stream(s.getStream().getName(), s.getStream().getNamespace()), s -> s));
 
     final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
     for (final AirbyteStreamAndConfiguration s : discovered.getStreams()) {
       final AirbyteStream stream = s.getStream();
-      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getName());
+      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(new Stream(stream.getName(), stream.getNamespace()));
       final AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
@@ -326,11 +328,6 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
-  private UUID getWorkspaceIdForConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final UUID sourceId = connectionsHandler.getConnection(connectionId).getSourceId();
-    return getWorkspaceIdForSource(sourceId);
-  }
-
   private UUID getWorkspaceIdForSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId)).getWorkspaceId();
   }
@@ -410,6 +407,15 @@ public class WebBackendConnectionsHandler {
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
         .status(webBackendConnectionSearch.getStatus());
+  }
+
+  /**
+   * Equivalent to {@see io.airbyte.integrations.base.AirbyteStreamNameNamespacePair}. Intentionally
+   * not using that class because it doesn't make sense for airbyte-server to depend on
+   * base-java-integration.
+   */
+  private record Stream(String name, String namespace) {
+
   }
 
 }

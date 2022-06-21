@@ -68,7 +68,7 @@ For example, having a spreadsheet `Customers`, the connector would introduce a s
 ## Important highlights
 The Smartsheet Source is written to pull data from a single Smartsheet spreadsheet. Unlike Google Sheets, Smartsheets only allows one sheet per Smartsheet - so a given Airbyte connector instance can sync only one sheet at a time. To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
 
-**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-specification.md).
+**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-protocol.md).
 
 ## Data type map
 The data type mapping adopted by this connector is based on the Smartsheet [documentation](https://smartsheet-platform.github.io/api-docs/index.html?python#column-types).

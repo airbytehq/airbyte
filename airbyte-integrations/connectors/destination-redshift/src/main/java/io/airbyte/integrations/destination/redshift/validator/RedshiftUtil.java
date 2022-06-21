@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift.validator;
 
 import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
@@ -9,8 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public class RedshiftUtil {
 
-  private RedshiftUtil() {
-  }
+  private RedshiftUtil() {}
 
   // We check whether config located in root of node. (This check is done for Backward compatibility)
   public static JsonNode findS3Options(final JsonNode config) {
@@ -27,4 +30,5 @@ public class RedshiftUtil {
   private static boolean isNullOrEmpty(final JsonNode jsonNode) {
     return null == jsonNode || "".equals(jsonNode.asText());
   }
+
 }

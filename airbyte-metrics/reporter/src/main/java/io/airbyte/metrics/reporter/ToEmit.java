@@ -30,6 +30,10 @@ public enum ToEmit {
     final var runningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfRunningJobs);
     MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
   })),
+  NUM_ORPHAN_RUNNING_JOB(countMetricEmission(() -> {
+    final var orphanRunningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfOrphanRunningJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, orphanRunningJobs);
+  })),
   OLDEST_RUNNING_JOB_AGE_SECS(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
     MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
