@@ -8,6 +8,8 @@ import static io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitE
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.COLUMN_ID;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.COLUMN_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.STREAM_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitForSuccessfulJob;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitWhileJobHasStatus;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,12 +30,14 @@ import io.airbyte.test.utils.SchemaTableNamePair;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -56,6 +60,7 @@ public class BasicAcceptanceTests {
   private static final AirbyteAcceptanceTestHelper airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHelper(); // todo, init with api client
   private static AirbyteApiClient apiClient; // todo let users pass this in
   private static UUID workspaceId;
+  private static PostgreSQLContainer sourcePsql;
 
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
@@ -68,6 +73,7 @@ public class BasicAcceptanceTests {
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
     airbyteAcceptanceTestHelper.init(apiClient);
+    sourcePsql = airbyteAcceptanceTestHelper.getSourcePsql();
   }
 
   @AfterAll
@@ -76,7 +82,7 @@ public class BasicAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws SQLException, URISyntaxException, IOException {
     airbyteAcceptanceTestHelper.setup();
   }
 
@@ -270,8 +276,7 @@ public class BasicAcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of PENDING
-    final JobRead jobRead =
-        AirbyteAcceptanceTestHelper.waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
     assertEquals(JobStatus.RUNNING, jobRead.getStatus());
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
@@ -315,8 +320,7 @@ public class BasicAcceptanceTests {
   @Order(9)
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"),
-        airbyteAcceptanceTestHelper.getSourcePsql());
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
@@ -330,7 +334,7 @@ public class BasicAcceptanceTests {
     final UUID connectionId =
         airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(false);
   }
 
@@ -338,8 +342,7 @@ public class BasicAcceptanceTests {
   @Order(10)
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"),
-        airbyteAcceptanceTestHelper.getSourcePsql());
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
@@ -354,7 +357,7 @@ public class BasicAcceptanceTests {
         airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(false);
   }
 
@@ -379,7 +382,7 @@ public class BasicAcceptanceTests {
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
     airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(true);
 
@@ -396,7 +399,7 @@ public class BasicAcceptanceTests {
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
     airbyteAcceptanceTestHelper.assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
     airbyteAcceptanceTestHelper.assertNormalizedDestinationContains(expectedNormalizedRecords);
@@ -431,7 +434,7 @@ public class BasicAcceptanceTests {
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(false);
@@ -451,7 +454,7 @@ public class BasicAcceptanceTests {
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
     LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     airbyteAcceptanceTestHelper.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
@@ -460,7 +463,7 @@ public class BasicAcceptanceTests {
 
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
+    waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
         Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
@@ -472,7 +475,7 @@ public class BasicAcceptanceTests {
     LOGGER.info("Starting testIncrementalSync() sync 3");
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(false);
@@ -499,7 +502,7 @@ public class BasicAcceptanceTests {
         airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    AirbyteAcceptanceTestHelper.waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     // test normal deletion of connection
     LOGGER.info("Calling delete connection...");
@@ -706,10 +709,10 @@ public class BasicAcceptanceTests {
 
     // wait to get out of pending.
     final JobRead runningJob =
-        AirbyteAcceptanceTestHelper.waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+        waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
 
     // wait for job for max of 3 minutes, by which time the job attempt should have failed
-    AirbyteAcceptanceTestHelper.waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
 
     final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
     final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);

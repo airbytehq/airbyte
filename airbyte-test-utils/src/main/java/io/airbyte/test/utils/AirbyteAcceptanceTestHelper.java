@@ -21,6 +21,7 @@ import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
+import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
@@ -47,18 +48,25 @@ import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -91,6 +99,10 @@ public class AirbyteAcceptanceTestHelper {
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
+  private static final Charset UTF8 = StandardCharsets.UTF_8;
+  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
+  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
+  private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
       System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
@@ -104,17 +116,20 @@ public class AirbyteAcceptanceTestHelper {
   public static final String COLUMN_NAME = "name";
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
   private static final String SOURCE_USERNAME = "sourceusername";
-  private static final String SOURCE_PASSWORD = "hunter2";
+  public static final String SOURCE_PASSWORD = "hunter2";
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose these test
-   * containers are used.
+   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
+   * test containers are used. When we run these tests in GKE, we spawn a source and destination
+   * postgres database ane use them for testing.
    */
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer destinationPsql;
   private AirbyteTestContainer airbyteTestContainer;
-  private AirbyteApiClient apiClient; // todo let users pass this in
+  private AirbyteApiClient apiClient;
   private UUID workspaceId;
+
+  private KubernetesClient kubernetesClient = null;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
@@ -125,8 +140,8 @@ public class AirbyteAcceptanceTestHelper {
     return sourcePsql;
   }
 
-  public PostgreSQLContainer getDestinationPsql() {
-    return destinationPsql;
+  public KubernetesClient getKubernetesClient() {
+    return kubernetesClient;
   }
 
   public void removeConnection(final UUID connection) {
@@ -135,6 +150,20 @@ public class AirbyteAcceptanceTestHelper {
 
   @SuppressWarnings("UnstableApiUsage")
   public void init(final AirbyteApiClient apiClient) throws URISyntaxException, IOException, InterruptedException, ApiException {
+    if (IS_GKE && !IS_KUBE) {
+      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
+    }
+    if (!IS_GKE) {
+      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+          .withUsername(SOURCE_USERNAME)
+          .withPassword(SOURCE_PASSWORD);
+      sourcePsql.start();
+    }
+
+    if (IS_KUBE) {
+      kubernetesClient = new DefaultKubernetesClient();
+    }
+
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
@@ -180,29 +209,43 @@ public class AirbyteAcceptanceTestHelper {
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
 
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
+    if (!IS_GKE) {
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
+    }
   }
 
   public void stopDbAndContainers() {
-    sourcePsql.stop();
-    destinationPsql.stop();
+    if (!IS_GKE) {
+      sourcePsql.stop();
+      destinationPsql.stop();
+    }
 
     if (airbyteTestContainer != null) {
       airbyteTestContainer.stop();
     }
   }
 
-  public void setup() {
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
-
+  public void setup() throws SQLException, URISyntaxException, IOException {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
+
+    if (IS_GKE) {
+      // seed database.
+      final Database database = getSourceDatabase();
+      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final StringBuilder query = new StringBuilder();
+      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+        if (line != null && !line.isEmpty()) {
+          query.append(line);
+        }
+      }
+      database.query(context -> context.execute(query.toString()));
+    } else {
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+    }
   }
 
   public void cleanup() {
@@ -279,10 +322,16 @@ public class AirbyteAcceptanceTestHelper {
   }
 
   public Database getSourceDatabase() {
+    if (IS_KUBE && IS_GKE) {
+      return GKEPostgresConfig.getSourceDatabase();
+    }
     return getDatabase(sourcePsql);
   }
 
-  public Database getDestinationDatabase() {
+  private Database getDestinationDatabase() {
+    if (IS_KUBE && IS_GKE) {
+      return GKEPostgresConfig.getDestinationDatabase();
+    }
     return getDatabase(destinationPsql);
   }
 
@@ -471,30 +520,40 @@ public class AirbyteAcceptanceTestHelper {
   }
 
   public JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false);
+    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
   }
 
   public JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true);
+    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
   }
 
   public JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true);
+    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
   }
 
-  public JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
+  public JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
     try {
-      final Map<Object, Object> dbConfig = localConfig(psql, hiddenPassword, withSchema);
+      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
+          : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) {
+  public Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+      throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
-    if (IS_MAC) {
+    if (IS_KUBE) {
+      if (IS_MINIKUBE) {
+        // used with minikube driver=none instance
+        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      } else {
+        // used on a single node with docker driver
+        dbConfig.put("host", "host.docker.internal");
+      }
+    } else if (IS_MAC) {
       dbConfig.put("host", "host.docker.internal");
     } else {
       dbConfig.put("host", "localhost");
@@ -634,6 +693,19 @@ public class AirbyteAcceptanceTestHelper {
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     }
     return job;
+  }
+
+  @SuppressWarnings("BusyWait")
+  public static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
+      throws ApiException, InterruptedException {
+    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    int count = 0;
+    while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
+      LOGGER.info("fetching connection state. attempt: {}", count++);
+      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+      sleep(1000);
+    }
+    return connectionState;
   }
 
   public enum Type {

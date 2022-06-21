@@ -2,12 +2,12 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.test.acceptance;
+package io.airbyte.test.utils;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.test.acceptance.AdvancedAcceptanceTests.Type;
+import io.airbyte.test.utils.AirbyteAcceptanceTestHelper.Type;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.SQLDialect;
