@@ -49,8 +49,7 @@ public class MoreLists {
   }
 
   /**
-   * Add an item to a list in an immutable fashion. Copies provided list and adds the new item to the
-   * copy.
+   * Copies provided list and adds the new item to the copy.
    *
    * @param list list to copy and add to
    * @param toAdd item to add
