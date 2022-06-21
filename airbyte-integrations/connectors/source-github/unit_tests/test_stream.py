@@ -66,15 +66,18 @@ def test_internal_server_error_retry(time_mock):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_text", "expected_backoff_time"),
+    ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, "", 60),
+        (HTTPStatus.BAD_GATEWAY, {}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
 )
-def test_backoff_time(http_status, response_text, expected_backoff_time):
+@patch('time.time', return_value=1655804424.0)
+def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    response_mock.text = response_text
+    response_mock.headers = response_headers
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
