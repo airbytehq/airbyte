@@ -7,7 +7,6 @@ package io.airbyte.scheduler.persistence.job_error_reporter;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardWorkspace;
 import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

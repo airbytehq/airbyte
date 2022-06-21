@@ -33,9 +33,9 @@ public class JobErrorReporter {
   private final ErrorReportingClient errorReportingClient;
 
   public JobErrorReporter(
-      final ConfigRepository configRepository,
-      final String airbyteVersion,
-      final ErrorReportingClient errorReportingClient) {
+                          final ConfigRepository configRepository,
+                          final String airbyteVersion,
+                          final ErrorReportingClient errorReportingClient) {
 
     this.configRepository = configRepository;
     this.airbyteVersion = airbyteVersion;
@@ -82,4 +82,5 @@ public class JobErrorReporter {
       }
     }
   }
+
 }

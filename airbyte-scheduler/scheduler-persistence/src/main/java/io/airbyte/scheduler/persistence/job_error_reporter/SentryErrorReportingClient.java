@@ -32,8 +32,10 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
   }
 
   @Override
-  public void report(final StandardWorkspace workspace, final FailureReason failureReason, final String dockerImage,
-      final Map<String, String> metadata) {
+  public void report(final StandardWorkspace workspace,
+                     final FailureReason failureReason,
+                     final String dockerImage,
+                     final Map<String, String> metadata) {
     final SentryEvent event = new SentryEvent();
 
     // airbyte/source-xyz:1.2.0 -> source-xyz@1.2.0
@@ -81,4 +83,5 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
       LOGGER.info("SENT SENTRY EVENT: {}", eventId);
     });
   }
+
 }

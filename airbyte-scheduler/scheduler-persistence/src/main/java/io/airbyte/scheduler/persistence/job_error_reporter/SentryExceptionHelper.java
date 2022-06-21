@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import io.airbyte.commons.lang.Exceptions;
@@ -10,9 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SentryExceptionHelper {
+
   public static List<SentryException> buildSentryExceptions(final String stacktrace) {
     // Stack trace parsing should be done on a best-effort basis
-    // if we encounter something complex or an unsupported language, we'll fall back to message-based grouping instead
+    // if we encounter something complex or an unsupported language, we'll fall back to message-based
+    // grouping instead
     return Exceptions.swallowWithDefault(() -> {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
@@ -60,7 +66,8 @@ public class SentryExceptionHelper {
         final SentryException sentryException = new SentryException();
         sentryException.setStacktrace(stackTrace);
 
-        // The final part of our stack trace has the exception type and (optionally) a value (e.g. "RuntimeError: This is the value")
+        // The final part of our stack trace has the exception type and (optionally) a value (e.g.
+        // "RuntimeError: This is the value")
         final String remaining = exceptionStr.substring(lastMatchIdx);
         final String[] parts = remaining.split(": ", 2);
 
@@ -82,4 +89,5 @@ public class SentryExceptionHelper {
     // TODO
     return null;
   }
+
 }

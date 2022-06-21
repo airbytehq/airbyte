@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import static org.mockito.Mockito.mock;
@@ -91,8 +95,7 @@ public class JobErrorReporterTest {
         "failure_type", "system_error",
         "connector_definition_id", SOURCE_DEFINITION_ID.toString(),
         "connector_name", SOURCE_DEFINITION_NAME,
-        "connector_release_stage", SOURCE_RELEASE_STAGE.toString()
-    );
+        "connector_release_stage", SOURCE_RELEASE_STAGE.toString());
 
     final Map<String, String> expectedDestinationMetadata = Map.of(
         "connection_id", CONNECTION_ID.toString(),
@@ -101,8 +104,7 @@ public class JobErrorReporterTest {
         "failure_type", "system_error",
         "connector_definition_id", DESTINATION_DEFINITION_ID.toString(),
         "connector_name", DESTINATION_DEFINITION_NAME,
-        "connector_release_stage", DESTINATION_RELEASE_STAGE.toString()
-    );
+        "connector_release_stage", DESTINATION_RELEASE_STAGE.toString());
 
     Mockito.verify(errorReportingClient).report(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
     Mockito.verify(errorReportingClient).report(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE, expectedDestinationMetadata);

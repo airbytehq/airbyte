@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import io.airbyte.commons.resources.MoreResources;
@@ -11,6 +15,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class SentryExceptionHelperTest {
+
   @Test
   void testBuildPythonSentryExceptions() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_python_stacktrace.txt");
@@ -19,47 +24,40 @@ public class SentryExceptionHelperTest {
     Assertions.assertNotNull(exceptionList);
     Assertions.assertEquals(2, exceptionList.size());
 
-    assertExceptionContent(exceptionList.get(0), "requests.exceptions.HTTPError", "400 Client Error: Bad Request for url: https://airbyte.com", List.of(
-        Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 31,
-            "function", "read_records",
-            "context_line", "failing_method()"
-        ),
-        Map.of(
-            "abspath", "/airbyte/connector-errors/error.py",
-            "lineno", 36,
-            "function", "failing_method",
-            "context_line", "raise HTTPError(http_error_msg, response=self)"
-        )
-    ));
+    assertExceptionContent(exceptionList.get(0), "requests.exceptions.HTTPError", "400 Client Error: Bad Request for url: https://airbyte.com",
+        List.of(
+            Map.of(
+                "abspath", "/airbyte/connector-errors/error.py",
+                "lineno", 31,
+                "function", "read_records",
+                "context_line", "failing_method()"),
+            Map.of(
+                "abspath", "/airbyte/connector-errors/error.py",
+                "lineno", 36,
+                "function", "failing_method",
+                "context_line", "raise HTTPError(http_error_msg, response=self)")));
 
     assertExceptionContent(exceptionList.get(1), "RuntimeError", "My other error", List.of(
         Map.of(
             "abspath", "/airbyte/connector-errors/error.py",
             "lineno", 39,
             "function", "<module>",
-            "context_line", "main()"
-        ),
+            "context_line", "main()"),
         Map.of(
             "abspath", "/airbyte/connector-errors/error.py",
             "lineno", 13,
             "function", "main",
-            "context_line", "sync_mode(\"incremental\")"
-        ),
+            "context_line", "sync_mode(\"incremental\")"),
         Map.of(
             "abspath", "/airbyte/connector-errors/error.py",
             "lineno", 17,
             "function", "sync_mode",
-            "context_line", "incremental()"
-        ),
+            "context_line", "incremental()"),
         Map.of(
             "abspath", "/airbyte/connector-errors/error.py",
             "lineno", 33,
             "function", "incremental",
-            "context_line", "raise RuntimeError(\"My other error\") from err"
-        )
-    ));
+            "context_line", "raise RuntimeError(\"My other error\") from err")));
 
   }
 
@@ -94,4 +92,5 @@ public class SentryExceptionHelperTest {
       }
     }
   }
+
 }

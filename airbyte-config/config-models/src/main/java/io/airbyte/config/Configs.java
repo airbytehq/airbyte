@@ -421,10 +421,9 @@ public interface Configs {
   TrackingStrategy getTrackingStrategy();
 
   /**
-   *  Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
+   * Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
    */
   ErrorReportingStrategy getErrorReportingStrategy();
-
 
   // APPLICATIONS
   // Worker
