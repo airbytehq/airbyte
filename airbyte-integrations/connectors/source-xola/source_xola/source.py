@@ -268,6 +268,9 @@ class Users(IncrementalXolaStream):
         """
         raw_response = response.json()["data"]
         modified_response = []
+        
+        email_userid_name_dict  = {}
+        
         for data in raw_response:
             try:
                 organiserAdded = False
@@ -284,8 +287,10 @@ class Users(IncrementalXolaStream):
                 if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
                 if "phone" in data.keys(): user_resp["phone"] = data["phone"]
                 if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
-                
                 user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
+                
+                modified_response.append(user_resp)
+                email_userid_name_dict[user_resp["customerEmail"].lower()] = user_resp["user_id"] + "|" + user_resp["customerName"].lower()
                 
                 ## Fetch waivers information.
                 if "waivers" in data.keys():
@@ -318,23 +323,24 @@ class Users(IncrementalXolaStream):
                                 if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
                                 
                                 resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
-
-                                if (resp["customerEmail"], resp["customerName"]) == (user_resp["customerEmail"], user_resp["customerName"]):
-                                    if organiserAdded == False:
-                                        organiserAdded = True
-                                        if resp["user_id"].empty(): resp["user_id"] = user_resp["user_id"]
+                                
+                                lowerEmail = resp["customerEmail"].lower()
+                                lowerName = resp["customerName"].lower()
+                                
+                                if lowerEmail in email_userid_name_dict.keys():
+                                    
+                                    userid_name_array = email_userid_name_dict[lowerEmail].split("|", 1)
+                                    
+                                    user_id = userid_name_array[0]
+                                    name = userid_name_array[1]
+                                    
+                                    if name != lowerName:
+                                        resp["customerEmail"] = ""
+                                        if resp["user_id"] == user_id: resp["user_id"] = ""
                                         modified_response.append(resp)
-                                elif resp["customerEmail"] == user_resp["customerEmail"]:
-                                    # TODO - Need to finalize and update it.
-                                    resp["customerEmail"] = ""
-                                    if resp["user_id"] == user_resp["user_id"]: resp["user_id"] = ""
-                                    
-                                    modified_response.append(resp)
                                 else:
+                                    email_userid_name_dict[resp["customerEmail"].lower()] = resp["user_id"] + "|" + resp["customerName"].lower()
                                     modified_response.append(resp)
-                                    
-                if organiserAdded == False:
-                    modified_response.append(user_resp)
             except:
                 pass
         return modified_response
