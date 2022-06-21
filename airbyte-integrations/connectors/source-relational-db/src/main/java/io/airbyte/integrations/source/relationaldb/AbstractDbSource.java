@@ -35,6 +35,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -52,12 +55,37 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.sql.JDBCType.BIGINT;
+import static java.sql.JDBCType.BINARY;
+import static java.sql.JDBCType.BIT;
+import static java.sql.JDBCType.BLOB;
+import static java.sql.JDBCType.BOOLEAN;
+import static java.sql.JDBCType.CHAR;
+import static java.sql.JDBCType.DATE;
+import static java.sql.JDBCType.DECIMAL;
+import static java.sql.JDBCType.DOUBLE;
+import static java.sql.JDBCType.FLOAT;
+import static java.sql.JDBCType.INTEGER;
+import static java.sql.JDBCType.LONGVARCHAR;
+import static java.sql.JDBCType.NCHAR;
+import static java.sql.JDBCType.NUMERIC;
+import static java.sql.JDBCType.NVARCHAR;
+import static java.sql.JDBCType.REAL;
+import static java.sql.JDBCType.SMALLINT;
+import static java.sql.JDBCType.TIME;
+import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TINYINT;
+import static java.sql.JDBCType.VARCHAR;
+
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
  * NoSql DB source.
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
+
+  protected static final Set<JDBCType> allowedCursorTypes = Set.of(TIMESTAMP, TIME, DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER,
+          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
 
@@ -88,9 +116,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .map(tableInfo -> CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
                   tableInfo.getFields())
-              .withSupportedSyncModes(
-                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
+              .withSupportedSyncModes(tableInfo.getCursorFields().isEmpty() ?  Lists.newArrayList(SyncMode.FULL_REFRESH)
+                      : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys()))
+                  .withDefaultCursorField(tableInfo.getCursorFields()))
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
     } finally {
@@ -131,6 +160,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
+  }
+
+  protected List<String> getCursorFields(List<CommonField<DataType>> fields) {
+    return fields.stream()
+            .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
+            .map(field -> field.getName())
+            .collect(Collectors.toList());
   }
 
   protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {
@@ -343,7 +379,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections
               .emptyList());
 
-          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName()).fields(fields).primaryKeys(primaryKeys)
+          final List<String> cursorFields = getCursorFields(t.getFields());
+          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName()).fields(fields).primaryKeys(primaryKeys).cursorFields(cursorFields)
               .build();
         })
         .collect(Collectors.toList());
