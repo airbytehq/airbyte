@@ -251,6 +251,7 @@ public class AirbyteAcceptanceTestHelper {
   public void cleanup() {
     try {
       clearSourceDbData();
+      clearDestinationDbData();
 
       for (final UUID operationId : operationIds) {
         deleteOperation(operationId);
@@ -307,7 +308,6 @@ public class AirbyteAcceptanceTestHelper {
 
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
-
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDestinationDatabase();
@@ -628,8 +628,12 @@ public class AirbyteAcceptanceTestHelper {
     }
   }
 
-  public void deleteSource(final UUID sourceId) throws ApiException {
-    apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
+  public void clearDestinationDbData() throws SQLException {
+    final Database database = getDestinationDatabase();
+    final Set<SchemaTableNamePair> pairs = listAllTables(database);
+    for (final SchemaTableNamePair pair : pairs) {
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
+    }
   }
 
   public void disableConnection(final UUID connectionId) throws ApiException {
@@ -643,6 +647,10 @@ public class AirbyteAcceptanceTestHelper {
             .schedule(connection.getSchedule())
             .syncCatalog(connection.getSyncCatalog());
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
+  }
+
+  public void deleteSource(final UUID sourceId) throws ApiException {
+    apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
   }
 
   public void deleteDestination(final UUID destinationId) throws ApiException {
