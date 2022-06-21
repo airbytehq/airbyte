@@ -22,3 +22,6 @@ lists_stream:
 
 streams:
   - "*ref(lists_stream)"
+check:
+  stream_names:
+    - "lists"

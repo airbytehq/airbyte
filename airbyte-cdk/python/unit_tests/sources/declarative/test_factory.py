@@ -90,12 +90,6 @@ def test_full_config_with_defaults():
     assert stream._retriever._extractor._transform == ".result[]"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
 
-    # FIXME
-    # checker = factory.create_component(config["check"], input_config)()
-    # streams_to_check = checker._stream_names
-    # assert len(streams_to_check) == 1
-    # assert list(streams_to_check)[0] == "list_stream"
-
 
 def test_full_config():
     content = """

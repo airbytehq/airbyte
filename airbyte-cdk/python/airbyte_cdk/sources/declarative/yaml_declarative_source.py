@@ -17,12 +17,14 @@ class YamlDeclarativeSource(DeclarativeSource):
 
     @property
     def connection_checker(self):
-        return self._factory.create_component(self._source_config["check"], dict())(source=self)
+        check = self._source_config["check"]
+        if "class_name" not in check:
+            check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
+        return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_configs = self._source_config["streams"]
         for s in stream_configs:
-            # FIXME: this should be in the factory!
             if "class_name" not in s:
                 s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
         return [self._factory.create_component(stream_config, config)() for stream_config in self._source_config["streams"]]

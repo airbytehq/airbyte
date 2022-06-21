@@ -7,6 +7,8 @@ import copy
 import importlib
 from typing import Any, Mapping, get_type_hints
 
+from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
+from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.extractors.jq import JqExtractor
@@ -30,6 +32,7 @@ default_implementations_registry = {
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
     HttpExtractor: JqExtractor,
+    ConnectionChecker: CheckStream,
 }
 
 
@@ -101,7 +104,7 @@ class DeclarativeComponentFactory:
         elif isinstance(v, list):
             return [
                 self._create_subcomponent(
-                    sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config
+                    k, sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config, parent_class
                 )
                 for sub in v
             ]
