@@ -30,7 +30,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setErrorMessage("");
   };
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
 

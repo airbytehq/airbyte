@@ -59,9 +59,9 @@ export class UserService extends AirbyteRequestService {
   }
 
   public async invite(
-    users: {
+    users: Array<{
       email: string;
-    }[],
+    }>,
     workspaceId: string
   ): Promise<User[]> {
     return Promise.all(
