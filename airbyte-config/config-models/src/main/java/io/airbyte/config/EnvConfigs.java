@@ -51,6 +51,7 @@ public class EnvConfigs implements Configs {
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
   public static final String ERROR_REPORTING_STRATEGY = "ERROR_REPORTING_STRATEGY";
+  public static final String ERROR_REPORTING_SENTRY_DSN = "ERROR_REPORTING_SENTRY_DSN";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
@@ -762,6 +763,11 @@ public class EnvConfigs implements Configs {
         return ErrorReportingStrategy.LOGGING;
       }
     });
+  }
+
+  @Override
+  public String getErrorReportingSentryDSN() {
+    return getEnvOrDefault(ERROR_REPORTING_SENTRY_DSN, "");
   }
 
   // APPLICATIONS

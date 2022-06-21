@@ -23,10 +23,9 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingErrorReportingClient.class);
 
-  public SentryErrorReportingClient() {
-    LOGGER.info("INITIALIZE SENTRY");
+  public SentryErrorReportingClient(final String sentryDSN) {
     Sentry.init(options -> {
-      options.setDsn(""); // TODO get this from ENV / config
+      options.setDsn(sentryDSN);
       options.setEnableUncaughtExceptionHandler(false);
     });
   }

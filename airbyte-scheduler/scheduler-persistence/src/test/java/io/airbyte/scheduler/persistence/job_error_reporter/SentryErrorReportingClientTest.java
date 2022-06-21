@@ -14,7 +14,7 @@ public class SentryErrorReportingClientTest {
 
   @BeforeEach
   void setup() {
-    sentryErrorReportingClient = new SentryErrorReportingClient();
+    sentryErrorReportingClient = new SentryErrorReportingClient("");
   }
 
   @Test

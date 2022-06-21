@@ -425,6 +425,12 @@ public interface Configs {
    */
   ErrorReportingStrategy getErrorReportingStrategy();
 
+  /**
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
+   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   */
+  String getErrorReportingSentryDSN();
+
   // APPLICATIONS
   // Worker
   /**
