@@ -19,6 +19,13 @@
     "curly": "error",
     "css-modules/no-undef-class": [2, { "camelCase": true }],
     "css-modules/no-unused-class": [2, { "camelCase": true }],
+    "no-restricted-imports": [1, {
+      "paths": [
+        {
+          "name": "styled-components",
+          "message": "Please use CSS Modules instead of Styled Components"
+        }
+      ]}],
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "import/order": [
