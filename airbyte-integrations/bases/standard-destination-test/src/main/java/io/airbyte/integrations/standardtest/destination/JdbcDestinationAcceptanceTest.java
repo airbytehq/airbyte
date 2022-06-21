@@ -32,4 +32,5 @@ public abstract class JdbcDestinationAcceptanceTest extends DestinationAcceptanc
     return node;
   }
 
+
 }
