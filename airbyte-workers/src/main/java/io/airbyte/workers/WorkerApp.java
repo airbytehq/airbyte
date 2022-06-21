@@ -410,7 +410,9 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
     final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
-    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService);
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
+    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService, streamResetPersistence);
     TemporalUtils.configureTemporalNamespace(temporalService);
 
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
@@ -435,7 +437,6 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
     new WorkerApp(
         workspaceRoot,

@@ -29,6 +29,7 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -91,6 +92,7 @@ class TemporalClientTest {
   private Path logPath;
   private WorkflowServiceStubs workflowServiceStubs;
   private WorkflowServiceBlockingStub workflowServiceBlockingStub;
+  private StreamResetPersistence streamResetPersistence;
 
   @BeforeEach
   void setup() throws IOException {
@@ -103,7 +105,7 @@ class TemporalClientTest {
     workflowServiceBlockingStub = mock(WorkflowServiceBlockingStub.class);
     when(workflowServiceStubs.blockingStub()).thenReturn(workflowServiceBlockingStub);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
-    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs));
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence));
   }
 
   @Nested

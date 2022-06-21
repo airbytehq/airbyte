@@ -15,6 +15,8 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StreamDescriptor;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -31,10 +33,12 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -55,6 +59,7 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
   private final WorkflowServiceStubs service;
+  private final StreamResetPersistence streamResetPersistence;
 
   /**
    * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
@@ -65,10 +70,12 @@ public class TemporalClient {
 
   public TemporalClient(final WorkflowClient client,
                         final Path workspaceRoot,
-                        final WorkflowServiceStubs workflowServiceStubs) {
+                        final WorkflowServiceStubs workflowServiceStubs,
+                        final StreamResetPersistence streamResetPersistence) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
+    this.streamResetPersistence = streamResetPersistence;
   }
 
   /**
@@ -355,8 +362,17 @@ public class TemporalClient {
         Optional.of(jobId));
   }
 
-  public ManualOperationResult resetConnection(final UUID connectionId) {
+  public ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
     log.info("reset sync request");
+
+    try {
+      streamResetPersistence.createStreamResets(connectionId, streamsToReset);
+    } catch (final IOException e) {
+      log.error("Could not persist streams to reset.", e);
+      return new ManualOperationResult(
+          Optional.of(e.getMessage()),
+          Optional.empty());
+    }
 
     // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
     final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
@@ -397,8 +413,8 @@ public class TemporalClient {
    * The way to do so is to wait for the jobId to change, either to a new job id or the default id
    * that signal that a workflow is waiting to be submitted
    */
-  public ManualOperationResult synchronousResetConnection(final UUID connectionId) {
-    final ManualOperationResult resetResult = resetConnection(connectionId);
+  public ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    final ManualOperationResult resetResult = resetConnection(connectionId, streamsToReset);
     if (resetResult.getFailingReason().isPresent()) {
       return resetResult;
     }
