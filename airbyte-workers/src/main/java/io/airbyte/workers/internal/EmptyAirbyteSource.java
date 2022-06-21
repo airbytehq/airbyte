@@ -37,8 +37,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
   private final AtomicBoolean hasEmittedState;
   private final Queue<StreamDescriptor> streamsToReset = new LinkedList<>();
-  // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need to remove this variable and the associated
-  //  checks
+  // TODO: Once we are sure that the legacy way of transmitting the state is not use anymore, we need
+  // to remove this variable and the associated
+  // checks
   private boolean isResetBasedForConfig;
   private boolean isStarted = false;
   private Optional<StateWrapper> stateWrapper;
@@ -222,14 +223,13 @@ public class EmptyAirbyteSource implements AirbyteSource {
                 .withGlobal(globalState));
   }
 
-
   private ResetSourceConfiguration parseResetSourceConfigurationAndLogError(final WorkerSourceConfig workerSourceConfig) {
     try {
-      return
-          Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
+      return Jsons.object(workerSourceConfig.getSourceConnectionConfiguration(), ResetSourceConfiguration.class);
     } catch (final IllegalArgumentException e) {
       log.error("The configuration provided to the reset has an invalid format");
       throw e;
     }
   }
+
 }
