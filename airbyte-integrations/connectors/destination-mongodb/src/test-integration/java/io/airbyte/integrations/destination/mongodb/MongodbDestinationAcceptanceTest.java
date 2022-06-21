@@ -111,26 +111,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     container.close();
   }
 
-  @Override
-  protected TestDataComparator getTestDataComparator() {
-    return new AdvancedTestDataComparator();
-  }
-
-  @Override
-  protected boolean supportBasicDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportArrayDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportObjectDataTypeTest() {
-    return true;
-  }
-
   /* Helpers */
 
   private JsonNode getAuthTypeConfig() {

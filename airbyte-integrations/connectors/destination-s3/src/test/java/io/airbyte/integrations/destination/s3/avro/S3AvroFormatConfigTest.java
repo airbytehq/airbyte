@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3.avro;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
+import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -13,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
@@ -106,8 +106,7 @@ class S3AvroFormatConfigTest {
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
     final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"AVRO\",\n"
-        + "  \"part_size_mb\": 6\n"
+        + "  \"format_type\": \"AVRO\"\n"
         + "}"));
 
     final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
@@ -116,15 +115,13 @@ class S3AvroFormatConfigTest {
 
     final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("AVRO", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(s3DestinationConfig.getBucketName(), "objectKey", null)
-        .setPartSize(s3DestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 6, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
@@ -140,11 +137,10 @@ class S3AvroFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(s3DestinationConfig.getBucketName(), "objectKey", null)
-        .setPartSize(s3DestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
 }
