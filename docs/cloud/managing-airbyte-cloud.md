@@ -101,7 +101,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     
     Your payment is processed, and the Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
 
-    A receipt for your purchase is sent to your email. For an invoice, reach out to ar@airbyte.io.
+    A receipt for your purchase is sent to your email. [Email us](mailto:ar@airbyte.io) for an invoice.
 
     :::note 
     
