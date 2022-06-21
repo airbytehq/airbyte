@@ -47,7 +47,8 @@
               "minLength": 3
             },
             "value": {
-              "type": "number"
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
