@@ -4,9 +4,10 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:jest/recommended",
     "prettier",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:css-modules/recommended"
   ],
-  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports"],
+  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -16,6 +17,8 @@
   },
   "rules": {
     "curly": "error",
+    "css-modules/no-undef-class": ["warn", { "camelCase": true }],
+    "css-modules/no-unused-class": ["warn", { "camelCase": true }],
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "import/order": [
