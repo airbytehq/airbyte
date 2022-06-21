@@ -10,7 +10,7 @@ additionalProperties: false
 properties:
   name:
     description: Stream name
-    type: String
+    type: string
   namespace:
     description: Stream namespace
-    type: String
+    type: string

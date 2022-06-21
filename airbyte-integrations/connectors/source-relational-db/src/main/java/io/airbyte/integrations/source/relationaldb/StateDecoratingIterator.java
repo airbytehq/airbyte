@@ -43,12 +43,17 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     stateManager.setIsCdc(false);
   }
 
+  private String getCursorCandidate(final AirbyteMessage message) {
+    String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    return (cursorCandidate != null ? cursorCandidate.replaceAll("\u0000", "") : null);
+  }
+
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
-        final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+        final String cursorCandidate = getCursorCandidate(message);
         if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
           maxCursor = cursorCandidate;
         }

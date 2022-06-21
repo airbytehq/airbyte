@@ -15,5 +15,5 @@ select
 from {{ ref('some_stream_that_was_empty_ab1') }}
 -- some_stream_that_was_empty
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 
