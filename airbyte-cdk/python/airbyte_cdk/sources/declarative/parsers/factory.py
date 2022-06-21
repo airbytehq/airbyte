@@ -82,17 +82,13 @@ class DeclarativeComponentFactory:
             v["class_name"] = class_name
             return self.create_component(v, config)()
         elif isinstance(v, dict):
-            print(f"parent_class: {parent_class}")
-            print(v)
+            # FIXME: remove try/catch
             try:
                 t = k
                 type_hints = get_type_hints(parent_class.__init__)
-                print(f"type_hints: {type_hints}")
                 interface = type_hints.get(t)
-                print(f"interface: {interface}")
                 expected_type = default_implementations_registry.get(interface)
 
-                print(f"expected_type for {k}: {expected_type}")
                 if expected_type:
                     v["class_name"] = expected_type
                     v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))

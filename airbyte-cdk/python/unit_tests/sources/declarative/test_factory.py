@@ -48,6 +48,55 @@ authenticator:
     assert authenticator._tokens == ["verysecrettoken"]
 
 
+def test_full_config_with_defaults():
+    content = """
+    lists_stream:
+      class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+      options:
+        name: "lists"
+        url_base: "https://api.sendgrid.com"
+        schema_loader:
+          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+        retriever:
+          paginator:
+            type: "NextPageUrlPaginator"
+            next_page_url: "._metadata.next"
+            extract_from: "response"
+          requester:
+            path: "/v3/marketing/lists"
+            authenticator:
+              type: "TokenAuthenticator"
+              token: "{{ config.apikey }}"
+            request_parameters:
+              page_size: 10
+          extractor:
+            transform: ".result[]"
+            primary_key: id
+
+    streams:
+      - "*ref(lists_stream)"
+    """
+    config = parser.parse(content)
+
+    stream_config = config["lists_stream"]
+    stream = factory.create_component(stream_config, input_config)()
+    assert type(stream) == DeclarativeStream
+    assert stream.primary_key == "id"
+    assert stream.name == "lists"
+    assert type(stream._schema_loader) == JsonSchema
+    assert type(stream._retriever) == SimpleRetriever
+    assert stream._retriever._requester._method == HttpMethod.GET
+    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._extractor._transform == ".result[]"
+    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+
+    # FIXME
+    # checker = factory.create_component(config["check"], input_config)()
+    # streams_to_check = checker._stream_names
+    # assert len(streams_to_check) == 1
+    # assert list(streams_to_check)[0] == "list_stream"
+
+
 def test_full_config():
     content = """
 decoder:

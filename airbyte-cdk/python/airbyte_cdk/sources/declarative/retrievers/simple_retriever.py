@@ -202,7 +202,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._extractor.get_primary_id()
+        return self._extractor.get_primary_key()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
