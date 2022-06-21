@@ -30,7 +30,7 @@ export const Icon = styled.div`
 
 const SidebarPopout: React.FC<{
   children: (props: { onOpen: () => void }) => React.ReactNode;
-  options: { value: string; label?: React.ReactNode }[];
+  options: Array<{ value: string; label?: React.ReactNode }>;
 }> = ({ children, options }) => {
   const config = useConfig();
 

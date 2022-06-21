@@ -64,7 +64,7 @@ export function getEntityTableData<
       enabled: true,
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
-      connectEntities: connectEntities,
+      connectEntities,
       connectorIcon: definition?.icon,
     };
   });
