@@ -53,7 +53,7 @@ const ConnectorName = styled.div`
   word-wrap: break-word;
 `;
 
-function ConnectorCard(props: Props) {
+const ConnectorCard = (props: Props) => {
   const { connectionName, connectorName, icon, releaseStage } = props;
 
   return (
@@ -68,6 +68,6 @@ function ConnectorCard(props: Props) {
       </Details>
     </MainComponent>
   );
-}
+};
 
 export default ConnectorCard;

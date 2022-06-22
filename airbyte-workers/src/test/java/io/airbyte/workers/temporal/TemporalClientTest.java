@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -92,7 +91,6 @@ class TemporalClientTest {
   private Path logPath;
   private WorkflowServiceStubs workflowServiceStubs;
   private WorkflowServiceBlockingStub workflowServiceBlockingStub;
-  private Configs configs;
 
   @BeforeEach
   void setup() throws IOException {
@@ -105,7 +103,7 @@ class TemporalClientTest {
     workflowServiceBlockingStub = mock(WorkflowServiceBlockingStub.class);
     when(workflowServiceStubs.blockingStub()).thenReturn(workflowServiceBlockingStub);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
-    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs));
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs));
   }
 
   @Nested

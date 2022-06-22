@@ -22,12 +22,10 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -175,7 +173,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected ArrayList<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(ConfiguredAirbyteStream streamWithSpaces) {
+  protected ArrayList<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(final ConfiguredAirbyteStream streamWithSpaces) {
     final AirbyteMessage firstMessage = getTestMessages().get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
@@ -200,7 +198,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(String streamName2) {
+  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -217,7 +215,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(String streamName2) {
+  protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -233,7 +231,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(ConfiguredAirbyteStream streamForTableWithSpaces) {
+  protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -410,7 +408,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
@@ -430,17 +428,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
                     COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
-    expectedMessages.add(new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
-                .withCdc(false)
-                .withStreams(Lists.newArrayList(new DbStreamState()
-                    .withStreamName(streamName)
-                    .withStreamNamespace(namespace)
-                    .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+    final DbStreamState state = new DbStreamState()
+        .withStreamName(streamName)
+        .withStreamNamespace(namespace)
+        .withCursorField(ImmutableList.of(COL_ID))
+        .withCursor("5");
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
 }
