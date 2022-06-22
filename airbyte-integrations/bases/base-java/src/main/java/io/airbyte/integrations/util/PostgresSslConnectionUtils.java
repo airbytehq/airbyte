@@ -12,10 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresSslConnectionUtils {
 
-  private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSslConnectionUtils.class);
+  private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(10);
   private static final String CA_CERTIFICATE = "ca.crt";
   private static final String CLIENT_CERTIFICATE = "client.crt";
   private static final String CLIENT_KEY = "client.key";
@@ -40,14 +43,17 @@ public class PostgresSslConnectionUtils {
     final Map<String, String> additionalParameters = new HashMap<>();
     if (!encryption.isNull()) {
       final var method = encryption.get(PARAM_MODE).asText();
+      String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
+      var keyStorePassword = KEY_STORE_PASS;
+      if (!sslPassword.isEmpty()) {
+        keyStorePassword = sslPassword;
+      }
       switch (method) {
         case VERIFY_CA -> {
-          final var clientKeyPassword = getKeyStorePassword(encryption.get(PARAM_CLIENT_KEY_PASSWORD));
-          additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, clientKeyPassword));
+          additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, keyStorePassword));
         }
         case VERIFY_FULL -> {
-          final var clientKeyPassword = getKeyStorePassword(encryption.get(PARAM_CLIENT_KEY_PASSWORD));
-          additionalParameters.putAll(obtainConnectionFullOptions(encryption, method, clientKeyPassword));
+          additionalParameters.putAll(obtainConnectionFullOptions(encryption, method, keyStorePassword));
         }
         default -> {
           additionalParameters.put(PARAM_SSL, TRUE_STRING_VALUE);
@@ -141,14 +147,6 @@ public class PostgresSslConnectionUtils {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
-  }
-
-  private static String getKeyStorePassword(final JsonNode sslMode) {
-    var keyStorePassword = KEY_STORE_PASS;
-    if (!sslMode.isNull() || !sslMode.isEmpty()) {
-      keyStorePassword = sslMode.asText();
-    }
-    return keyStorePassword;
   }
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
