@@ -315,7 +315,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final JsonNode state = stateAfterFirstBatch.get(0).getData();
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
@@ -411,4 +411,5 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "GLA-random")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "A 220-random")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "E 350-random")));
+
 }

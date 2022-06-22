@@ -92,6 +92,7 @@ This source is capable of syncing the following tables and their data:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.22` | 2022-06-15 | [\#13633](https://github.com/airbytehq/airbyte/pull/13633) | Fix - handle start date for financial stream                           |
 | `0.2.21` | 2022-06-01 | [\#13364](https://github.com/airbytehq/airbyte/pull/13364) | Add financial streams                                                  |
 | `0.2.20` | 2022-05-30 | [\#13059](https://github.com/airbytehq/airbyte/pull/13059) | Add replication end date to config                                     |
 | `0.2.19` | 2022-05-24 | [\#13119](https://github.com/airbytehq/airbyte/pull/13119) | Add OAuth2.0 support                                                   |
