@@ -142,13 +142,14 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage s2 = AirbyteMessageUtils.createStreamStateMessage(s2StreamName, s2Value);
 
     messageTracker.acceptFromSource(s1);
-    messageTracker.acceptFromDestination(s2);
+    messageTracker.acceptFromSource(s2);
+    messageTracker.acceptFromDestination(s1);
 
-    final AirbyteMessage sourceExpected = AirbyteMessageUtils.createStreamStateMessage(s1StreamName, s1Value);
+    final AirbyteMessage sourceExpected = AirbyteMessageUtils.createStreamStateMessage(s2StreamName, s2Value);
     assertTrue(messageTracker.getSourceOutputState().isPresent());
     assertEquals(new State().withState(Jsons.jsonNode(List.of(sourceExpected.getState()))), messageTracker.getSourceOutputState().get());
 
-    final AirbyteMessage destinationExpected = AirbyteMessageUtils.createStreamStateMessage(s2StreamName, s2Value);
+    final AirbyteMessage destinationExpected = AirbyteMessageUtils.createStreamStateMessage(s1StreamName, s1Value);
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
     assertEquals(new State().withState(Jsons.jsonNode(List.of(destinationExpected.getState()))), messageTracker.getDestinationOutputState().get());
   }

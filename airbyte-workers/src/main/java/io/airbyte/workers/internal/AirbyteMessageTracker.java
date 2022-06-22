@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -128,10 +129,13 @@ public class AirbyteMessageTracker implements MessageTracker {
    * @param outputState
    * @return
    */
-  private AirbyteStateMessage saveStateOutput(final AirbyteMessage stateMessage, final AtomicReference<State> outputState) {
+  private AirbyteStateMessage saveStateOutput(final AirbyteMessage stateMessage,
+                                              final AtomicReference<State> outputState,
+                                              final Runnable markState,
+                                              final Supplier<Queue<AirbyteMessage>> stateSupplier) {
     stateLifecycleManager.addState(stateMessage);
-    stateLifecycleManager.markPendingAsFlushed();
-    final Queue<AirbyteMessage> states = stateLifecycleManager.listFlushed();
+    markState.run();
+    final Queue<AirbyteMessage> states = stateSupplier.get();
     AirbyteStateMessage latestState = stateMessage.getState();
     while (!states.isEmpty()) {
       final AirbyteStateMessage airbyteStateMessage = states.poll().getState();
@@ -146,7 +150,6 @@ public class AirbyteMessageTracker implements MessageTracker {
       }
       totalEmittedStateMessages.incrementAndGet();
     }
-    stateLifecycleManager.markFlushedAsCommitted();
 
     return latestState;
   }
@@ -158,7 +161,10 @@ public class AirbyteMessageTracker implements MessageTracker {
    * correctly.
    */
   private void handleSourceEmittedState(final AirbyteMessage airbyteMessage) {
-    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage, sourceOutputState);
+    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage,
+        sourceOutputState,
+        () -> stateLifecycleManager.markPendingAsFlushed(),
+        () -> stateLifecycleManager.listFlushed());
     final int stateHash = getStateHashCode(latestState);
     try {
       if (!unreliableCommittedCounts) {
@@ -178,7 +184,10 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteMessage airbyteMessage) {
-    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage, destinationOutputState);
+    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage,
+        destinationOutputState,
+        () -> stateLifecycleManager.markFlushedAsCommitted(),
+        () -> stateLifecycleManager.listCommitted());
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.commitStateHash(getStateHashCode(latestState));
