@@ -14,7 +14,6 @@ import vcr
 import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
@@ -287,9 +286,7 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
-        AirbyteSentry.add_breadcrumb(message=f"Issue {request.url}", data=request_kwargs)
-        with AirbyteSentry.start_transaction_span(op="_send", description=request.url):
-            response: requests.Response = self._session.send(request, **request_kwargs)
+        response: requests.Response = self._session.send(request, **request_kwargs)
 
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
@@ -333,12 +330,10 @@ class HttpStream(Stream, ABC):
         """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
-        AirbyteSentry.set_context("request", {"url": request.url, "headers": request.headers, "args": request_kwargs})
 
-        with AirbyteSentry.start_transaction_span(op="_send_request"):
-            user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-            backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
-            return backoff_handler(user_backoff_handler)(request, request_kwargs)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
         """
@@ -399,38 +394,35 @@ class HttpStream(Stream, ABC):
         pagination_complete = False
 
         next_page_token = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                request_headers = self.request_headers(
-                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-                )
-                request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                )
-                request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        while not pagination_complete:
+            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            request = self._create_prepared_request(
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            )
+            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-                if self.use_cache:
-                    # use context manager to handle and store cassette metadata
-                    with self.cache_file as cass:
-                        self.cassete = cass
-                        # vcr tries to find records based on the request, if such records exist, return from cache file
-                        # else make a request and save record in cache file
-                        response = self._send_request(request, request_kwargs)
-
-                else:
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
                     response = self._send_request(request, request_kwargs)
-                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
+            else:
+                response = self._send_request(request, request_kwargs)
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class HttpSubStream(HttpStream, ABC):
