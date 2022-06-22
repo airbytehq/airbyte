@@ -196,7 +196,7 @@ jobs:
           body: |
             <br>
 
-            | Connector | Published | Definitions generated |
+            | Connector | Did it publish? | Were definitions generated? |
       - name: Create table separator
         uses: peter-evans/create-or-update-comment@v1
         with:
@@ -373,7 +373,7 @@ jobs:
     needs:
       - start-publish-image-runner-0 # required to get output from the start-runner job
       - publish-image # required to wait when the main job is done
-    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    runs-on: ubuntu-latest
     steps:
       - name: Add hint for manual seed definition update
         uses: peter-evans/create-or-update-comment@v1
