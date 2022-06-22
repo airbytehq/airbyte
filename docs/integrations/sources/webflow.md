@@ -29,3 +29,8 @@ After retrieving your `site id`, you can create a file `secrets/config.json` con
 (Note that any directory named `secrets` is git-ignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information in this folder).
 
 See `integration_tests/sample_config.json` for a sample config file that you can use as a template for entering in your `site id` and your `Webflow API Key`. 
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |
+
