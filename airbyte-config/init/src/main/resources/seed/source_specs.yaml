@@ -9248,7 +9248,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.4"
+- dockerImage: "airbyte/source-twilio:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
@@ -9266,11 +9266,13 @@
           description: "Twilio account SID"
           airbyte_secret: true
           type: "string"
+          order: 1
         auth_token:
           title: "Auth Token"
           description: "Twilio Auth Token."
           airbyte_secret: true
           type: "string"
+          order: 2
         start_date:
           title: "Replication Start Date"
           description: "UTC date and time in the format 2020-10-01T00:00:00Z. Any\
@@ -9279,6 +9281,15 @@
           examples:
           - "2020-10-01T00:00:00Z"
           type: "string"
+          order: 3
+        lookback_window:
+          title: "Lookback window"
+          description: "How far into the past to look for records. (in minutes)"
+          examples:
+          - 60
+          default: 0
+          type: "integer"
+          order: 4
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
