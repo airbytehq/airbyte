@@ -26,8 +26,8 @@ class HttpRequester(Requester):
         self,
         *,
         name: str,
-        url_base: [str, InterpolatedString],
-        path: [str, InterpolatedString],
+        url_base: Union[str, InterpolatedString],
+        path: Union[str, InterpolatedString],
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_parameters_provider: Union[RequestParameterProvider, Mapping[str, Any]] = None,
         request_headers_provider: RequestHeaderProvider = None,
@@ -35,8 +35,6 @@ class HttpRequester(Requester):
         retrier: Retrier = None,
         config: Config,
     ):
-        if retrier is None:
-            retrier = DefaultRetrier()
         if request_parameters_provider is None:
             request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_parameters={})
         elif isinstance(request_parameters_provider, dict):
@@ -60,7 +58,7 @@ class HttpRequester(Requester):
         self._method = http_method
         self._request_parameters_provider = request_parameters_provider
         self._request_headers_provider = request_headers_provider
-        self._retrier = retrier
+        self._retrier = retrier or DefaultRetrier()
         self._config = config
 
     def request_params(

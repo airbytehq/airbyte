@@ -17,13 +17,11 @@ class JelloExtractor(HttpExtractor):
     default_transform = "."
 
     def __init__(self, transform: str, decoder: Decoder = None, config=None, kwargs=None):
-        if kwargs is None:
-            kwargs = dict()
         self._interpolator = JinjaInterpolation()
         self._transform = transform
-        self._config = config
-        self._kwargs = kwargs
         self._decoder = decoder or JsonDecoder()
+        self._config = config
+        self._kwargs = kwargs or dict()
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self._decoder.decode(response)

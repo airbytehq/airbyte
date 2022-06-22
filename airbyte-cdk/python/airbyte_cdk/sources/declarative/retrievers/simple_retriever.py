@@ -26,14 +26,14 @@ class SimpleRetriever(Retriever, HttpStream):
         paginator: Paginator,
         extractor: HttpExtractor,
         stream_slicer: StreamSlicer = SingleSlice,
-        state: State = None,
+        state: Optional[State] = None,
     ):
         self._name = name
         self._primary_key = primary_key
         self._paginator = paginator
         self._requester = requester
+        super().__init__(requester.get_authenticator())
         self._extractor = extractor
-        super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = stream_slicer
         self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
