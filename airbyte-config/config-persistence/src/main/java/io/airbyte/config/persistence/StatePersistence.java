@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.STATE;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
@@ -179,7 +180,7 @@ public class StatePersistence {
                 streamName,
                 namespace,
                 jsonbState,
-                convertStateType(stateType))
+                Enums.convertTo(stateType, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.class))
             .execute();
 
       } else {
@@ -310,15 +311,6 @@ public class StatePersistence {
         record.get(STATE.STREAM_NAME, String.class),
         record.get(STATE.NAMESPACE, String.class),
         Jsons.deserialize(record.get(STATE.STATE_).data()));
-  }
-
-  private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType convertStateType(final StateType stateType) {
-    return switch (stateType) {
-      case LEGACY -> io.airbyte.db.instance.configs.jooq.generated.enums.StateType.LEGACY;
-      case GLOBAL -> io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL;
-      case STREAM -> io.airbyte.db.instance.configs.jooq.generated.enums.StateType.STREAM;
-      default -> throw new RuntimeException("Unsupported StateType: " + stateType);
-    };
   }
 
   private record StateRecord(
