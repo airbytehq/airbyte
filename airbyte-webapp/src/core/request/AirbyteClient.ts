@@ -374,12 +374,12 @@ export interface DbMigrationReadList {
 /**
  * optional resource requirements to run workers (blank for unbounded allocations)
  */
-export type ResourceRequirements = {
+export interface ResourceRequirements {
   cpu_request?: string;
   cpu_limit?: string;
   memory_request?: string;
   memory_limit?: string;
-} | null;
+}
 
 /**
  * enum that describes the different types of jobs that the platform runs.
@@ -527,18 +527,18 @@ export interface AttemptFailureReason {
   timestamp: number;
 }
 
-export type AttemptFailureSummary = {
+export interface AttemptFailureSummary {
   failures: AttemptFailureReason[];
   /** True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown. */
   partialSuccess?: boolean;
-} | null;
+}
 
-export type AttemptStats = {
+export interface AttemptStats {
   recordsEmitted?: number;
   bytesEmitted?: number;
   stateMessagesEmitted?: number;
   recordsCommitted?: number;
-} | null;
+}
 
 export interface AttemptStreamStats {
   streamName: string;
@@ -658,13 +658,13 @@ export interface AirbyteStream {
   jsonSchema?: StreamJsonSchema;
   supportedSyncModes?: SyncMode[];
   /** If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup. */
-  sourceDefinedCursor?: boolean | null;
+  sourceDefinedCursor?: boolean;
   /** Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves. */
   defaultCursorField?: string[];
   /** If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves. */
   sourceDefinedPrimaryKey?: string[][];
   /** Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to. */
-  namespace?: string | null;
+  namespace?: string;
 }
 
 /**
@@ -710,12 +710,12 @@ export interface CheckOperationRead {
   message?: string;
 }
 
-export type OperatorDbt = {
+export interface OperatorDbt {
   gitRepoUrl: string;
   gitRepoBranch?: string;
   dockerImage?: string;
   dbtArguments?: string;
-} | null;
+}
 
 export type OperatorNormalizationOption = typeof OperatorNormalizationOption[keyof typeof OperatorNormalizationOption];
 
@@ -797,10 +797,10 @@ export const ConnectionScheduleTimeUnit = {
 /**
  * if null, then no schedule is set.
  */
-export type ConnectionSchedule = {
+export interface ConnectionSchedule {
   units: number;
   timeUnit: ConnectionScheduleTimeUnit;
-} | null;
+}
 
 /**
  * Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
@@ -871,7 +871,7 @@ export interface ConnectionCreate {
   schedule?: ConnectionSchedule;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
-  sourceCatalogId?: string | null;
+  sourceCatalogId?: string;
 }
 
 export interface DbMigrationRequestBody {
@@ -910,7 +910,7 @@ export interface ConnectionUpdate {
   schedule?: ConnectionSchedule;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
-  sourceCatalogId?: string | null;
+  sourceCatalogId?: string;
 }
 
 export interface WebBackendConnectionRequestBody {
@@ -1010,7 +1010,7 @@ export interface ConnectionRead {
   schedule?: ConnectionSchedule;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
-  sourceCatalogId?: string | null;
+  sourceCatalogId?: string;
 }
 
 export interface DestinationIdRequestBody {
@@ -1342,7 +1342,9 @@ export const NotificationType = {
   customerio: "customerio",
 } as const;
 
-export type CustomerioNotificationConfiguration = { [key: string]: any };
+export interface CustomerioNotificationConfiguration {
+  [key: string]: any;
+}
 
 export interface SlackNotificationConfiguration {
   webhook: string;
