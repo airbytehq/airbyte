@@ -7,6 +7,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
     InterpolatedRequestParameterProvider,
 )
@@ -206,8 +207,8 @@ def test_full_config_with_defaults():
         retriever:
           paginator:
             type: "NextPageUrlPaginator"
-            next_page_url: "._metadata.next"
-            extract_from: "response"
+            next_page_token_template:
+                next_page_token: "{{ decoded_response.metadata.next}}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -233,3 +234,8 @@ def test_full_config_with_defaults():
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._extractor._transform == ".result[]"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
+    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
+        "next_page_token": "{{ decoded_response.metadata.next}}"
+    }

@@ -25,7 +25,7 @@ class SimpleRetriever(Retriever, HttpStream):
         requester: Requester,
         paginator: Paginator,
         extractor: HttpExtractor,
-        stream_slicer: StreamSlicer = SingleSlice,
+        stream_slicer: StreamSlicer = SingleSlice(),
         state: Optional[State] = None,
     ):
         self._name = name

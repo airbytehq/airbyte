@@ -39,4 +39,6 @@ def test_no_next_page_found():
 
 
 def create_paginator(template):
-    return NextPageUrlPaginator("https://airbyte.io/", InterpolatedPaginator(template, decoder, config))
+    return NextPageUrlPaginator(
+        "https://airbyte.io/", InterpolatedPaginator(next_page_token_template=template, decoder=decoder, config=config)
+    )
