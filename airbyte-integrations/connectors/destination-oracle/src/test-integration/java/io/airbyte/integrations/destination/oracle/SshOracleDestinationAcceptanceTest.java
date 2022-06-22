@@ -34,6 +34,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
 
+  private static final Network network = Network.newNetwork();
+
   private OracleContainer db;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
@@ -53,7 +55,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -143,7 +145,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void startTestContainers() {
-    sshBastionContainer.initAndStartBastion();
+    sshBastionContainer.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
@@ -152,7 +154,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
-        .withNetwork(sshBastionContainer.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 

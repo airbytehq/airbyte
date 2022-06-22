@@ -109,6 +109,12 @@ public class EnvConfigs implements Configs {
   public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
   public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
 
+  private static final String TEMPORAL_CLOUD_ENABLED = "TEMPORAL_CLOUD_ENABLED";
+  private static final String TEMPORAL_CLOUD_HOST = "TEMPORAL_CLOUD_HOST";
+  private static final String TEMPORAL_CLOUD_NAMESPACE = "TEMPORAL_CLOUD_NAMESPACE";
+  private static final String TEMPORAL_CLOUD_CLIENT_CERT = "TEMPORAL_CLOUD_CLIENT_CERT";
+  private static final String TEMPORAL_CLOUD_CLIENT_KEY = "TEMPORAL_CLOUD_CLIENT_KEY";
+
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
@@ -388,6 +394,32 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean runDatabaseMigrationOnStartup() {
     return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
+  }
+
+  // Temporal Cloud
+  @Override
+  public boolean temporalCloudEnabled() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_ENABLED, false);
+  }
+
+  @Override
+  public String getTemporalCloudHost() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_HOST, "");
+  }
+
+  @Override
+  public String getTemporalCloudNamespace() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_NAMESPACE, "");
+  }
+
+  @Override
+  public String getTemporalCloudClientCert() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_CERT, "");
+  }
+
+  @Override
+  public String getTemporalCloudClientKey() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_KEY, "");
   }
 
   // Airbyte Services

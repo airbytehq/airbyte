@@ -43,7 +43,7 @@ const Img = styled.img`
 
 const GoogleAuthButton: React.FC = (props) => (
   <StyledButton {...props}>
-    <Img src="/connectors/google/btn_google_light_normal_ios.svg" alt={"Sign in with Google"} />
+    <Img src="/connectors/google/btn_google_light_normal_ios.svg" alt="Sign in with Google" />
     {props.children}
   </StyledButton>
 );
