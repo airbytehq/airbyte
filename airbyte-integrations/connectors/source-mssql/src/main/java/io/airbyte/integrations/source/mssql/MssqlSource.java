@@ -282,6 +282,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
       }
 
+      //Azure SQL does not support USE clause
       final String sql =
           isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
 
