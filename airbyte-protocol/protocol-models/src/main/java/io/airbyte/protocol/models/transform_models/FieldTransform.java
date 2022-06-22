@@ -43,4 +43,20 @@ public final class FieldTransform {
     return new FieldTransform(FieldTransformType.UPDATE_FIELD, null, null, updateFieldTransform);
   }
 
+  public FieldTransformType getTransformType() {
+    return transformType;
+  }
+
+  public AddFieldTransform getAddFieldTransform() {
+    return addFieldTransform;
+  }
+
+  public RemoveFieldTransform getRemoveFieldTransform() {
+    return removeFieldTransform;
+  }
+
+  public UpdateFieldTransform getUpdateFieldTransform() {
+    return updateFieldTransform;
+  }
+
 }
