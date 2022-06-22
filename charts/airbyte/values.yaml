@@ -28,7 +28,7 @@ serviceAccount:
 ## @param imagePullSecrets Array of image pull secrets.
 ##
 ## Example:
-## imagePullScerets:
+## imagePullSecrets:
 ##   - docker-secret
 imagePullSecrets: []
 
