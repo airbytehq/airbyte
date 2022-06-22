@@ -19,6 +19,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
 import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
@@ -33,13 +34,16 @@ public class DefaultJobCreator implements JobCreator {
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final ResourceRequirements workerResourceRequirements;
+  private final StatePersistence statePersistence;
 
   public DefaultJobCreator(final JobPersistence jobPersistence,
                            final ConfigRepository configRepository,
-                           final ResourceRequirements workerResourceRequirements) {
+                           final ResourceRequirements workerResourceRequirements,
+                           final StatePersistence statePersistence) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workerResourceRequirements = workerResourceRequirements;
+    this.statePersistence = statePersistence;
   }
 
   @Override

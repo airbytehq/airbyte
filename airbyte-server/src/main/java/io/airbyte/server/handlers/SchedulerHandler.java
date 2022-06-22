@@ -49,6 +49,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.EventRunner;
@@ -84,6 +85,7 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
+  private final StatePersistence statePersistence;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
@@ -92,7 +94,8 @@ public class SchedulerHandler {
                           final JobPersistence jobPersistence,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final EventRunner eventRunner) {
+                          final EventRunner eventRunner,
+                          final StatePersistence statePersistence) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -101,6 +104,7 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         jobPersistence,
         eventRunner,
+        statePersistence,
         new JobConverter(workerEnvironment, logConfigs));
   }
 
@@ -112,6 +116,7 @@ public class SchedulerHandler {
                    final JsonSchemaValidator jsonSchemaValidator,
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
+                   final StatePersistence statePersistence,
                    final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -121,6 +126,7 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
+    this.statePersistence = statePersistence;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)

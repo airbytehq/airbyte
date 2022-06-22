@@ -13,6 +13,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -46,6 +47,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static EventRunner eventRunner;
   private static Flyway configsFlyway;
   private static Flyway jobsFlyway;
+  private static StatePersistence statePersistence;
 
   public static void setValues(
                                final ConfigRepository configRepository,
@@ -66,7 +68,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final HttpClient httpClient,
                                final EventRunner eventRunner,
                                final Flyway configsFlyway,
-                               final Flyway jobsFlyway) {
+                               final Flyway jobsFlyway,
+                               final StatePersistence statePersistence) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -86,6 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.configsFlyway = configsFlyway;
     ConfigurationApiFactory.jobsFlyway = jobsFlyway;
+    ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
   @Override
@@ -110,7 +114,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.httpClient,
         ConfigurationApiFactory.eventRunner,
         ConfigurationApiFactory.configsFlyway,
-        ConfigurationApiFactory.jobsFlyway);
+        ConfigurationApiFactory.jobsFlyway,
+        ConfigurationApiFactory.statePersistence);
   }
 
   @Override

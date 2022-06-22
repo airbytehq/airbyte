@@ -13,6 +13,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -43,7 +44,8 @@ public interface ServerFactory {
                         HttpClient httpClient,
                         EventRunner eventRunner,
                         Flyway configsFlyway,
-                        Flyway jobsFlyway);
+                        Flyway jobsFlyway,
+                        StatePersistence statePersistence);
 
   class Api implements ServerFactory {
 
@@ -64,7 +66,8 @@ public interface ServerFactory {
                                  final HttpClient httpClient,
                                  final EventRunner eventRunner,
                                  final Flyway configsFlyway,
-                                 final Flyway jobsFlyway) {
+                                 final Flyway jobsFlyway,
+                                 final StatePersistence statePersistence) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           configRepository,
@@ -85,7 +88,8 @@ public interface ServerFactory {
           httpClient,
           eventRunner,
           configsFlyway,
-          jobsFlyway);
+          jobsFlyway,
+          statePersistence);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

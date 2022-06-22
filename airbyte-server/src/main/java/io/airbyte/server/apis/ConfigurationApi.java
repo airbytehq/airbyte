@@ -106,6 +106,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -178,7 +179,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final HttpClient httpClient,
                           final EventRunner eventRunner,
                           final Flyway configsFlyway,
-                          final Flyway jobsFlyway) {
+                          final Flyway jobsFlyway,
+                          final StatePersistence statePersistence) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -195,7 +197,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         jobPersistence,
         workerEnvironment,
         logConfigs,
-        eventRunner);
+        eventRunner,
+        statePersistence);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,

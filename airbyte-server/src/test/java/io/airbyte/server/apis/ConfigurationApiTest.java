@@ -18,6 +18,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -53,7 +54,8 @@ public class ConfigurationApiTest {
         mock(HttpClient.class),
         mock(EventRunner.class),
         mock(Flyway.class),
-        mock(Flyway.class));
+        mock(Flyway.class),
+        mock(StatePersistence.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 

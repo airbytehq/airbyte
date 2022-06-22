@@ -19,6 +19,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -395,7 +396,13 @@ public class WorkerApp {
     final Database jobDatabase = new Database(jobsDslContext);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final DefaultJobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
+    final StatePersistence statePersistence = new StatePersistence(configDatabase);
+    final DefaultJobCreator jobCreator = new DefaultJobCreator(
+        jobPersistence,
+        configRepository,
+        defaultWorkerConfigs.getResourceRequirements(),
+        statePersistence);
+
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),

@@ -54,6 +54,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -126,6 +127,7 @@ class SchedulerHandlerTest {
   private JobPersistence jobPersistence;
   private EventRunner eventRunner;
   private JobConverter jobConverter;
+  private StatePersistence statePersistence;
 
   @BeforeEach
   void setup() {
@@ -141,6 +143,7 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
+    statePersistence = mock(StatePersistence.class);
     eventRunner = mock(EventRunner.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
@@ -153,6 +156,7 @@ class SchedulerHandlerTest {
         jsonSchemaValidator,
         jobPersistence,
         eventRunner,
+        statePersistence,
         jobConverter);
   }
 
