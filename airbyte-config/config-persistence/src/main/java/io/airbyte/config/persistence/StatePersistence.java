@@ -225,7 +225,7 @@ public class StatePersistence {
    *        error is detected
    * @param records The list of StateRecords to process, must not be empty
    * @return the StateType of the records
-   * @throws IOException If StateRecords have inconsistent types
+   * @throws IllegalStateException If StateRecords have inconsistent types
    */
   private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
       final UUID connectionId,
@@ -258,7 +258,7 @@ public class StatePersistence {
    * Build Global state
    *
    * The list of records can contain one global shared state that is the state without streamName and
-   * without namespace The other records should be tronslated into AirbyteStreamState
+   * without namespace The other records should be translated into AirbyteStreamState
    */
   private static StateWrapper buildGlobalState(final List<StateRecord> records) {
     // Split the global shared state from the other per stream records
