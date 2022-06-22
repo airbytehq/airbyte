@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
@@ -229,9 +230,10 @@ public class StatePersistence {
   private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
                                                                                             final UUID connectionId,
                                                                                             final List<StateRecord> records) {
-    final List<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types = records.stream().map(r -> r.type).distinct().toList();
+    final Set<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types =
+        records.stream().map(r -> r.type).collect(Collectors.toSet());
     if (types.size() == 1) {
-      return types.get(0);
+      return types.stream().findFirst().get();
     }
 
     throw new IllegalStateException("Inconsistent StateTypes for connectionId " + connectionId +
