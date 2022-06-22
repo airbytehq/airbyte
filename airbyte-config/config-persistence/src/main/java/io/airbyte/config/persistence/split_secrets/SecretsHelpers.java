@@ -171,12 +171,13 @@ public class SecretsHelpers {
    * in an ascending alphabetical order.
    */
   public static List<String> getSortedSecretPaths(final JsonNode spec) {
-    return JsonSchemas.collectJsonPathsThatMeetCondition(
+    return JsonSchemas.collectPathsThatMeetCondition(
         spec,
         node -> MoreIterators.toList(node.fields())
             .stream()
             .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
         .stream()
+        .map(JsonPaths::mapJsonSchemaPathToJsonPath)
         .sorted()
         .toList();
   }

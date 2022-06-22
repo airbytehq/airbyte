@@ -15,6 +15,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import io.airbyte.commons.json.JsonSchemas.FieldNameOrList;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -92,6 +93,20 @@ public class JsonPaths {
 
   public static String appendAppendListSplat(final String jsonPath) {
     return jsonPath + JSON_PATH_LIST_SPLAT;
+  }
+
+  /**
+   * Map path produced by {@link JsonSchemas} to the JSONPath format.
+   *
+   * @param jsonSchemaPath - path as described in {@link JsonSchemas}
+   * @return path as JSONPath
+   */
+  public static String mapJsonSchemaPathToJsonPath(final List<FieldNameOrList> jsonSchemaPath) {
+    String jsonPath = empty();
+    for (final FieldNameOrList fieldNameOrList : jsonSchemaPath) {
+      jsonPath = fieldNameOrList.isList() ? appendAppendListSplat(jsonPath) : appendField(jsonPath, fieldNameOrList.getFieldName());
+    }
+    return jsonPath;
   }
 
   /*
