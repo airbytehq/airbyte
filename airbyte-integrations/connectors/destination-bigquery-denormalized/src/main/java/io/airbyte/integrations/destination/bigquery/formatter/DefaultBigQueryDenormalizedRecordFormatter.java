@@ -76,24 +76,25 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     return modifiedSchema;
   }
 
+  private boolean isAirbyteArray(final JsonNode node) {
+    final JsonNode type = node.get(TYPE_FIELD);
+    if (type.isArray()) {
+      final ArrayNode typeNode = (ArrayNode) type;
+      for (final JsonNode arrayTypeNode : typeNode) {
+        if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
+          return true;
+        }
+      }
+    } else if (type.isTextual()) {
+      return node.asText().equals("array");
+    }
+    return false;
+  }
+
   private List<JsonNode> findArrays(final JsonNode node) {
     if (node != null) {
       return node.findParents(TYPE_FIELD).stream()
-          .filter(
-              jsonNode -> {
-                final JsonNode type = jsonNode.get(TYPE_FIELD);
-                if (type.isArray()) {
-                  final ArrayNode typeNode = (ArrayNode) type;
-                  for (final JsonNode arrayTypeNode : typeNode) {
-                    if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
-                      return true;
-                    }
-                  }
-                } else if (type.isTextual()) {
-                  return jsonNode.asText().equals("array");
-                }
-                return false;
-              })
+          .filter(this::isAirbyteArray)
           .collect(Collectors.toList());
     } else {
       return Collections.emptyList();
@@ -112,14 +113,17 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private void surroundArraysByObjects(final JsonNode node) {
     findArrays(node).forEach(
         jsonNode -> {
-          final JsonNode arrayNode = jsonNode.deepCopy();
+          if (isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
+            final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
+            final ObjectNode originalNode = (ObjectNode)jsonNode;
 
-          final ObjectNode newNode = (ObjectNode) jsonNode;
-          newNode.removeAll();
-          newNode.putArray(TYPE_FIELD).add("object");
-          newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
+            originalNode.remove(ARRAY_ITEMS_FIELD);
+            final ObjectNode itemsNode = originalNode.putObject(ARRAY_ITEMS_FIELD);
+            itemsNode.putArray(TYPE_FIELD).add("object");
+            itemsNode.putObject(PROPERTIES_FIELD).putObject(NESTED_ARRAY_FIELD).setAll(arrayNode);
 
-          surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
+            surroundArraysByObjects(originalNode.get(ARRAY_ITEMS_FIELD));
+          }
         });
   }
 
