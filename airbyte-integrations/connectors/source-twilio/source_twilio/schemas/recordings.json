@@ -51,6 +51,9 @@
     "uri": {
       "type": ["null", "string"]
     },
+    "media_url": {
+       "type": "string"
+    },
     "encryption_details": {
       "properties": {
         "type": {
