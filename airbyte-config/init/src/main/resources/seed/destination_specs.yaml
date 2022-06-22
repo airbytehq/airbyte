@@ -3780,17 +3780,16 @@
                 - title: "No encryption"
                   description: "Staging data will be stored in plaintext."
                   type: "object"
-                  required:
-                    "encryption_type"
+                  required: "encryption_type"
                   properties:
                     encryption_type:
                       type: "string"
                       const: "none"
-                - title: "AES-CBC envelope encryption",
-                  description: "Staging data will be encrypted using AES-CBC envelope encryption."
+                - title: "AES-CBC envelope encryption"
+                  description: "Staging data will be encrypted using AES-CBC envelope\
+                    \ encryption."
                   type: "object"
-                  required:
-                    "encryption_type"
+                  required: "encryption_type"
                   properties:
                     encryption_type:
                       type: "string"
@@ -3798,7 +3797,9 @@
                     key_encrypting_key:
                       type: "string"
                       title: "Key"
-                      description: "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
+                      description: "The key, base64-encoded. Must be either 128, 192,\
+                        \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
+                        \ key for each sync."
                       airbyte_secret: true
     supportsIncremental: true
     supportsNormalization: true
