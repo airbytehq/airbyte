@@ -1113,12 +1113,15 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
-    Get all workflows of a GitHub repository
+    Get all workflow runs for a GitHub repository
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
+
+    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+    re_run_period = 32  # days
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
@@ -1127,6 +1130,31 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        # Records in the workflows_runs stream are naturally descending sorted by `created_at` field.
+        # On first sight this is not big deal because cursor_field is `updated_at`.
+        # But we still can use `created_at` as a breakpoint because after 30 days period
+        # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+        # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
+        # only to look behind on 30 days to find all records which were updated.
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
+        for record in super(SemiIncrementalMixin, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            cursor_value = record[self.cursor_field]
+            created_at = record["created_at"]
+            if cursor_value > start_point:
+                yield record
+            if created_at < break_point:
+                break
 
 
 class TeamMembers(GithubStream):

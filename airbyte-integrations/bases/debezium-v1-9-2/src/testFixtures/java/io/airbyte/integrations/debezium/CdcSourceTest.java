@@ -316,7 +316,7 @@ public abstract class CdcSourceTest {
         .format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
             11));
 
-    final JsonNode state = stateMessages1.get(0).getData();
+    final JsonNode state = Jsons.jsonNode(stateMessages1);
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
@@ -347,7 +347,7 @@ public abstract class CdcSourceTest {
         .format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME,
             COL_MODEL, updatedModel, COL_ID, 11));
 
-    final JsonNode state = stateMessages1.get(0).getData();
+    final JsonNode state = Jsons.jsonNode(stateMessages1);
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
@@ -399,7 +399,7 @@ public abstract class CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final JsonNode state = stateAfterFirstBatch.get(0).getData();
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
@@ -488,7 +488,7 @@ public abstract class CdcSourceTest {
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
     writeModelRecord(puntoRecord);
 
-    final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
+    final JsonNode state = Jsons.jsonNode(extractStateMessages(actualRecords1));
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), configuredCatalog, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
@@ -531,7 +531,7 @@ public abstract class CdcSourceTest {
     final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
-    final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
+    final JsonNode state = Jsons.jsonNode(extractStateMessages(actualRecords1));
 
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);

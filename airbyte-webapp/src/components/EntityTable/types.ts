@@ -4,12 +4,12 @@ interface EntityTableDataItem {
   entityId: string;
   entityName: string;
   connectorName: string;
-  connectEntities: {
+  connectEntities: Array<{
     name: string;
     connector: string;
     status: string;
     lastSyncStatus: string | null;
-  }[];
+  }>;
   enabled: boolean;
   lastSync?: number | null;
   connectorIcon?: string;
