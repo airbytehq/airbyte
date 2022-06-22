@@ -148,6 +148,10 @@ public class AirbyteAcceptanceTestHelper {
     connectionIds.remove(connection);
   }
 
+  public void setApiClient(final AirbyteApiClient apiClient) {
+    this.apiClient = apiClient;
+  }
+
   @SuppressWarnings("UnstableApiUsage")
   public void init(final AirbyteApiClient apiClient) throws URISyntaxException, IOException, InterruptedException, ApiException {
     if (IS_GKE && !IS_KUBE) {
