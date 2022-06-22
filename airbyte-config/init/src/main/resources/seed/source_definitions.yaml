@@ -530,6 +530,14 @@
   icon: marketo.svg
   sourceType: api
   releaseStage: alpha
+- name: Metabase
+  sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
+  dockerRepository: airbyte/source-metabase
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/metabase
+  icon: metabase.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
