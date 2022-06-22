@@ -90,6 +90,7 @@ export const getConnectionTableData = (
 
     return {
       connectionId: connection.connectionId,
+      name: connection.name,
       entityName:
         type === "connection"
           ? `${connection.source?.sourceName} - ${connection.source?.name}`

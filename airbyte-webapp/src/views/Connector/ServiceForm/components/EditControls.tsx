@@ -20,7 +20,7 @@ const ButtonContainer = styled.span`
   margin-left: 10px;
 `;
 
-type IProps = {
+interface IProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   isValid: boolean;
@@ -31,7 +31,7 @@ type IProps = {
   isTestConnectionInProgress?: boolean;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,

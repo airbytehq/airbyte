@@ -5,7 +5,7 @@ import {
   DestinationDefinitionCreate,
   DestinationDefinitionUpdate,
   getDestinationDefinition,
-  listDestinationDefinitionsForWorkspace,
+  listDestinationDefinitions,
   listLatestDestinationDefinitions,
   updateDestinationDefinition,
 } from "../../request/AirbyteClient";
@@ -15,8 +15,8 @@ export class DestinationDefinitionService extends AirbyteRequestService {
     return getDestinationDefinition({ destinationDefinitionId }, this.requestOptions);
   }
 
-  public list(workspaceId: string) {
-    return listDestinationDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
+  public list() {
+    return listDestinationDefinitions(this.requestOptions);
   }
 
   public listLatest() {

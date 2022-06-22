@@ -13,7 +13,7 @@ import { useConfig } from "config";
 
 import EditControls from "./components/EditControls";
 
-export type PreferencesFormProps = {
+export interface PreferencesFormProps {
   onSubmit: (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -29,7 +29,7 @@ export type PreferencesFormProps = {
   };
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const ButtonContainer = styled.div`
   text-align: center;
@@ -125,7 +125,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               id={"preferences.collectData"}
               values={{
                 docs: (docs: React.ReactNode) => (
-                  <DocsLink target="_blank" href={config.ui.docsLink}>
+                  <DocsLink target="_blank" href={config.links.docsLink}>
                     {docs}
                   </DocsLink>
                 ),

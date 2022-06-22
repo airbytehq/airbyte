@@ -4,7 +4,7 @@
   "properties": {
     "date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "details": {
       "type": ["null", "string"]

@@ -33,7 +33,7 @@ def test():
 
     state = MagicMock()
     underlying_state = {"date": "2021-01-01"}
-    state.get_state.return_value = underlying_state
+    state.get_stream_state.return_value = underlying_state
 
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base

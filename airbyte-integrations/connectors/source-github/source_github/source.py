@@ -212,7 +212,7 @@ class SourceGithub(AbstractSource):
             projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestCommits(parent=pull_requests_stream, **repository_args),
-            PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
+            PullRequestStats(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
             Repositories(**organization_args_with_start_date),
@@ -223,7 +223,7 @@ class SourceGithub(AbstractSource):
             teams_stream,
             team_members_stream,
             Users(**organization_args),
-            Workflows(**repository_args),
-            WorkflowRuns(**repository_args),
+            Workflows(**repository_args_with_start_date),
+            WorkflowRuns(**repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

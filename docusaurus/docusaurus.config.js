@@ -33,6 +33,10 @@ const config = {
                           from: '/upgrading-airbyte',
                           to: '/operator-guides/upgrading-airbyte',
                         },
+                        {
+                            from: '/catalog',
+                            to: '/understanding-airbyte/airbyte-protocol',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
@@ -49,6 +53,7 @@ const config = {
             ({
                 docs: {
                     routeBasePath: '/',
+                    sidebarCollapsible: true,
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs'
@@ -71,6 +76,11 @@ const config = {
             colorMode: {
                 disableSwitch: false,
             },
+            docs: {
+                sidebar: {
+                  autoCollapseCategories: true,
+                },
+              },
             navbar: {
                 title: '',
                 logo: {
@@ -98,7 +108,7 @@ const config = {
                     },
                     {
                         href: 'https://discuss.airbyte.io/',
-                        label: 'Discourse',
+                        label: 'Support',
                         position: 'left',
                     },
                     {
