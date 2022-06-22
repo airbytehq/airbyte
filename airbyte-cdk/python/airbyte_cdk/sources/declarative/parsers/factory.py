@@ -9,6 +9,7 @@ import importlib
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.create_partial import create
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
 
@@ -52,6 +53,8 @@ class DeclarativeComponentFactory:
             v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
 
             return self.create_component(v, config)()
+        elif isinstance(v, dict):
+            return InterpolatedMapping(v).eval(config=config, kwargs=kwargs)
         elif isinstance(v, list):
             return [
                 self._create_subcomponent(
