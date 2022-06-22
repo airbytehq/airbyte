@@ -44,32 +44,57 @@ public class AirbyteDebeziumHandler {
    */
   private static final int QUEUE_CAPACITY = 10000;
 
-  private final Properties connectorProperties;
   private final JsonNode config;
   private final CdcTargetPosition targetPosition;
-  private final ConfiguredAirbyteCatalog catalog;
   private final boolean trackSchemaHistory;
-
-  private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition targetPosition,
-                                final Properties connectorProperties,
-                                final ConfiguredAirbyteCatalog catalog,
                                 final boolean trackSchemaHistory) {
     this.config = config;
     this.targetPosition = targetPosition;
-    this.connectorProperties = connectorProperties;
-    this.catalog = catalog;
     this.trackSchemaHistory = trackSchemaHistory;
-    this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+  public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
+      final CdcMetadataInjector cdcMetadataInjector,
+      final Properties connectorProperties,
+      final Instant emittedAt) {
+    LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
+    /*
+      TODO(Subodh) : Since Postgres doesn't require schema history this is fine but we need to fix this for MySQL and MSSQL
+     */
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = Optional.empty();
+    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties,
+        config,
+        catalog,
+        offsetManager,
+        schemaHistoryManager);
+    publisher.start(queue);
+
+    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
+        queue,
+        targetPosition,
+        publisher::hasClosed,
+        publisher::close);
+
+    return AutoCloseableIterators
+        .transform(
+            eventIterator,
+            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
+  }
+
+  public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
+                                                                             final CdcSavedInfoFetcher cdcSavedInfoFetcher,
                                                                              final CdcStateHandler cdcStateHandler,
                                                                              final CdcMetadataInjector cdcMetadataInjector,
+                                                                             final Properties connectorProperties,
                                                                              final Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
@@ -105,10 +130,8 @@ public class AirbyteDebeziumHandler {
     // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
     // state file. we want this so that we have a guarantee that the debezium offset file (which we use
     // to produce the state file) is up-to-date.
-    final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator =
-        AutoCloseableIterators.concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
 
-    return Collections.singletonList(messageIteratorWithStateDecorator);
+    return AutoCloseableIterators.concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {

@@ -240,7 +240,7 @@ public abstract class CdcSourceTest {
         .collect(Collectors.toList());
   }
 
-  private void assertExpectedRecords(final Set<JsonNode> expectedRecords, final Set<AirbyteRecordMessage> actualRecords) {
+  protected void assertExpectedRecords(final Set<JsonNode> expectedRecords, final Set<AirbyteRecordMessage> actualRecords) {
     // assume all streams are cdc.
     assertExpectedRecords(expectedRecords, actualRecords, actualRecords.stream().map(AirbyteRecordMessage::getStream).collect(Collectors.toSet()));
   }
@@ -248,20 +248,21 @@ public abstract class CdcSourceTest {
   private void assertExpectedRecords(final Set<JsonNode> expectedRecords,
                                      final Set<AirbyteRecordMessage> actualRecords,
                                      final Set<String> cdcStreams) {
-    assertExpectedRecords(expectedRecords, actualRecords, cdcStreams, STREAM_NAMES);
+    assertExpectedRecords(expectedRecords, actualRecords, cdcStreams, STREAM_NAMES, MODELS_SCHEMA);
   }
 
-  private void assertExpectedRecords(final Set<JsonNode> expectedRecords,
+  protected void assertExpectedRecords(final Set<JsonNode> expectedRecords,
                                      final Set<AirbyteRecordMessage> actualRecords,
                                      final Set<String> cdcStreams,
-                                     final Set<String> streamNames) {
+                                     final Set<String> streamNames,
+      final String namespace) {
     final Set<JsonNode> actualData = actualRecords
         .stream()
         .map(recordMessage -> {
           assertTrue(streamNames.contains(recordMessage.getStream()));
           assertNotNull(recordMessage.getEmittedAt());
 
-          assertEquals(MODELS_SCHEMA, recordMessage.getNamespace());
+          assertEquals(namespace, recordMessage.getNamespace());
 
           final JsonNode data = recordMessage.getData();
 
@@ -482,7 +483,8 @@ public abstract class CdcSourceTest {
         .collect(Collectors.toSet()),
         recordMessages1,
         Collections.singleton(MODELS_STREAM_NAME),
-        names);
+        names,
+        MODELS_SCHEMA);
 
     final JsonNode puntoRecord = Jsons
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
@@ -503,7 +505,8 @@ public abstract class CdcSourceTest {
             .collect(Collectors.toSet()),
         recordMessages2,
         Collections.singleton(MODELS_STREAM_NAME),
-        names);
+        names,
+        MODELS_SCHEMA);
   }
 
   @Test
