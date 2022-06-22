@@ -20,7 +20,7 @@ public enum JsonSchemaType {
   NUMBER_LONG("number", true, "big_integer", Schema.Type.LONG),
   NUMBER_FLOAT("number", true, "float", Schema.Type.FLOAT),
   NUMBER("number", true, null, Schema.Type.DOUBLE),
-  INTEGER("integer", true, null, Schema.Type.INT),
+  INTEGER("integer", true, null, Schema.Type.LONG),
   BOOLEAN("boolean", true, null, Schema.Type.BOOLEAN),
   NULL("null", true, null, Schema.Type.NULL),
   OBJECT("object", false, null, Schema.Type.RECORD),
