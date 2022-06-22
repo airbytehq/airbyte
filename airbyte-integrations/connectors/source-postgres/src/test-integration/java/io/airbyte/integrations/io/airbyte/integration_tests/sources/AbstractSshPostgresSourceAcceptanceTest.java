@@ -135,4 +135,9 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
 }
