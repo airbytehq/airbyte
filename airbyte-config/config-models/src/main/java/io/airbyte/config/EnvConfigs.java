@@ -109,9 +109,17 @@ public class EnvConfigs implements Configs {
   public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
   public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
 
+  private static final String TEMPORAL_CLOUD_ENABLED = "TEMPORAL_CLOUD_ENABLED";
+  private static final String TEMPORAL_CLOUD_HOST = "TEMPORAL_CLOUD_HOST";
+  private static final String TEMPORAL_CLOUD_NAMESPACE = "TEMPORAL_CLOUD_NAMESPACE";
+  private static final String TEMPORAL_CLOUD_CLIENT_CERT = "TEMPORAL_CLOUD_CLIENT_CERT";
+  private static final String TEMPORAL_CLOUD_CLIENT_KEY = "TEMPORAL_CLOUD_CLIENT_KEY";
+
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
-  public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
+  public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
+  public static final String ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS";
+  public static final String WORKFLOW_FAILURE_RESTART_DELAY_SECONDS = "WORKFLOW_FAILURE_RESTART_DELAY_SECONDS";
 
   private static final String SHOULD_RUN_GET_SPEC_WORKFLOWS = "SHOULD_RUN_GET_SPEC_WORKFLOWS";
   private static final String SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS = "SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS";
@@ -167,6 +175,7 @@ public class EnvConfigs implements Configs {
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      DEPLOYMENT_MODE, (instance) -> instance.getDeploymentMode().name(),
       WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
 
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
@@ -385,6 +394,32 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean runDatabaseMigrationOnStartup() {
     return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
+  }
+
+  // Temporal Cloud
+  @Override
+  public boolean temporalCloudEnabled() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_ENABLED, false);
+  }
+
+  @Override
+  public String getTemporalCloudHost() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_HOST, "");
+  }
+
+  @Override
+  public String getTemporalCloudNamespace() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_NAMESPACE, "");
+  }
+
+  @Override
+  public String getTemporalCloudClientCert() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_CERT, "");
+  }
+
+  @Override
+  public String getTemporalCloudClientKey() {
+    return getEnvOrDefault(TEMPORAL_CLOUD_CLIENT_KEY, "");
   }
 
   // Airbyte Services
@@ -842,13 +877,23 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public int getDelayBetweenActivityAttempts() {
-    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  public int getInitialDelayBetweenActivityAttemptsSeconds() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS, "30"));
+  }
+
+  @Override
+  public int getMaxDelayBetweenActivityAttemptsSeconds() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public int getWorkflowFailureRestartDelaySeconds() {
+    return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
   }
 
   @Override
   public int getActivityNumberOfAttempt() {
-    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "5"));
   }
 
   // Helpers

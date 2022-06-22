@@ -27,10 +27,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   onStartEditTransformation,
   onEndEditTransformation,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { hasFeature } = useFeatureService();
 
-  const supportsNormalization = destDefinition.supportsNormalization;
+  const { supportsNormalization } = destDefinition;
   const supportsTransformations = destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
 
   const defaultTransformation = useDefaultTransformation();

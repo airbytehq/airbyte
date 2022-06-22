@@ -14,6 +14,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+from .graphql import get_query
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -722,26 +723,55 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, AB
         )
 
 
-class PullRequestStats(PullRequestSubstream):
+class PullRequestStats(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
+    is_sorted = "asc"
+    http_method = "POST"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+        return "graphql"
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(record=response.json(), stream_slice=stream_slice)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
+        for record in nodes:
+            record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+            record["comments"] = record["comments"]["totalCount"]
+            record["commits"] = record["commits"]["totalCount"]
+            record["repository"] = record["repository"]["name"]
+            if record["merged_by"]:
+                record["merged_by"]["type"] = record["merged_by"].pop("__typename")
+            yield record
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        return {key: value for key, value in record.items() if key in self.record_keys}
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            return pageInfo["endCursor"]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        query = get_query(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        return {"query": query}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        base_headers = super().request_headers(**kwargs)
+        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
+        return {**base_headers, **headers}
 
 
 class Reviews(PullRequestSubstream):
@@ -1076,12 +1106,15 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
-    Get all workflows of a GitHub repository
+    Get all workflow runs for a GitHub repository
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
+
+    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+    re_run_period = 32  # days
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
@@ -1090,6 +1123,31 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        # Records in the workflows_runs stream are naturally descending sorted by `created_at` field.
+        # On first sight this is not big deal because cursor_field is `updated_at`.
+        # But we still can use `created_at` as a breakpoint because after 30 days period
+        # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+        # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
+        # only to look behind on 30 days to find all records which were updated.
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
+        for record in super(SemiIncrementalMixin, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            cursor_value = record[self.cursor_field]
+            created_at = record["created_at"]
+            if cursor_value > start_point:
+                yield record
+            if created_at < break_point:
+                break
 
 
 class TeamMembers(GithubStream):

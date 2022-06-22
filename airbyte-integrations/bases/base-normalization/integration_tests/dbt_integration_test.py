@@ -367,7 +367,8 @@ class DbtIntegrationTest(object):
                             line = input_data.readline()
                             if not line:
                                 break
-                            process.stdin.write(line)
+                            if not line.startswith(b"#"):
+                                process.stdin.write(line)
                 process.stdin.close()
 
             thread = threading.Thread(target=writer)
@@ -418,7 +419,7 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
-        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-mysql"):
+        if normalization_image.startswith("airbyte/normalization-oracle"):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]

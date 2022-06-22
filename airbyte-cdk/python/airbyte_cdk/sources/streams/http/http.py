@@ -22,7 +22,7 @@ from .exceptions import DefaultBackoffException, RequestBodyException, UserDefin
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
+BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 logging.getLogger("vcr").setLevel(logging.ERROR)
 
@@ -248,7 +248,12 @@ class HttpStream(Stream, ABC):
         return None
 
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
+        self,
+        path: str,
+        headers: Mapping = None,
+        params: Mapping = None,
+        json: Any = None,
+        data: Any = None,
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:

@@ -155,7 +155,7 @@ export const TagInput: React.FC<TagInputProps> = ({
         {...inputProps}
         name={name}
         disabled={disabled}
-        autoComplete={"off"}
+        autoComplete="off"
         placeholder={inputPlaceholder}
         ref={inputElement}
         onBlur={handleInputBlur}
