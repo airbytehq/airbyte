@@ -167,7 +167,12 @@
             "title": "Verify-full",
             "additionalProperties": false,
             "description": "Verify-full SSL mode.",
-            "required": ["mode", "ca_certificate", "client_certificate", "client_key"],
+            "required": [
+              "mode",
+              "ca_certificate",
+              "client_certificate",
+              "client_key"
+            ],
             "properties": {
               "mode": {
                 "type": "string",

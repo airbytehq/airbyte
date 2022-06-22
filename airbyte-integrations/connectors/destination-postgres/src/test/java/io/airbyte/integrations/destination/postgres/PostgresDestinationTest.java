@@ -61,8 +61,8 @@ public class PostgresDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-            "ssl", true,
-            "ssl_mode", ImmutableMap.of("mode", "require")));
+        "ssl", true,
+        "ssl_mode", ImmutableMap.of("mode", "require")));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
