@@ -69,7 +69,7 @@ public class JobErrorReporter {
         metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
         metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
 
-        errorReportingClient.report(workspace, failureReason, dockerImage, metadata);
+        errorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
       } else if (failureOrigin == FailureOrigin.DESTINATION) {
         final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
         final String dockerImage = jobSyncConfig.getDestinationDockerImage();
@@ -78,7 +78,7 @@ public class JobErrorReporter {
         metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
         metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
 
-        errorReportingClient.report(workspace, failureReason, dockerImage, metadata);
+        errorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
       }
     }
   }

@@ -15,7 +15,10 @@ public class LoggingErrorReportingClient implements ErrorReportingClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingErrorReportingClient.class);
 
   @Override
-  public void report(final StandardWorkspace workspace, final FailureReason reason, final String dockerImage, final Map<String, String> metadata) {
+  public void reportJobFailureReason(final StandardWorkspace workspace,
+                                     final FailureReason reason,
+                                     final String dockerImage,
+                                     final Map<String, String> metadata) {
     LOGGER.info("Report Job Error -> workspaceId: {}, dockerImage: {}, failureReason: {}, metadata: {}",
         workspace.getWorkspaceId(),
         dockerImage,

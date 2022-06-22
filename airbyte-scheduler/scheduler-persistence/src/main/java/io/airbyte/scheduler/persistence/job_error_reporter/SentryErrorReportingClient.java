@@ -45,16 +45,17 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
 
   /**
    * Reports a Connector Job FailureReason to Sentry
+   *
    * @param workspace - Workspace where this failure occurred
    * @param failureReason - FailureReason to report
    * @param dockerImage - Tagged docker image that represents the release where this failure occurred
    * @param metadata - Extra metadata to set as tags on the event
    */
   @Override
-  public void report(final StandardWorkspace workspace,
-                     final FailureReason failureReason,
-                     final String dockerImage,
-                     final Map<String, String> metadata) {
+  public void reportJobFailureReason(final StandardWorkspace workspace,
+                                     final FailureReason failureReason,
+                                     final String dockerImage,
+                                     final Map<String, String> metadata) {
     final SentryEvent event = new SentryEvent();
 
     // Remove invalid characters from the release name, use @ so sentry knows how to grab the tag

@@ -106,8 +106,9 @@ public class JobErrorReporterTest {
         "connector_name", DESTINATION_DEFINITION_NAME,
         "connector_release_stage", DESTINATION_RELEASE_STAGE.toString());
 
-    Mockito.verify(errorReportingClient).report(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
-    Mockito.verify(errorReportingClient).report(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE, expectedDestinationMetadata);
+    Mockito.verify(errorReportingClient).reportJobFailureReason(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
+    Mockito.verify(errorReportingClient).reportJobFailureReason(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE,
+        expectedDestinationMetadata);
     Mockito.verifyNoMoreInteractions(errorReportingClient);
   }
 

@@ -75,7 +75,7 @@ public class SentryErrorReportingClientTest {
         .withInternalMessage("RuntimeError: Something went wrong");
     final Map<String, String> metadata = Map.of("some_metadata", "some_metadata_value");
 
-    sentryErrorReportingClient.report(workspace, failureReason, DOCKER_IMAGE, metadata);
+    sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, metadata);
 
     verify(mockSentryHub).captureEvent(eventCaptor.capture());
     final SentryEvent actualEvent = eventCaptor.getValue();
