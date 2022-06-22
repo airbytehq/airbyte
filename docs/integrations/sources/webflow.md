@@ -33,4 +33,6 @@ See `integration_tests/sample_config.json` for a sample config file that you can
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 0.1.0 | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |
+| 0.1.1 | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Update Spec Documentation URL |
+
 
