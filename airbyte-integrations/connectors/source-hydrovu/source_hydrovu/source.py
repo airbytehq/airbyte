@@ -83,7 +83,6 @@ class HydroVuStream(HttpStream, ABC):
         """
         yield {}
 
-
 class Parameters(HydroVuStream):
     """
     Gets parameters from friendly names from HydroVu API
@@ -136,6 +135,7 @@ class Parameters(HydroVuStream):
         except:
             pass
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Parses the response of parameters from friendly names. 
@@ -147,64 +147,15 @@ class Parameters(HydroVuStream):
 
         parameters = r['parameters']
 
-        self.parameters = parameters
+        def format_record(code, name):
+            record = {}
 
-        yield parameters
+            record['parameterCode'] = code
+            record['parameterName'] = name
 
+            return record
 
-    def get_json_schema(self):
-        schema = super().get_json_schema()
-        #schema['dynamically_determined_property'] = "property"
-        #schema['dynamically_determined_property'] = "properties"
-
-        schema["properties"] = {}
-
-
-        for key, value in self.parameters.items():
-            #print ("=========")
-            #print (key)
-            #print (value)
-
-            #schema["properties"][key] = value
-
-            schema["properties"][key] = {"type": "string"}
-
-
-        return schema
-
-
-
-    """
-    #def get_json_schema(self) -> Mapping[str, Any]:
-    def get_json_schema(self) -> Mapping[str, Any]:
-
-        '''
-        schema: Dict[str, Any] = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-    
-            },
-        }
-        '''
-
-
-        schema = super.get_json_schema()
-
-
-        for key, value in self.parameters.items():
-            print ("=========")
-            print (key)
-            print (value)
-
-
-
-            schema["properties"][key] = value
-
-
-        return schema
-
-    """
+        yield from (format_record(code, name) for code, name in parameters.items())
 
 
 class Units(HydroVuStream):
@@ -259,6 +210,7 @@ class Units(HydroVuStream):
         except:
             pass
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Parses the response of units from friendly names. 
@@ -269,8 +221,16 @@ class Units(HydroVuStream):
         r = response.json()
 
         units = r['units']
-        
-        yield units
+
+        def format_record(code, name):
+            record = {}
+
+            record['unitCode'] = code
+            record['unitName'] = name
+
+            return record
+
+        yield from (format_record(code, name) for code, name in units.items())
 
 
 class Locations(HydroVuStream):
