@@ -16,7 +16,8 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.workers.*;
+import io.airbyte.workers.RecordSchemaValidator;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
@@ -366,9 +367,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void validateSchema(RecordSchemaValidator recordSchemaValidator,
-                                     Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     AirbyteMessage message) {
+  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final AirbyteMessage message) {
     if (message.getRecord() == null) {
       return;
     }

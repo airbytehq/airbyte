@@ -33,7 +33,8 @@ public class DefaultStateLifecycleManager implements StateLifecycleManager {
     this(new SingleStateLifecycleManager(), new StreamStateLifecycleManager());
   }
 
-  @VisibleForTesting DefaultStateLifecycleManager(final StateLifecycleManager singleStateManager, final StateLifecycleManager streamStateManager) {
+  @VisibleForTesting
+  DefaultStateLifecycleManager(final StateLifecycleManager singleStateManager, final StateLifecycleManager streamStateManager) {
     stateType = null;
     // allows us to delegate calls to the appropriate underlying state manager.
     internalStateManagerSupplier = () -> {

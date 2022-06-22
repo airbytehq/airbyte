@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
@@ -17,12 +18,14 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.state_lifecycle.StateLifecycleManager;
 import io.airbyte.workers.helper.FailureHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final StateDeltaTracker stateDeltaTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
+  private final StateLifecycleManager stateLifecycleManager;
 
   private short nextStreamIndex;
 
@@ -58,12 +62,12 @@ public class AirbyteMessageTracker implements MessageTracker {
     DESTINATION
   }
 
-  public AirbyteMessageTracker() {
-    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES));
+  public AirbyteMessageTracker(final StateLifecycleManager stateLifecycleManager) {
+    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES), stateLifecycleManager);
   }
 
   @VisibleForTesting
-  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker) {
+  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker, final StateLifecycleManager stateLifecycleManager) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.totalEmittedStateMessages = new AtomicLong(0L);
@@ -77,6 +81,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.unreliableCommittedCounts = false;
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
+    this.stateLifecycleManager = stateLifecycleManager;
   }
 
   @Override
@@ -84,7 +89,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
-      case STATE -> handleSourceEmittedState(message.getState());
+      case STATE -> handleSourceEmittedState(message);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -93,7 +98,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   public void acceptFromDestination(final AirbyteMessage message) {
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
-      case STATE -> handleDestinationEmittedState(message.getState());
+      case STATE -> handleDestinationEmittedState(message);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -117,15 +122,47 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
+   * Save the latest state with the format expected based on the message type, increment the
+   * @param stateMessage
+   * @param outputState
+   * @return
+   */
+  private AirbyteStateMessage saveStateOutput(final AirbyteMessage stateMessage, final AtomicReference<State> outputState) {
+    stateLifecycleManager.addState(stateMessage);
+    stateLifecycleManager.markPendingAsFlushed();
+    final Queue<AirbyteMessage> states = stateLifecycleManager.listFlushed();
+    AirbyteStateMessage latestState = stateMessage.getState();
+    while (!states.isEmpty()) {
+      final AirbyteStateMessage airbyteStateMessage = states.poll().getState();
+      latestState = airbyteStateMessage;
+      if (airbyteStateMessage.getStateType() == null) {
+        outputState.set(new State().withState(airbyteStateMessage.getData()));
+      } else {
+        switch (airbyteStateMessage.getStateType()) {
+          case GLOBAL ->
+              outputState.set(new State().withState(Jsons.jsonNode(Lists.newArrayList(airbyteStateMessage.getGlobal()))));
+          case STREAM ->
+              outputState.set(new State().withState(Jsons.jsonNode(Lists.newArrayList(airbyteStateMessage.getStream()))));
+          case LEGACY ->
+              outputState.set(new State().withState(airbyteStateMessage.getData()));
+        }
+      }
+      totalEmittedStateMessages.incrementAndGet();
+    }
+    stateLifecycleManager.markFlushedAsCommitted();
+
+    return latestState;
+  }
+
+  /**
    * When a source emits a state, persist the current running count per stream to the
    * {@link StateDeltaTracker}. Then, reset the running count per stream so that new counts can start
    * recording for the next state. Also add the state to list so that state order is tracked
    * correctly.
    */
-  private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
-    sourceOutputState.set(new State().withState(stateMessage.getData()));
-    totalEmittedStateMessages.incrementAndGet();
-    final int stateHash = getStateHashCode(stateMessage);
+  private void handleSourceEmittedState(final AirbyteMessage airbyteMessage) {
+    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage, sourceOutputState);
+    final int stateHash = getStateHashCode(latestState);
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
@@ -143,11 +180,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    * When a destination emits a state, mark all uncommitted states up to and including this state as
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
-  private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
-    destinationOutputState.set(new State().withState(stateMessage.getData()));
+  private void handleDestinationEmittedState(final AirbyteMessage airbyteMessage) {
+    final AirbyteStateMessage latestState = saveStateOutput(airbyteMessage, destinationOutputState);
     try {
       if (!unreliableCommittedCounts) {
-        stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
+        stateDeltaTracker.commitStateHash(getStateHashCode(latestState));
       }
     } catch (final StateDeltaTracker.StateDeltaTrackerException e) {
       log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
