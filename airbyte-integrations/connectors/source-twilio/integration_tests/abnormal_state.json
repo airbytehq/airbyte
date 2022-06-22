@@ -3,7 +3,7 @@
     "end_time": "2030-10-01T00:00:00Z"
   },
   "conferences": {
-    "date_updated": "2030-10-01T00:00:00Z"
+    "date_created": "2030-10-01T00:00:00Z"
   },
   "recordings": {
     "date_created": "2030-10-01T00:00:00Z"
@@ -15,6 +15,6 @@
     "date_created": "2030-10-01T00:00:00Z"
   },
   "alerts": {
-    "date_updated": "2030-10-01T00:00:00Z"
+    "date_generated": "2030-10-01T00:00:00Z"
   }
 }
