@@ -697,20 +697,24 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         return "graphql"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        nodes = response.json()["data"]["repository"]["pullRequests"]["nodes"]
-        for record in nodes:
-            record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
-            record["comments"] = record["comments"]["totalCount"]
-            record["commits"] = record["commits"]["totalCount"]
-            record["repository"] = record["repository"]["name"]
-            if record["merged_by"]:
-                record["merged_by"]["type"] = record["merged_by"].pop("__typename")
-            yield record
+        repository = response.json()["data"]["repository"]
+        if repository:
+            nodes = repository["pullRequests"]["nodes"]
+            for record in nodes:
+                record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+                record["comments"] = record["comments"]["totalCount"]
+                record["commits"] = record["commits"]["totalCount"]
+                record["repository"] = record["repository"]["name"]
+                if record["merged_by"]:
+                    record["merged_by"]["type"] = record["merged_by"].pop("__typename")
+                yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
-        if pageInfo["hasNextPage"]:
-            return pageInfo["endCursor"]
+        repository = response.json()["data"]["repository"]
+        if repository:
+            pageInfo = repository["pullRequests"]["pageInfo"]
+            if pageInfo["hasNextPage"]:
+                return pageInfo["endCursor"]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -755,20 +759,23 @@ class Reviews(SemiIncrementalMixin, GithubStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]
-        repository_name = repository["owner"]["login"] + "/" + repository["name"]
-        for pull_request in repository["pullRequests"]["nodes"]:
-            for record in pull_request["reviews"]["nodes"]:
-                record["repository"] = repository_name
-                record["pull_request_url"] = pull_request["url"]
-                if record["commit"]:
-                    record["commit_id"] = record.pop("commit")["oid"]
-                record["user"]["type"] = record["user"].pop("__typename")
-                yield record
+        if repository:
+            repository_name = repository["owner"]["login"] + "/" + repository["name"]
+            for pull_request in repository["pullRequests"]["nodes"]:
+                for record in pull_request["reviews"]["nodes"]:
+                    record["repository"] = repository_name
+                    record["pull_request_url"] = pull_request["url"]
+                    if record["commit"]:
+                        record["commit_id"] = record.pop("commit")["oid"]
+                    record["user"]["type"] = record["user"].pop("__typename")
+                    yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pageInfo = response.json()["data"]["repository"]["pullRequests"]["pageInfo"]
-        if pageInfo["hasNextPage"]:
-            return pageInfo["endCursor"]
+        repository = response.json()["data"]["repository"]
+        if repository:
+            pageInfo = repository["pullRequests"]["pageInfo"]
+            if pageInfo["hasNextPage"]:
+                return pageInfo["endCursor"]
 
     def request_body_json(
         self,
