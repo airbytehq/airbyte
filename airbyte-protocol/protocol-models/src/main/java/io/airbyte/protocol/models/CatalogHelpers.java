@@ -7,6 +7,7 @@ package io.airbyte.protocol.models;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.JsonSchemas;
@@ -189,9 +190,18 @@ public class CatalogHelpers {
                     Pair.of(fieldWithSchema.getLeft(), fieldWithSchema.getRight()));
 
               }
+              // Make sure that we don't erase when going up the tree
+              if (Iterables.tryFind(
+                  result.result,
+                  (pair) -> pair.getLeft().equals(fieldWithSchema.getLeft())
+              ).isPresent()) {
+                return;
+              }
+
               for (final List<String> oneOfFieldName : oneOfFieldNameAccumulator) {
                 final String oneOfFieldNameString = String.join(".", oneOfFieldName);
                 final String fieldNameString = String.join(".", fieldWithSchema.getLeft());
+
                 // We want to add the oneOf root
                 if (fieldNameString.equals(oneOfFieldNameString)) {
                   result.result.add(
