@@ -61,7 +61,7 @@ def get_query_reviews(owner, name, page_size, next_page_token):
     repository.name()
     repository.owner.login()
     pull_requests = repository.pull_requests(**kwargs)
-    pull_requests.nodes.__fields__(updated_at="updated_at", url=True)
+    pull_requests.nodes.__fields__(url=True)
     reviews = pull_requests.nodes.reviews(first=100)
     reviews.nodes.__fields__(
         id="node_id",
@@ -71,6 +71,7 @@ def get_query_reviews(owner, name, page_size, next_page_token):
         url="html_url",
         author_association="author_association",
         submitted_at="submitted_at",
+        updated_at="updated_at"
     )
     reviews.nodes.commit.oid()
     user = reviews.nodes.author(__alias__="user").__as__(_schema_root.User)

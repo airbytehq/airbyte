@@ -739,9 +739,9 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
     """
 
-    is_sorted = "asc"
+    is_sorted = False
     http_method = "POST"
-    cursor_field = "pull_request_updated_at"
+    cursor_field = "updated_at"
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -759,7 +759,6 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         for pull_request in repository["pullRequests"]["nodes"]:
             for record in pull_request["reviews"]["nodes"]:
                 record["repository"] = repository_name
-                record["pull_request_updated_at"] = pull_request["updated_at"]
                 record["pull_request_url"] = pull_request["url"]
                 if record["commit"]:
                     record["commit_id"] = record.pop("commit")["oid"]

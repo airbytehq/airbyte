@@ -51,7 +51,7 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "pull_request_updated_at": {
+    "updated_at": {
       "type": "string",
       "format": "date-time"
     },
