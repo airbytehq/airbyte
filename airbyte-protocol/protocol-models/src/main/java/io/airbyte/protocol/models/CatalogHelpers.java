@@ -215,7 +215,18 @@ public class CatalogHelpers {
               }
             },
             (contextWrapperLeft, contextWrapperRight) -> {
-              contextWrapperLeft.result.addAll(contextWrapperRight.result);
+              List<Pair<List<String>, JsonNode>> resultPathAndSchema = contextWrapperLeft
+                  .result.stream().filter(
+                      (pathAndSchema) -> contextWrapperLeft.fieldNamesThatAreOneOfs.contains(pathAndSchema.getLeft())
+                      || contextWrapperRight.fieldNamesThatAreOneOfs.contains(pathAndSchema.getLeft())
+                  ).toList();
+              resultPathAndSchema.addAll(contextWrapperRight
+                  .result.stream().filter(
+                      (pathAndSchema) -> contextWrapperLeft.fieldNamesThatAreOneOfs.contains(pathAndSchema.getLeft())
+                          || contextWrapperRight.fieldNamesThatAreOneOfs.contains(pathAndSchema.getLeft())
+                  ).toList());
+              contextWrapperLeft.result.clear();
+              contextWrapperLeft.result.addAll(resultPathAndSchema);
               contextWrapperLeft.fieldNamesThatAreOneOfs.addAll(contextWrapperRight.fieldNamesThatAreOneOfs);
             }).result;
 
