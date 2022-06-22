@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
@@ -167,6 +166,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
             .equals(ReplicationMethod.CDC);
+  }
+
+  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
+        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
+    return any.isPresent();
   }
 
   @Override

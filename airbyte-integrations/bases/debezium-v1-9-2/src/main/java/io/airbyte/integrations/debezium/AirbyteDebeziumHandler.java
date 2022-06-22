@@ -17,8 +17,6 @@ import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.time.Instant;
 import java.util.Collections;
@@ -120,11 +118,6 @@ public class AirbyteDebeziumHandler {
     }
 
     return Optional.empty();
-  }
-
-  public static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
 
 }

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -381,6 +380,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+    final Optional<SyncMode> any = catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getSyncMode)
+        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
+    return any.isPresent();
   }
 
   // Note: in place mutation.
