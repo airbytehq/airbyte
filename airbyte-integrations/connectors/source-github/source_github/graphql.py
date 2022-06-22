@@ -11,10 +11,10 @@ _schema = github_schema
 _schema_root = _schema.github_schema
 
 
-def get_query_pull_requests(owner, name, page_size, next_page_token):
-    kwargs = {"first": page_size, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
-    if next_page_token:
-        kwargs["after"] = next_page_token
+def get_query_pull_requests(owner, name, first, after):
+    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
+    if after:
+        kwargs["after"] = after
 
     op = sgqlc.operation.Operation(_schema_root.query_type)
     pull_requests = op.repository(owner=owner, name=name).pull_requests(**kwargs)
@@ -51,10 +51,10 @@ def get_query_pull_requests(owner, name, page_size, next_page_token):
     return str(op)
 
 
-def get_query_reviews(owner, name, page_size, next_page_token):
-    kwargs = {"first": page_size, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
-    if next_page_token:
-        kwargs["after"] = next_page_token
+def get_query_reviews(owner, name, first, after):
+    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
+    if after:
+        kwargs["after"] = after
 
     op = sgqlc.operation.Operation(_schema_root.query_type)
     repository = op.repository(owner=owner, name=name)
@@ -62,7 +62,7 @@ def get_query_reviews(owner, name, page_size, next_page_token):
     repository.owner.login()
     pull_requests = repository.pull_requests(**kwargs)
     pull_requests.nodes.__fields__(url=True)
-    reviews = pull_requests.nodes.reviews(first=100)
+    reviews = pull_requests.nodes.reviews(first=first)
     reviews.nodes.__fields__(
         id="node_id",
         database_id="id",

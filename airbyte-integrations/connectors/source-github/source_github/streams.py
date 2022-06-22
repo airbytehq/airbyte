@@ -714,7 +714,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         if repository:
             pageInfo = repository["pullRequests"]["pageInfo"]
             if pageInfo["hasNextPage"]:
-                return pageInfo["endCursor"]
+                return {"after": pageInfo["endCursor"]}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -728,7 +728,9 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
-        query = get_query_pull_requests(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        if next_page_token:
+            next_page_token = next_page_token["after"]
+        query = get_query_pull_requests(owner=organization, name=name, first=self.page_size, after=next_page_token)
         return {"query": query}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -775,7 +777,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         if repository:
             pageInfo = repository["pullRequests"]["pageInfo"]
             if pageInfo["hasNextPage"]:
-                return pageInfo["endCursor"]
+                return {"after": pageInfo["endCursor"]}
 
     def request_body_json(
         self,
@@ -784,7 +786,9 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
-        query = get_query_reviews(owner=organization, name=name, page_size=self.page_size, next_page_token=next_page_token)
+        if next_page_token:
+            next_page_token = next_page_token["after"]
+        query = get_query_reviews(owner=organization, name=name, first=self.page_size, after=next_page_token)
         return {"query": query}
 
 
