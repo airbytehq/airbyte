@@ -13,6 +13,8 @@ import subprocess
 import sys
 import threading
 import time
+import yaml
+import pathlib
 from copy import copy
 from typing import Any, Callable, Dict, List
 
@@ -26,7 +28,7 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
-
+NORMALIZATION_TYPE_TEST: List = ["ephemeral", "normalization"]
 
 class DbtIntegrationTest(object):
     def __init__(self):
@@ -413,7 +415,15 @@ class DbtIntegrationTest(object):
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
         assert self.run_check_dbt_command(normalization_image, "run", test_root_dir, force_full_refresh)
-
+        
+    def dbt_run_macro(self, destination_type: DestinationType, test_root_dir: str, macro: str, macro_args: str = None):
+        """
+        Run the dbt CLI to perform transformations on the test raw data in the destination, using independent macro.
+        """
+        normalization_image: str = self.get_normalization_image(destination_type)
+        # Compile dbt models files into destination sql dialect, then run the transformation queries
+        assert self.run_check_dbt_macro(normalization_image, test_root_dir, macro, macro_args)
+    
     @staticmethod
     def run_check_dbt_command(normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
         """
@@ -423,8 +433,7 @@ class DbtIntegrationTest(object):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]
-
-        error_count = 0
+        
         commands = (
             [
                 "docker",
@@ -458,6 +467,8 @@ class DbtIntegrationTest(object):
             command = f"{command} --full-refresh"
         print("Executing: ", " ".join(commands))
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
+        
+        error_count = 0
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
             process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
             for line in iter(lambda: process.stdout.readline(), b""):
@@ -495,7 +506,81 @@ class DbtIntegrationTest(object):
         if error_count > 0:
             return False
         return process.returncode == 0
-
+        
+    @staticmethod
+    def run_check_dbt_macro(normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
+        """
+        Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
+        """
+        args = [ '--args', macro_args ] if macro_args else []
+        commands = (
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--init",
+                "-v",
+                f"{cwd}:/workspace",
+                "-v",
+                f"{cwd}/build:/build",
+                "-v",
+                f"{cwd}/logs:/logs",
+                "-v",
+                f"{cwd}/build/dbt_packages:/dbt",
+                "--network",
+                "host",
+                "--entrypoint",
+                "/usr/local/bin/dbt",
+                "-i",
+                normalization_image,
+            ]
+            + [ 'run-operation', macro ]
+            + args
+            + [ "--profiles-dir=/workspace", "--project-dir=/workspace" ]
+        )
+        
+        print("Executing: ", " ".join(commands))
+        print(f"Equivalent to: dbt run-operation {macro} --args {macro_args} --profiles-dir={cwd} --project-dir={cwd}")
+        
+        error_count = 0
+        with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
+            process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
+            for line in iter(lambda: process.stdout.readline(), b""):
+                f.write(line)
+                str_line = line.decode("utf-8")
+                sys.stdout.write(str_line)
+                # keywords to match lines as signaling errors
+                if "ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line:
+                    # exception keywords in lines to ignore as errors (such as summary or expected warnings)
+                    is_exception = False
+                    for except_clause in [
+                        "Done.",  # DBT Summary
+                        "PASS=",  # DBT Summary
+                        "Nothing to do.",  # When no schema/data tests are setup
+                        "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                        "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
+                        "depends on a node named 'disabled_test' which was not found",  # Tests throwing warning because it is disabled
+                        "The requested image's platform (linux/amd64) does not match the detected host platform "
+                        + "(linux/arm64/v8) and no specific platform was requested",  # temporary patch until we publish images for arm64
+                    ]:
+                        if except_clause in str_line:
+                            is_exception = True
+                            break
+                    if not is_exception:
+                        # count lines signaling an error/failure/warning
+                        error_count += 1
+        process.wait()
+        message = (
+            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
+            f"with {error_count} 'Error/Warning/Fail' mention(s)."
+        )
+        print(message)
+        assert error_count == 0, message
+        assert process.returncode == 0, message
+        if error_count > 0:
+            return False
+        return process.returncode == 0
+    
     @staticmethod
     def copy_replace(src, dst, pattern=None, replace_value=None):
         """
@@ -552,3 +637,66 @@ class DbtIntegrationTest(object):
         updated, config = callback(config)
         if updated:
             write_yaml_config(config, filename)
+            
+    def clean_tmp_tables(
+        self,
+        destination_type: DestinationType,
+        test_type: str = NORMALIZATION_TYPE_TEST[0],
+        tmp_folders: list = None,
+        git_versioned_tests: list = None,
+    ):
+                
+        path_to_sources: str = '/models/generated/sources.yml'
+        test_folders: list = []
+        source_files: list = []
+        schemas_to_remove: list = []
+        macro_name: str = ""
+        
+        # choose macro, based on destination_type, for future extendibility
+        # other destination-specific macros could be added by the path: 
+        # dbt-project-template/macros/clean_tmp_tables.sql
+        if destination_type == DestinationType.REDSHIFT:
+            macro_name = "redshift__clean_tmp_tables"
+            
+        # based on test_type select path to source files
+        if test_type == NORMALIZATION_TYPE_TEST[0]:
+            for folder in tmp_folders:
+                if destination_type.value in folder:
+                    test_folders.append(folder)
+                    source_files.append(f'{folder}{path_to_sources}')
+        elif test_type == NORMALIZATION_TYPE_TEST[1]:
+            base_path = f'{pathlib.Path().absolute()}/integration_tests/normalization_test_output'
+            for test in git_versioned_tests:
+                test_root_dir: str = f"{base_path}/{destination_type.value}/{test}"
+                test_folders.append(test_root_dir)
+                source_files.append(f'{test_root_dir}{path_to_sources}')
+        else:
+            raise TypeError(f"`test_type`: {test_type} is not a registered, use one of: {NORMALIZATION_TYPE_TEST}")
+        
+        # parse source.yml files from test folders to get schemas and table names created for the tests    
+        for file in source_files:
+            source_yml = {}
+            try:     
+                with open(file, "r") as source_file:
+                    source_yml = yaml.safe_load(source_file)
+            except FileNotFoundError:
+                print("source.yml was removed or wasn't generated, consider to remove any temp tables and schemas manually!")
+                pass
+            test_sources: list = source_yml.get("sources", []) if source_yml else []
+            for source in test_sources:
+                target_schema: str = source.get("name")
+                if target_schema not in schemas_to_remove:
+                    schemas_to_remove.append(target_schema)
+                    # adding _airbyte_* tmp schemas to be removed
+                    schemas_to_remove.append(f'_airbyte_{target_schema}')
+                 
+        # return None if there are no tables to remove                                 
+        if not schemas_to_remove:
+            return None
+
+        # prepare args for macro
+        args = json.dumps({"schemas": schemas_to_remove})
+        # prepare dbt deps 
+        self.dbt_check(destination_type, test_folders[0])
+        # run dbt macro
+        self.dbt_run_macro(destination_type, test_folders[0], macro_name, args)

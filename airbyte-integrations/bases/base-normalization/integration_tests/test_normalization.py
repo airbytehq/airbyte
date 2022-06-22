@@ -12,7 +12,7 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
-from integration_tests.dbt_integration_test import DbtIntegrationTest
+from integration_tests.dbt_integration_test import DbtIntegrationTest, NORMALIZATION_TYPE_TEST
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import TransformCatalog
 
@@ -23,7 +23,6 @@ temporary_folders = set()
 git_versioned_tests = ["test_simple_streams", "test_nested_streams"]
 
 dbt_test_utils = DbtIntegrationTest()
-
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
@@ -39,12 +38,16 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
+    # clean-up tmp tables for Redshift 
+    dbt_test_utils.clean_tmp_tables(
+        destination_type=DestinationType.REDSHIFT, 
+        test_type=NORMALIZATION_TYPE_TEST[1],
+        git_versioned_tests=git_versioned_tests
+    )
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
-    # TODO delete target_schema in destination by copying dbt_project.yml and injecting a on-run-end hook to clean up
-
 
 @pytest.fixture
 def setup_test_path(request):
@@ -53,7 +56,6 @@ def setup_test_path(request):
     print(f"Current PATH is: {os.environ['PATH']}")
     yield
     os.chdir(request.config.invocation_dir)
-
 
 @pytest.mark.parametrize(
     "test_resource_name",
@@ -78,6 +80,9 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
     try:
         run_test_normalization(destination_type, test_resource_name)
     finally:
@@ -528,10 +533,15 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
         "profile_config_dir": tmp_path,
     }
     transform_catalog.process_catalog()
-
+    
     run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", docker_tag="0.3.29")
     dbt_test_utils.dbt_check(destination_type, tmp_path)
     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
     run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", docker_tag="dev")
     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
     dbt_test(destination_type, tmp_path)
+    # clean-up test tables
+    dbt_test_utils.clean_tmp_tables(destination_type=DestinationType.REDSHIFT, tmp_folders=[str(tmp_path)])
+
+    
+    

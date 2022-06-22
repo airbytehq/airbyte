@@ -30,6 +30,8 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
+    # clean-up tmp tables for Redshift 
+    dbt_test_utils.clean_tmp_tables(destination_type=DestinationType.REDSHIFT, tmp_folders=temporary_folders)
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
@@ -91,6 +93,9 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_ephemeral_")) 
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
     print("Testing ephemeral")
