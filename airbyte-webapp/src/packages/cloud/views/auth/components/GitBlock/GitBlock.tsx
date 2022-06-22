@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FC } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { useConfig } from "../../../../../config";
+import { useConfig } from "../../../../../../config";
 import styles from "./GitBlock.module.scss";
 
 export const GitBlock: FC = () => {
