@@ -150,7 +150,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       // "Cancel" button was pressed on a job
       if (workflowState.isCancelled()) {
-        log.info("--LAKE-- isCancelled is true");
         deleteResetJobStreams();
         reportCancelledAndContinueWith(false, connectionUpdaterInput);
       }
@@ -527,7 +526,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    */
   private <INPUT> void runMandatoryActivity(final Consumer<INPUT> consumer, final INPUT input) {
     runMandatoryActivityWithOutput((inputInternal) -> {
-      log.info("--LAKE-- runMandatoryActivity called");
       consumer.accept(inputInternal);
       return null;
     }, input);
@@ -760,16 +758,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private void deleteResetJobStreams() {
-    log.info("--LAKE-- start of deleteResetJobStreams");
     final int deleteResetJobStreamsVersion =
         Workflow.getVersion(DELETE_RESET_JOB_STREAMS_TAG, Workflow.DEFAULT_VERSION, DELETE_RESET_JOB_STREAMS_CURRENT_VERSION);
 
-    log.info("--LAKE-- deleteResetJobStreamsVersion: {}", deleteResetJobStreamsVersion);
     if (deleteResetJobStreamsVersion < DELETE_RESET_JOB_STREAMS_CURRENT_VERSION) {
       return;
     }
 
-    log.info("--LAKE-- running deleteStreamResetRecordsForJob activity");
     runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob,
         new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
   }
