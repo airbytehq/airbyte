@@ -71,7 +71,8 @@ def get_query_reviews(owner, name, page_size, next_page_token):
         url="html_url",
         author_association="author_association",
         submitted_at="submitted_at",
-        updated_at="updated_at"
+        created_at="created_at",
+        updated_at="updated_at",
     )
     reviews.nodes.commit.oid()
     user = reviews.nodes.author(__alias__="user").__as__(_schema_root.User)
