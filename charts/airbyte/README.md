@@ -6,9 +6,9 @@ Helm charts for Airbyte.
 
 ### Global Parameters
 
-| Name                   | Description                  | Value |
-| ---------------------- | ---------------------------- | ----- |
-| `global.imageRegistry` | Global Docker image registry | `""`  |
+| Name                    | Description                  | Value |
+| ----------------------- | ---------------------------- | ----- |
+| `global.imageRegistry`  | Global Docker image registry | `""`  |
 
 
 ### Common Parameters
@@ -20,6 +20,7 @@ Helm charts for Airbyte.
 | `serviceAccount.annotations` | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.                          | `{}`            |
 | `serviceAccount.create`      | Specifies whether a ServiceAccount should be created                                                                | `true`          |
 | `serviceAccount.name`        | Name of the service account to use. If not set and create is true, a name is generated using the fullname template. | `airbyte-admin` |
+| `imagePullSecrets`           | An array of image pull secrets to use for pods.                                                                     | `[]`            |
 | `version`                    | Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.                                        | `""`            |
 
 
