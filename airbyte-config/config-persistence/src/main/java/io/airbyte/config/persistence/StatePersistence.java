@@ -72,6 +72,11 @@ public class StatePersistence {
   /**
    * Create or update the states described in the StateWrapper. Null states will be deleted.
    *
+   * The only state migrations supported are going from a Legacy state to either a Global or
+   * Stream state.
+   * Other state type migrations should go through an explicit reset. An exception will be
+   * thrown to prevent the system from getting into a bad state.
+   *
    * @param connectionId
    * @param state
    * @throws IOException
