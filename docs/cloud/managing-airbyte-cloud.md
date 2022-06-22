@@ -93,7 +93,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     * Maximum: 999 credits
     :::
 
-    If you would like to buy a large amount of credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+    To buy more credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
 5. Fill out the payment information.
 
