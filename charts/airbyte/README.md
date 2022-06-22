@@ -6,9 +6,9 @@ Helm charts for Airbyte.
 
 ### Global Parameters
 
-| Name                    | Description                  | Value |
-| ----------------------- | ---------------------------- | ----- |
-| `global.imageRegistry`  | Global Docker image registry | `""`  |
+| Name                   | Description                  | Value |
+| ---------------------- | ---------------------------- | ----- |
+| `global.imageRegistry` | Global Docker image registry | `""`  |
 
 
 ### Common Parameters
