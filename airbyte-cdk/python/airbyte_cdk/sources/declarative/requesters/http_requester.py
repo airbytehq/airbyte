@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_requ
 )
 from airbyte_cdk.sources.declarative.requesters.request_params.request_parameters_provider import RequestParameterProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
+from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
@@ -27,17 +28,25 @@ class HttpRequester(Requester):
         name: str,
         url_base: [str, InterpolatedString],
         path: [str, InterpolatedString],
-        http_method: Union[str, HttpMethod],
-        request_parameters_provider: RequestParameterProvider = None,
+        http_method: Union[str, HttpMethod] = HttpMethod.GET,
+        request_parameters_provider: Union[RequestParameterProvider, Mapping[str, Any]] = None,
         request_headers_provider: RequestHeaderProvider = None,
         authenticator: HttpAuthenticator,
-        retrier: Retrier,
+        retrier: Retrier = None,
         config: Config,
     ):
+        if retrier is None:
+            retrier = DefaultRetrier()
         if request_parameters_provider is None:
-            request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_headers={})
+            request_parameters_provider = InterpolatedRequestParameterProvider(config=config, request_parameters={})
+        elif isinstance(request_parameters_provider, dict):
+            request_parameters_provider = InterpolatedRequestParameterProvider(
+                config=config, request_parameters=request_parameters_provider
+            )
         if request_headers_provider is None:
             request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
+        elif isinstance(request_headers_provider, dict):
+            request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers=request_headers_provider)
         self._name = name
         self._authenticator = authenticator
         if type(url_base) == str:

@@ -6,6 +6,7 @@ from typing import List
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Record
@@ -15,14 +16,14 @@ from jello import lib as jello_lib
 class JelloExtractor(HttpExtractor):
     default_transform = "."
 
-    def __init__(self, transform: str, decoder: Decoder, config, kwargs=None):
+    def __init__(self, transform: str, decoder: Decoder = None, config=None, kwargs=None):
         if kwargs is None:
             kwargs = dict()
         self._interpolator = JinjaInterpolation()
         self._transform = transform
         self._config = config
         self._kwargs = kwargs
-        self._decoder = decoder
+        self._decoder = decoder or JsonDecoder()
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self._decoder.decode(response)
