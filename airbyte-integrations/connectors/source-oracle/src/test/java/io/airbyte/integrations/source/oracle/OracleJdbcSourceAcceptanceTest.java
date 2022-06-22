@@ -76,7 +76,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_5 = new BigDecimal(5);
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 
