@@ -285,8 +285,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
       for (final Job job : jobs) {
         final long jobId = job.getId();
-        log.info("Failing non-terminal job {}", jobId);
-        jobPersistence.failJob(jobId);
 
         // fail all non-terminal attempts
         for (final Attempt attempt : job.getAttempts()) {
@@ -296,10 +294,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
           // the Attempt object 'id' is actually the value of the attempt_number column in the db
           final int attemptNumber = (int) attempt.getId();
+          log.info("Failing non-terminal attempt {} for non-terminal job {}", attemptNumber, jobId);
           jobPersistence.failAttempt(jobId, attemptNumber);
           jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,
               FailureHelper.failureSummaryForTemporalCleaningJobState(jobId, attemptNumber));
         }
+
+        log.info("Failing non-terminal job {}", jobId);
+        jobPersistence.failJob(jobId);
 
         final Job failedJob = jobPersistence.getJob(jobId);
         jobNotifier.failJob("Failing job in order to start from clean job state for new temporal workflow run.", failedJob);

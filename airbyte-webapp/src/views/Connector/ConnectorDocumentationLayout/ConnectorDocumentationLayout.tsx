@@ -72,7 +72,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
           <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size={"1x"} />
+            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
           </div>
         </ReflexSplitter>
       )}

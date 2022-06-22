@@ -1,36 +1,28 @@
 # Intercom
 
-This page contains the setup guide and reference information for the intercom source connector.
+This page guides you through the process of setting up the Intercom source connector.
 
-## Setup guide
-## Step 1: Set up the intercom connector in Airbyte
+## Set up the Intercom connector 
 
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the intercom connector and select **intercom** from the Source type dropdown.
-4. Click Authenticate your account to sign in with Intercom and authorize your account. 
-5. Fill in the `start date` field.
-6. You should be ready to sync data.
-
-### For Airbyte OSS:
-
-1. Fill in the [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token). 
-2. Fill in the `start date` field.
-3. You should be ready to sync data.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**. 
+3. On the Set up the source page, select **Intercom** from the Source type dropdown.
+4. Enter a name for your source.
+5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. For Airbyte Cloud, click **Authenticate your Intercom account** to sign in with Intercom and authorize your account. 
+   For Airbyte OSS, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
+The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
+ - Full Refresh
+ - Incremental
 
 ## Supported Streams
+
+The Intercom source connector supports the following streams:
 
 * [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins) \(Full table\)
 * [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies) \(Incremental\)
@@ -50,7 +42,7 @@ This page contains the setup guide and reference information for the intercom so
 
 The connector is restricted by normal Intercom [requests limitation](https://developers.intercom.com/intercom-api-reference/reference#rate-limiting).
 
-The Intercom connector should not run into Intercom API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 
 ## Changelog

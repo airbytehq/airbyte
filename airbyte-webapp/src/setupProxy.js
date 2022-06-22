@@ -10,7 +10,7 @@ module.exports = (app) => {
   // Set the CSP header in development to detect potential breakages.
   // This should always match the header in airbyte-webapp/nginx/default.conf.template
   app.use((req, resp, next) => {
-    resp.header("Content-Security-Policy", "script-src * 'unsafe-inline';");
+    resp.header("Content-Security-Policy", "script-src * 'unsafe-inline'; worker-src self blob:;");
     next();
   });
   // Serve the doc markdowns and assets that are also bundled into the docker image

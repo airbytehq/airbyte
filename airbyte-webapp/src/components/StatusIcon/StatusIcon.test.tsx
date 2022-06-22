@@ -14,7 +14,7 @@ describe("<StatusIcon />", () => {
     expect(component.getByText(`${value}`)).toBeDefined();
   });
 
-  const statusCases: { status: StatusIconStatus; icon: string }[] = [
+  const statusCases: Array<{ status: StatusIconStatus; icon: string }> = [
     { status: "success", icon: "check" },
     { status: "inactive", icon: "pause" },
     { status: "sleep", icon: "moon" },

@@ -17,7 +17,8 @@
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -27,7 +28,8 @@
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -40,7 +42,8 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["checkout_session_expires_at"]
+      "cursor_field": ["checkout_session_expires_at"],
+      "primary_key": [["id"]]
     }
   ]
 }
