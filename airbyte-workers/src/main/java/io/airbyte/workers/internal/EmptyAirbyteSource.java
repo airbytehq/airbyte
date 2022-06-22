@@ -55,6 +55,12 @@ public class EmptyAirbyteSource implements AirbyteSource {
       // TODO: When the jobConfig is fully updated and tested, we can remove this extra check that makes
       // us compatible with running a reset with
       // a null config
+      /*
+        This is a protection against reverting a commit that set the resetSourceConfiguration, it makes that there is not side effect of such a
+        revert.
+        The legacy behavior is to have the config as an empty jsonObject, this is an extra protection if the workerConfiguration is null. In the
+        previous implementation it was unused so passing it as null should not result in a NPE or a parsing failure.
+       */
       isResetBasedForConfig = false;
     } else {
       final ResetSourceConfiguration resetSourceConfiguration;
@@ -65,6 +71,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
         // TODO: This is done to be able to handle the transition period where we can have no stream being
         // pass to the configuration because the
         // logic of populating this list is not implemented
+        /*
+        This is a protection against reverting a commit that set the resetSourceConfiguration, it makes that there is not side effect of such a
+        revert.
+        The legacy behavior is to have the config as an empty object, it has been changed here: https://github.com/airbytehq/airbyte/pull/13696/files#diff-f51ff997b60a346c704608bb1cd7d22457eda2559b42987d5fa1281d568fc222L40
+       */
         isResetBasedForConfig = false;
       } else {
         stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState());
