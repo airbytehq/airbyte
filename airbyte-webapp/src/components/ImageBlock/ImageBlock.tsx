@@ -3,7 +3,7 @@ import React from "react";
 
 import { getIcon } from "utils/imageUtils";
 
-import styles from "./ImageCircle.module.scss";
+import styles from "./ImageBlock.module.scss";
 
 interface ImageCircleProps {
   img?: string;
