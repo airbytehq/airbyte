@@ -48,6 +48,9 @@
     "error_code": {
       "type": ["null", "integer"]
     },
+    "media_url": {
+      "type": ["null", "string"]
+    },
     "uri": {
       "type": ["null", "string"]
     },
