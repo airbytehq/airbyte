@@ -13,10 +13,15 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
+import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.staging.StagingOperations;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,18 +31,27 @@ import org.joda.time.DateTime;
 
 public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
 
+  private static final Encoder BASE64_ENCODER = Base64.getEncoder();
   private final NamingConventionTransformer nameTransformer;
   private final S3StorageOperations s3StorageOperations;
   private final S3DestinationConfig s3Config;
   private final ObjectMapper objectMapper;
+  private final byte[] keyEncryptingKey;
 
   public RedshiftS3StagingSqlOperations(NamingConventionTransformer nameTransformer,
                                         AmazonS3 s3Client,
-                                        S3DestinationConfig s3Config) {
+                                        S3DestinationConfig s3Config,
+                                        final EncryptionConfig encryptionConfig) {
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
     this.objectMapper = new ObjectMapper();
+    if (encryptionConfig instanceof AesCbcEnvelopeEncryption e) {
+      this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(e.key()));
+      this.keyEncryptingKey = e.key();
+    } else {
+      this.keyEncryptingKey = null;
+    }
   }
 
   @Override
@@ -99,10 +113,18 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   private void executeCopy(final String manifestPath, JdbcDatabase db, String schemaName, String tmpTableName) {
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
+    final String encryptionClause;
+    if (keyEncryptingKey == null) {
+      encryptionClause = "";
+    } else {
+      encryptionClause = String.format(" encryption = (type = 'aws_cse' master_key = '%s')", BASE64_ENCODER.encodeToString(keyEncryptingKey));
+    }
+
     final var copyQuery = String.format(
         """
         COPY %s.%s FROM '%s'
         CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'
+        %s
         CSV GZIP
         REGION '%s' TIMEFORMAT 'auto'
         STATUPDATE OFF
@@ -112,6 +134,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
         getFullS3Path(s3Config.getBucketName(), manifestPath),
         credentialConfig.getAccessKeyId(),
         credentialConfig.getSecretAccessKey(),
+        encryptionClause,
         s3Config.getBucketRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
