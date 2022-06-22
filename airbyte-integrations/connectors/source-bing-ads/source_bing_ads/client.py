@@ -47,13 +47,6 @@ class Client:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.refresh_token = refresh_token
         self.developer_token = developer_token
-        # All periodic reports enabled by default in the case of task #12489
-        # https://github.com/airbytehq/airbyte/issues/12489
-        # Parameters removed from json config and __init__(...)
-        self.hourly_reports = True
-        self.daily_reports = True
-        self.weekly_reports = True
-        self.monthly_reports = True
 
         self.client_id = client_id
         self.client_secret = client_secret

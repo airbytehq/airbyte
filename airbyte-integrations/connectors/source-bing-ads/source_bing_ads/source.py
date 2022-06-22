@@ -597,23 +597,16 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
-        # Added in the case of task #12489
-        # https://github.com/airbytehq/airbyte/issues/12489
-        config['hourly_reports'] = client.hourly_reports
-        config['daily_reports'] = client.daily_reports
-        config['weekly_reports'] = client.weekly_reports
-        config['monthly_reports'] = client.monthly_reports
+        config['hourly_reports'] = True
+        config['daily_reports'] = True
+        config['weekly_reports'] = True
+        config['monthly_reports'] = True
 
-        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
-            streams.append(BudgetSummaryReport(client, config))
+        streams.append(BudgetSummaryReport(client, config))
 
-        if config["hourly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
-        if config["daily_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
-        if config["weekly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
-        if config["monthly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
 
         return streams
