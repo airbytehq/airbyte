@@ -302,7 +302,6 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
-| 0.4.4   | 2022-07-20 | [13866](https://github.com/airbytehq/airbyte/pull/13866) | Omit using 'USE' keyword on Azure SQL with CDC    |
 | 0.4.3   | 2022-07-17 | [13887](https://github.com/airbytehq/airbyte/pull/13887) | Increase version to include changes from [13854](https://github.com/airbytehq/airbyte/pull/13854)           |
 | 0.4.2   | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size                                            |
 | 0.4.1   | 2022-05-25 | [13419](https://github.com/airbytehq/airbyte/pull/13419) | Correct enum for Standard method.                                                                      |
