@@ -25,8 +25,8 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
-import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -37,7 +37,9 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -275,7 +277,17 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+      boolean isAzureSQL = false;
+
+      try (Statement stmt = connection.createStatement();
+          ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
+        isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
+      }
+
+      // Azure SQL does not support USE clause
+      final String sql =
+          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
+
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",

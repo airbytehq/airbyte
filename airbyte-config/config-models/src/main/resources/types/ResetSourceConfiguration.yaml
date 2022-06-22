@@ -6,9 +6,9 @@ description: configuration of the reset source
 type: object
 additionalProperties: true
 required:
-  - streamDescriptors
+  - streamsToReset
 properties:
-  streamDescriptors:
+  streamsToReset:
     type: array
     items:
       "$ref": StreamDescriptor.yaml

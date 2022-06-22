@@ -1,8 +1,8 @@
-# Databricks Delta Lake
+# Databricks Lakehouse
 
 ## Overview
 
-This destination syncs data to Databricks Delta Lake. Each stream is written to its own [delta-table](https://delta.io/).
+This destination syncs data to Delta Lake on Databricks Lakehouse. Each stream is written to its own [delta-table](https://delta.io/).
 
 This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connect third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
@@ -104,6 +104,8 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.3 | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
+| 0.2.2 | 2022-06-13 | [\#13722](https://github.com/airbytehq/airbyte/pull/13722) | Rename to "Databricks Lakehouse". |
 | 0.2.1 | 2022-06-08 | [\#13630](https://github.com/airbytehq/airbyte/pull/13630) | Rename to "Databricks Delta Lake" and add field orders in the spec. |
 | 0.2.0 | 2022-05-15 | [\#12861](https://github.com/airbytehq/airbyte/pull/12861) | Use new public Databricks JDBC driver, and open source the connector. |
 | 0.1.5 | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
