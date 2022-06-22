@@ -196,7 +196,7 @@ jobs:
           body: |
             <br>
 
-            | Connector | Published | Definitions generated |
+            | Connector | Did it publish? | Were definitions generated? |
       - name: Create table separator
         uses: peter-evans/create-or-update-comment@v1
         with:
