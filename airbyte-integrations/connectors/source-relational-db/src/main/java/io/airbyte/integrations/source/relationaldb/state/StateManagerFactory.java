@@ -45,14 +45,14 @@ public class StateManagerFactory {
       final AirbyteStateMessage airbyteStateMessage = initialState.get(0);
       switch (supportedStateType) {
         case LEGACY:
-          LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+          LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage.getType());
           return new LegacyStateManager(Jsons.object(airbyteStateMessage.getData(), DbState.class), catalog);
         case GLOBAL:
-          LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+          LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage.getType());
           return new GlobalStateManager(generateGlobalState(airbyteStateMessage), catalog);
         case STREAM:
         default:
-          LOGGER.info("Stream state manager selected to manage state object with type {}.", airbyteStateMessage.getStateType());
+          LOGGER.info("Stream state manager selected to manage state object with type {}.", airbyteStateMessage.getType());
           return new StreamStateManager(generateStreamState(initialState), catalog);
       }
     } else {
@@ -76,12 +76,12 @@ public class StateManagerFactory {
   private static AirbyteStateMessage generateGlobalState(final AirbyteStateMessage airbyteStateMessage) {
     AirbyteStateMessage globalStateMessage = airbyteStateMessage;
 
-    switch (airbyteStateMessage.getStateType()) {
+    switch (airbyteStateMessage.getType()) {
       case STREAM:
         throw new IllegalArgumentException("Unable to convert connector state from stream to global.  Please reset the connection to continue.");
       case LEGACY:
         globalStateMessage = StateGeneratorUtils.convertLegacyStateToGlobalState(airbyteStateMessage);
-        LOGGER.info("Legacy state converted to global state.", airbyteStateMessage.getStateType());
+        LOGGER.info("Legacy state converted to global state.", airbyteStateMessage.getType());
         break;
       case GLOBAL:
       default:
@@ -107,7 +107,7 @@ public class StateManagerFactory {
   private static List<AirbyteStateMessage> generateStreamState(final List<AirbyteStateMessage> states) {
     final AirbyteStateMessage airbyteStateMessage = states.get(0);
     final List<AirbyteStateMessage> streamStates = new ArrayList<>();
-    switch (airbyteStateMessage.getStateType()) {
+    switch (airbyteStateMessage.getType()) {
       case GLOBAL:
         throw new IllegalArgumentException("Unable to convert connector state from global to stream.  Please reset the connection to continue.");
       case LEGACY:
