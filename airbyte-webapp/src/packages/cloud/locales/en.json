@@ -25,6 +25,9 @@
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+  "login.quoteText": "Airbyte has cut <b>months of man hours off</b> of our ELT pipeline development and delivered usable data to us in hours instead of weeks. We are excited for the future of Airbyte, enthusiastic about their approach, and optimistic about our future together.",
+  "login.quoteAuthor": "Micah Mangione",
+  "login.quoteAuthorJobTitle": "Director of Technology",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",

@@ -1,11 +1,5 @@
-.container {
-  height: 100vh;
-  background-image: url(/../public/person-photo.png);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: grayscale(100%);
-}
+@use "../../../../../scss/colors";
+@use "../../../../../scss/fonts";
 
 .overlay {
   position: relative;
@@ -26,6 +20,75 @@
     content: "";
     position: absolute;
     top: 0;
-    z-index: 3;
+    z-index: 1;
   }
+}
+
+.imageContainer {
+  height: 100vh;
+  //background-image: url(/../public/person-photo.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: grayscale(100%);
+}
+
+.blockQuote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 2;
+  position: absolute;
+
+  left: calc(50% - 250px);
+  top: calc(50% - 182.865px + 0.37px);
+  border-radius: 12px;
+}
+
+.quote {
+  width: 500px;
+  margin: 0;
+  color: colors.$white;
+  font-family: fonts.$regularFont;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 28px;
+  text-align: justify;
+
+  &:before {
+    content: "\201C";
+    font-size: 50px;
+    position: absolute;
+    top: 0;
+  }
+  &:after {
+    content: "\201D";
+    font-size: 50px;
+    position: absolute;
+    right: 0;
+  }
+}
+
+.companyLogo {
+  color: colors.$white;
+  height: 110px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.quoteAuthorFullName {
+  color: colors.$white;
+  font-family: fonts.$regularFont;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.quoteAuthorJobTitle {
+  color: colors.$white;
+  font-family: fonts.$regularFont;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 10px;
 }
