@@ -5,13 +5,13 @@ import { getIcon } from "utils/imageUtils";
 
 import styles from "./ImageBlock.module.scss";
 
-interface ImageCircleProps {
+interface ImageBlockProps {
   img?: string;
   num?: number;
   small?: boolean;
 }
 
-const ImageCircle: React.FC<ImageCircleProps> = ({ img, num, small }) => {
+const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small }) => {
   const imageCircleClassnames = classnames({
     [styles.circle]: num,
     [styles.iconContainer]: !num || num === undefined,
@@ -25,5 +25,5 @@ const ImageCircle: React.FC<ImageCircleProps> = ({ img, num, small }) => {
   );
 };
 
-export default ImageCircle;
-export { ImageCircle };
+export default ImageBlock;
+export { ImageBlock };
