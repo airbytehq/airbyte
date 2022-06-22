@@ -26,6 +26,7 @@ class Oauth2Authenticator(AuthBase):
         token_expiry_date: pendulum.DateTime = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
+        refresh_request_body: Mapping[str, Any] = None,
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
@@ -34,6 +35,7 @@ class Oauth2Authenticator(AuthBase):
         self.scopes = scopes
         self.access_token_name = access_token_name
         self.expires_in_name = expires_in_name
+        self.refresh_request_body = refresh_request_body
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._access_token = None
@@ -68,6 +70,12 @@ class Oauth2Authenticator(AuthBase):
 
         if self.scopes:
             payload["scopes"] = self.scopes
+
+        if self.refresh_request_body:
+            for key, val in self.refresh_request_body.items():
+                # We defer to existing oauth constructs over custom configured fields
+                if key not in payload:
+                    payload[key] = val
 
         return payload
 

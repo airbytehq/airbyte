@@ -101,6 +101,7 @@ class TestOauth2Authenticator:
             client_secret=TestOauth2Authenticator.client_secret,
             refresh_token=TestOauth2Authenticator.refresh_token,
             scopes=scopes,
+            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
         body = oauth.get_refresh_request_body()
         expected = {
@@ -109,6 +110,8 @@ class TestOauth2Authenticator:
             "client_secret": "client_secret",
             "refresh_token": "refresh_token",
             "scopes": scopes,
+            "custom_field": "in_outbound_request",
+            "another_field": "exists_in_body",
         }
         assert body == expected
 

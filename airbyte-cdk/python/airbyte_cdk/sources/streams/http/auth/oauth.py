@@ -27,6 +27,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         refresh_token: str,
         scopes: List[str] = None,
         refresh_access_token_headers: Mapping[str, Any] = None,
+        refresh_request_body: Mapping[str, Any] = None,
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
@@ -34,6 +35,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         self.refresh_token = refresh_token
         self.scopes = scopes
         self.refresh_access_token_headers = refresh_access_token_headers
+        self.refresh_request_body = refresh_request_body
 
         self._token_expiry_date = pendulum.now().subtract(days=1)
         self._access_token = None
@@ -64,6 +66,12 @@ class Oauth2Authenticator(HttpAuthenticator):
 
         if self.scopes:
             payload["scopes"] = self.scopes
+
+        if self.refresh_request_body:
+            for key, val in self.refresh_request_body.items():
+                # We defer to existing oauth constructs over custom configured fields
+                if key not in payload:
+                    payload[key] = val
 
         return payload
 
