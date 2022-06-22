@@ -17,10 +17,10 @@ import org.junit.jupiter.api.Test;
 public class SentryExceptionHelperTest {
 
   @Test
-  void testBuildPythonSentryExceptions() throws IOException {
+  void testBuildSentryExceptionsPython() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_python_stacktrace.txt");
 
-    final List<SentryException> exceptionList = SentryExceptionHelper.buildPythonSentryExceptions(stacktrace);
+    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
     Assertions.assertEquals(2, exceptionList.size());
 
@@ -61,6 +61,91 @@ public class SentryExceptionHelperTest {
 
   }
 
+  @Test
+  void testBuildSentryExceptionsJava() throws IOException {
+    final String stacktrace = MoreResources.readResource("sample_java_stacktrace.txt");
+
+    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNotNull(exceptionList);
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "java.lang.ArithmeticException", "/ by zero",
+        List.of(
+            Map.of(
+                "filename", "GradleWorkerMain.java",
+                "lineno", 74,
+                "module", "worker.org.gradle.process.internal.worker.GradleWorkerMain",
+                "function", "main"),
+            Map.of(
+                "module", "jdk.proxy2.$Proxy5",
+                "function", "stop"),
+            Map.of(
+                "filename", "ThrowableCollector.java",
+                "lineno", 73,
+                "module", "org.junit.platform.engine.support.hierarchical.ThrowableCollector",
+                "function", "execute"),
+            Map.of(
+                "filename", "NodeTestTask.java",
+                "lineno", 141,
+                "module", "org.junit.platform.engine.support.hierarchical.NodeTestTask",
+                "function", "lambda$executeRecursively$8"),
+            Map.of(
+                "filename", "ExecutableInvoker.java",
+                "lineno", 115,
+                "module", "org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall",
+                "function", "lambda$ofVoidMethod$0"),
+            Map.of(
+                "isNative", true,
+                "module", "jdk.internal.reflect.NativeMethodAccessorImpl",
+                "function", "invoke0"),
+            Map.of(
+                "filename", "AirbyteTraceMessageUtilityTest.java",
+                "lineno", 61,
+                "module", "io.airbyte.integrations.base.AirbyteTraceMessageUtilityTest",
+                "function", "testCorrectStacktraceFormat")));
+  }
+
+  @Test
+  void testBuildSentryExceptionsJavaChained() throws IOException {
+    final String stacktrace = MoreResources.readResource("sample_java_stacktrace_chained.txt");
+
+    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNotNull(exceptionList);
+    Assertions.assertEquals(2, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "java.util.concurrent.CompletionException",
+        "io.airbyte.workers.DefaultReplicationWorker$DestinationException: Destination process exited with non-zero exit code 1",
+        List.of(
+            Map.of(
+                "filename", "Thread.java",
+                "lineno", 833,
+                "module", "java.lang.Thread",
+                "function", "run"),
+            Map.of(
+                "filename", "ThreadPoolExecutor.java",
+                "lineno", 635,
+                "module", "java.util.concurrent.ThreadPoolExecutor$Worker",
+                "function", "run"),
+            Map.of(
+                "filename", "CompletableFuture.java",
+                "lineno", 315,
+                "module", "java.util.concurrent.CompletableFuture",
+                "function", "encodeThrowable")));
+
+    assertExceptionContent(exceptionList.get(1), "io.airbyte.workers.DefaultReplicationWorker$DestinationException",
+        "Destination process exited with non-zero exit code 1", List.of(
+            Map.of(
+                "filename", "CompletableFuture.java",
+                "lineno", 1804,
+                "module", "java.util.concurrent.CompletableFuture$AsyncRun",
+                "function", "run"),
+            Map.of(
+                "filename", "DefaultReplicationWorker.java",
+                "lineno", 397,
+                "module", "io.airbyte.workers.DefaultReplicationWorker",
+                "function", "lambda$getDestinationOutputRunnable$7")));
+  }
+
   void assertExceptionContent(final SentryException exception, final String type, final String value, final List<Map<String, Object>> frames) {
     Assertions.assertEquals(type, exception.getType());
     Assertions.assertEquals(value, exception.getValue());
@@ -74,6 +159,14 @@ public class SentryExceptionHelperTest {
     for (int i = 0; i < frames.size(); i++) {
       final Map<String, Object> expectedFrame = frames.get(i);
       final SentryStackFrame sentryFrame = sentryFrames.get(i);
+
+      if (expectedFrame.containsKey("module")) {
+        Assertions.assertEquals(expectedFrame.get("module"), sentryFrame.getModule());
+      }
+
+      if (expectedFrame.containsKey("filename")) {
+        Assertions.assertEquals(expectedFrame.get("filename"), sentryFrame.getFilename());
+      }
 
       if (expectedFrame.containsKey("abspath")) {
         Assertions.assertEquals(expectedFrame.get("abspath"), sentryFrame.getAbsPath());
@@ -89,6 +182,10 @@ public class SentryExceptionHelperTest {
 
       if (expectedFrame.containsKey("context_line")) {
         Assertions.assertEquals(expectedFrame.get("context_line"), sentryFrame.getContextLine());
+      }
+
+      if (expectedFrame.containsKey("isNative")) {
+        Assertions.assertEquals(expectedFrame.get("isNative"), sentryFrame.isNative());
       }
     }
   }
