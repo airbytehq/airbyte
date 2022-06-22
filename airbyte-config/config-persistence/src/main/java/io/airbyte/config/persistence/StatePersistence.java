@@ -106,11 +106,11 @@ public class StatePersistence {
     });
   }
 
-  private void clearLegacyState(final DSLContext ctx, final UUID connectionId) {
+  private static void clearLegacyState(final DSLContext ctx, final UUID connectionId) {
     writeStateToDb(ctx, connectionId, null, null, StateType.LEGACY, null);
   }
 
-  private void saveGlobalState(final DSLContext ctx, final UUID connectionId, final AirbyteGlobalState globalState) {
+  private static void saveGlobalState(final DSLContext ctx, final UUID connectionId, final AirbyteGlobalState globalState) {
     writeStateToDb(ctx, connectionId, null, null, StateType.GLOBAL, globalState.getSharedState());
     for (final AirbyteStreamState streamState : globalState.getStreamStates()) {
       writeStateToDb(ctx,
@@ -122,7 +122,7 @@ public class StatePersistence {
     }
   }
 
-  private void saveStreamState(final DSLContext ctx, final UUID connectionId, final List<AirbyteStateMessage> stateMessages) {
+  private static void saveStreamState(final DSLContext ctx, final UUID connectionId, final List<AirbyteStateMessage> stateMessages) {
     for (final AirbyteStateMessage stateMessage : stateMessages) {
       final AirbyteStreamState streamState = stateMessage.getStream();
       writeStateToDb(ctx,
@@ -134,7 +134,7 @@ public class StatePersistence {
     }
   }
 
-  private void saveLegacyState(final DSLContext ctx, final UUID connectionId, final JsonNode state) {
+  private static void saveLegacyState(final DSLContext ctx, final UUID connectionId, final JsonNode state) {
     writeStateToDb(ctx, connectionId, null, null, StateType.LEGACY, state);
   }
 
@@ -143,14 +143,14 @@ public class StatePersistence {
    *
    * If the state is null, it will delete the row, otherwise do an insert or update on conflict
    */
-  void writeStateToDb(final DSLContext ctx,
-                      final UUID connectionId,
-                      final String streamName,
-                      final String namespace,
-                      final StateType stateType,
-                      final JsonNode state) {
+  static void writeStateToDb(final DSLContext ctx,
+                             final UUID connectionId,
+                             final String streamName,
+                             final String namespace,
+                             final StateType stateType,
+                             final JsonNode state) {
     if (state != null) {
-      boolean hasState = ctx.selectFrom(STATE)
+      final boolean hasState = ctx.selectFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
               isNullOrEquals(STATE.STREAM_NAME, streamName),
@@ -226,7 +226,9 @@ public class StatePersistence {
    * @return the StateType of the records
    * @throws IOException If StateRecords have inconsistent types
    */
-  private io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(final UUID connectionId, final List<StateRecord> records) {
+  private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
+      final UUID connectionId,
+      final List<StateRecord> records) {
     final List<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types = records.stream().map(r -> r.type).distinct().toList();
     if (types.size() == 1) {
       return types.get(0);
@@ -243,7 +245,7 @@ public class StatePersistence {
    * @param connectionId the ID of the connection
    * @return The StateRecords for the connectionId
    */
-  private List<StateRecord> getStateRecords(final DSLContext ctx, final UUID connectionId) {
+  private static List<StateRecord> getStateRecords(final DSLContext ctx, final UUID connectionId) {
     return ctx.select(DSL.asterisk())
         .from(STATE)
         .where(STATE.CONNECTION_ID.eq(connectionId))
@@ -257,14 +259,14 @@ public class StatePersistence {
    * The list of records can contain one global shared state that is the state without streamName and
    * without namespace The other records should be tronslated into AirbyteStreamState
    */
-  private StateWrapper buildGlobalState(final List<StateRecord> records) {
+  private static StateWrapper buildGlobalState(final List<StateRecord> records) {
     // Split the global shared state from the other per stream records
     final Map<Boolean, List<StateRecord>> partitions = records.stream()
         .collect(Collectors.partitioningBy(r -> r.streamName == null && r.namespace == null));
 
     final AirbyteGlobalState globalState = new AirbyteGlobalState()
         .withSharedState(partitions.get(Boolean.TRUE).stream().map(r -> r.state).findFirst().orElse(null))
-        .withStreamStates(partitions.get(Boolean.FALSE).stream().map(this::buildAirbyteStreamState).toList());
+        .withStreamStates(partitions.get(Boolean.FALSE).stream().map(StatePersistence::buildAirbyteStreamState).toList());
 
     final AirbyteStateMessage msg = new AirbyteStateMessage()
         .withStateType(AirbyteStateType.GLOBAL)
@@ -275,8 +277,8 @@ public class StatePersistence {
   /**
    * Build StateWrapper for a PerStream state
    */
-  private StateWrapper buildStreamState(final List<StateRecord> records) {
-    List<AirbyteStateMessage> messages = records.stream().map(
+  private static StateWrapper buildStreamState(final List<StateRecord> records) {
+    final List<AirbyteStateMessage> messages = records.stream().map(
         record -> new AirbyteStateMessage()
             .withStateType(AirbyteStateType.STREAM)
             .withStream(buildAirbyteStreamState(record)))
@@ -287,7 +289,7 @@ public class StatePersistence {
   /**
    * Build a StateWrapper for Legacy state
    */
-  private StateWrapper buildLegacyState(final List<StateRecord> records) {
+  private static StateWrapper buildLegacyState(final List<StateRecord> records) {
     return new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(records.get(0).state);
@@ -296,7 +298,7 @@ public class StatePersistence {
   /**
    * Convert a StateRecord to an AirbyteStreamState
    */
-  private AirbyteStreamState buildAirbyteStreamState(final StateRecord record) {
+  private static AirbyteStreamState buildAirbyteStreamState(final StateRecord record) {
     return new AirbyteStreamState()
         .withStreamDescriptor(new StreamDescriptor().withName(record.streamName).withNamespace(record.namespace))
         .withStreamState(record.state);
