@@ -143,7 +143,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(Mockito.mock(StandardSync.class));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -165,7 +165,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, true));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
