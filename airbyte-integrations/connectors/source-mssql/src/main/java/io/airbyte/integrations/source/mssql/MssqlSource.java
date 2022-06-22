@@ -74,9 +74,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
     final List<String> newIdentifiersList = getWrappedColumn(database,
@@ -92,12 +92,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final String cursorField,
-      final JDBCType cursorFieldType,
-      final String cursor) {
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField,
+                                                               final JDBCType cursorFieldType,
+                                                               final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -128,17 +128,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   /**
-   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be converted to a nvarchar(4000) data type by
-   * calling the ToString() method. So we make a separate query to get Table's MetaData, check is there any hierarchyid columns, and wrap required
-   * fields with the ToString() function in the final Select query. Reference: https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
+   * There is no support for hierarchyid even in the native SQL Server JDBC driver. Its value can be
+   * converted to a nvarchar(4000) data type by calling the ToString() method. So we make a separate
+   * query to get Table's MetaData, check is there any hierarchyid columns, and wrap required fields
+   * with the ToString() function in the final Select query. Reference:
+   * https://docs.microsoft.com/en-us/sql/t-sql/data-types/hierarchyid-data-type-method-reference?view=sql-server-ver15#data-type-conversion
    *
    * @return the list with Column names updated to handle functions (if nay) properly
    */
   private List<String> getWrappedColumn(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final String enquoteSymbol) {
+                                        final List<String> columnNames,
+                                        final String schemaName,
+                                        final String tableName,
+                                        final String enquoteSymbol) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
       final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
@@ -282,7 +284,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
       }
 
-      //Azure SQL does not support USE clause
+      // Azure SQL does not support USE clause
       final String sql =
           isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
 
@@ -358,11 +360,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
