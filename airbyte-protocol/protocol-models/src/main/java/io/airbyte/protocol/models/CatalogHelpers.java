@@ -217,8 +217,6 @@ public class CatalogHelpers {
             (contextWrapperLeft, contextWrapperRight) -> {
               contextWrapperLeft.result.addAll(contextWrapperRight.result);
               contextWrapperLeft.fieldNamesThatAreOneOfs.addAll(contextWrapperRight.fieldNamesThatAreOneOfs);
-              contextWrapperRight.result.addAll(contextWrapperLeft.result);
-              contextWrapperRight.fieldNamesThatAreOneOfs.addAll(contextWrapperLeft.fieldNamesThatAreOneOfs);
             }).result;
 
     return res;
