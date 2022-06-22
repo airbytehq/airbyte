@@ -86,13 +86,6 @@ public class DefaultJobCreator implements JobCreator {
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
 
-  // Strategy:
-  // 1. Set all streams to full refresh - overwrite.
-  // 2. Create a job where the source emits no records.
-  // 3. Run a sync from the empty source to the destination. This will overwrite all data for each
-  // stream in the destination.
-  // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
-  // beginning on the next sync).
   @Override
   public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
                                                  final StandardSync standardSync,
