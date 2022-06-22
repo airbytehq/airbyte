@@ -47,7 +47,8 @@
               "minLength": 3
             },
             "value": {
-              "type": ["null", "number"]
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
@@ -60,7 +61,8 @@
               "minLength": 3
             },
             "value": {
-              "type": ["null", "number"]
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
@@ -73,7 +75,8 @@
               "minLength": 3
             },
             "value": {
-              "type": ["null", "number"]
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
@@ -86,7 +89,8 @@
               "minLength": 3
             },
             "value": {
-              "type": ["null", "number"]
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
@@ -99,7 +103,8 @@
               "minLength": 3
             },
             "value": {
-              "type": ["null", "number"]
+              "type": "string",
+              "maxLength": 32
             }
           }
         },
@@ -218,7 +223,7 @@
                 "type": ["null", "string"]
               },
               "item_quantity": {
-                "type": ["null", "number"]
+                "type": ["null", "string"]
               },
               "item_unit_price": {
                 "type": ["null", "object"],
@@ -229,7 +234,8 @@
                     "minLength": 3
                   },
                   "value": {
-                    "type": ["null", "number"]
+                    "type": "string",
+                    "maxLength": 32
                   }
                 }
               },
@@ -242,7 +248,8 @@
                     "minLength": 3
                   },
                   "value": {
-                    "type": ["null", "number"]
+                    "type": "string",
+                    "maxLength": 32
                   }
                 }
               },
@@ -260,7 +267,8 @@
                           "minLength": 3
                         },
                         "value": {
-                          "type": ["null", "number"]
+                          "type": "string",
+                          "maxLength": 32
                         }
                       }
                     }
@@ -276,7 +284,8 @@
                     "minLength": 3
                   },
                   "value": {
-                    "type": ["null", "number"]
+                    "type": "string",
+                    "maxLength": 32
                   }
                 }
               },
@@ -347,7 +356,8 @@
                     "minLength": 3
                   },
                   "value": {
-                    "type": ["null", "number"]
+                    "type": "string",
+                    "maxLength": 32
                   }
                 }
               },
