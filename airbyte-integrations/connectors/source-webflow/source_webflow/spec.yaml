@@ -21,6 +21,3 @@ connectionSpecification:
       example: "a very long hex sequence"
       order: 1
       airbyte_secret: true
-
-
-
