@@ -234,7 +234,7 @@ class JobConverterTest {
 
   // this test intentionally only looks at the reset config as the rest is the same here.
   @Test
-  void testRestIncludesResetConfig() {
+  void testResetJobIncludesResetConfig() {
     final JobConfig resetConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(

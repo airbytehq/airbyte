@@ -89,7 +89,7 @@ public class JobConverter {
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
   }
 
   /**
