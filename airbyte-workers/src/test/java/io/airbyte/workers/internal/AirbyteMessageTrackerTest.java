@@ -16,6 +16,7 @@ import io.airbyte.protocol.state_lifecycle.StateLifecycleManager;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,16 +69,88 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage s3 = AirbyteMessageUtils.createStateMessage(s3Value);
 
     messageTracker.acceptFromSource(s1);
+    Mockito.verify(mStateLifecycleManager).addState(s1);
     messageTracker.acceptFromSource(s2);
+    Mockito.verify(mStateLifecycleManager).addState(s2);
     messageTracker.acceptFromSource(s3);
+    Mockito.verify(mStateLifecycleManager).addState(s3);
+
+    Mockito.reset(mStateLifecycleManager);
     messageTracker.acceptFromDestination(s1);
+    Mockito.verify(mStateLifecycleManager).addState(s1);
     messageTracker.acceptFromDestination(s2);
+    Mockito.verify(mStateLifecycleManager).addState(s2);
 
     assertTrue(messageTracker.getSourceOutputState().isPresent());
     assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
 
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
     assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
+  }
+
+  @Test
+  public void testRetainsSourceAndDestinationWithLegacyFormat() {
+    final int s1Value = 111;
+    final int s2Value = 222;
+    final AirbyteMessage s1 = AirbyteMessageUtils.createLegacyStateMessage(s1Value);
+    final AirbyteMessage s2 = AirbyteMessageUtils.createLegacyStateMessage(s2Value);
+
+    messageTracker.acceptFromSource(s1);
+    Mockito.verify(mStateLifecycleManager).addState(s1);
+    messageTracker.acceptFromDestination(s2);
+    Mockito.verify(mStateLifecycleManager).addState(s2);
+
+    assertTrue(messageTracker.getSourceOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(s1Value)), messageTracker.getSourceOutputState().get());
+
+    assertTrue(messageTracker.getDestinationOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
+  }
+
+  @Test
+  public void testRetainsSourceAndDestinationWithGlobalFormat() {
+    final int sharedState1 = 1;
+    final int sharedState2 = 5;
+    final String s1StreamName = "n1";
+    final String s2StreamName = "n2";
+    final int s1Value = 111;
+    final int s2Value = 222;
+    final AirbyteMessage s1 = AirbyteMessageUtils.createGlobalStateMessage(sharedState1, s1StreamName, s1Value);
+    final AirbyteMessage s2 = AirbyteMessageUtils.createGlobalStateMessage(sharedState2, s2StreamName, s2Value);
+
+    messageTracker.acceptFromSource(s1);
+    Mockito.verify(mStateLifecycleManager).addState(s1);
+    messageTracker.acceptFromDestination(s2);
+    Mockito.verify(mStateLifecycleManager).addState(s2);
+
+    final AirbyteMessage sourceExpected = AirbyteMessageUtils.createGlobalStateMessage(sharedState1, s1StreamName, s1Value);
+    assertTrue(messageTracker.getSourceOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(List.of(sourceExpected.getState()))), messageTracker.getSourceOutputState().get());
+
+    final AirbyteMessage destinationExpected = AirbyteMessageUtils.createGlobalStateMessage(sharedState2, s2StreamName, s2Value);
+    assertTrue(messageTracker.getDestinationOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(List.of(destinationExpected.getState()))), messageTracker.getDestinationOutputState().get());
+  }
+
+  @Test
+  public void testRetainsSourceAndDestinationWithStreamFormat() {
+    final String s1StreamName = "n1";
+    final String s2StreamName = "n2";
+    final int s1Value = 111;
+    final int s2Value = 222;
+    final AirbyteMessage s1 = AirbyteMessageUtils.createStreamStateMessage(s1StreamName, s1Value);
+    final AirbyteMessage s2 = AirbyteMessageUtils.createStreamStateMessage(s2StreamName, s2Value);
+
+    messageTracker.acceptFromSource(s1);
+    messageTracker.acceptFromDestination(s2);
+
+    final AirbyteMessage sourceExpected = AirbyteMessageUtils.createStreamStateMessage(s1StreamName, s1Value);
+    assertTrue(messageTracker.getSourceOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(List.of(sourceExpected.getState()))), messageTracker.getSourceOutputState().get());
+
+    final AirbyteMessage destinationExpected = AirbyteMessageUtils.createStreamStateMessage(s2StreamName, s2Value);
+    assertTrue(messageTracker.getDestinationOutputState().isPresent());
+    assertEquals(new State().withState(Jsons.jsonNode(List.of(destinationExpected.getState()))), messageTracker.getDestinationOutputState().get());
   }
 
   @Test

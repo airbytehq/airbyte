@@ -123,6 +123,7 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   /**
    * Save the latest state with the format expected based on the message type, increment the
+   *
    * @param stateMessage
    * @param outputState
    * @return
@@ -139,12 +140,8 @@ public class AirbyteMessageTracker implements MessageTracker {
         outputState.set(new State().withState(airbyteStateMessage.getData()));
       } else {
         switch (airbyteStateMessage.getStateType()) {
-          case GLOBAL ->
-              outputState.set(new State().withState(Jsons.jsonNode(Lists.newArrayList(airbyteStateMessage.getGlobal()))));
-          case STREAM ->
-              outputState.set(new State().withState(Jsons.jsonNode(Lists.newArrayList(airbyteStateMessage.getStream()))));
-          case LEGACY ->
-              outputState.set(new State().withState(airbyteStateMessage.getData()));
+          case GLOBAL, STREAM -> outputState.set(new State().withState(Jsons.jsonNode(Lists.newArrayList(airbyteStateMessage))));
+          case LEGACY -> outputState.set(new State().withState(airbyteStateMessage.getData()));
         }
       }
       totalEmittedStateMessages.incrementAndGet();

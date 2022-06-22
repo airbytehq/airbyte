@@ -8,6 +8,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.protocol.state_lifecycle.DefaultStateLifecycleManager;
+import io.airbyte.protocol.state_lifecycle.StateLifecycleManager;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
@@ -89,6 +91,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
+    final StateLifecycleManager stateLifecycleManager = new DefaultStateLifecycleManager();
+
     log.info("Setting up replication worker...");
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
@@ -96,7 +100,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
         new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-        new AirbyteMessageTracker(),
+        new AirbyteMessageTracker(stateLifecycleManager),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)));
 
     log.info("Running replication worker...");
