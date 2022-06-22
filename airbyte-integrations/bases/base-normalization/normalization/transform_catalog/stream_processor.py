@@ -525,6 +525,9 @@ where 1 = 1
                 if is_datetime_without_timezone(definition):
                     return self.generate_snowflake_timestamp_statement(column_name)
                 return self.generate_snowflake_timestamp_tz_statement(column_name)
+            if self.destination_type == DestinationType.MYSQL and is_datetime_without_timezone(definition):
+                # MySQL does not support [cast] and [nullif] functions together
+                return self.generate_mysql_datetime_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
@@ -598,6 +601,18 @@ where 1 = 1
         """
         )
         return template.render(column_name=column_name)
+
+    @staticmethod
+    def generate_mysql_datetime_format_statement(column_name: str) -> Any:
+        regexp = r'\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*'
+        template = Template(
+            """
+        case when {{column_name}} regexp '{{regexp}}' THEN STR_TO_DATE(SUBSTR({{column_name}}, 1, 19), '%Y-%m-%dT%H:%i:%S')
+        else cast(if({{column_name}} = '', NULL, {{column_name}}) as datetime)
+        end as {{column_name}}
+        """
+        )
+        return template.render(column_name=column_name, regexp=regexp)
 
     @staticmethod
     def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:
