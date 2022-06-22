@@ -135,6 +135,7 @@ public class WorkerApp {
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
   private final StreamResetPersistence streamResetPersistence;
+  private final JobCreator jobCreator;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -174,7 +175,6 @@ public class WorkerApp {
   }
 
   private void registerConnectionManager(final WorkerFactory factory) {
-    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
@@ -395,6 +395,7 @@ public class WorkerApp {
     final Database jobDatabase = new Database(jobsDslContext);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final DefaultJobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
@@ -404,7 +405,7 @@ public class WorkerApp {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
         configs.connectorSpecificResourceDefaultsEnabled(),
-        new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
+        jobCreator,
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
@@ -464,7 +465,8 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence).start();
+        streamResetPersistence,
+        jobCreator).start();
   }
 
   public static void main(final String[] args) {
