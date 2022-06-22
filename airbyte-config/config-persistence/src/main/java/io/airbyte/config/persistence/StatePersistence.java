@@ -73,9 +73,8 @@ public class StatePersistence {
   /**
    * Create or update the states described in the StateWrapper. Null states will be deleted.
    *
-   * The only state migrations supported are going from a Legacy state to either a Global or
-   * Stream state.
-   * Other state type migrations should go through an explicit reset. An exception will be
+   * The only state migrations supported are going from a Legacy state to either a Global or Stream
+   * state. Other state type migrations should go through an explicit reset. An exception will be
    * thrown to prevent the system from getting into a bad state.
    *
    * @param connectionId
@@ -228,8 +227,8 @@ public class StatePersistence {
    * @throws IllegalStateException If StateRecords have inconsistent types
    */
   private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
-      final UUID connectionId,
-      final List<StateRecord> records) {
+                                                                                            final UUID connectionId,
+                                                                                            final List<StateRecord> records) {
     final List<io.airbyte.db.instance.configs.jooq.generated.enums.StateType> types = records.stream().map(r -> r.type).distinct().toList();
     if (types.size() == 1) {
       return types.get(0);
