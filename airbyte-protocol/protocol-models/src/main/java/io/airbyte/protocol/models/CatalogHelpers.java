@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -148,6 +149,14 @@ public class CatalogHelpers {
         .collect(Collectors.toSet());
   }
 
+  @Setter
+  static class ContextWrapper {
+
+    private final List<Pair<List<String>, JsonNode>> result = new ArrayList<>();
+    private final Set<List<String>> fieldNamesThatAreOneOfs = new HashSet<>();
+
+  }
+
   /**
    * Extracts all fields and their schemas from a JSONSchema. This method returns values in
    * depth-first search preorder. It short circuits at oneOfs--in other words, child fields of a oneOf
@@ -163,15 +172,63 @@ public class CatalogHelpers {
     // however.
     final Set<List<String>> fieldNamesThatAreOneOfs = new HashSet<>();
 
-    return JsonSchemas.traverseJsonSchemaWithCollector(jsonSchema, (node, basicPath) -> {
+    final List<Pair<List<String>, JsonNode>> res =  JsonSchemas.traverseJsonSchemaWithCollector(jsonSchema, (node, basicPath) -> {
       final List<String> fieldName = basicPath.stream().filter(fieldOrList -> !fieldOrList.isList()).map(FieldNameOrList::getFieldName).toList();
       return Pair.of(fieldName, node);
     })
         .stream()
         // first node is the original object.
         .skip(1)
-        .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(), fieldWithSchema.getRight(), fieldNamesThatAreOneOfs))
-        .toList();
+        .collect(
+            () -> new ContextWrapper(),
+            (ContextWrapper result, Pair<List<String>, JsonNode> fieldWithSchema) -> {
+              Set<List<String>> oneOfFieldNameAccumulator =
+                  getChildrenOfOne(fieldWithSchema.getLeft(), fieldWithSchema.getRight(), result.fieldNamesThatAreOneOfs);
+              if (oneOfFieldNameAccumulator.isEmpty()) {
+                result.result.add(
+                    Pair.of(fieldWithSchema.getLeft(), fieldWithSchema.getRight()));
+
+              }
+              for (final List<String> oneOfFieldName : oneOfFieldNameAccumulator) {
+                final String oneOfFieldNameString = String.join(".", oneOfFieldName);
+                final String fieldNameString = String.join(".", fieldWithSchema.getLeft());
+                // We want to add the oneOf root
+                if (fieldNameString.equals(oneOfFieldNameString)) {
+                  result.result.add(
+                      Pair.of(oneOfFieldName, fieldWithSchema.getRight()));
+                  break;
+                }
+                if (!fieldNameString.startsWith(oneOfFieldNameString)) {
+                  result.result.add(
+                      Pair.of(oneOfFieldName, fieldWithSchema.getRight()));
+                }
+              }
+            },
+            (contextWrapperLeft, contextWrapperRight) -> {
+              contextWrapperLeft.result.addAll(contextWrapperRight.result);
+              contextWrapperLeft.fieldNamesThatAreOneOfs.addAll(contextWrapperRight.fieldNamesThatAreOneOfs);
+              contextWrapperRight.result.addAll(contextWrapperLeft.result);
+              contextWrapperRight.fieldNamesThatAreOneOfs.addAll(contextWrapperLeft.fieldNamesThatAreOneOfs);
+            }).result;
+
+    return res;
+    /*
+     * .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(),
+     * fieldWithSchema.getRight(), fieldNamesThatAreOneOfs)) .toList();
+     */
+  }
+
+  private static Set<List<String>> getChildrenOfOne(final List<String> fieldName,
+                                                    final JsonNode schema,
+                                                    final Set<List<String>> oneOfFieldNameAccumulator) {
+    if (isOneOfField(schema)) {
+      // TODO: Copy set
+      oneOfFieldNameAccumulator.add(fieldName);
+      return oneOfFieldNameAccumulator;
+    } else {
+      // TODO: copy set
+      return oneOfFieldNameAccumulator;
+    }
   }
 
   /**
