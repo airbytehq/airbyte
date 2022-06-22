@@ -92,9 +92,11 @@ class NetsuiteStream(HttpStream, ABC):
             # Netsuite schemas do not specify if fields can be null, or not
             # as Airbyte expects, so we have to allow every field to be null
             property_type = record.get("type")
-            # ensure there is a type and null has not already been added
-            if property_type and "null" not in list(property_type):
-                record["type"] = [property_type, "null"]
+            property_type_list = property_type if type(property_type) == list else [property_type]
+            # ensure there is a type, type is the json schema type and not a property
+            # and null has not already been added
+            if property_type and type(property_type) != dict and "null" not in property_type_list:
+                record["type"] = property_type_list + ["null"]
 
             # Netsuite values can be the full name of the value and not match
             # the enum specified in the scheama
