@@ -62,6 +62,14 @@ public class SentryExceptionHelperTest {
   }
 
   @Test
+  void testBuildSentryExceptionsInvalid() {
+    final String stacktrace = "this is not a stacktrace";
+
+    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNull(exceptionList);
+  }
+
+  @Test
   void testBuildSentryExceptionsJava() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_java_stacktrace.txt");
 
@@ -146,7 +154,7 @@ public class SentryExceptionHelperTest {
                 "function", "lambda$getDestinationOutputRunnable$7")));
   }
 
-  void assertExceptionContent(final SentryException exception, final String type, final String value, final List<Map<String, Object>> frames) {
+  private void assertExceptionContent(final SentryException exception, final String type, final String value, final List<Map<String, Object>> frames) {
     Assertions.assertEquals(type, exception.getType());
     Assertions.assertEquals(value, exception.getValue());
 

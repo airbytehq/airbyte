@@ -5,31 +5,51 @@
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardWorkspace;
-import io.sentry.Sentry;
+import io.sentry.Hub;
+import io.sentry.IHub;
+import io.sentry.NoOpHub;
 import io.sentry.SentryEvent;
+import io.sentry.SentryOptions;
 import io.sentry.protocol.Message;
 import io.sentry.protocol.SentryException;
-import io.sentry.protocol.SentryId;
 import io.sentry.protocol.User;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SentryErrorReportingClient implements ErrorReportingClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingErrorReportingClient.class);
+  private final IHub sentryHub;
 
-  public SentryErrorReportingClient(final String sentryDSN) {
-    Sentry.init(options -> {
-      options.setDsn(sentryDSN);
-      options.setEnableUncaughtExceptionHandler(false);
-    });
+  SentryErrorReportingClient(final IHub sentryHub) {
+    this.sentryHub = sentryHub;
   }
 
+  public SentryErrorReportingClient(final String sentryDSN) {
+    this(createSentryHubWithDSN(sentryDSN));
+  }
+
+  static IHub createSentryHubWithDSN(final String sentryDSN) {
+    if (sentryDSN == null || sentryDSN.isEmpty()) {
+      return NoOpHub.getInstance();
+    }
+
+    final SentryOptions options = new SentryOptions();
+    options.setDsn(sentryDSN);
+    options.setAttachStacktrace(false);
+    options.setEnableUncaughtExceptionHandler(false);
+    return new Hub(options);
+  }
+
+  /**
+   * Reports a Connector Job FailureReason to Sentry
+   * @param workspace - Workspace where this failure occurred
+   * @param failureReason - FailureReason to report
+   * @param dockerImage - Tagged docker image that represents the release where this failure occurred
+   * @param metadata - Extra metadata to set as tags on the event
+   */
   @Override
   public void report(final StandardWorkspace workspace,
                      final FailureReason failureReason,
@@ -37,11 +57,13 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
                      final Map<String, String> metadata) {
     final SentryEvent event = new SentryEvent();
 
-    // airbyte/source-xyz:1.2.0 -> source-xyz@1.2.0
+    // Remove invalid characters from the release name, use @ so sentry knows how to grab the tag
+    // e.g. airbyte/source-xyz:1.2.0 -> source-xyz@1.2.0
+    // More info at https://docs.sentry.io/product/cli/releases/#creating-releases
     final String release = dockerImage.replace(":", "@").substring(dockerImage.lastIndexOf("/") + 1);
     event.setRelease(release);
 
-    // add connector to event fingerprint to ensure separate grouping per connector
+    // enhance event fingerprint to ensure separate grouping per connector
     final String[] releaseParts = release.split("@");
     if (releaseParts.length > 0) {
       event.setFingerprints(List.of("{{ default }}", releaseParts[0]));
@@ -56,31 +78,42 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
     // set metadata as tags
     event.setTags(metadata);
 
+    // set failure reason's internalMessage as event message
+    // Sentry will use this to fuzzy-group if no stacktrace information is available
     final Message message = new Message();
     message.setFormatted(failureReason.getInternalMessage());
     event.setMessage(message);
 
-    // don't attach current thread stacktrace to the event
-    event.setThreads(new ArrayList<>());
+    // events can come from any platform
     event.setPlatform("other");
 
     // attach failure reason stack trace
     final String failureStackTrace = failureReason.getStacktrace();
     if (failureStackTrace != null) {
       final List<SentryException> parsedExceptions = SentryExceptionHelper.buildSentryExceptions(failureStackTrace);
-      event.setExceptions(parsedExceptions);
+      if (parsedExceptions != null) {
+        event.setExceptions(parsedExceptions);
+      } else {
+        event.setTag("stacktrace_parse_error", "1");
+      }
     }
 
-    Sentry.withScope(scope -> {
+    sentryHub.configureScope(scope -> {
       final Map<String, String> failureReasonContext = new HashMap<>();
       failureReasonContext.put("internalMessage", failureReason.getInternalMessage());
       failureReasonContext.put("externalMessage", failureReason.getExternalMessage());
       failureReasonContext.put("stacktrace", failureReason.getStacktrace());
-      scope.setContexts("Failure Reason", failureReasonContext);
+      failureReasonContext.put("timestamp", failureReason.getTimestamp().toString());
 
-      final SentryId eventId = Sentry.captureEvent(event);
-      LOGGER.info("SENT SENTRY EVENT: {}", eventId);
+      final Metadata failureReasonMeta = failureReason.getMetadata();
+      if (failureReasonMeta != null) {
+        failureReasonContext.put("metadata", failureReasonMeta.toString());
+      }
+
+      scope.setContexts("Failure Reason", failureReasonContext);
     });
+
+    sentryHub.captureEvent(event);
   }
 
 }
