@@ -114,7 +114,6 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
         if self._cursor_value:
             return {
                 self.cursor_field: self._cursor_value,
@@ -124,12 +123,18 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """State setter, ignore state if current settings mismatch saved state"""
+        if self._lookback_window and value.get(self.cursor_field):
+            new_start_date = (
+                pendulum.parse(value[self.cursor_field]) - pendulum.duration(minutes=self._lookback_window)
+            ).to_iso8601_string()
+            if new_start_date > self._start_date:
+                value[self.cursor_field] = new_start_date
         self._cursor_value = value.get(self.cursor_field)
 
-    def request_params(self, *args, **kwargs) -> MutableMapping[str, Any]:
-        kwargs.pop("stream_state")
-        params = super().request_params(stream_state=self.state, **kwargs)
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         start_date = self.state.get(self.cursor_field, self._start_date)
         params[self.incremental_filter_field] = pendulum.parse(start_date).format(self.time_filter_template)
         return params
