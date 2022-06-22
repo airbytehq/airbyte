@@ -12,7 +12,7 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
-from integration_tests.dbt_integration_test import DbtIntegrationTest, NORMALIZATION_TYPE_TEST
+from integration_tests.dbt_integration_test import NORMALIZATION_TYPE_TEST, DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import TransformCatalog
 
@@ -23,6 +23,7 @@ temporary_folders = set()
 git_versioned_tests = ["test_simple_streams", "test_nested_streams"]
 
 dbt_test_utils = DbtIntegrationTest()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
@@ -38,16 +39,15 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    # clean-up tmp tables for Redshift 
+    # clean-up tmp tables for Redshift
     dbt_test_utils.clean_tmp_tables(
-        destination_type=DestinationType.REDSHIFT, 
-        test_type=NORMALIZATION_TYPE_TEST[1],
-        git_versioned_tests=git_versioned_tests
+        destination_type=DestinationType.REDSHIFT, test_type=NORMALIZATION_TYPE_TEST[1], git_versioned_tests=git_versioned_tests
     )
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
+
 
 @pytest.fixture
 def setup_test_path(request):
@@ -56,6 +56,7 @@ def setup_test_path(request):
     print(f"Current PATH is: {os.environ['PATH']}")
     yield
     os.chdir(request.config.invocation_dir)
+
 
 @pytest.mark.parametrize(
     "test_resource_name",
@@ -533,7 +534,7 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
         "profile_config_dir": tmp_path,
     }
     transform_catalog.process_catalog()
-    
+
     run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", docker_tag="0.3.29")
     dbt_test_utils.dbt_check(destination_type, tmp_path)
     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
@@ -542,6 +543,3 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
     dbt_test(destination_type, tmp_path)
     # clean-up test tables
     dbt_test_utils.clean_tmp_tables(destination_type=DestinationType.REDSHIFT, tmp_folders=[str(tmp_path)])
-
-    
-    
