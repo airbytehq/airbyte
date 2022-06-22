@@ -51,7 +51,7 @@ def get_query_pull_requests(owner, name, first, after):
     return str(op)
 
 
-def get_query_reviews(owner, name, first, after):
+def get_query_reviews(owner, name, first, after, number=None):
     kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
     if after:
         kwargs["after"] = after
@@ -60,9 +60,14 @@ def get_query_reviews(owner, name, first, after):
     repository = op.repository(owner=owner, name=name)
     repository.name()
     repository.owner.login()
-    pull_requests = repository.pull_requests(**kwargs)
-    pull_requests.nodes.__fields__(url=True)
-    reviews = pull_requests.nodes.reviews(first=first)
+    if number:
+        pull_request = repository.pull_request(number=number)
+    else:
+        pull_requests = repository.pull_requests(**kwargs)
+        pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
+        pull_request = pull_requests.nodes
+    pull_request.__fields__(url=True)
+    reviews = pull_request.reviews(first=first)
     reviews.nodes.__fields__(
         id="node_id",
         database_id="id",
@@ -84,5 +89,4 @@ def get_query_reviews(owner, name, first, after):
         url="html_url",
         is_site_admin="site_admin",
     )
-    pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
