@@ -528,7 +528,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         return Jsons.object(initialStateJson, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
         LOGGER.warn("Defaulting to legacy state object...");
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(initialStateJson));
+        return List.of(new AirbyteStateMessage()  //.withStateType(AirbyteStateType.LEGACY)
+            .withData(initialStateJson));
       }
     }
   }
@@ -541,7 +542,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
     // For backwards compatibility with existing connectors
-    return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+    return List.of(new AirbyteStateMessage()  //.withStateType(AirbyteStateType.LEGACY)
+         .withData(Jsons.jsonNode(new DbState())));
   }
 
   /**

@@ -437,9 +437,9 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
+//  @Override
+//  protected boolean supportsPerStream() {
+//    return true;
+//  }
 
 }

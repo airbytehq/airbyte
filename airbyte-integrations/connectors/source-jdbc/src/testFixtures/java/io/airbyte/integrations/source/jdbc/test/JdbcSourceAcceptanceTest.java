@@ -892,7 +892,7 @@ public abstract class JdbcSourceAcceptanceTest {
                         .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
             .collect(
                 Collectors.toList())
-        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage() //.withStateType(AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))));
   }
 
@@ -905,7 +905,8 @@ public abstract class JdbcSourceAcceptanceTest {
                     .withStreamState(Jsons.jsonNode(s))))
             .collect(
                 Collectors.toList())
-        : List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
+        : List.of(new AirbyteStateMessage() //.withStateType(AirbyteStateType.LEGACY)
+             .withData(Jsons.jsonNode(new DbState().withStreams(states))));
   }
 
   protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -1056,7 +1057,8 @@ public abstract class JdbcSourceAcceptanceTest {
                       .withStreamState(Jsons.jsonNode(dbStreamState)))
                   .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     } else {
-      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage()
+          //.withStateType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
   }
