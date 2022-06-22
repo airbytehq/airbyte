@@ -7,7 +7,6 @@ package io.airbyte.integrations.debezium;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.CompositeIterator;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
@@ -19,9 +18,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -57,15 +54,16 @@ public class AirbyteDebeziumHandler {
   }
 
   public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
-      final CdcMetadataInjector cdcMetadataInjector,
-      final Properties connectorProperties,
-      final Instant emittedAt) {
+                                                                    final CdcMetadataInjector cdcMetadataInjector,
+                                                                    final Properties connectorProperties,
+                                                                    final Instant emittedAt) {
     LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     /*
-      TODO(Subodh) : Since Postgres doesn't require schema history this is fine but we need to fix this for MySQL and MSSQL
+     * TODO(Subodh) : Since Postgres doesn't require schema history this is fine but we need to fix this
+     * for MySQL and MSSQL
      */
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = Optional.empty();
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties,
@@ -88,11 +86,11 @@ public class AirbyteDebeziumHandler {
   }
 
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
-                                                                             final CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                             final CdcStateHandler cdcStateHandler,
-                                                                             final CdcMetadataInjector cdcMetadataInjector,
-                                                                             final Properties connectorProperties,
-                                                                             final Instant emittedAt) {
+                                                                       final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+                                                                       final CdcStateHandler cdcStateHandler,
+                                                                       final CdcMetadataInjector cdcMetadataInjector,
+                                                                       final Properties connectorProperties,
+                                                                       final Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());

@@ -252,10 +252,10 @@ public abstract class CdcSourceTest {
   }
 
   protected void assertExpectedRecords(final Set<JsonNode> expectedRecords,
-                                     final Set<AirbyteRecordMessage> actualRecords,
-                                     final Set<String> cdcStreams,
-                                     final Set<String> streamNames,
-      final String namespace) {
+                                       final Set<AirbyteRecordMessage> actualRecords,
+                                       final Set<String> cdcStreams,
+                                       final Set<String> streamNames,
+                                       final String namespace) {
     final Set<JsonNode> actualData = actualRecords
         .stream()
         .map(recordMessage -> {
