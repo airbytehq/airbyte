@@ -1106,7 +1106,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
-    Get all workflows of a GitHub repository
+    Get all workflow runs for a GitHub repository
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
 
@@ -1131,6 +1131,12 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        # Records in the workflows_runs stream are naturally descending sorted by `created_at` field.
+        # On first sight this is not big deal because cursor_field is `updated_at`.
+        # But we still can use `created_at` as a breakpoint because after 30 days period
+        # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+        # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
+        # only to look behind on 30 days to find all records which were updated.
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
