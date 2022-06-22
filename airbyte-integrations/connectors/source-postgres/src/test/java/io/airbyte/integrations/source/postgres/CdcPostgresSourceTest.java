@@ -287,7 +287,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final JsonNode state = stateAfterFirstBatch.get(0).getData();
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators

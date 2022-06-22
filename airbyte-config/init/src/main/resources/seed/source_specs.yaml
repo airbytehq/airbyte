@@ -213,11 +213,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.21"
-=======
 - dockerImage: "airbyte/source-amazon-seller-partner:0.2.22"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -551,11 +547,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-amplitude:0.1.8"
-=======
 - dockerImage: "airbyte/source-amplitude:0.1.10"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -1871,11 +1863,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-facebook-marketing:0.2.50"
-=======
 - dockerImage: "airbyte/source-facebook-marketing:0.2.53"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2254,11 +2242,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-faker:0.1.4"
-=======
 - dockerImage: "airbyte/source-faker:0.1.5"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -2636,11 +2620,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-github:0.2.32"
-=======
-- dockerImage: "airbyte/source-github:0.2.35"
->>>>>>> master
+- dockerImage: "airbyte/source-github:0.2.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3678,11 +3658,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-hubspot:0.1.67"
-=======
 - dockerImage: "airbyte/source-hubspot:0.1.70"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4102,11 +4078,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-kafka:0.1.6"
-=======
 - dockerImage: "airbyte/source-kafka:0.1.7"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
     connectionSpecification:
@@ -4827,7 +4799,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.3"
+- dockerImage: "airbyte/source-marketo:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -4878,11 +4850,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-mssql:0.4.2"
-=======
 - dockerImage: "airbyte/source-mssql:0.4.3"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5671,7 +5639,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.12"
+- dockerImage: "airbyte/source-mysql:0.5.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5942,7 +5910,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-openweather:0.1.4"
+- dockerImage: "airbyte/source-openweather:0.1.5"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -6777,11 +6745,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-postgres:0.4.21"
-=======
 - dockerImage: "airbyte/source-postgres:0.4.26"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8920,7 +8884,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.1.1"
+- dockerImage: "airbyte/source-tidb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
@@ -9320,7 +9284,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-typeform:0.1.6"
+- dockerImage: "airbyte/source-typeform:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
     connectionSpecification:
@@ -9740,11 +9704,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-zendesk-support:0.2.9"
-=======
 - dockerImage: "airbyte/source-zendesk-support:0.2.10"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -10184,11 +10144,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-- dockerImage: "airbyte/source-sftp:0.1.1"
-=======
 - dockerImage: "airbyte/source-sftp:0.1.2"
->>>>>>> master
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/sftp"
     connectionSpecification:
@@ -10292,8 +10248,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-<<<<<<< HEAD
-=======
 - dockerImage: "airbyte/source-firebolt:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/firebolt"

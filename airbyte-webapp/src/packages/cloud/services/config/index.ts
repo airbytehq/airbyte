@@ -33,12 +33,11 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
   },
 };
 
-export const defaultConfig: CloudConfig = Object.assign(
-  {},
-  coreDefaultConfig,
-  coreDefaultConfigOverrites,
-  cloudConfigExtensionDefault
-);
+export const defaultConfig: CloudConfig = {
+  ...coreDefaultConfig,
+  ...coreDefaultConfigOverrites,
+  ...cloudConfigExtensionDefault,
+};
 
 export * from "./configProviders";
 export * from "./types";
