@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
@@ -57,7 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,6 +74,7 @@ public class WebBackendConnectionsHandler {
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
   private final EventRunner eventRunner;
+  // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
   private final ConfigRepository configRepository;
 
   public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
@@ -113,14 +114,20 @@ public class WebBackendConnectionsHandler {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
     final OperationReadList operations = getOperationReadList(connectionRead);
-    final WebBackendConnectionRead WebBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations);
-
     final JobReadList syncJobReadList = getSyncJobs(connectionRead);
-    final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
-    WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
-    setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
-    WebBackendConnectionRead.setCatalogId(connectionRead.getSourceCatalogId());
-    return WebBackendConnectionRead;
+
+    final WebBackendConnectionRead webBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations)
+        .catalogId(connectionRead.getSourceCatalogId())
+        .isSyncing(syncJobReadList.getJobs()
+            .stream()
+            .map(JobWithAttemptsRead::getJob)
+            .anyMatch(WebBackendConnectionsHandler::isRunningJob));
+    setLatestSyncJobProperties(webBackendConnectionRead, syncJobReadList);
+    return webBackendConnectionRead;
+  }
+
+  private static boolean isRunningJob(final JobRead job) {
+    return !TERMINAL_STATUSES.contains(job.getStatus());
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -140,10 +147,10 @@ public class WebBackendConnectionsHandler {
     return operationsHandler.listOperationsForConnection(connectionIdRequestBody);
   }
 
-  private WebBackendConnectionRead getWebBackendConnectionRead(final ConnectionRead connectionRead,
-                                                               final SourceRead source,
-                                                               final DestinationRead destination,
-                                                               final OperationReadList operations) {
+  private static WebBackendConnectionRead getWebBackendConnectionRead(final ConnectionRead connectionRead,
+                                                                      final SourceRead source,
+                                                                      final DestinationRead destination,
+                                                                      final OperationReadList operations) {
     return new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
@@ -169,7 +176,7 @@ public class WebBackendConnectionsHandler {
     return jobHistoryHandler.listJobsFor(jobListRequestBody);
   }
 
-  private void setLatestSyncJobProperties(final WebBackendConnectionRead WebBackendConnectionRead, final JobReadList syncJobReadList) {
+  private static void setLatestSyncJobProperties(final WebBackendConnectionRead WebBackendConnectionRead, final JobReadList syncJobReadList) {
     syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
         .ifPresent(job -> {
           WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
@@ -199,8 +206,9 @@ public class WebBackendConnectionsHandler {
 
     final Optional<AirbyteCatalog> discovered;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
-          new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
+      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
+          .sourceId(connection.getSourceId())
+          .disableCache(true);
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
       discovered = Optional.of(discoverSchema.getCatalog());
@@ -209,13 +217,17 @@ public class WebBackendConnectionsHandler {
       discovered = connectionsHandler.getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
     }
     final AirbyteCatalog original = connection.getSyncCatalog();
+    final CatalogDiff diff;
     if (discovered.isPresent()) {
       final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered.get());
       connection.setSyncCatalog(combined);
+      diff = ConnectionsHandler.getDiff(original, discovered.get());
     } else {
       connection.setSyncCatalog(original);
+      diff = null;
     }
-    return buildWebBackendConnectionRead(connection);
+
+    return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
   @VisibleForTesting
@@ -326,10 +338,6 @@ public class WebBackendConnectionsHandler {
     originalOperationIds.removeAll(operationIds);
     operationsHandler.deleteOperationsForConnection(connectionRead.getConnectionId(), originalOperationIds);
     return operationIds;
-  }
-
-  private UUID getWorkspaceIdForSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    return sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId)).getWorkspaceId();
   }
 
   @VisibleForTesting

@@ -185,6 +185,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.5.13 | 2022-06-21 | [13945](https://github.com/airbytehq/airbyte/pull/13945)    | Aligned datatype test |
+| 0.5.12 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)    | Updated stacktrace format for any trace message errors |
 | 0.5.11  | 2022-05-03 | [12544](https://github.com/airbytehq/airbyte/pull/12544)   | Prevent source from hanging under certain circumstances by adding a watcher for orphaned threads. |
 | 0.5.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480)   | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.5.9   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729)   | Bump mina-sshd from 2.7.0 to 2.8.0            |

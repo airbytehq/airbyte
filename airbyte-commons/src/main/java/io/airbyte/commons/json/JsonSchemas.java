@@ -141,7 +141,7 @@ public class JsonSchemas {
                                                                     final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
     final List<T> collector = new ArrayList<>();
     traverseJsonSchema(jsonSchema, (node, path) -> mapper.apply(node, path).ifPresent(collector::add));
-    return collector;
+    return collector.stream().toList(); // make list unmodifiable
   }
 
   /**
@@ -154,13 +154,13 @@ public class JsonSchemas {
    * @return - collection of all paths that were collected during the traversal.
    */
   public static List<List<FieldNameOrList>> collectPathsThatMeetCondition(final JsonNode obj, final Predicate<JsonNode> predicate) {
-    return new ArrayList<>(traverseJsonSchemaWithFilteredCollector(obj, (node, path) -> {
+    return traverseJsonSchemaWithFilteredCollector(obj, (node, path) -> {
       if (predicate.test(node)) {
         return Optional.of(path);
       } else {
         return Optional.empty();
       }
-    }));
+    });
   }
 
   /**
