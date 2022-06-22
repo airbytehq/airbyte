@@ -132,4 +132,17 @@ class JsonSchemasTest {
     inOrder.verifyNoMoreInteractions();
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void testTraverseArrayTypeWithNoItems() throws IOException {
+    final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json"));
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
+
+    JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
+    final InOrder inOrder = Mockito.inOrder(mock);
+    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
+    inOrder.verifyNoMoreInteractions();
+  }
+
 }
