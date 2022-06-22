@@ -28,6 +28,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -86,6 +87,7 @@ class TemporalClientTest {
       .withAttemptId((long) ATTEMPT_ID)
       .withDockerImage(IMAGE_NAME1);
   private static final String NAMESPACE = "namespace";
+  private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("name");
 
   private WorkflowClient workflowClient;
   private TemporalClient temporalClient;
@@ -104,6 +106,7 @@ class TemporalClientTest {
     when(workflowClient.getWorkflowServiceStubs()).thenReturn(workflowServiceStubs);
     workflowServiceBlockingStub = mock(WorkflowServiceBlockingStub.class);
     when(workflowServiceStubs.blockingStub()).thenReturn(workflowServiceBlockingStub);
+    streamResetPersistence = mock(StreamResetPersistence.class);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
     temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence));
   }
@@ -223,7 +226,7 @@ class TemporalClientTest {
     }
 
     @Test
-    public void testSynchronousResetConnection() {
+    public void testSynchronousResetConnection() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -244,8 +247,10 @@ class TemporalClientTest {
 
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-      final ManualOperationResult manualOperationResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
+      final ManualOperationResult manualOperationResult = temporalClient.synchronousResetConnection(CONNECTION_ID, streamsToReset);
 
+      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
       verify(mConnectionManagerWorkflow).resetConnection();
 
       assertEquals(manualOperationResult.getJobId().get(), jobId3);
@@ -606,7 +611,7 @@ class TemporalClientTest {
 
     @Test
     @DisplayName("Test resetConnection successful")
-    void testResetConnectionSuccess() {
+    void testResetConnectionSuccess() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -621,7 +626,10 @@ class TemporalClientTest {
           new JobInformation(jobId2, 0));
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+
+      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 
       assertTrue(result.getJobId().isPresent());
       assertEquals(jobId2, result.getJobId().get());
@@ -631,7 +639,7 @@ class TemporalClientTest {
 
     @Test
     @DisplayName("Test resetConnection repairs the workflow if it is in a bad state")
-    void testResetConnectionRepairsBadWorkflowState() {
+    void testResetConnectionRepairsBadWorkflowState() throws IOException {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       when(mTerminatedConnectionManagerWorkflow.getState())
           .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
@@ -652,7 +660,10 @@ class TemporalClientTest {
       final BatchRequest mBatchRequest = mock(BatchRequest.class);
       when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+
+      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 
       assertTrue(result.getJobId().isPresent());
       assertEquals(JOB_ID, result.getJobId().get());
@@ -671,7 +682,7 @@ class TemporalClientTest {
     @Test
     @SuppressWarnings("unchecked")
     @DisplayName("Test resetConnection returns a failure reason when connection is deleted")
-    void testResetConnectionDeletedWorkflow() {
+    void testResetConnectionDeletedWorkflow() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -679,7 +690,10 @@ class TemporalClientTest {
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
       mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED);
 
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+
+      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 
       // this is only called when updating an existing workflow
       assertFalse(result.getJobId().isPresent());
