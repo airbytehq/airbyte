@@ -116,6 +116,17 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     Thread.sleep(1000);
   }
 
+  protected void incrementalDateCheck() throws Exception {
+    // https://stackoverflow.com/questions/47712930/resultset-meta-data-return-timestamp-instead-of-date-oracle-jdbc
+    // Oracle DATE is a java.sql.Timestamp (java.sql.Types.TIMESTAMP) as far as JDBC (and the SQL
+    // standard) is concerned as it has both a date and time component.
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
+  }
+
   void cleanUpTables() throws SQLException {
     final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
