@@ -3729,7 +3729,13 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
-        streams:
+        resetConfig:
+          $ref: "#/components/schemas/ResetConfig"
+    ResetConfig:
+      type: object
+      description: contains information about how a reset was configured. only populated if the job was a reset.
+      properties:
+        streamsToReset:
           type: array
           items:
             $ref: "#/components/schemas/StreamDescriptor"

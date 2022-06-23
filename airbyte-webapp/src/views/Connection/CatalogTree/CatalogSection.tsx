@@ -109,7 +109,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
-    sourceNamespace: stream?.namespace ?? undefined,
+    sourceNamespace: stream?.namespace,
   });
 
   const fields = useMemo(() => {
