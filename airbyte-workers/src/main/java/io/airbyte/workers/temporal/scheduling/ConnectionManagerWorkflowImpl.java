@@ -267,7 +267,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                              final StandardSyncOutput standardSyncOutput) {
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
-    log.info("REPORT FAILURE");
     final AttemptFailureSummary attemptFailureSummary = FailureHelper.failureSummary(workflowInternalState.getFailures(),
         workflowInternalState.getPartialSuccess());
 
@@ -296,12 +295,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
             : null;
     if (maxAttempt > attemptNumber && failureType != FailureType.CONFIG_ERROR) {
-      log.info("RESTART FROM FAILURE");
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
     } else {
-      log.info("JOB FAILURE");
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure,
