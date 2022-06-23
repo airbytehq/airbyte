@@ -178,7 +178,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
    * @param schemaName - schema to update.
    * @param tablesName - tables to update.
    */
-  private List<String> discoverNotSuperTables(final JdbcDatabase database, final String schemaName, final String tablesName) {
+  private List<String> discoverNotSuperTables(final JdbcDatabase database, final String schemaName, final String tableName) {
 
     final List<String> schemaAndTableWithNotSuperType = new ArrayList<>();
 
