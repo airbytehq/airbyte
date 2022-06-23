@@ -15,8 +15,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JobErrorReporter {
 
@@ -42,10 +40,7 @@ public class JobErrorReporter {
     this.errorReportingClient = errorReportingClient;
   }
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobErrorReporter.class);
-
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
-    LOGGER.info("reportSyncJobFailure");
     final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
         .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey("from_trace_message"))
         .toList();
