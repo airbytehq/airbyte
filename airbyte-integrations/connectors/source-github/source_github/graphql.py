@@ -66,8 +66,9 @@ def get_query_reviews(owner, name, first, after, number=None):
         pull_requests = repository.pull_requests(**kwargs)
         pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
         pull_request = pull_requests.nodes
-    pull_request.__fields__(url=True)
+    pull_request.__fields__(number=True, url=True)
     reviews = pull_request.reviews(first=first)
+    reviews.page_info.__fields__(has_next_page=True, end_cursor=True)
     reviews.nodes.__fields__(
         id="node_id",
         database_id="id",
