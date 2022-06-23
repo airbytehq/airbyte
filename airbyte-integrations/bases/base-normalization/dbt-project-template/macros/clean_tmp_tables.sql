@@ -4,7 +4,7 @@
 
 -- default
 {% macro default__clean_tmp_tables(schemas) -%}
-    {% do exceptions.warn("\tCLEANING TEST LEFTOVERS IS NOT IMPLEMENTED FOR THIS DESTINATION.\n") %}
+    {% do exceptions.warn("\tINFO: CLEANING TEST LEFTOVERS IS NOT IMPLEMENTED FOR THIS DESTINATION. CONSIDER TO REMOVE TEST TABLES MANUALY.\n") %}
 {%- endmacro %}
 
 -- for redshift

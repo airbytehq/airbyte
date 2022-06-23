@@ -423,9 +423,8 @@ class DbtIntegrationTest(object):
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
         assert self.run_dbt_run_operation(normalization_image, test_root_dir, macro, macro_args)
-
-    @staticmethod
-    def run_check_dbt_command(normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
+    
+    def run_check_dbt_command(self, normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -467,48 +466,9 @@ class DbtIntegrationTest(object):
             command = f"{command} --full-refresh"
         print("Executing: ", " ".join(commands))
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
+        return self.run_check_dbt_subprocess(commands, cwd)
 
-        error_count = 0
-        with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
-            process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
-            for line in iter(lambda: process.stdout.readline(), b""):
-                f.write(line)
-                str_line = line.decode("utf-8")
-                sys.stdout.write(str_line)
-                # keywords to match lines as signaling errors
-                if "ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line:
-                    # exception keywords in lines to ignore as errors (such as summary or expected warnings)
-                    is_exception = False
-                    for except_clause in [
-                        "Done.",  # DBT Summary
-                        "PASS=",  # DBT Summary
-                        "Nothing to do.",  # When no schema/data tests are setup
-                        "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
-                        "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
-                        "depends on a node named 'disabled_test' which was not found",  # Tests throwing warning because it is disabled
-                        "The requested image's platform (linux/amd64) does not match the detected host platform "
-                        + "(linux/arm64/v8) and no specific platform was requested",  # temporary patch until we publish images for arm64
-                    ]:
-                        if except_clause in str_line:
-                            is_exception = True
-                            break
-                    if not is_exception:
-                        # count lines signaling an error/failure/warning
-                        error_count += 1
-        process.wait()
-        message = (
-            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
-            f"with {error_count} 'Error/Warning/Fail' mention(s)."
-        )
-        print(message)
-        assert error_count == 0, message
-        assert process.returncode == 0, message
-        if error_count > 0:
-            return False
-        return process.returncode == 0
-
-    @staticmethod
-    def run_dbt_run_operation(normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
+    def run_dbt_run_operation(self, normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -541,7 +501,9 @@ class DbtIntegrationTest(object):
 
         print("Executing: ", " ".join(commands))
         print(f"Equivalent to: dbt run-operation {macro} --args {macro_args} --profiles-dir={cwd} --project-dir={cwd}")
+        return self.run_check_dbt_subprocess(commands, cwd)
 
+    def run_check_dbt_subprocess(self, commands: list, cwd: str):
         error_count = 0
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
             process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
