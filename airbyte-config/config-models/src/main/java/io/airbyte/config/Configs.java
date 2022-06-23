@@ -120,8 +120,8 @@ public interface Configs {
   String getVaultPrefix();
 
   /**
-   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by
-   * default. Alpha Support.
+   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default.
+   * Alpha Support.
    */
   String getVaultToken();
 
