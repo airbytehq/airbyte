@@ -79,8 +79,7 @@ class AirbyteEntrypoint(object):
 
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets
                 # that we should filter in logging to avoid leaking secrets
-                spec = source_spec.connectionSpecification
-                config_secrets = get_secrets(spec, config)
+                config_secrets = get_secrets(source_spec.connectionSpecification, config)
                 update_secrets(config_secrets)
 
                 # Remove internal flags from config before validating so
