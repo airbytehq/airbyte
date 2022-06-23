@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -32,6 +33,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -158,8 +160,8 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    bastion.initAndStartBastion();
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
+    bastion.initAndStartBastion(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(network);
     db.start();
   }
 

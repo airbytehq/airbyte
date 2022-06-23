@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.61
+- Remove legacy sentry code
+
 ## 0.1.60
 - Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
 
