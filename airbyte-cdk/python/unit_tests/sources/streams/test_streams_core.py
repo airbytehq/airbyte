@@ -57,6 +57,7 @@ class StreamStubIncremental(Stream):
 
     cursor_field = "test_cursor"
     primary_key = "primary_key"
+    namespace = "test_namespace"
 
 
 def test_as_airbyte_stream_incremental(mocker):
@@ -71,6 +72,7 @@ def test_as_airbyte_stream_incremental(mocker):
 
     exp = AirbyteStream(
         name="stream_stub_incremental",
+        namespace="test_namespace",
         json_schema={},
         supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         default_cursor_field=["test_cursor"],
