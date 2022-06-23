@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import { NormalizationType } from "core/domain/connection";
+import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -126,7 +126,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const workspace = useCurrentWorkspace();
   const { hasFeature } = useFeatureService();
 
-  const supportsNormalization = definition.supportsNormalization;
+  const { supportsNormalization } = definition;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
   const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
@@ -145,17 +145,11 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
           (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
         );
 
-    await updateConnection({
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      prefix: connection.prefix,
-      schedule: connection.schedule,
-      syncCatalog: connection.syncCatalog,
-      connectionId: connection.connectionId,
-      status: connection.status,
-      name: connection.name,
-      operations: operations,
-    });
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        operations,
+      })
+    );
 
     const nextFormValues: typeof values = {};
     if (values.transformations) {

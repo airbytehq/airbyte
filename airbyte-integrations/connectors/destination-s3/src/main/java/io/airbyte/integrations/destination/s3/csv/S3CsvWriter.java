@@ -61,7 +61,6 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize(config.getFormatConfig().getPartSize())
         .get()
         .numUploadThreads(uploadThreads)
         .queueCapacity(queueCapacity);
