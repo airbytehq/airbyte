@@ -772,6 +772,11 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             if record["commit"]:
                 record["commit_id"] = record.pop("commit")["oid"]
             record["user"]["type"] = record["user"].pop("__typename")
+            # for backward compatibility with REST API response
+            record["_links"] = {
+                "html": {"href": record["html_url"]},
+                "pull_request": {"href": record["pull_request_url"]},
+            }
             yield record
 
     def _get_name(self, repository):

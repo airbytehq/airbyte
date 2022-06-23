@@ -16,6 +16,7 @@
                   {
                     "id": 1000,
                     "updated_at": "2000-01-01T00:00:01Z",
+                    "html_url": "https://github.com/airbytehq/airbyte/pull/1#pullrequestreview-1000",
                     "commit": null,
                     "user": {
                       "__typename": "User"
@@ -24,6 +25,7 @@
                   {
                     "id": 1001,
                     "updated_at": "2000-01-01T00:00:01Z",
+                    "html_url": "https://github.com/airbytehq/airbyte/pull/1#pullrequestreview-1001",
                     "commit": null,
                     "user": {
                       "__typename": "User"
@@ -44,6 +46,7 @@
                   {
                     "id": 1002,
                     "updated_at": "2000-01-01T00:00:01Z",
+                    "html_url": "https://github.com/airbytehq/airbyte/pull/2#pullrequestreview-1002",
                     "commit": null,
                     "user": {
                       "__typename": "User"
@@ -80,6 +83,7 @@
               {
                 "id": 1003,
                 "updated_at": "2000-01-01T00:00:01Z",
+                "html_url": "https://github.com/airbytehq/airbyte/pull/1#pullrequestreview-1003",
                 "commit": null,
                 "user": {
                   "__typename": "User"
@@ -88,6 +92,7 @@
               {
                 "id": 1004,
                 "updated_at": "2000-01-01T00:00:01Z",
+                "html_url": "https://github.com/airbytehq/airbyte/pull/1#pullrequestreview-1004",
                 "commit": null,
                 "user": {
                   "__typename": "User"
@@ -120,6 +125,7 @@
                   {
                     "id": 1005,
                     "updated_at": "2000-01-01T00:00:01Z",
+                    "html_url": "https://github.com/airbytehq/airbyte/pull/3#pullrequestreview-1005",
                     "commit": null,
                     "user": {
                       "__typename": "User"
