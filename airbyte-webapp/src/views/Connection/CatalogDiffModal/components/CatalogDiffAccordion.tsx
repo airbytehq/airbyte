@@ -1,9 +1,9 @@
-import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
+import { AirbyteCatalog, FieldTransform } from "core/request/AirbyteClient";
 
 import { CatalogDiffSection } from "./CatalogDiffSection";
 
 interface CatalogDiffAccordionProps {
-  data: StreamTransform[]; // stream transforms with type 'update_stream'
+  data?: FieldTransform[]; // stream transforms with type 'update_stream'
   catalog: AirbyteCatalog;
 }
 
@@ -15,15 +15,15 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
   const removedFields = data.filter((item) => item.transformType === "remove_field");
   const updatedFields = data.filter((item) => item.transformType === "update_field_schema");
 
-  // /* TODO:    1. if we already have an accordion use that and add custom classes
+  // /* TODO:    1. Timebox trying out a Headless UI accordion here, otherwise can implement our own
   //             2. Accordion will have a header with the caret, the name, and the number of added/removed/udpated fields...
-  //             3. probably a smarter way to pass those props?
+  //             3. maybe a cimpler way to pass those props?
   //   */
   return (
     <AccordionComponent added={addedFields.length} removed={removedFields.length} updated={updatedFields.length}>
-      {addedFields.length > 1 && <CatalogDiffSection data={addedFields} catalog={catalog} isChild />}
-      {removedFields.length > 1 && <CatalogDiffSection data={removedFields} catalog={catalog} isChild />}
-      {updatedFields.length > 1 && <CatalogDiffSection data={updatedFields} catalog={catalog} isChild />}
+      {addedFields.length > 1 && <CatalogDiffSection data={addedFields} catalog={catalog} />}
+      {removedFields.length > 1 && <CatalogDiffSection data={removedFields} catalog={catalog} />}
+      {updatedFields.length > 1 && <CatalogDiffSection data={updatedFields} catalog={catalog} />}
     </AccordionComponent>
   );
 };

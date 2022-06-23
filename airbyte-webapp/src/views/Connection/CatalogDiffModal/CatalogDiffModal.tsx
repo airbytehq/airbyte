@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 
 import { Modal } from "../../../components/Modal";
-import { CatalogDiffAccordion } from "./components/CatalogDiffAccordion";
 import { CatalogDiffSection } from "./components/CatalogDiffSection";
 
 interface CatalogDiffModalProps {
@@ -20,7 +19,7 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />}>
       {addedStreams.length > 1 && <CatalogDiffSection data={addedStreams} catalog={catalog} />}
       {removedStreams.length > 1 && <CatalogDiffSection data={removedStreams} catalog={catalog} />}
-      {updatedStreams.length > 1 && <CatalogDiffAccordion data={updatedStreams} catalog={catalog} />}
+      {updatedStreams.length > 1 && <CatalogDiffSection data={updatedStreams} catalog={catalog} />}
     </Modal>
   );
 };
