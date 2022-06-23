@@ -765,7 +765,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         return {}
 
     def _get_records(self, pull_request, repository_name):
-        " yield review records from pull_request "
+        "yield review records from pull_request"
         for record in pull_request["reviews"]["nodes"]:
             record["repository"] = repository_name
             record["pull_request_url"] = pull_request["url"]
@@ -774,10 +774,13 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             record["user"]["type"] = record["user"].pop("__typename")
             yield record
 
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = repository["owner"]["login"] + "/" + repository["name"]
+            repository_name = self._get_name(repository)
             if "pullRequests" in repository:
                 for pull_request in repository["pullRequests"]["nodes"]:
                     yield from self._get_records(pull_request, repository_name)
@@ -787,7 +790,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = repository["owner"]["login"] + "/" + repository["name"]
+            repository_name = self._get_name(repository)
             reviews_cursors = self.reviews_cursors.setdefault(repository_name, {})
             if "pullRequests" in repository:
                 if repository["pullRequests"]["pageInfo"]["hasNextPage"]:
@@ -803,8 +806,8 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             if reviews_cursors:
                 number, after = reviews_cursors.popitem()
                 return {"after": after, "number": number}
-            if self.pull_requests_cursor[repository_name]:
-                return {"after": self.pull_requests_cursor[repository_name]}
+            if repository_name in self.pull_requests_cursor:
+                return {"after": self.pull_requests_cursor.pop(repository_name)}
 
     def request_body_json(
         self,

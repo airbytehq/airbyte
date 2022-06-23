@@ -1,0 +1,144 @@
+[
+  {
+    "data": {
+      "repository": {
+        "owner": {
+          "login": "airbytehq"
+        },
+        "name": "airbyte",
+        "pullRequests": {
+          "nodes": [
+            {
+              "number": 1,
+              "url": "https://github.com/airbytehq/airbyte/pull/1",
+              "reviews": {
+                "nodes": [
+                  {
+                    "id": 1000,
+                    "updated_at": "2000-01-01T00:00:01Z",
+                    "commit": null,
+                    "user": {
+                      "__typename": "User"
+                    }
+                  },
+                  {
+                    "id": 1001,
+                    "updated_at": "2000-01-01T00:00:01Z",
+                    "commit": null,
+                    "user": {
+                      "__typename": "User"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "cursor",
+                  "hasNextPage": true
+                }
+              }
+            },
+            {
+              "number": 2,
+              "url": "https://github.com/airbytehq/airbyte/pull/2",
+              "reviews": {
+                "nodes": [
+                  {
+                    "id": 1002,
+                    "updated_at": "2000-01-01T00:00:01Z",
+                    "commit": null,
+                    "user": {
+                      "__typename": "User"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": null,
+                  "hasNextPage": false
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "cursor",
+            "hasNextPage": true
+          }
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "repository": {
+        "owner": {
+          "login": "airbytehq"
+        },
+        "name": "airbyte",
+        "pullRequest": {
+          "number": 1,
+          "url": "https://github.com/airbytehq/airbyte/pull/1",
+          "reviews": {
+            "nodes": [
+              {
+                "id": 1003,
+                "updated_at": "2000-01-01T00:00:01Z",
+                "commit": null,
+                "user": {
+                  "__typename": "User"
+                }
+              },
+              {
+                "id": 1004,
+                "updated_at": "2000-01-01T00:00:01Z",
+                "commit": null,
+                "user": {
+                  "__typename": "User"
+                }
+              }
+            ],
+            "pageInfo": {
+              "endCursor": null,
+              "hasNextPage": false
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "repository": {
+        "owner": {
+          "login": "airbytehq"
+        },
+        "name": "airbyte",
+        "pullRequests": {
+          "nodes": [
+            {
+              "number": 3,
+              "url": "https://github.com/airbytehq/airbyte/pull/3",
+              "reviews": {
+                "nodes": [
+                  {
+                    "id": 1005,
+                    "updated_at": "2000-01-01T00:00:01Z",
+                    "commit": null,
+                    "user": {
+                      "__typename": "User"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": null,
+                  "hasNextPage": false
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  }
+]
