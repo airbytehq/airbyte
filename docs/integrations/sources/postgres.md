@@ -125,17 +125,7 @@ We recommend using a user specifically for Airbyte's replication so you can mini
 
 We recommend using a `pgoutput` plugin as it is the standard logical decoding plugin in Postgres. In case the replication table contains a lot of big JSON blobs and table size exceeds 1 GB, we recommend using a `wal2json` instead. Please note that `wal2json` may require additional installation for Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc. For more information read [wal2json documentation](https://github.com/eulerto/wal2json).
 
-#### 4. Create replication slot
-
-Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
-
-```text
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
-```
-
-If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
-
-#### 5. Create publications and replication identities for tables
+#### 4. Create publications and replication identities for tables
 
 For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
@@ -144,6 +134,18 @@ Please note that:
 - The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+
+#### 5. Create replication slot
+
+Next, you will need to create a replication slot. It's important to create the publication first (as in step 4) before creating the replication slot. Otherwise, you can run into exceptions if there is any update to the database between the creation of the two.
+
+Here is the query used to create a replication slot called `airbyte_slot`:
+
+```text
+SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
+```
+
+If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
 #### 6. Start syncing
 
@@ -271,10 +273,33 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                           |
 | composite type                        | string         |                                                                                                             |
 
+## Troubleshooting
+
+### Sync data from Postgres hot standby server
+
+when the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is obviously not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanations.
+
+Here is the typical exception:
+```
+Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery
+    Detail: User query might have needed to see row versions that must be removed.
+    Hint: In a moment you should be able to reconnect to the database and repeat your command.
+```
+
+Possible solutions include:
+- [Recommended] Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
+- [Recommended] Sync data when there is no update running in the primary server, or sync data from the primary server.
+- [Not Recommended] Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
+
+One optimization on the Airbyte side is to break one large and long sync into multiple small ones. This improvement is tracked in https://github.com/airbytehq/airbyte/issues/13783.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.26 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.4.25  | 2022-06-15 | [13823](https://github.com/airbytehq/airbyte/pull/13823) | Publish adaptive postgres source that enforces ssl on cloud + Debezium version upgrade to 1.9.2 from 1.4.2  |
+| 0.4.24  | 2022-06-14 | [13549](https://github.com/airbytehq/airbyte/pull/13549) | Fixed truncated precision if the value of microseconds or seconds is 0 |
 | 0.4.23  | 2022-06-13 | [13655](https://github.com/airbytehq/airbyte/pull/13745) | Fixed handling datetime cursors when upgrading from older versions of the connector |
 | 0.4.22  | 2022-06-09 | [13655](https://github.com/airbytehq/airbyte/pull/13655) | Fixed bug with unsupported date-time datatypes during incremental sync |
 | 0.4.21  | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size |
