@@ -33,7 +33,7 @@ public class EmptyAirbyteSourceTest {
   private EmptyAirbyteSource emptyAirbyteSource;
   private final AirbyteMessage EMPTY_MESSAGE =
       new AirbyteMessage().withType(Type.STATE)
-          .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject()));
+          .withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject()));
 
   private final ConfiguredAirbyteCatalog airbyteCatalog = new ConfiguredAirbyteCatalog()
       .withStreams(Lists.newArrayList(
@@ -128,7 +128,7 @@ public class EmptyAirbyteSourceTest {
      * Assertions.assertThat(stateMessage).isEqualTo(expectedState);
      */
     final AirbyteStateMessage stateMessage = message.getState();
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.GLOBAL);
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.GLOBAL);
     Assertions.assertThat(stateMessage.getGlobal().getSharedState()).isNull();
     Assertions.assertThat(stateMessage.getGlobal().getStreamStates())
         .map(streamState -> streamState.getStreamDescriptor())
@@ -168,7 +168,7 @@ public class EmptyAirbyteSourceTest {
 
     final AirbyteStateMessage stateMessage = message.getState();
 
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.GLOBAL);
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.GLOBAL);
     Assertions.assertThat(stateMessage.getGlobal().getSharedState()).isEqualTo(Jsons.emptyObject());
     Assertions.assertThat(stateMessage.getGlobal().getStreamStates())
         .filteredOn(streamState -> streamState.getStreamDescriptor().getName() != NOT_RESET_STREAM_NAME)
@@ -210,7 +210,7 @@ public class EmptyAirbyteSourceTest {
 
     final AirbyteStateMessage stateMessage = message.getState();
 
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.GLOBAL);
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.GLOBAL);
     Assertions.assertThat(stateMessage.getGlobal().getSharedState()).isNull();
     Assertions.assertThat(stateMessage.getGlobal().getStreamStates())
         .map(AirbyteStreamState::getStreamState)
@@ -345,7 +345,7 @@ public class EmptyAirbyteSourceTest {
     Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
 
     final AirbyteStateMessage stateMessage = message.getState();
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.LEGACY);
     Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
@@ -361,7 +361,7 @@ public class EmptyAirbyteSourceTest {
     Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
 
     final AirbyteStateMessage stateMessage = message.getState();
-    Assertions.assertThat(stateMessage.getStateType()).isEqualTo(AirbyteStateType.STREAM);
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.STREAM);
     Assertions.assertThat(stateMessage.getStream().getStreamDescriptor()).isEqualTo(new StreamDescriptor()
         .withName(streamDescriptor.getName())
         .withNamespace(streamDescriptor.getNamespace()));
@@ -389,7 +389,7 @@ public class EmptyAirbyteSourceTest {
 
   private List<AirbyteStateMessage> createPerStreamState(final List<StreamDescriptor> streamDescriptors) {
     return streamDescriptors.stream().map(streamDescriptor -> new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState()
                 .withStreamDescriptor(streamDescriptor)
@@ -408,7 +408,7 @@ public class EmptyAirbyteSourceTest {
 
     return Lists.newArrayList(
         new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(globalState));
   }
 

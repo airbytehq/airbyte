@@ -161,7 +161,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     } else {
       hasEmittedState.compareAndSet(false, true);
       return Optional.of(new AirbyteMessage().withType(Type.STATE)
-          .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject())));
+          .withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.emptyObject())));
     }
   }
 
@@ -181,7 +181,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
         .withType(Type.STATE)
         .withState(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new io.airbyte.protocol.models.StreamDescriptor()
@@ -233,7 +233,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
         .withType(Type.STATE)
         .withState(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.GLOBAL)
+                .withType(AirbyteStateType.GLOBAL)
                 .withGlobal(globalState));
   }
 
