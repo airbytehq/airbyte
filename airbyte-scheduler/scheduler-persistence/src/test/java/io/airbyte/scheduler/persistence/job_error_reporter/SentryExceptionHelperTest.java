@@ -145,8 +145,8 @@ public class SentryExceptionHelperTest {
     final String expectedValue =
         """
         <_InactiveRpcError of RPC that terminated with:
-         status = StatusCode.INTERNAL
-         details = "Internal error encountered."
+          status = StatusCode.INTERNAL
+          details = "Internal error encountered."
         >""";
 
     assertExceptionContent(exceptionList.get(0), "grpc._channel._InactiveRpcError", expectedValue, List.of(
@@ -284,7 +284,7 @@ public class SentryExceptionHelperTest {
           "code" : 401,
           "message" : "Invalid Credentials"
         }
-          at com.google.api.client.googleapis.json.GoogleJsonResponseException.from(GoogleJsonResponseException.java:146)
+        	at com.google.api.client.googleapis.json.GoogleJsonResponseException.from(GoogleJsonResponseException.java:146)
           ... 22 more
         """;
 
@@ -296,8 +296,8 @@ public class SentryExceptionHelperTest {
         """
         GET https://storage.googleapis.com/
         {
-         "code" : 401,
-         "message" : "Invalid Credentials"
+          "code" : 401,
+          "message" : "Invalid Credentials"
         }""";
 
     assertExceptionContent(exceptionList.get(0), "io.temporal.failure.ApplicationFailure",
