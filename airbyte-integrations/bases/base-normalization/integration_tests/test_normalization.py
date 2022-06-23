@@ -12,7 +12,7 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
-from integration_tests.dbt_integration_test import NORMALIZATION_TYPE_TEST, DbtIntegrationTest
+from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import TransformCatalog
 
@@ -28,6 +28,12 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
+    # set clean-up args to clean target destination after the test
+    clean_up_args = {
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test], 
+        "test_type": "normalization",
+        "git_versioned_tests": git_versioned_tests,
+    }
     for integration_type in [d.value for d in DestinationType]:
         if integration_type in destinations_to_test:
             test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
@@ -39,10 +45,7 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    # clean-up tmp tables for Redshift
-    dbt_test_utils.clean_tmp_tables(
-        destination_type=DestinationType.REDSHIFT, test_type=NORMALIZATION_TYPE_TEST[1], git_versioned_tests=git_versioned_tests
-    )
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
@@ -504,6 +507,11 @@ def to_lower_identifier(input: re.Match) -> str:
 
 def test_redshift_normalization_migration(tmp_path, setup_test_path):
     destination_type = DestinationType.REDSHIFT
+    clean_up_args = {
+        "destination_type": [destination_type],
+        "test_type": "ephemeral", # "ephemeral", because we parse /tmp folders
+        "tmp_folders": [str(tmp_path)],
+    }
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
@@ -541,5 +549,5 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
     run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", docker_tag="dev")
     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
     dbt_test(destination_type, tmp_path)
-    # clean-up test tables
-    dbt_test_utils.clean_tmp_tables(destination_type=DestinationType.REDSHIFT, tmp_folders=[str(tmp_path)])
+    # clean-up test tables created for this test
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)

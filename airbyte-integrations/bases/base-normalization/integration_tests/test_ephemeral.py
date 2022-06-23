@@ -23,6 +23,12 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
+    # set clean-up args to clean target destination after the test
+    clean_up_args = {
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
+        "test_type": "ephemeral",
+        "tmp_folders": temporary_folders,
+    }
     if DestinationType.POSTGRES.value not in destinations_to_test:
         destinations_to_test.append(DestinationType.POSTGRES.value)
     dbt_test_utils.set_target_schema("test_ephemeral")
@@ -30,8 +36,7 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    # clean-up tmp tables for Redshift
-    dbt_test_utils.clean_tmp_tables(destination_type=DestinationType.REDSHIFT, tmp_folders=temporary_folders)
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")

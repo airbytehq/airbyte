@@ -1,7 +1,16 @@
--- macro to clean Redshift normalization tmp tables
+{% macro clean_tmp_tables(schemas) -%}
+  {{ adapter.dispatch('clean_tmp_tables')(schemas) }}
+{%- endmacro %}
+
+-- default
+{% macro default__clean_tmp_tables(schemas) -%}
+    {% do exceptions.warn("\tCLEANING TEST LEFTOVERS IS NOT IMPLEMENTED FOR THIS DESTINATION.\n") %}
+{%- endmacro %}
+
+-- for redshift
 {% macro redshift__clean_tmp_tables(schemas) %}
     {%- for tmp_schema in schemas -%}
-        {% do log("\tDROPING SCHEMA " ~ tmp_schema, info=True) %}
+        {% do log("\tDROP SCHEMA IF EXISTS " ~ tmp_schema, info=True) %}
         {%- set drop_query -%}
             drop schema if exists {{ tmp_schema }} cascade;
         {%- endset -%}

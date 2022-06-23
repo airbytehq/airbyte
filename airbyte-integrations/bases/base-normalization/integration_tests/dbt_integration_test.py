@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 from copy import copy
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 import yaml
 from normalization.destination_type import DestinationType
@@ -28,7 +28,6 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
-NORMALIZATION_TYPE_TEST: List = ["ephemeral", "normalization"]
 
 
 class DbtIntegrationTest(object):
@@ -423,7 +422,7 @@ class DbtIntegrationTest(object):
         """
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
-        assert self.run_check_dbt_macro(normalization_image, test_root_dir, macro, macro_args)
+        assert self.run_dbt_run_operation(normalization_image, test_root_dir, macro, macro_args)
 
     @staticmethod
     def run_check_dbt_command(normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
@@ -509,7 +508,7 @@ class DbtIntegrationTest(object):
         return process.returncode == 0
 
     @staticmethod
-    def run_check_dbt_macro(normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
+    def run_dbt_run_operation(normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -641,63 +640,91 @@ class DbtIntegrationTest(object):
 
     def clean_tmp_tables(
         self,
-        destination_type: DestinationType,
-        test_type: str = NORMALIZATION_TYPE_TEST[0],
+        destination_type: Union[DestinationType, List[DestinationType]],
+        test_type: str,
         tmp_folders: list = None,
         git_versioned_tests: list = None,
     ):
+        """
+        Cleans-up all temporary schemas created during the test session.
+        It parses the provided tmp_folders: List[str] or uses `git_versioned_tests` to find sources.yml files generated for the tests.
+        It gets target schemas created by the tests and removes them using custom scenario specified in 
+            `dbt-project-template/macros/clean_tmp_tables.sql` macro.
+            
+        REQUIREMENTS: 
+        1) Idealy, the schemas should have unique names like: test_normalization_<some_random_string> to avoid conflicts.
+        2) The `clean_tmp_tables.sql` macro should have the specific macro for target destination to proceed.
+        
+        INPUT ARGUMENTS:
+        ::  destination_type : either single destination or list of destinations
+        ::  test_type: either "ephemeral" or "normalization" should be supplied.
+        ::  tmp_folders: should be supplied if test_type = "ephemeral", to get schemas from /build/normalization_test_output folders
+        ::  git_versioned_tests: should be supplied if test_type = "normalization", to get schemas from integration_tests/normalization_test_output folders
+        
+        EXAMPLE:
+            clean_up_args = {
+                "destination_type": [ DestinationType.REDSHIFT, DestinationType.POSTGRES, ... ]
+                "test_type": "normalization",
+                "git_versioned_tests": git_versioned_tests,
+            }
+        """
 
         path_to_sources: str = "/models/generated/sources.yml"
-        test_folders: list = []
-        source_files: list = []
-        schemas_to_remove: list = []
-        macro_name: str = ""
+        test_folders: dict = {}
+        source_files: dict = {}
+        schemas_to_remove: dict = {}
+        
+        # collecting information about tmp_tables created for the test for each destination                
+        for destination in destination_type:
+            test_folders[destination.value] = []
+            source_files[destination.value] = []
+            schemas_to_remove[destination.value] = []
+            
+            # based on test_type select path to source files
+            if test_type == "ephemeral":
+                if not tmp_folders:
+                    raise TypeError("`tmp_folders` arg is not provided.")
+                for folder in tmp_folders:
+                    if destination.value in folder:
+                        test_folders[destination.value].append(folder)
+                        source_files[destination.value].append(f"{folder}{path_to_sources}")
+            elif test_type == "normalization":
+                if not git_versioned_tests:
+                    raise TypeError("`git_versioned_tests` arg is not provided.")
+                base_path = f"{pathlib.Path().absolute()}/integration_tests/normalization_test_output"
+                for test in git_versioned_tests:
+                    test_root_dir: str = f"{base_path}/{destination.value}/{test}"
+                    test_folders[destination.value].append(test_root_dir)
+                    source_files[destination.value].append(f"{test_root_dir}{path_to_sources}")
+            else:
+                raise TypeError(f"\n`test_type`: {test_type} is not a registered, use `ephemeral` or `normalization` instead.\n")
 
-        # choose macro, based on destination_type, for future extendibility
-        # other destination-specific macros could be added by the path:
-        # dbt-project-template/macros/clean_tmp_tables.sql
-        if destination_type == DestinationType.REDSHIFT:
-            macro_name = "redshift__clean_tmp_tables"
+            # parse source.yml files from test folders to get schemas and table names created for the tests
+            for file in source_files[destination.value]:
+                source_yml = {}
+                try:
+                    with open(file, "r") as source_file:
+                        source_yml = yaml.safe_load(source_file)
+                except FileNotFoundError:
+                    print(f"\n{destination.value}: {file} doesn't exist, consider to remove any temp_tables and schemas manually!\n")
+                    pass
+                test_sources: list = source_yml.get("sources", []) if source_yml else []
+                
+                for source in test_sources:
+                    target_schema: str = source.get("name")
+                    if target_schema not in schemas_to_remove[destination.value]:
+                        schemas_to_remove[destination.value].append(target_schema)
+                        # adding _airbyte_* tmp schemas to be removed
+                        schemas_to_remove[destination.value].append(f"_airbyte_{target_schema}")
 
-        # based on test_type select path to source files
-        if test_type == NORMALIZATION_TYPE_TEST[0]:
-            for folder in tmp_folders:
-                if destination_type.value in folder:
-                    test_folders.append(folder)
-                    source_files.append(f"{folder}{path_to_sources}")
-        elif test_type == NORMALIZATION_TYPE_TEST[1]:
-            base_path = f"{pathlib.Path().absolute()}/integration_tests/normalization_test_output"
-            for test in git_versioned_tests:
-                test_root_dir: str = f"{base_path}/{destination_type.value}/{test}"
-                test_folders.append(test_root_dir)
-                source_files.append(f"{test_root_dir}{path_to_sources}")
-        else:
-            raise TypeError(f"`test_type`: {test_type} is not a registered, use one of: {NORMALIZATION_TYPE_TEST}")
-
-        # parse source.yml files from test folders to get schemas and table names created for the tests
-        for file in source_files:
-            source_yml = {}
-            try:
-                with open(file, "r") as source_file:
-                    source_yml = yaml.safe_load(source_file)
-            except FileNotFoundError:
-                print("source.yml was removed or wasn't generated, consider to remove any temp tables and schemas manually!")
-                pass
-            test_sources: list = source_yml.get("sources", []) if source_yml else []
-            for source in test_sources:
-                target_schema: str = source.get("name")
-                if target_schema not in schemas_to_remove:
-                    schemas_to_remove.append(target_schema)
-                    # adding _airbyte_* tmp schemas to be removed
-                    schemas_to_remove.append(f"_airbyte_{target_schema}")
-
-        # return None if there are no tables to remove
-        if not schemas_to_remove:
-            return None
-
-        # prepare args for macro
-        args = json.dumps({"schemas": schemas_to_remove})
-        # prepare dbt deps
-        self.dbt_check(destination_type, test_folders[0])
-        # run dbt macro
-        self.dbt_run_macro(destination_type, test_folders[0], macro_name, args)
+        # cleaning up tmp_tables generated by the tests
+        for destination in destination_type:
+            if not schemas_to_remove[destination.value]:
+                print(f"\n\t{destination.value.upper()} DESTINATION: SKIP CLEANING, NOTHING TO REMOVE.\n")
+            else:
+                print(f"\n\t{destination.value.upper()} DESTINATION: CLEANING LEFTOVERS...\n")
+                print(f"\t{schemas_to_remove[destination.value]}\n")
+                test_root_folder = test_folders[destination.value][0]
+                args = json.dumps({"schemas": schemas_to_remove[destination.value]})
+                self.dbt_check(destination, test_root_folder)
+                self.dbt_run_macro(destination, test_root_folder, "clean_tmp_tables", args)
