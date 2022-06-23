@@ -45,7 +45,7 @@ public class StateMessageHelperTest {
   @Test
   public void testGlobal() {
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
             new AirbyteGlobalState()
                 .withSharedState(Jsons.emptyObject())
@@ -61,11 +61,11 @@ public class StateMessageHelperTest {
   @Test
   public void testStream() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()));
     final AirbyteStateMessage stateMessage2 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()));
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)));
@@ -77,11 +77,11 @@ public class StateMessageHelperTest {
   @Test
   public void testInvalidMixedState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()));
     final AirbyteStateMessage stateMessage2 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
             new AirbyteGlobalState()
                 .withSharedState(Jsons.emptyObject())
@@ -95,7 +95,7 @@ public class StateMessageHelperTest {
   @Test
   public void testDuplicatedGlobalState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
             new AirbyteGlobalState()
                 .withSharedState(Jsons.emptyObject())
@@ -103,7 +103,7 @@ public class StateMessageHelperTest {
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()),
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()))));
     final AirbyteStateMessage stateMessage2 = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
             new AirbyteGlobalState()
                 .withSharedState(Jsons.emptyObject())
