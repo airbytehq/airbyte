@@ -24,9 +24,8 @@ export class ResourceNotFoundErrorBoundary extends React.Component<
         hasError: true,
         message: <FormattedMessage id={messageId} />,
       };
-    } else {
-      throw error;
     }
+    throw error;
   }
 
   state = initialState;

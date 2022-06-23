@@ -3729,7 +3729,13 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
-        streams:
+        resetConfig:
+          $ref: "#/components/schemas/ResetConfig"
+    ResetConfig:
+      type: object
+      description: contains information about how a reset was configured. only populated if the job was a reset.
+      properties:
+        streamsToReset:
           type: array
           items:
             $ref: "#/components/schemas/StreamDescriptor"
@@ -4140,7 +4146,6 @@ components:
     FieldSchema:
       description: JSONSchema representation of the field
       type: object
-      additionalProperties: true
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object
