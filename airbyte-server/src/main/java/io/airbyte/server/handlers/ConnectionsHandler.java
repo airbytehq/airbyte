@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
@@ -33,10 +34,12 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
+import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
@@ -256,6 +259,15 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
+  public static CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+    return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
+        .stream()
+        .map(CatalogDiffConverters::streamTransformToApi)
+        .toList());
+  }
+
   public Optional<AirbyteCatalog> getConnectionAirbyteCatalog(final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync connection = configRepository.getStandardSync(connectionId);
@@ -303,7 +315,7 @@ public class ConnectionsHandler {
         matchSearch(connectionSearch.getDestination(), destinationRead);
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in SourceHandlerTest
+  // todo (cgardens) - make this static. requires removing one bad dependency in SourceHandlerTest
   public boolean matchSearch(final SourceSearch sourceSearch, final SourceRead sourceRead) {
     final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
     final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
@@ -311,7 +323,7 @@ public class ConnectionsHandler {
     return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in
+  // todo (cgardens) - make this static. requires removing one bad dependency in
   // DestinationHandlerTest
   public boolean matchSearch(final DestinationSearch destinationSearch, final DestinationRead destinationRead) {
     final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);
