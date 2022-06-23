@@ -5,7 +5,13 @@
 package io.airbyte.integrations.destination.bigquery.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +19,8 @@ import java.nio.file.Path;
 public class BigQueryDenormalizedTestDataUtils {
 
   private static final String JSON_FILES_BASE_LOCATION = "testdata/";
+
+  public static final String USERS_STREAM_NAME = "users";
 
   public static JsonNode getSchema() {
     return getTestDataFromResourceJson("schema.json");
@@ -88,6 +96,12 @@ public class BigQueryDenormalizedTestDataUtils {
       throw new RuntimeException(e);
     }
     return Jsons.deserialize(fileContent);
+  }
+
+  public static ConfiguredAirbyteCatalog getCommonCatalog(final JsonNode schema, final String datasetId) {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
 }

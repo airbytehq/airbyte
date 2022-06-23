@@ -4,17 +4,22 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.USERS_STREAM_NAME;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithEmptyList;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithNull;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfSchema;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getCommonCatalog;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getData;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataArrays;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithEmptyObjectAndArray;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithJSONDateTimeFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithJSONWithReference;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithNestedDatetimeInsideNullObject;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getExpectedDataArrays;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchema;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaArrays;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithDateTime;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithInvalidArrayType;
@@ -35,7 +40,6 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -43,17 +47,15 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,6 +66,7 @@ import org.assertj.core.util.Sets;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -81,7 +84,6 @@ class BigQueryDenormalizedDestinationTest {
 
   private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users";
   private static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
   private static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
   private static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
@@ -92,6 +94,8 @@ class BigQueryDenormalizedDestinationTest {
   private static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
   private static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
   private static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
+  private static final AirbyteMessage MESSAGE_USERS11 = createRecordMessage(USERS_STREAM_NAME, getDataArrays());
+
   private static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
   private JsonNode config;
@@ -138,6 +142,7 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS8.getRecord().setNamespace(datasetId);
     MESSAGE_USERS9.getRecord().setNamespace(datasetId);
     MESSAGE_USERS10.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS11.getRecord().setNamespace(datasetId);
     EMPTY_MESSAGE.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -189,9 +194,7 @@ class BigQueryDenormalizedDestinationTest {
   @ParameterizedTest
   @MethodSource("schemaAndDataProvider")
   void testNestedWrite(final JsonNode schema, final AirbyteMessage message) throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(schema, datasetId);
 
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -210,10 +213,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testNestedDataTimeInsideNullObject() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(
-            new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithNestedDatetimeInsideNullObject()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getSchemaWithNestedDatetimeInsideNullObject(), datasetId);
 
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -231,9 +231,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testWriteWithFormat() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithFormats()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getSchemaWithFormats(), datasetId);
 
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -250,7 +248,9 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    assertEquals(Set.of("2021-10-11T06:36:53"), extractJsonValues(resultJson, "updated_at"));
+    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+    var actualValue = LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    assertEquals(expectedValue, actualValue);
 
     final Schema expectedSchema = Schema.of(
         Field.of("name", StandardSQLTypeName.STRING),
@@ -264,9 +264,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testAnyOf() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -295,9 +293,7 @@ class BigQueryDenormalizedDestinationTest {
   @Test
   @Disabled // Issue #11166 is reopened
   void testAnyOfWithNull() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -318,9 +314,7 @@ class BigQueryDenormalizedDestinationTest {
   @Test
   @Disabled // Issue #11166 is reopened
   void testAnyOfWithEmptyList() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -339,9 +333,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testIfJSONDateTimeWasConvertedToBigQueryFormat() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithDateTime()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getSchemaWithDateTime(), datasetId);
 
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -363,9 +355,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testJsonReferenceDefinition() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithReferenceDefinition()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    catalog = getCommonCatalog(getSchemaWithReferenceDefinition(), datasetId);
 
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
