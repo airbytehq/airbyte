@@ -14,6 +14,7 @@ export const CatalogDiffRow: React.FC<CatalogDiffRow> = ({ item }) => {
   // use the transformType to use classnames to apply condiitonal styling
   return (
     <div>
+      {item}
       {/* {tableName} {item.transformType === "add_stream" ? syncMode : item.transformType.includes("field") ? fieldType ?? null} */}
     </div>
   );
