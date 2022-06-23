@@ -3,23 +3,43 @@
 #
 
 import logging
-from typing import TYPE_CHECKING, Any, List, Mapping
+from typing import Any, List, Mapping
 
-from airbyte_cdk.utils.mapping_utils import all_key_pairs_dot_notation, get_value_by_dot_notation
-
-if TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
+import dpath.util
 
 
-def get_secrets(source: "Source", config: Mapping[str, Any], logger: logging.Logger) -> List[Any]:
+def get_secret_paths(schema: Mapping[str, Any]) -> List[str]:
+    paths = []
+
+    def traverse_schema(schema: Any, path: List[str]):
+        if isinstance(schema, dict):
+            for k, v in schema.items():
+                traverse_schema(v, [*path, k])
+        elif isinstance(schema, list):
+            for i in schema:
+                traverse_schema(i, path)
+        else:
+            if path[-1] == "airbyte_secret" and schema is True:
+                filtered_path = [p for p in path[:-1] if p not in ["properties", "oneOf"]]
+                paths.append(filtered_path)
+
+    traverse_schema(schema, [])
+    return paths
+
+
+def get_secrets(connection_specification: Mapping[str, Any], config: Mapping[str, Any], logger: logging.Logger) -> List[Any]:
     """
-    Get a list of secrets from the source config based on the source specification
+    Get a list of secret values from the source config based on the source specification
+    :type connection_specification: the connection_specification field of an AirbyteSpecification i.e the JSONSchema definition
     """
-    flattened_key_values = all_key_pairs_dot_notation(source.spec(logger).connectionSpecification.get("properties", {}))
-    secret_key_names = [
-        ".".join(key.split(".")[:1]) for key, value in flattened_key_values.items() if value and key.endswith("airbyte_secret")
-    ]
-    return [str(get_value_by_dot_notation(config, key)) for key in secret_key_names if config.get(key)]
+    secret_paths = get_secret_paths(connection_specification.get("properties", {}))
+    result = []
+    for path in secret_paths:
+        try:
+            result.append(dpath.util.get(config, path))
+        except KeyError:
+            pass
+    return result
 
 
 __SECRETS_FROM_CONFIG: List[str] = []
@@ -33,6 +53,8 @@ def update_secrets(secrets: List[str]):
 
 def filter_secrets(string: str) -> str:
     """Filter secrets from a string by replacing them with ****"""
+    # TODO this should perform a maximal match for each secret. if "x" and "xk" are both secret values, and this method is called twice on
+    #  the input "xk", then depending on call order it might only obfuscate "*k". This is a bug.
     for secret in __SECRETS_FROM_CONFIG:
-        string = string.replace(secret, "****")
+        string = string.replace(str(secret), "****")
     return string

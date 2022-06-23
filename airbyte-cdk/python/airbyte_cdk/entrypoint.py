@@ -16,7 +16,7 @@ from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, get_secret_values, split_config
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 
@@ -67,7 +67,7 @@ class AirbyteEntrypoint(object):
         secret_values = []
         if "config" in parsed_args:
             config = self.source.read_config(parsed_args.config)
-            secret_values = get_secret_values(spec_schema, config)
+            secret_values = get_secrets(spec_schema, config)
         source_name = self.source.__module__.split(".")[0]
         source_name = source_name.split("_", 1)[-1]
         AirbyteSentry.init(source_tag=source_name, secret_values=secret_values)
@@ -90,7 +90,8 @@ class AirbyteEntrypoint(object):
 
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets
                 # that we should filter in logging to avoid leaking secrets
-                config_secrets = get_secrets(self.source, config, self.logger)
+                spec = self.source.spec(self.logger).connectionSpecification
+                config_secrets = get_secrets(spec, config, self.logger)
                 update_secrets(config_secrets)
 
                 # Remove internal flags from config before validating so
