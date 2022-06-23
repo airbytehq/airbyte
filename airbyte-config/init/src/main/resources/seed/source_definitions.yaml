@@ -987,6 +987,7 @@
   dockerRepository: airbyte/source-webflow
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
+  icon: webflow.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat
