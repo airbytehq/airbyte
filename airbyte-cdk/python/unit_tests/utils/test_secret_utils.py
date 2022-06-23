@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import logging
 
 import pytest
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, get_secret_paths, get_secrets, update_secrets
@@ -14,11 +13,6 @@ SECRET_INT_KEY = "secret_int"
 SECRET_INT_VALUE = 1337
 NOT_SECRET_KEY = "not_a_secret"
 NOT_SECRET_VALUE = "unimportant value"
-
-
-@pytest.fixture
-def logger() -> logging.Logger:
-    return logging.getLogger("test_secret_utils")
 
 
 flat_spec_with_secret = {"properties": {SECRET_STRING_KEY: {"type": "string", "airbyte_secret": True}, NOT_SECRET_KEY: {"type": "string"}}}
@@ -108,8 +102,8 @@ def test_get_secret_paths(spec, expected):
         (spec_with_nested_secrets, config_with_nested_secrets, [SECRET_STRING_VALUE, SECRET_STRING_2_VALUE, SECRET_INT_VALUE]),
     ],
 )
-def test_get_secrets(logger, spec, config, expected):
-    assert get_secrets(spec, config, logger) == expected, f"Expected the spec {spec} and config {config} to produce {expected}"
+def test_get_secrets(spec, config, expected):
+    assert get_secrets(spec, config) == expected, f"Expected the spec {spec} and config {config} to produce {expected}"
 
 
 def test_secret_filtering():

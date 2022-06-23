@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from typing import Any, List, Mapping
 
 import dpath.util
@@ -27,7 +26,7 @@ def get_secret_paths(schema: Mapping[str, Any]) -> List[str]:
     return paths
 
 
-def get_secrets(connection_specification: Mapping[str, Any], config: Mapping[str, Any], logger: logging.Logger) -> List[Any]:
+def get_secrets(connection_specification: Mapping[str, Any], config: Mapping[str, Any]) -> List[Any]:
     """
     Get a list of secret values from the source config based on the source specification
     :type connection_specification: the connection_specification field of an AirbyteSpecification i.e the JSONSchema definition
