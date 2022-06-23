@@ -59,7 +59,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    var modifiedJsonSchema = formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #11166 is reopened formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
     populateEmptyArrays(modifiedJsonSchema);
     surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;

@@ -293,6 +293,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
+  @Disabled // Issue #11166 is reopened
   void testAnyOfWithNull() throws Exception {
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
@@ -315,6 +316,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
+  @Disabled // Issue #11166 is reopened
   void testAnyOfWithEmptyList() throws Exception {
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
