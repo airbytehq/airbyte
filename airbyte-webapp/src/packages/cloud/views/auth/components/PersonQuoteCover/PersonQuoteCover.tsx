@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import styles from "./PersonQuoteCover.module.scss";
 
-interface PersonQuoteCoverProps {
+export interface PersonQuoteCoverProps {
   overlayGradientStyle?: React.CSSProperties;
   backgroundImageStyle?: React.CSSProperties;
   quoteText?: string;
@@ -26,22 +26,31 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
   quoteAuthorJobTitleStyle,
 }) => {
   return (
-    <div className={styles.image} style={backgroundImageStyle}>
-      <div className={styles.overlay} style={overlayGradientStyle} />
+    <div className={styles.image} style={backgroundImageStyle} data-testid="background-image">
+      <div className={styles.overlay} style={overlayGradientStyle} data-testid="gradient-overlay" />
       <div className={styles.container}>
-        <blockquote className={styles.quote} style={quoteTextStyle}>
+        <blockquote className={styles.quote} style={quoteTextStyle} data-testid="quote">
           <p>{quoteText ? quoteText : <FormattedMessage id="login.quoteText" />}</p>
         </blockquote>
         <img
           src={logoImageSrc ? logoImageSrc : "/cart-com-company-logo.svg"}
           className={styles.companyLogo}
           alt="company logo"
+          data-testid="company logo"
         />
         <div>
-          <h5 className={styles.quoteAuthorFullName} style={quoteAuthorFullNameStyle}>
+          <h5
+            className={styles.quoteAuthorFullName}
+            style={quoteAuthorFullNameStyle}
+            data-testid="quote-author-full-name"
+          >
             {quoteAuthorFullName ? quoteAuthorFullName : <FormattedMessage id="login.quoteAuthor" />}
           </h5>
-          <h3 className={styles.quoteAuthorJobTitle} style={quoteAuthorJobTitleStyle}>
+          <h3
+            className={styles.quoteAuthorJobTitle}
+            style={quoteAuthorJobTitleStyle}
+            data-testid="quote-author-job-title"
+          >
             {quoteAuthorJobTitle ? quoteAuthorJobTitle : <FormattedMessage id="login.quoteAuthorJobTitle" />}
           </h3>
         </div>
