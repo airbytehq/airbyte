@@ -63,9 +63,9 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     final SentryEvent event = new SentryEvent();
 
     // Remove invalid characters from the release name, use @ so sentry knows how to grab the tag
-    // e.g. airbyte/source-xyz:1.2.0 -> source-xyz@1.2.0
+    // e.g. airbyte/source-xyz:1.2.0 -> airbyte-source-xyz@1.2.0
     // More info at https://docs.sentry.io/product/cli/releases/#creating-releases
-    final String release = dockerImage.replace(":", "@").substring(dockerImage.lastIndexOf("/") + 1);
+    final String release = dockerImage.replace("/", "-").replace(":", "@");
     event.setRelease(release);
 
     // enhance event fingerprint to ensure separate grouping per connector

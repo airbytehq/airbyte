@@ -88,7 +88,8 @@ public class SentryJobErrorReportingClientTest {
     verify(mockSentryHub).captureEvent(eventCaptor.capture());
     final SentryEvent actualEvent = eventCaptor.getValue();
     assertEquals("other", actualEvent.getPlatform());
-    assertEquals("source-stripe@1.2.3", actualEvent.getRelease());
+    assertEquals("airbyte-source-stripe@1.2.3", actualEvent.getRelease());
+    assertEquals(List.of("{{ default }}", "airbyte-source-stripe"), actualEvent.getFingerprints());
     assertEquals("some_metadata_value", actualEvent.getTag("some_metadata"));
     assertNull(actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
 
