@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { GitBlock } from "./GitBlock";
-import Header from "./Header";
+import { Header } from "./Header";
 
 const MainBlock = styled.div`
   width: 100%;
