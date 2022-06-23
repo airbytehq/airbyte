@@ -764,18 +764,25 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     ) -> MutableMapping[str, Any]:
         return {}
 
+    def _get_records(self, pull_request, repository_name):
+        " yield review records from pull_request "
+        for record in pull_request["reviews"]["nodes"]:
+            record["repository"] = repository_name
+            record["pull_request_url"] = pull_request["url"]
+            if record["commit"]:
+                record["commit_id"] = record.pop("commit")["oid"]
+            record["user"]["type"] = record["user"].pop("__typename")
+            yield record
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]
         if repository:
             repository_name = repository["owner"]["login"] + "/" + repository["name"]
-            for pull_request in repository["pullRequests"]["nodes"]:
-                for record in pull_request["reviews"]["nodes"]:
-                    record["repository"] = repository_name
-                    record["pull_request_url"] = pull_request["url"]
-                    if record["commit"]:
-                        record["commit_id"] = record.pop("commit")["oid"]
-                    record["user"]["type"] = record["user"].pop("__typename")
-                    yield record
+            if "pullRequests" in repository:
+                for pull_request in repository["pullRequests"]["nodes"]:
+                    yield from self._get_records(pull_request, repository_name)
+            elif "pullRequest" in repository:
+                yield from self._get_records(repository["pullRequest"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
@@ -806,9 +813,9 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
-        if next_page_token:
-            next_page_token = next_page_token["after"]
-        query = get_query_reviews(owner=organization, name=name, first=self.page_size, after=next_page_token)
+        if not next_page_token:
+            next_page_token = {"after": None}
+        query = get_query_reviews(owner=organization, name=name, first=self.page_size, **next_page_token)
         return {"query": query}
 
 
