@@ -30,7 +30,7 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
   public DefaultDestStateLifecycleManager() {
-    this(new SingleDestStateLifecycleManager(), new StreamDestStateLifecycleManager());
+    this(new DestSingleStateLifecycleManager(), new DestStreamStateLifecycleManager());
   }
 
   @VisibleForTesting DefaultDestStateLifecycleManager(final DestStateLifecycleManager singleStateManager, final DestStateLifecycleManager streamStateManager) {

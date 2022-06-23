@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
  * were received. State messages across streams will be emitted in alphabetical order (primary sort
  * on namespace, secondary on name).
  */
-public class StreamDestStateLifecycleManager implements DestStateLifecycleManager {
+public class DestStreamStateLifecycleManager implements DestStateLifecycleManager {
 
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
 
-  public StreamDestStateLifecycleManager() {
+  public DestStreamStateLifecycleManager() {
     streamToLastPendingState = new HashMap<>();
     streamToLastFlushedState = new HashMap<>();
     streamToLastCommittedState = new HashMap<>();

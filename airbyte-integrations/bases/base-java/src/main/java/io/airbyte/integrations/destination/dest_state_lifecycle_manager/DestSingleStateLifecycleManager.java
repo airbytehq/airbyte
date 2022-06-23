@@ -19,7 +19,7 @@ import java.util.Queue;
  * Does NOT store duplicates. Because each state message represents the entire state for the
  * connection, it only stores (and emits) the LAST state it received at each phase.
  */
-public class SingleDestStateLifecycleManager implements DestStateLifecycleManager {
+public class DestSingleStateLifecycleManager implements DestStateLifecycleManager {
 
   private AirbyteMessage lastPendingState;
   private AirbyteMessage lastFlushedState;

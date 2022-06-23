@@ -19,7 +19,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class StreamDestStateLifecycleManagerTest {
+class DestStreamStateLifecycleManagerTest {
 
   private static final AirbyteMessage STREAM1_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -38,11 +38,11 @@ class StreamDestStateLifecycleManagerTest {
           .withStream(
               new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("bananas")).withStreamState(Jsons.jsonNode("10"))));
 
-  private StreamDestStateLifecycleManager mgr;
+  private DestStreamStateLifecycleManager mgr;
 
   @BeforeEach
   void setup() {
-    mgr = new StreamDestStateLifecycleManager();
+    mgr = new DestStreamStateLifecycleManager();
   }
 
   /**
