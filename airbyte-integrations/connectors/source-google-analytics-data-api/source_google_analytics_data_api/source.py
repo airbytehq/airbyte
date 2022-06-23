@@ -136,8 +136,8 @@ class SourceGoogleAnalyticsDataApi(Source):
     @staticmethod
     def _run_report(config: Mapping[str, Any]) -> RunReportResponse:
         property_id = config.get("property_id")
-        dimensions = config.get("dimensions", "").split(", ")
-        metrics = config.get("metrics", "").split(", ")
+        dimensions = config.get("dimensions", "").split(",")
+        metrics = config.get("metrics", "").split(",")
         start_date = config.get("date_ranges_start_date")
         end_date = config.get("date_ranges_end_date")
         json_credentials = config.get("json_credentials")
