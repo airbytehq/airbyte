@@ -42,6 +42,18 @@ public class BigQueryDenormalizedTestDataUtils {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
 
+  public static JsonNode getSchemaArrays() {
+    return getTestDataFromResourceJson("schemaArrays.json");
+  }
+
+  public static JsonNode getDataArrays() {
+    return getTestDataFromResourceJson("dataArrays.json");
+  }
+
+  public static JsonNode getExpectedDataArrays() {
+    return getTestDataFromResourceJson("expectedDataArrays.json");
+  }
+
   public static JsonNode getData() {
     return getTestDataFromResourceJson("data.json");
   }

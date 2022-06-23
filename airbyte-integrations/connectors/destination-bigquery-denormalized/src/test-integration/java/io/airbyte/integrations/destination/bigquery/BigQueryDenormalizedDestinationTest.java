@@ -377,6 +377,19 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  void testArrays() throws Exception {
+    catalog = getCommonCatalog(getSchemaArrays(), datasetId);
+
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS11);
+    consumer.close();
+
+    assertEquals(getExpectedDataArrays(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0));
+  }
+
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
     final List<JsonNode> valuesNode = node.findValues(attributeName);
     final Set<String> resultSet = new HashSet<>();

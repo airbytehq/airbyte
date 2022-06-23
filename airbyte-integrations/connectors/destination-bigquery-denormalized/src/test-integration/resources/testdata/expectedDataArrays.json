@@ -1,0 +1,33 @@
+{
+  "object_with_arrays": {
+    "array_3": [1, 2, 3]
+  },
+  "simple_string": "simple string",
+  "array_1": [
+    {
+      "big_query_array": [1]
+    }
+  ],
+  "array_4": [
+    {
+      "big_query_array": [
+        {
+          "big_query_array": [4]
+        }
+      ]
+    }
+  ],
+  "array_5": [
+    {
+      "big_query_array": [
+        {
+          "big_query_array": [
+            {
+              "big_query_array": [5]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
