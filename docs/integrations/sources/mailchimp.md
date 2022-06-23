@@ -13,7 +13,7 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
 4. Enter a name for your source.
 6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
-    - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
     - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
