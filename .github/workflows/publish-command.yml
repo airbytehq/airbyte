@@ -13,10 +13,6 @@ on:
       connector:
         description: "Airbyte Connector"
         required: true
-      run-tests:
-        description: "Should run tests when publishing"
-        required: true
-        default: "true"
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
@@ -188,7 +184,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>Running tests before publishing: **${{ github.event.inputs.run-tests }}**<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Create table header
         uses: peter-evans/create-or-update-comment@v1
         with:
@@ -294,7 +290,7 @@ jobs:
       - name: Publish ${{ matrix.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} true --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
