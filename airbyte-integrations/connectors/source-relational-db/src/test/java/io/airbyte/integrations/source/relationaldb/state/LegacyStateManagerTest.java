@@ -82,7 +82,7 @@ public class LegacyStateManagerTest {
     final StateManager stateManager = new LegacyStateManager(new DbState(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.LEGACY)
+        .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
             new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor("a"),
@@ -93,7 +93,7 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.LEGACY)
+        .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
             new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor("a"),
@@ -118,7 +118,7 @@ public class LegacyStateManagerTest {
     final StateManager stateManager = new LegacyStateManager(new DbState(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.LEGACY)
+        .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
             new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor("a"),
@@ -145,7 +145,7 @@ public class LegacyStateManagerTest {
     final StateManager stateManager = new LegacyStateManager(state, catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.LEGACY)
+        .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
             new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor(null),
@@ -155,7 +155,7 @@ public class LegacyStateManagerTest {
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.LEGACY)
+        .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.jsonNode(new DbState().withStreams(List.of(
             new DbStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(List.of(CURSOR_FIELD1))
                 .withCursor(null),

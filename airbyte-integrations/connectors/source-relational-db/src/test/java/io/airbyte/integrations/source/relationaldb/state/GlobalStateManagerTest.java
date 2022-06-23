@@ -46,7 +46,7 @@ public class GlobalStateManagerTest {
         .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace("namespace").withName("name"))
             .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     assertNotNull(stateManager.getCdcStateManager());
     assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
   }
@@ -127,7 +127,7 @@ public class GlobalStateManagerTest {
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
-        .withStateType(AirbyteStateType.GLOBAL);
+        .withType(AirbyteStateType.GLOBAL);
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expected, actualFirstEmission);
@@ -150,7 +150,7 @@ public class GlobalStateManagerTest {
     final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState())).withStreamStates(
         List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor()).withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     stateManager.getCdcStateManager().setCdcState(cdcState);
 
     final DbState expectedDbState = new DbState()
@@ -196,7 +196,7 @@ public class GlobalStateManagerTest {
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
-        .withStateType(AirbyteStateType.GLOBAL);
+        .withType(AirbyteStateType.GLOBAL);
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expected, actualFirstEmission);
