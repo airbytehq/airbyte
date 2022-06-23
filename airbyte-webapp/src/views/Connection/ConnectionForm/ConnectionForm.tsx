@@ -132,7 +132,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const isEditMode: boolean = mode !== "create";
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
@@ -198,7 +198,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     <Formik
       initialValues={initialValues}
       validationSchema={connectionValidationSchema}
-      enableReinitialize={true}
+      enableReinitialize
       onSubmit={onFormSubmit}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (

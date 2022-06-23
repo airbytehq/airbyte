@@ -22,11 +22,9 @@ public class SshBastionContainer {
 
   private static final String SSH_USER = "sshuser";
   private static final String SSH_PASSWORD = "secret";
-  private Network network;
   private GenericContainer bastion;
 
-  public void initAndStartBastion() {
-    network = Network.newNetwork();
+  public void initAndStartBastion(Network network) {
     bastion = new GenericContainer(
         new ImageFromDockerfile("bastion-test")
             .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
@@ -40,9 +38,12 @@ public class SshBastionContainer {
 
     return Jsons.jsonNode(builderWithSchema
         .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host", bastion.getHost())
+            .put("tunnel_host",
+                Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
+                    .getNetworks()
+                    .entrySet().stream().findFirst().get().getValue().getIpAddress()))
             .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", bastion.getFirstMappedPort())
+            .put("tunnel_port", bastion.getExposedPorts().get(0))
             .put("tunnel_user", SSH_USER)
             .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
             .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
@@ -62,8 +63,7 @@ public class SshBastionContainer {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) getNetWork()).getName())
-            .getIpAddress()))
+            .entrySet().stream().findFirst().get().getValue().getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
@@ -71,16 +71,11 @@ public class SshBastionContainer {
         .put("ssl", false);
   }
 
-  public Network getNetWork() {
-    return this.network;
-  }
-
   public void stopAndCloseContainers(final JdbcDatabaseContainer<?> db) {
-    db.stop();
-    db.close();
     bastion.stop();
     bastion.close();
-    network.close();
+    db.stop();
+    db.close();
   }
 
 }

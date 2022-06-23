@@ -52,7 +52,7 @@ const ROLE_OPTIONS = [
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
 }> = (props) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
   const { mutateAsync: invite } = inviteUserLogic;
@@ -62,8 +62,8 @@ export const InviteUsersModal: React.FC<{
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
-        validateOnBlur={true}
-        validateOnChange={true}
+        validateOnBlur
+        validateOnChange
         validationSchema={requestConnectorValidationSchema}
         initialValues={{
           users: [
