@@ -94,6 +94,7 @@ interface ConnectionFormSubmitResult {
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
+// eslint-disable-next-line react/function-component-definition
 function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
   // Grab values from context
   const { values } = useFormikContext<T>();
