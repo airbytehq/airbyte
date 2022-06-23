@@ -29,7 +29,8 @@ public final class StreamTransform {
     return new StreamTransform(StreamTransformType.REMOVE_STREAM, streamDescriptor, null);
   }
 
-  public static StreamTransform createUpdateStreamTransform(final StreamDescriptor streamDescriptor, final UpdateStreamTransform updateStreamTransform) {
+  public static StreamTransform createUpdateStreamTransform(final StreamDescriptor streamDescriptor,
+                                                            final UpdateStreamTransform updateStreamTransform) {
     return new StreamTransform(StreamTransformType.UPDATE_STREAM, streamDescriptor, updateStreamTransform);
   }
 

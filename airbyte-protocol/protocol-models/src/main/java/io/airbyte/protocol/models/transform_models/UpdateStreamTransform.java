@@ -4,7 +4,6 @@
 
 package io.airbyte.protocol.models.transform_models;
 
-import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
