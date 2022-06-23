@@ -53,7 +53,7 @@ yarn serve
 You can now navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes.  You can stop the running server in OSX/Linux by pressing `control-c` in the terminal running the server
 
 ### Deploying the docs website
-We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.  An [internal guide for deployment lives here](/docs/docusaurus/deploying_and_reverting_docs.md).
+We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.  An [internal guide for deployment lives here](../docusaurus/deploying_and_reverting_docs.md).
 
 The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. Locally run `./tools/bin/deploy_docusaurus` from the `airbyte` monorepo project root to deploy this docs website.
 
