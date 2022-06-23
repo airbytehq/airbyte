@@ -19,12 +19,7 @@ import lombok.ToString;
 @ToString
 public class AddFieldTransform {
 
-  private final List<String> fieldName;
   private final JsonNode schema;
-
-  public List<String> getFieldName() {
-    return new ArrayList<>(fieldName);
-  }
 
   public JsonNode getSchema() {
     return schema;

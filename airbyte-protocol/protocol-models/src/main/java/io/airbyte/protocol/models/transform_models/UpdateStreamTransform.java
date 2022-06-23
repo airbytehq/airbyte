@@ -19,7 +19,6 @@ import lombok.ToString;
 @ToString
 public class UpdateStreamTransform {
 
-  private final StreamDescriptor streamDescriptor;
   private final Set<FieldTransform> fieldTransforms;
 
   public Set<FieldTransform> getFieldTransforms() {
