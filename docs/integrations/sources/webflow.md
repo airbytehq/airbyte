@@ -2,7 +2,7 @@
 description: 'This connector extracts "collections" from Webflow'
 ---
 
-# Sources
+# Webflow
 
 Webflow is used for publishing Airbyte's blogs, and this connector returns data that is made available by [Webflow APIs](https://developers.webflow.com/). 
 
