@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -35,7 +34,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -53,6 +52,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -110,11 +110,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       return null;
     });
 
-  }
-
-  @Test
-  public void test() {
-    System.out.println();
   }
 
   private JsonNode getConfig(final String dbName) {
@@ -304,7 +299,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertExpectedStateMessages(stateAfterFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
-    assertEquals((RANDOM_TABLE_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
+    assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -338,7 +333,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final Set<AirbyteRecordMessage> recordsFromSecondBatchWithoutDuplicates = removeDuplicates(
         recordsFromSecondBatch);
 
-    final int recordsCreatedBeforeTestCount = RANDOM_TABLE_RECORDS.size();
+    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
     assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
         "Expected first sync to include records created while the test was running.");
     assertEquals((recordsToCreate * 3) + recordsCreatedBeforeTestCount,
@@ -383,33 +378,45 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final ConfiguredAirbyteCatalog updatedCatalog = new ConfiguredAirbyteCatalog().withStreams(combinedStreams);
 
+    /*
+     * Write 20 records to the existing table
+     */
+    final Set<JsonNode> recordsWritten = new HashSet<>();
+    for (int recordsCreated = 0; recordsCreated < 20; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      recordsWritten.add(record);
+      writeModelRecord(record);
+    }
+
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getCustomSource(newTables.getStreams())
         .read(getConfig(), updatedCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
-        dataFromSecondBatch);
+    final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
     assertEquals(1, stateAfterSecondBatch.size());
     assertNotNull(stateAfterSecondBatch.get(0).getData());
     assertExpectedStateMessages(stateAfterSecondBatch);
 
-    assertEquals((RANDOM_TABLE_RECORDS.size()), recordsFromSecondBatch.size());
-    assertExpectedRecords(new HashSet<>(RANDOM_TABLE_RECORDS), recordsFromSecondBatch,
-        recordsFromSecondBatch.stream().map(AirbyteRecordMessage::getStream).collect(
+    assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
+    assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME + "_random"));
+
+    final Set<AirbyteRecordMessage> recordsForModelsStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME);
+    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME + "_random");
+
+    assertEquals((MODEL_RECORDS_RANDOM.size()), recordsForModelsRandomStreamFromSecondBatch.size());
+    assertEquals(20, recordsForModelsStreamFromSecondBatch.size());
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS_RANDOM), recordsForModelsRandomStreamFromSecondBatch,
+        recordsForModelsRandomStreamFromSecondBatch.stream().map(AirbyteRecordMessage::getStream).collect(
             Collectors.toSet()), Sets
             .newHashSet(MODELS_STREAM_NAME + "_random"),
         MODELS_SCHEMA + "_random");
+    assertExpectedRecords(recordsWritten, recordsForModelsStreamFromSecondBatch);
+
   }
-
-
-  protected static final List<JsonNode> RANDOM_TABLE_RECORDS = ImmutableList.of(
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random", "Fiesta-random")),
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random", "Focus-random")),
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random", "Ranger-random")),
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "GLA-random")),
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "A 220-random")),
-      Jsons.jsonNode(ImmutableMap.of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random", "E 350-random")));
 
 }

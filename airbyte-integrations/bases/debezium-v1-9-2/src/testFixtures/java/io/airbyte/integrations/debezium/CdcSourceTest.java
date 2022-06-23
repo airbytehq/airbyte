@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,29 @@ public abstract class CdcSourceTest {
   protected static final String COL_ID = "id";
   protected static final String COL_MAKE_ID = "make_id";
   protected static final String COL_MODEL = "model";
+
+  protected final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
+      Jsons
+          .jsonNode(ImmutableMap
+              .of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+                  "Fiesta-random")),
+      Jsons.jsonNode(ImmutableMap
+          .of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+              "Focus-random")),
+      Jsons
+          .jsonNode(ImmutableMap
+              .of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+                  "Ranger-random")),
+      Jsons.jsonNode(ImmutableMap
+          .of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+              "GLA-random")),
+      Jsons.jsonNode(ImmutableMap
+          .of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+              "A 220-random")),
+      Jsons
+          .jsonNode(ImmutableMap
+              .of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+                  "E 350-random")));
 
   protected static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -157,28 +181,6 @@ public abstract class CdcSourceTest {
     createTable(MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
         columnClause(ImmutableMap.of(COL_ID + "_random", "INTEGER", COL_MAKE_ID + "_random", "INTEGER", COL_MODEL + "_random", "VARCHAR(200)"),
             Optional.of(COL_ID + "_random")));
-    final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
-        Jsons
-            .jsonNode(ImmutableMap
-                .of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                    "Fiesta-random")),
-        Jsons.jsonNode(ImmutableMap
-            .of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                "Focus-random")),
-        Jsons
-            .jsonNode(ImmutableMap
-                .of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                    "Ranger-random")),
-        Jsons.jsonNode(ImmutableMap
-            .of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                "GLA-random")),
-        Jsons.jsonNode(ImmutableMap
-            .of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                "A 220-random")),
-        Jsons
-            .jsonNode(ImmutableMap
-                .of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                    "E 350-random")));
     for (final JsonNode recordJson : MODEL_RECORDS_RANDOM) {
       writeRecords(recordJson, MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
           COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
@@ -189,13 +191,13 @@ public abstract class CdcSourceTest {
     writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL);
   }
 
-  private void writeRecords(
-                            final JsonNode recordJson,
-                            final String dbName,
-                            final String streamName,
-                            final String idCol,
-                            final String makeIdCol,
-                            final String modelCol) {
+  protected void writeRecords(
+                              final JsonNode recordJson,
+                              final String dbName,
+                              final String streamName,
+                              final String idCol,
+                              final String makeIdCol,
+                              final String modelCol) {
     executeQuery(
         String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
             idCol, makeIdCol, modelCol,
@@ -223,16 +225,32 @@ public abstract class CdcSourceTest {
   }
 
   protected Set<AirbyteRecordMessage> extractRecordMessages(final List<AirbyteMessage> messages) {
-    final List<AirbyteRecordMessage> recordMessageList = messages
-        .stream()
-        .filter(r -> r.getType() == Type.RECORD).map(AirbyteMessage::getRecord)
-        .collect(Collectors.toList());
-    final Set<AirbyteRecordMessage> recordMessageSet = new HashSet<>(recordMessageList);
+    final Map<String, Set<AirbyteRecordMessage>> recordsPerStream = extractRecordMessagesStreamWise(messages);
+    final Set<AirbyteRecordMessage> consolidatedRecords = new HashSet<>();
+    recordsPerStream.values().forEach(consolidatedRecords::addAll);
+    return consolidatedRecords;
+  }
 
-    assertEquals(recordMessageList.size(), recordMessageSet.size(),
-        "Expected no duplicates in airbyte record message output for a single sync.");
+  protected Map<String, Set<AirbyteRecordMessage>> extractRecordMessagesStreamWise(final List<AirbyteMessage> messages) {
+    final Map<String, List<AirbyteRecordMessage>> recordsPerStream = new HashMap<>();
+    for (final AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        AirbyteRecordMessage recordMessage = message.getRecord();
+        recordsPerStream.computeIfAbsent(recordMessage.getStream(), (c) -> new ArrayList<>()).add(recordMessage);
+      }
+    }
 
-    return recordMessageSet;
+    final Map<String, Set<AirbyteRecordMessage>> recordsPerStreamWithNoDuplicates = new HashMap<>();
+    for (final Map.Entry<String, List<AirbyteRecordMessage>> element : recordsPerStream.entrySet()) {
+      final String streamName = element.getKey();
+      final List<AirbyteRecordMessage> records = element.getValue();
+      final Set<AirbyteRecordMessage> recordMessageSet = new HashSet<>(records);
+      assertEquals(records.size(), recordMessageSet.size(),
+          "Expected no duplicates in airbyte record message output for a single sync.");
+      recordsPerStreamWithNoDuplicates.put(streamName, recordMessageSet);
+    }
+
+    return recordsPerStreamWithNoDuplicates;
   }
 
   protected List<AirbyteStateMessage> extractStateMessages(final List<AirbyteMessage> messages) {
