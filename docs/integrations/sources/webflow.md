@@ -27,7 +27,6 @@ Which should respond with something similar to:
 [{"_id":"<redacted>","createdOn":"2021-03-26T15:46:04.032Z","name":"Airbyte","shortName":"airbyte-dev","lastPublished":"2022-06-09T12:55:52.533Z","previewUrl":"https://screenshots.webflow.com/sites/<redacted>","timezone":"America/Los_Angeles","database":"<redacted>"}]
 ```
 
-See [integration_tests/sample_config.json](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-webflow/integration_tests/sample_config.json) for a sample config file that you can use as a template for entering in your `site id` and your `Webflow API Key`. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
