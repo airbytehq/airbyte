@@ -297,14 +297,18 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
+      final Attempt mAttempt = Mockito.mock(Attempt.class);
+      Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
+
       final Job mJob = Mockito.mock(Job.class);
       Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
       Mockito.when(mJob.getConfig()).thenReturn(new JobConfig());
+      Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason", failureSummary));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
       Mockito.verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
@@ -316,7 +320,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).failJob(JOB_ID);
 
-      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "", failureSummary)))
+      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "")))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }

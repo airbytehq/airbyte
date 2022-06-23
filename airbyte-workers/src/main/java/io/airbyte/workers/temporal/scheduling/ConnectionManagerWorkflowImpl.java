@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
@@ -271,21 +270,19 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                              final StandardSyncOutput standardSyncOutput) {
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
-    final AttemptFailureSummary attemptFailureSummary = FailureHelper.failureSummary(workflowInternalState.getFailures(),
-        workflowInternalState.getPartialSuccess());
 
     if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailure, new AttemptFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
           standardSyncOutput,
-          attemptFailureSummary));
+          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
     } else {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailureWithAttemptNumber, new AttemptNumberFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
           standardSyncOutput,
-          attemptFailureSummary));
+          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
     }
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
@@ -305,8 +302,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure,
-          new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason, attemptFailureSummary));
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);

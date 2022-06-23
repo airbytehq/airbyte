@@ -203,8 +203,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       trackCompletion(job, JobStatus.FAILED);
 
       final UUID connectionId = UUID.fromString(job.getScope());
-      final AttemptFailureSummary failureSummary = input.getFailureSummary();
-      jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync());
+      job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
+          .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync()));
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
