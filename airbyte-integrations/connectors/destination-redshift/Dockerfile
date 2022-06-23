@@ -13,8 +13,10 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-redshift
+ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 
+EXPOSE 5005
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.3.40
+LABEL io.airbyte.version=0.3.41
 LABEL io.airbyte.name=airbyte/destination-redshift

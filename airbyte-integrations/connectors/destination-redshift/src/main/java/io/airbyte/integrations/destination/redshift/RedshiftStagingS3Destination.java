@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -107,7 +107,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
+    final JsonNode s3Options = findS3Options(config);
+    final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
@@ -116,7 +117,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
         catalog,
-        isPurgeStagingData(config));
+        isPurgeStagingData(s3Options));
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {
