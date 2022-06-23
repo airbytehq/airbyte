@@ -12,6 +12,7 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import styles from "./SignupForm.module.scss";
 
 interface FormValues {
   name: string;
@@ -217,12 +218,14 @@ export const SignupForm: React.FC = () => {
             <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <>
-              <div />
-              <LoadingButton type="submit" isLoading={isSubmitting} disabled={!isValid || !values.security}>
-                <FormattedMessage id="login.signup" />
-              </LoadingButton>
-            </>
+            <LoadingButton
+              className={styles.signUpButton}
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!isValid || !values.security}
+            >
+              <FormattedMessage id="login.signup" />
+            </LoadingButton>
           </BottomBlock>
         </Form>
       )}
