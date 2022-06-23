@@ -30,7 +30,7 @@ def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
     # set clean-up args to clean target destination after the test
     clean_up_args = {
-        "destination_type": [d for d in DestinationType if d.value in destinations_to_test], 
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
         "test_type": "normalization",
         "git_versioned_tests": git_versioned_tests,
     }
@@ -509,7 +509,7 @@ def test_redshift_normalization_migration(tmp_path, setup_test_path):
     destination_type = DestinationType.REDSHIFT
     clean_up_args = {
         "destination_type": [destination_type],
-        "test_type": "ephemeral", # "ephemeral", because we parse /tmp folders
+        "test_type": "ephemeral",  # "ephemeral", because we parse /tmp folders
         "tmp_folders": [str(tmp_path)],
     }
     if destination_type.value not in dbt_test_utils.get_test_targets():

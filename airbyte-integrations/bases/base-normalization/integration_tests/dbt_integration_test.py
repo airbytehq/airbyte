@@ -648,19 +648,19 @@ class DbtIntegrationTest(object):
         """
         Cleans-up all temporary schemas created during the test session.
         It parses the provided tmp_folders: List[str] or uses `git_versioned_tests` to find sources.yml files generated for the tests.
-        It gets target schemas created by the tests and removes them using custom scenario specified in 
+        It gets target schemas created by the tests and removes them using custom scenario specified in
             `dbt-project-template/macros/clean_tmp_tables.sql` macro.
-            
-        REQUIREMENTS: 
+
+        REQUIREMENTS:
         1) Idealy, the schemas should have unique names like: test_normalization_<some_random_string> to avoid conflicts.
         2) The `clean_tmp_tables.sql` macro should have the specific macro for target destination to proceed.
-        
+
         INPUT ARGUMENTS:
         ::  destination_type : either single destination or list of destinations
         ::  test_type: either "ephemeral" or "normalization" should be supplied.
         ::  tmp_folders: should be supplied if test_type = "ephemeral", to get schemas from /build/normalization_test_output folders
         ::  git_versioned_tests: should be supplied if test_type = "normalization", to get schemas from integration_tests/normalization_test_output folders
-        
+
         EXAMPLE:
             clean_up_args = {
                 "destination_type": [ DestinationType.REDSHIFT, DestinationType.POSTGRES, ... ]
@@ -673,13 +673,13 @@ class DbtIntegrationTest(object):
         test_folders: dict = {}
         source_files: dict = {}
         schemas_to_remove: dict = {}
-        
-        # collecting information about tmp_tables created for the test for each destination                
+
+        # collecting information about tmp_tables created for the test for each destination
         for destination in destination_type:
             test_folders[destination.value] = []
             source_files[destination.value] = []
             schemas_to_remove[destination.value] = []
-            
+
             # based on test_type select path to source files
             if test_type == "ephemeral":
                 if not tmp_folders:
@@ -709,7 +709,7 @@ class DbtIntegrationTest(object):
                     print(f"\n{destination.value}: {file} doesn't exist, consider to remove any temp_tables and schemas manually!\n")
                     pass
                 test_sources: list = source_yml.get("sources", []) if source_yml else []
-                
+
                 for source in test_sources:
                     target_schema: str = source.get("name")
                     if target_schema not in schemas_to_remove[destination.value]:
