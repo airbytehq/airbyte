@@ -4,7 +4,7 @@
 title: ResetSourceConfiguration
 description: configuration of the reset source
 type: object
-additionalProperties: true
+additionalProperties: false
 required:
   - streamsToReset
 properties:
