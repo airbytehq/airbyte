@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
@@ -25,9 +26,9 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
-import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -166,12 +167,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
             .equals(ReplicationMethod.CDC);
-  }
-
-  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-    return any.isPresent();
   }
 
   @Override

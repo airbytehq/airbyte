@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
@@ -727,6 +728,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
   }
 
+  @Override
+  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return null;
+  }
+
   // SCHEDULER
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
@@ -849,7 +855,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return archiveHandler.canImportDefinitions();
   }
 
-  private <T> T execute(final HandlerCall<T> call) {
+  private static <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {

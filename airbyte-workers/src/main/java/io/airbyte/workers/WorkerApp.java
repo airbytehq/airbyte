@@ -19,6 +19,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -114,7 +115,7 @@ public class WorkerApp {
   private final ProcessFactory discoverProcessFactory;
   private final ProcessFactory replicationProcessFactory;
   private final SecretsHydrator secretsHydrator;
-  private final WorkflowServiceStubs temporalService;
+  private final WorkflowClient workflowClient;
   private final ConfigRepository configRepository;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
@@ -133,6 +134,7 @@ public class WorkerApp {
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
+  private final StreamResetPersistence streamResetPersistence;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -146,7 +148,7 @@ public class WorkerApp {
           }
         });
 
-    final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
+    final WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
 
     if (configs.shouldRunGetSpecWorkflows()) {
       registerGetSpec(factory);
@@ -190,7 +192,8 @@ public class WorkerApp {
             jobNotifier,
             jobTracker,
             configRepository,
-            jobCreator),
+            jobCreator,
+            streamResetPersistence),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         new CheckConnectionActivityImpl(
@@ -374,18 +377,11 @@ public class WorkerApp {
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
-    final String temporalHost = configs.getTemporalHost();
-    LOGGER.info("temporalHost = " + temporalHost);
-
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
       KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
     }
-
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-
-    TemporalUtils.configureTemporalNamespace(temporalService);
 
     final Database configDatabase = new Database(configsDslContext);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
@@ -412,7 +408,10 @@ public class WorkerApp {
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+    final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
+    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService);
+    TemporalUtils.configureTemporalNamespace(temporalService);
 
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,
@@ -436,6 +435,8 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -444,7 +445,7 @@ public class WorkerApp {
         discoverProcessFactory,
         replicationProcessFactory,
         secretsHydrator,
-        temporalService,
+        workflowClient,
         configRepository,
         configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
@@ -462,7 +463,8 @@ public class WorkerApp {
         connectionHelper,
         containerOrchestratorConfig,
         jobNotifier,
-        jobTracker).start();
+        jobTracker,
+        streamResetPersistence).start();
   }
 
   public static void main(final String[] args) {

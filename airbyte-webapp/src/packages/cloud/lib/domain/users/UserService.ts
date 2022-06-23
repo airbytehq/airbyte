@@ -1,6 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-import { User } from "./types";
+import { User, UserUpdate } from "./types";
 
 export class UserService extends AirbyteRequestService {
   get url(): string {
@@ -18,6 +18,10 @@ export class UserService extends AirbyteRequestService {
       authUserId,
       authProvider,
     });
+  }
+
+  public async update(params: UserUpdate): Promise<void> {
+    return this.fetch<void>(`${this.url}/update`, params);
   }
 
   public async changeEmail(email: string): Promise<void> {
@@ -46,17 +50,26 @@ export class UserService extends AirbyteRequestService {
     });
   }
 
+  public async resendWithSignInLink({ email }: { email: string }): Promise<void> {
+    this.fetch(`v1/web_backend/cloud_workspaces/resend_with_signin_link`, {
+      email,
+      // `continueUrl` is rquired to have a valid URL, but it's currently not used by the Frontend.
+      continueUrl: window.location.href,
+    });
+  }
+
   public async invite(
-    users: {
+    users: Array<{
       email: string;
-    }[],
+    }>,
     workspaceId: string
   ): Promise<User[]> {
     return Promise.all(
       users.map(async (user) =>
-        this.fetch<User>(`v1/web_backend/cloud_workspaces/invite`, {
+        this.fetch<User>(`v1/web_backend/cloud_workspaces/invite_with_signin_link`, {
           email: user.email,
           workspaceId,
+          continueUrl: window.location.href,
         })
       )
     );

@@ -1,11 +1,12 @@
 import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { ContentCard, H4 } from "components";
 
-import { NormalizationType } from "core/domain/connection";
+import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -55,6 +56,7 @@ const CustomTransformationsCard: React.FC<{
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
+  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const initialValues = useMemo(
     () => ({
@@ -73,11 +75,18 @@ const CustomTransformationsCard: React.FC<{
         enableReinitialize: true,
         onSubmit,
       }}
+      submitDisabled={editingTransformation}
       mode={mode}
     >
       <FieldArray name="transformations">
         {(formProps) => (
-          <TransformationField defaultTransformation={defaultTransformation} {...formProps} mode={mode} />
+          <TransformationField
+            defaultTransformation={defaultTransformation}
+            {...formProps}
+            mode={mode}
+            onStartEdit={toggleEditingTransformation}
+            onEndEdit={toggleEditingTransformation}
+          />
         )}
       </FieldArray>
     </FormCard>
@@ -117,7 +126,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const workspace = useCurrentWorkspace();
   const { hasFeature } = useFeatureService();
 
-  const supportsNormalization = definition.supportsNormalization;
+  const { supportsNormalization } = definition;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
   const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
@@ -136,17 +145,11 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
           (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
         );
 
-    await updateConnection({
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      prefix: connection.prefix,
-      schedule: connection.schedule,
-      syncCatalog: connection.syncCatalog,
-      connectionId: connection.connectionId,
-      status: connection.status,
-      name: connection.name,
-      operations: operations,
-    });
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        operations,
+      })
+    );
 
     const nextFormValues: typeof values = {};
     if (values.transformations) {
