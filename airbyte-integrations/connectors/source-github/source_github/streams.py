@@ -441,7 +441,6 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
 
     use_cache = True
     large_stream = True
-    first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -451,7 +450,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         """
         Decide if this a first read or not by the presence of the state object
         """
-        self._first_read = not bool(stream_state) or stream_state.get(self.first_read_override_key, False)
+        self._first_read = not bool(stream_state)
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
