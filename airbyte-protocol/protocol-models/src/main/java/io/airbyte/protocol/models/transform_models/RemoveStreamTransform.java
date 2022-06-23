@@ -20,4 +20,8 @@ public class RemoveStreamTransform {
 
   private final StreamDescriptor streamDescriptor;
 
+  public StreamDescriptor getStreamDescriptor() {
+    return streamDescriptor;
+  }
+
 }
