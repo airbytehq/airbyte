@@ -26,6 +26,7 @@ import io.sentry.protocol.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,7 +112,7 @@ public class SentryJobErrorReportingClientTest {
     exception.setValue("Something went wrong");
     exceptions.add(exception);
 
-    when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(exceptions);
+    when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(Optional.of(exceptions));
 
     final FailureReason failureReason = new FailureReason()
         .withInternalMessage("RuntimeError: Something went wrong")
@@ -129,7 +130,7 @@ public class SentryJobErrorReportingClientTest {
   void testReportJobFailureReasonWithInvalidStacktrace() {
     final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
 
-    when(mockSentryExceptionHelper.buildSentryExceptions("Invalid stacktrace")).thenReturn(null);
+    when(mockSentryExceptionHelper.buildSentryExceptions("Invalid stacktrace")).thenReturn(Optional.empty());
 
     final FailureReason failureReason = new FailureReason()
         .withInternalMessage("RuntimeError: Something went wrong")

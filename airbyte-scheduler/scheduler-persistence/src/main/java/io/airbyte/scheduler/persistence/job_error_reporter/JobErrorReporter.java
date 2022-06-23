@@ -39,6 +39,13 @@ public class JobErrorReporter {
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
 
+  /**
+   * Reports a Sync Job's connector-caused FailureReasons to the JobErrorReportingClient
+   *
+   * @param connectionId - connection that had the failure
+   * @param failureSummary - final attempt failure summary
+   * @param jobSyncConfig - config for the sync job
+   */
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
     final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
         .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey("from_trace_message"))

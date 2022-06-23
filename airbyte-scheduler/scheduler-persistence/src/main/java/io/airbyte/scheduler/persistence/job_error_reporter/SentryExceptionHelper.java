@@ -11,6 +11,7 @@ import io.sentry.protocol.SentryStackTrace;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,9 +21,10 @@ public class SentryExceptionHelper {
    * Processes a raw stacktrace string into structured SentryExceptions
    * <p>
    * Currently, Java and Python stacktraces are supported. If an unsupported stacktrace format is
-   * encountered, `null` will be returned, in which case we can fall back to message-based grouping.
+   * encountered, an empty optional will be returned, in which case we can fall back to message-based
+   * grouping.
    */
-  public List<SentryException> buildSentryExceptions(final String stacktrace) {
+  public Optional<List<SentryException>> buildSentryExceptions(final String stacktrace) {
     return Exceptions.swallowWithDefault(() -> {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
@@ -31,11 +33,11 @@ public class SentryExceptionHelper {
         return buildJavaSentryExceptions(stacktrace);
       }
 
-      return null;
-    }, null);
+      return Optional.empty();
+    }, Optional.empty());
   }
 
-  private static List<SentryException> buildPythonSentryExceptions(final String stacktrace) {
+  private static Optional<List<SentryException>> buildPythonSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -92,11 +94,12 @@ public class SentryExceptionHelper {
     }
 
     if (sentryExceptions.size() == 0)
-      return null;
-    return sentryExceptions;
+      return Optional.empty();
+
+    return Optional.of(sentryExceptions);
   }
 
-  private static List<SentryException> buildJavaSentryExceptions(final String stacktrace) {
+  private static Optional<List<SentryException>> buildJavaSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -158,8 +161,9 @@ public class SentryExceptionHelper {
     }
 
     if (sentryExceptions.size() == 0)
-      return null;
-    return sentryExceptions;
+      return Optional.empty();
+
+    return Optional.of(sentryExceptions);
   }
 
 }

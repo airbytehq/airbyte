@@ -9,6 +9,7 @@ import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,15 +20,15 @@ public class SentryExceptionHelperTest {
   @Test
   void testBuildSentryExceptionsInvalid() {
     final String stacktrace = "this is not a stacktrace";
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNull(exceptionList);
+    final Optional<List<SentryException>> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(exceptionList.isEmpty());
   }
 
   @Test
   void testBuildSentryExceptionsPartiallyInvalid() {
     final String stacktrace = "Traceback (most recent call last):\n  Oops!";
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNull(exceptionList);
+    final Optional<List<SentryException>> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(exceptionList.isEmpty());
   }
 
   @Test
@@ -55,8 +56,9 @@ public class SentryExceptionHelperTest {
         RuntimeError: My other error
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(2, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "requests.exceptions.HTTPError", "400 Client Error: Bad Request for url: https://airbyte.com",
@@ -106,8 +108,9 @@ public class SentryExceptionHelperTest {
         RuntimeError
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "RuntimeError", null, List.of(
@@ -138,8 +141,9 @@ public class SentryExceptionHelperTest {
         AttributeError: 'NoneType' object has no attribute 'from_call'
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(2, exceptionList.size());
 
     final String expectedValue =
@@ -178,8 +182,9 @@ public class SentryExceptionHelperTest {
         	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(1, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "java.lang.ArithmeticException", "/ by zero",
@@ -238,8 +243,9 @@ public class SentryExceptionHelperTest {
         	... 3 more
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(2, exceptionList.size());
 
     assertExceptionContent(exceptionList.get(0), "java.util.concurrent.CompletionException",
@@ -288,8 +294,9 @@ public class SentryExceptionHelperTest {
           ... 22 more
         """;
 
-    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNotNull(exceptionList);
+    final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertTrue(optionalSentryExceptions.isPresent());
+    final List<SentryException> exceptionList = optionalSentryExceptions.get();
     Assertions.assertEquals(1, exceptionList.size());
 
     final String expectedValue =

@@ -18,6 +18,7 @@ import io.sentry.protocol.User;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SentryJobErrorReportingClient implements JobErrorReportingClient {
 
@@ -94,9 +95,9 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     // attach failure reason stack trace
     final String failureStackTrace = failureReason.getStacktrace();
     if (failureStackTrace != null) {
-      final List<SentryException> parsedExceptions = exceptionHelper.buildSentryExceptions(failureStackTrace);
-      if (parsedExceptions != null) {
-        event.setExceptions(parsedExceptions);
+      final Optional<List<SentryException>> parsedExceptions = exceptionHelper.buildSentryExceptions(failureStackTrace);
+      if (parsedExceptions.isPresent()) {
+        event.setExceptions(parsedExceptions.get());
       } else {
         event.setTag(STACKTRACE_PARSE_ERROR_TAG_KEY, "1");
       }
