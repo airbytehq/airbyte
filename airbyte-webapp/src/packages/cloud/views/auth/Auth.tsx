@@ -10,7 +10,7 @@ import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
 import styles from "./Auth.module.scss";
 import FormContent from "./components/FormContent";
-import News from "./components/News";
+import { PersonQuoteCover } from "./components/PersonQuoteCover";
 import { LoginPage } from "./LoginPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
 import { SignupPage } from "./SignupPage";
@@ -39,7 +39,7 @@ const Auth: React.FC = () => {
         </FormContent>
       </div>
       <div className={styles.rightSide}>
-        <News />
+        <PersonQuoteCover />
       </div>
     </div>
   );
