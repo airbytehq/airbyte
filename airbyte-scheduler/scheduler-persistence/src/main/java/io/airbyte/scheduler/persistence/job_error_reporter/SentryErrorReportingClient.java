@@ -21,14 +21,17 @@ import java.util.Map;
 
 public class SentryErrorReportingClient implements ErrorReportingClient {
 
+  static final String STACKTRACE_PARSE_ERROR_TAG_KEY = "stacktrace_parse_error";
   private final IHub sentryHub;
+  private final SentryExceptionHelper exceptionHelper;
 
-  SentryErrorReportingClient(final IHub sentryHub) {
+  SentryErrorReportingClient(final IHub sentryHub, final SentryExceptionHelper exceptionHelper) {
     this.sentryHub = sentryHub;
+    this.exceptionHelper = exceptionHelper;
   }
 
-  public SentryErrorReportingClient(final String sentryDSN) {
-    this(createSentryHubWithDSN(sentryDSN));
+  public SentryErrorReportingClient(final String sentryDSN, final SentryExceptionHelper exceptionHelper) {
+    this(createSentryHubWithDSN(sentryDSN), exceptionHelper);
   }
 
   static IHub createSentryHubWithDSN(final String sentryDSN) {
@@ -91,11 +94,11 @@ public class SentryErrorReportingClient implements ErrorReportingClient {
     // attach failure reason stack trace
     final String failureStackTrace = failureReason.getStacktrace();
     if (failureStackTrace != null) {
-      final List<SentryException> parsedExceptions = SentryExceptionHelper.buildSentryExceptions(failureStackTrace);
+      final List<SentryException> parsedExceptions = exceptionHelper.buildSentryExceptions(failureStackTrace);
       if (parsedExceptions != null) {
         event.setExceptions(parsedExceptions);
       } else {
-        event.setTag("stacktrace_parse_error", "1");
+        event.setTag(STACKTRACE_PARSE_ERROR_TAG_KEY, "1");
       }
     }
 

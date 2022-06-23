@@ -4,11 +4,14 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import static io.airbyte.scheduler.persistence.job_error_reporter.SentryErrorReportingClient.STACKTRACE_PARSE_ERROR_TAG_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -18,7 +21,10 @@ import io.sentry.IHub;
 import io.sentry.NoOpHub;
 import io.sentry.SentryEvent;
 import io.sentry.protocol.Message;
+import io.sentry.protocol.SentryException;
 import io.sentry.protocol.User;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,26 +37,28 @@ public class SentryErrorReportingClientTest {
   private static final String WORKSPACE_NAME = "My Workspace";
   private static final String DOCKER_IMAGE = "airbyte/source-stripe:1.2.3";
 
+  private final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME);
   private SentryErrorReportingClient sentryErrorReportingClient;
   private IHub mockSentryHub;
+  private SentryExceptionHelper mockSentryExceptionHelper;
 
   @BeforeEach
   void setup() {
     mockSentryHub = mock(IHub.class);
-    sentryErrorReportingClient = new SentryErrorReportingClient(mockSentryHub);
+    mockSentryExceptionHelper = mock(SentryExceptionHelper.class);
+    sentryErrorReportingClient = new SentryErrorReportingClient(mockSentryHub, mockSentryExceptionHelper);
   }
 
   @Test
-  void testCreateSentryHubWithDSNBlank() {
+  void testCreateSentryHubWithBlankDSN() {
     final String sentryDSN = "";
     final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(sentryDSN);
     assertEquals(NoOpHub.getInstance(), sentryHub);
   }
 
   @Test
-  void testCreateSentryHubWithDSNNull() {
-    final String sentryDSN = null;
-    final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(sentryDSN);
+  void testCreateSentryHubWithNullDSN() {
+    final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(null);
     assertEquals(NoOpHub.getInstance(), sentryHub);
   }
 
@@ -65,10 +73,9 @@ public class SentryErrorReportingClientTest {
   }
 
   @Test
-  void testReport() {
+  void testReportJobFailureReason() {
     final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
 
-    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME);
     final FailureReason failureReason = new FailureReason()
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR)
@@ -82,6 +89,7 @@ public class SentryErrorReportingClientTest {
     assertEquals("other", actualEvent.getPlatform());
     assertEquals("source-stripe@1.2.3", actualEvent.getRelease());
     assertEquals("some_metadata_value", actualEvent.getTag("some_metadata"));
+    assertNull(actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
 
     final User sentryUser = actualEvent.getUser();
     assertNotNull(sentryUser);
@@ -91,6 +99,47 @@ public class SentryErrorReportingClientTest {
     final Message message = actualEvent.getMessage();
     assertNotNull(message);
     assertEquals("RuntimeError: Something went wrong", message.getFormatted());
+  }
+
+  @Test
+  void testReportJobFailureReasonWithStacktrace() {
+    final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+
+    final List<SentryException> exceptions = new ArrayList<>();
+    final SentryException exception = new SentryException();
+    exception.setType("RuntimeError");
+    exception.setValue("Something went wrong");
+    exceptions.add(exception);
+
+    when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(exceptions);
+
+    final FailureReason failureReason = new FailureReason()
+        .withInternalMessage("RuntimeError: Something went wrong")
+        .withStacktrace("Some valid stacktrace");
+
+    sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, Map.of());
+
+    verify(mockSentryHub).captureEvent(eventCaptor.capture());
+    final SentryEvent actualEvent = eventCaptor.getValue();
+    assertEquals(exceptions, actualEvent.getExceptions());
+    assertNull(actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
+  }
+
+  @Test
+  void testReportJobFailureReasonWithInvalidStacktrace() {
+    final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+
+    when(mockSentryExceptionHelper.buildSentryExceptions("Invalid stacktrace")).thenReturn(null);
+
+    final FailureReason failureReason = new FailureReason()
+        .withInternalMessage("RuntimeError: Something went wrong")
+        .withStacktrace("Invalid stacktrace");
+
+    sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, Map.of());
+
+    verify(mockSentryHub).captureEvent(eventCaptor.capture());
+    final SentryEvent actualEvent = eventCaptor.getValue();
+    assertEquals("1", actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
   }
 
 }

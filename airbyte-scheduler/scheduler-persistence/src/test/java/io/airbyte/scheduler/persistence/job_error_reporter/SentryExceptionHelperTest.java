@@ -16,11 +16,12 @@ import org.junit.jupiter.api.Test;
 
 public class SentryExceptionHelperTest {
 
+  final SentryExceptionHelper exceptionHelper = new SentryExceptionHelper();
   @Test
   void testBuildSentryExceptionsPython() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_python_stacktrace.txt");
 
-    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
     Assertions.assertEquals(2, exceptionList.size());
 
@@ -73,7 +74,7 @@ public class SentryExceptionHelperTest {
   void testBuildSentryExceptionsJava() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_java_stacktrace.txt");
 
-    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
     Assertions.assertEquals(1, exceptionList.size());
 
@@ -117,7 +118,7 @@ public class SentryExceptionHelperTest {
   void testBuildSentryExceptionsJavaChained() throws IOException {
     final String stacktrace = MoreResources.readResource("sample_java_stacktrace_chained.txt");
 
-    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
     Assertions.assertEquals(2, exceptionList.size());
 
@@ -154,7 +155,10 @@ public class SentryExceptionHelperTest {
                 "function", "lambda$getDestinationOutputRunnable$7")));
   }
 
-  private void assertExceptionContent(final SentryException exception, final String type, final String value, final List<Map<String, Object>> frames) {
+  private void assertExceptionContent(final SentryException exception,
+                                      final String type,
+                                      final String value,
+                                      final List<Map<String, Object>> frames) {
     Assertions.assertEquals(type, exception.getType());
     Assertions.assertEquals(value, exception.getValue());
 

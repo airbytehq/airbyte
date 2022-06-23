@@ -17,7 +17,7 @@ public class ErrorReportingClientFactory {
    */
   public static ErrorReportingClient getClient(final ErrorReportingStrategy strategy, final Configs configs) {
     return switch (strategy) {
-      case SENTRY -> new SentryErrorReportingClient(configs.getErrorReportingSentryDSN());
+      case SENTRY -> new SentryErrorReportingClient(configs.getErrorReportingSentryDSN(), new SentryExceptionHelper());
       case LOGGING -> new LoggingErrorReportingClient();
     };
   }

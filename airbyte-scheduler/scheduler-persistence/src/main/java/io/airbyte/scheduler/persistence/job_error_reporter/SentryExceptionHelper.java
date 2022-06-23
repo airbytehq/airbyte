@@ -16,10 +16,13 @@ import java.util.regex.Pattern;
 
 public class SentryExceptionHelper {
 
-  public static List<SentryException> buildSentryExceptions(final String stacktrace) {
-    // Stack trace parsing should be done on a best-effort basis
-    // if we encounter something complex or an unsupported language, we'll fall back to message-based
-    // grouping instead
+  /**
+   * Processes a raw stacktrace string into structured SentryExceptions
+   * <p>
+   * Currently, Java and Python stacktraces are supported. If an unsupported stacktrace format is
+   * encountered, `null` will be returned, in which case we can fall back to message-based grouping.
+   */
+  public List<SentryException> buildSentryExceptions(final String stacktrace) {
     return Exceptions.swallowWithDefault(() -> {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
