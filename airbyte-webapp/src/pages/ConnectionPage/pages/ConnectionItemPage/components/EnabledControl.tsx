@@ -7,7 +7,7 @@ import { Switch } from "components";
 
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
@@ -37,7 +37,7 @@ interface EnabledControlProps {
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   const onChangeStatus = async () => {
     await updateConnection(
@@ -47,7 +47,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
     );
 
     const trackableAction =
-      connection.status === ConnectionStatus.active ? TrackActionActions.DISABLE : TrackActionActions.REENABLE;
+      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
 
     const trackableActionString = `${trackableAction} connection`;
 

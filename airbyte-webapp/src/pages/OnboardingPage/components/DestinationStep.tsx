@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -32,7 +32,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
 
   const trackNewDestinationAction = useTrackAction(
     TrackActionNamespace.DESTINATION,
-    LegacyTrackActionType.NEW_DESTINATION
+    TrackActionLegacyType.NEW_DESTINATION
   );
 
   const getDestinationDefinitionById = (id: string) =>
@@ -75,7 +75,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    trackNewDestinationAction("Select a connector", TrackActionActions.SELECT, {
+    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });

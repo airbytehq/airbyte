@@ -4,7 +4,7 @@ import { getFrequencyConfig } from "config/utils";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { LegacyTrackActionType, useTrackAction, TrackActionNamespace, TrackActionActions } from "hooks/useTrackAction";
+import { TrackActionLegacyType, useTrackAction, TrackActionNamespace, TrackActionType } from "hooks/useTrackAction";
 import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
@@ -88,12 +88,12 @@ export const useConnectionLoad = (
 
 export const useSyncConnection = () => {
   const service = useConnectionService();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   return useMutation((connection: WebBackendConnectionRead) => {
     const frequency = getFrequencyConfig(connection.schedule);
 
-    trackSourceAction("Full refresh sync", TrackActionActions.SYNC, {
+    trackSourceAction("Full refresh sync", TrackActionType.SYNC, {
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
@@ -122,7 +122,7 @@ const useCreateConnection = () => {
   const queryClient = useQueryClient();
   const trackNewConnectionAction = useTrackAction(
     TrackActionNamespace.CONNECTION,
-    LegacyTrackActionType.NEW_CONNECTION
+    TrackActionLegacyType.NEW_CONNECTION
   );
 
   return useMutation(
@@ -146,7 +146,7 @@ const useCreateConnection = () => {
 
       const frequencyData = getFrequencyConfig(values.schedule);
 
-      trackNewConnectionAction("Set up connection", TrackActionActions.CREATE, {
+      trackNewConnectionAction("Set up connection", TrackActionType.CREATE, {
         frequency: frequencyData?.type || "",
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,

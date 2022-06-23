@@ -1,7 +1,7 @@
 import { getFrequencyConfig } from "config/utils";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
@@ -11,7 +11,7 @@ const useSyncActions = (): {
 } => {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.CONNECTION, LegacyTrackActionType.SOURCE);
+  const trackSourceAction = useTrackAction(TrackActionNamespace.CONNECTION, TrackActionLegacyType.SOURCE);
 
   const changeStatus = async (connection: WebBackendConnectionRead) => {
     await updateConnection(
@@ -25,7 +25,7 @@ const useSyncActions = (): {
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
     const trackableAction =
-      connection.status === ConnectionStatus.active ? TrackActionActions.DISABLE : TrackActionActions.REENABLE;
+      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
 
     const trackableActionString = `${trackableAction} connection`;
 

@@ -6,7 +6,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -98,14 +98,14 @@ const useCreateSource = () => {
 const useDeleteSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   return useMutation(
     (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
-        trackSourceAction("Delete source", TrackActionActions.DELETE, {
+        trackSourceAction("Delete source", TrackActionType.DELETE, {
           connector_source: ctx.source.sourceName,
           connector_source_definition_id: ctx.source.sourceDefinitionId,
         });

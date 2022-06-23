@@ -8,7 +8,7 @@ import HeadTitle from "components/HeadTitle";
 import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useGetConnection } from "hooks/services/useConnectionHook";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
@@ -31,10 +31,10 @@ const ConnectionItemPage: React.FC = () => {
 
   const frequency = getFrequencyConfig(connection.schedule);
 
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.SOURCE);
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   const onAfterSaveSchema = () => {
-    trackSourceAction("Edit schema", TrackActionActions.SCHEMA, {
+    trackSourceAction("Edit schema", TrackActionType.SCHEMA, {
       connector_source: source.sourceName,
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,

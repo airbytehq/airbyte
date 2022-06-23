@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -41,7 +41,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   const { location } = useRouter();
   const trackNewDestinationAction = useTrackAction(
     TrackActionNamespace.DESTINATION,
-    LegacyTrackActionType.NEW_DESTINATION
+    TrackActionLegacyType.NEW_DESTINATION
   );
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
@@ -63,7 +63,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       afterSelectConnector();
     }
 
-    trackNewDestinationAction("Select a connector", TrackActionActions.SELECT, {
+    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });

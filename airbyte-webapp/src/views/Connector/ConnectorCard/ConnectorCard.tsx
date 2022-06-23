@@ -7,7 +7,7 @@ import { JobItem } from "components/JobItem/JobItem";
 import { Connector, ConnectorT } from "core/domain/connector";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
-import { LegacyTrackActionType, TrackActionActions, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
@@ -45,10 +45,10 @@ export const ConnectorCard: React.FC<
     setErrorStatusRequest(null);
   }, [props.selectedConnectorDefinitionSpecification, reset]);
 
-  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, LegacyTrackActionType.NEW_SOURCE);
+  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.NEW_SOURCE);
   const trackNewDestinationAction = useTrackAction(
     TrackActionNamespace.DESTINATION,
-    LegacyTrackActionType.NEW_DESTINATION
+    TrackActionLegacyType.NEW_DESTINATION
   );
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
@@ -56,7 +56,7 @@ export const ConnectorCard: React.FC<
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
-    const trackAction = (action: string, actionType: TrackActionActions) => {
+    const trackAction = (action: string, actionType: TrackActionType) => {
       if (!connector) {
         return;
       }
@@ -75,12 +75,12 @@ export const ConnectorCard: React.FC<
     };
 
     const testConnectorWithTracking = async () => {
-      trackAction("Test a connector", TrackActionActions.TEST);
+      trackAction("Test a connector", TrackActionType.TEST);
       try {
         await testConnector(values);
-        trackAction("Tested connector - success", TrackActionActions.SUCCESS);
+        trackAction("Tested connector - success", TrackActionType.SUCCESS);
       } catch (e) {
-        trackAction("Tested connector - failure", TrackActionActions.FAILURE);
+        trackAction("Tested connector - failure", TrackActionType.FAILURE);
         throw e;
       }
     };

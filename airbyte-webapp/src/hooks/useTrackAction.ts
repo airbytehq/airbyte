@@ -2,14 +2,14 @@ import { useCallback } from "react";
 
 import { useAnalyticsService } from "./services/Analytics/useAnalyticsService";
 
-export const enum LegacyTrackActionType {
+export const enum TrackActionLegacyType {
   NEW_SOURCE = "New Source",
   NEW_DESTINATION = "New Destination",
   NEW_CONNECTION = "New Connection",
   SOURCE = "Source",
 }
 
-export const enum TrackActionActions {
+export const enum TrackActionType {
   CREATE = "Create",
   TEST = "Test",
   SELECT = "Select",
@@ -46,20 +46,20 @@ interface TrackConnectionActionProperties {
   enabled_streams: number;
 }
 
-export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: LegacyTrackActionType) => {
+export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: TrackActionLegacyType) => {
   const analyticsService = useAnalyticsService();
 
   return useCallback(
     (
-      action: string,
-      actionType: TrackActionActions,
+      actionDescription: string,
+      actionType: TrackActionType,
       properties: TrackConnectorActionProperties | TrackConnectionActionProperties
     ) => {
       // Calls that did not exist in the legacy format will not have a legacy event name
       const legacyEventName = legacyType ? `${legacyType} - Action)` : "";
 
       analyticsService.track(`Airbyte.UI.${namespace}.${actionType}`, {
-        action,
+        actionDescription,
         ...properties,
         legacy_event_name: legacyEventName,
       });
