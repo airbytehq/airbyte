@@ -51,7 +51,7 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   @Override
   public void addState(final AirbyteMessage message) {
     Preconditions.checkArgument(message.getType() == Type.STATE, "Messages passed to State Manager must be of type STATE.");
-    Preconditions.checkArgument(isStateTypeCompatible(stateType, message.getState().getStateType()));
+    Preconditions.checkArgument(isStateTypeCompatible(stateType, message.getState().getType()));
 
     setManagerStateTypeIfNotSet(message);
 
@@ -83,10 +83,10 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   private void setManagerStateTypeIfNotSet(final AirbyteMessage message) {
     // detect and set state type.
     if (stateType == null) {
-      if (message.getState().getStateType() == null) {
+      if (message.getState().getType() == null) {
         stateType = AirbyteStateType.LEGACY;
       } else {
-        stateType = message.getState().getStateType();
+        stateType = message.getState().getType();
       }
     }
   }
