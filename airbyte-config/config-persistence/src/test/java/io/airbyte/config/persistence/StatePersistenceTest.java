@@ -94,7 +94,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper newGlobalState = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"woot\""))
                 .withStreamStates(Arrays.asList(
@@ -121,12 +121,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
@@ -140,7 +140,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -184,7 +184,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -202,7 +202,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper incompletePartialReset = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -217,7 +217,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper partialReset = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -243,7 +243,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -257,7 +257,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper fullReset = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(null)
                 .withStreamStates(Arrays.asList(
@@ -279,7 +279,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.GLOBAL)
+            .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize("\"my global state\""))
                 .withStreamStates(Arrays.asList(
@@ -301,12 +301,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
@@ -337,12 +337,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
@@ -354,7 +354,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Collections.singletonList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"updated\"")))));
@@ -365,12 +365,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
             .withStateType(StateType.STREAM)
             .withStateMessages(Arrays.asList(
                 new AirbyteStateMessage()
-                    .withStateType(AirbyteStateType.STREAM)
+                    .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                         .withStreamState(Jsons.deserialize("\"updated\""))),
                 new AirbyteStateMessage()
-                    .withStateType(AirbyteStateType.STREAM)
+                    .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                         .withStreamState(Jsons.deserialize("\"state s2\""))))),
@@ -381,7 +381,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Collections.singletonList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(null))));
@@ -392,7 +392,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
             .withStateType(StateType.STREAM)
             .withStateMessages(Arrays.asList(
                 new AirbyteStateMessage()
-                    .withStateType(AirbyteStateType.STREAM)
+                    .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                         .withStreamState(Jsons.deserialize("\"updated\""))))),
@@ -405,12 +405,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
@@ -422,12 +422,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(null)),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(null))));
@@ -442,12 +442,12 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"state s1.n1\""))),
             new AirbyteStateMessage()
-                .withStateType(AirbyteStateType.STREAM)
+                .withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
@@ -457,7 +457,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
       final StateWrapper globalState = new StateWrapper()
           .withStateType(StateType.GLOBAL)
           .withGlobal(new AirbyteStateMessage()
-              .withStateType(AirbyteStateType.GLOBAL)
+              .withType(AirbyteStateType.GLOBAL)
               .withGlobal(new AirbyteGlobalState()
                   .withSharedState(Jsons.deserialize("\"my global state\""))
                   .withStreamStates(Arrays.asList(

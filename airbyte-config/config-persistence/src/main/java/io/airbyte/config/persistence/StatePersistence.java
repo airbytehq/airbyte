@@ -271,7 +271,7 @@ public class StatePersistence {
         .withStreamStates(partitions.get(Boolean.FALSE).stream().map(StatePersistence::buildAirbyteStreamState).toList());
 
     final AirbyteStateMessage msg = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);
     return new StateWrapper().withStateType(StateType.GLOBAL).withGlobal(msg);
   }
@@ -282,7 +282,7 @@ public class StatePersistence {
   private static StateWrapper buildStreamState(final List<StateRecord> records) {
     final List<AirbyteStateMessage> messages = records.stream().map(
         record -> new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.STREAM)
+            .withType(AirbyteStateType.STREAM)
             .withStream(buildAirbyteStreamState(record)))
         .toList();
     return new StateWrapper().withStateType(StateType.STREAM).withStateMessages(messages);
