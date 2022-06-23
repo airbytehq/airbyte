@@ -51,7 +51,6 @@ setup(
         "pydantic~=1.6",
         "PyYAML~=5.4",
         "requests",
-        "sentry-sdk~=1.5.1",
         "vcrpy",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
