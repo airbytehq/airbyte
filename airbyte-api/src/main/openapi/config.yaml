@@ -4139,7 +4139,7 @@ components:
         newSchema:
           $ref: "#/components/schemas/FieldSchema"
     FieldName:
-      description: A field name is a list of strings that for the path to the field.
+      description: A field name is a list of strings that form the path to the field.
       type: array
       items:
         type: string
