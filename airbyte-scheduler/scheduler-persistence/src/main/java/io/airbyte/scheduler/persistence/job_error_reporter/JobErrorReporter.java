@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public class JobErrorReporter {
 
+  private static final String FROM_TRACE_MESSAGE = "from_trace_message";
   private static final String AIRBYTE_VERSION_META_KEY = "airbyte_version";
   private static final String FAILURE_ORIGIN_META_KEY = "failure_origin";
   private static final String FAILURE_TYPE_META_KEY = "failure_type";
@@ -48,7 +49,7 @@ public class JobErrorReporter {
    */
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
     final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
-        .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey("from_trace_message"))
+        .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE))
         .toList();
 
     final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
