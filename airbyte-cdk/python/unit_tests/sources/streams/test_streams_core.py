@@ -98,7 +98,34 @@ def test_supports_incremental_cursor_not_set():
 
     assert not test_stream.supports_incremental
 
+def test_namespace_set():
+    """
+    Should allow namespace property to be set.
+    """
+    test_stream = StreamStubFullRefresh()
+    test_stream.namespace = "test_namespace"
 
+    assert test_stream.namespace == "test_namespace"
+
+def test_namespace_set_to_empty_string():
+    """
+    Should not set namespace property if equal to empty string.
+    """
+    test_stream = StreamStubFullRefresh()
+    test_stream.namespace = ""
+
+    assert test_stream.namespace == None    
+    
+def test_namespace_not_set():
+    """
+    Should be equal to unset value of None.
+    """
+    test_stream = StreamStubFullRefresh()
+
+    assert test_stream.namespace == None
+
+    
+    
 @pytest.mark.parametrize(
     "test_input, expected",
     [("key", [["key"]]), (["key1", "key2"], [["key1"], ["key2"]]), ([["key1", "key2"], ["key3"]], [["key1", "key2"], ["key3"]])],
