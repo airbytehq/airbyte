@@ -69,7 +69,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     }),
     [connectionFormValues, schema, destination, source, catalogId]
   );
-  console.log(connection.schedule);
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
