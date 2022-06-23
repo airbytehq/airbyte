@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -477,6 +478,15 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .execute();
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.getCurrentState(connectionId));
+  }
+
+  @Test
+  public void testEnumsConversion() {
+    // Making sure StateType we write to the DB and the StateType from the protocols are aligned.
+    // Otherwise, we'll have to dig through runtime errors.
+    Assertions.assertTrue(Enums.isCompatible(
+        io.airbyte.db.instance.configs.jooq.generated.enums.StateType.class,
+        io.airbyte.config.StateType.class));
   }
 
   @BeforeEach
