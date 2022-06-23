@@ -11,8 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.state_lifecycle.DefaultStateLifecycleManager;
-import io.airbyte.protocol.state_lifecycle.StateLifecycleManager;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,8 +30,9 @@ class AirbyteMessageTrackerTest {
   private static final String STREAM_2 = "stream2";
   private static final String STREAM_3 = "stream3";
 
-  @Spy
-  private StateLifecycleManager mStateLifecycleManager = new DefaultStateLifecycleManager();
+  /*
+   * @Spy private StateLifecycleManager mStateLifecycleManager = new DefaultStateLifecycleManager();
+   */
 
   @Mock
   private StateDeltaTracker mStateDeltaTracker;
@@ -59,35 +57,28 @@ class AirbyteMessageTrackerTest {
     assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
   }
 
-  @Test
-  public void testRetainsLatestSourceAndDestinationState() {
-    final int s1Value = 111;
-    final int s2Value = 222;
-    final int s3Value = 333;
-    final AirbyteMessage s1 = AirbyteMessageUtils.createStateMessage(s1Value);
-    final AirbyteMessage s2 = AirbyteMessageUtils.createStateMessage(s2Value);
-    final AirbyteMessage s3 = AirbyteMessageUtils.createStateMessage(s3Value);
-
-    messageTracker.acceptFromSource(s1);
-    Mockito.verify(mStateLifecycleManager).addState(s1);
-    messageTracker.acceptFromSource(s2);
-    Mockito.verify(mStateLifecycleManager).addState(s2);
-
-    Mockito.reset(mStateLifecycleManager);
-    messageTracker.acceptFromDestination(s1);
-    Mockito.verify(mStateLifecycleManager).addState(s1);
-    messageTracker.acceptFromDestination(s2);
-    Mockito.verify(mStateLifecycleManager).addState(s2);
-
-    messageTracker.acceptFromSource(s3);
-    Mockito.verify(mStateLifecycleManager).addState(s3);
-
-    assertTrue(messageTracker.getSourceOutputState().isPresent());
-    assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
-
-    assertTrue(messageTracker.getDestinationOutputState().isPresent());
-    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
-  }
+  /*
+   * @Test public void testRetainsLatestSourceAndDestinationState() { final int s1Value = 111; final
+   * int s2Value = 222; final int s3Value = 333; final AirbyteMessage s1 =
+   * AirbyteMessageUtils.createStateMessage(s1Value); final AirbyteMessage s2 =
+   * AirbyteMessageUtils.createStateMessage(s2Value); final AirbyteMessage s3 =
+   * AirbyteMessageUtils.createStateMessage(s3Value);
+   *
+   * messageTracker.acceptFromSource(s1); Mockito.verify(mStateLifecycleManager).addState(s1);
+   * messageTracker.acceptFromSource(s2); Mockito.verify(mStateLifecycleManager).addState(s2);
+   *
+   * Mockito.reset(mStateLifecycleManager); messageTracker.acceptFromDestination(s1);
+   * Mockito.verify(mStateLifecycleManager).addState(s1); messageTracker.acceptFromDestination(s2);
+   * Mockito.verify(mStateLifecycleManager).addState(s2);
+   *
+   * messageTracker.acceptFromSource(s3); Mockito.verify(mStateLifecycleManager).addState(s3);
+   *
+   * assertTrue(messageTracker.getSourceOutputState().isPresent()); assertEquals(new
+   * State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
+   *
+   * assertTrue(messageTracker.getDestinationOutputState().isPresent()); assertEquals(new
+   * State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get()); }
+   */
 
   @Test
   public void testRetainsSourceAndDestinationWithLegacyFormat() {

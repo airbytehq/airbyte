@@ -17,8 +17,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.protocol.state_lifecycle.DefaultStateLifecycleManager;
-import io.airbyte.protocol.state_lifecycle.StateLifecycleManager;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -208,7 +206,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
-      final StateLifecycleManager stateLifecycleManager = new DefaultStateLifecycleManager();
+      // final StateLifecycleManager stateLifecycleManager = new DefaultStateLifecycleManager();
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
@@ -216,7 +214,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-          new AirbyteMessageTracker(stateLifecycleManager),
+          new AirbyteMessageTracker(/* stateLifecycleManager */),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)));
     };
   }

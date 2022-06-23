@@ -92,12 +92,8 @@ public class AirbyteMessageUtils {
                         new AirbyteStreamState()
                             .withStreamDescriptor(
                                 new StreamDescriptor()
-                                    .withName(streamName)
-                            )
-                            .withStreamState(Jsons.jsonNode(streamStateData))
-                    )
-                )
-            ));
+                                    .withName(streamName))
+                            .withStreamState(Jsons.jsonNode(streamStateData))))));
   }
 
   public static AirbyteMessage createStreamStateMessage(final String streamName, final int streamStateData) {
@@ -108,10 +104,8 @@ public class AirbyteMessageUtils {
                 new AirbyteStreamState()
                     .withStreamDescriptor(
                         new StreamDescriptor()
-                            .withName(streamName)
-                    )
-                    .withStreamState(Jsons.jsonNode(streamStateData))
-            ));
+                            .withName(streamName))
+                    .withStreamState(Jsons.jsonNode(streamStateData))));
   }
 
   public static AirbyteMessage createStateMessage(final String key, final String value) {
