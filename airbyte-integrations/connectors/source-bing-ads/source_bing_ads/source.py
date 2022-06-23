@@ -597,11 +597,6 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
-        config['hourly_reports'] = True
-        config['daily_reports'] = True
-        config['weekly_reports'] = True
-        config['monthly_reports'] = True
-
         streams.append(BudgetSummaryReport(client, config))
 
         streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
