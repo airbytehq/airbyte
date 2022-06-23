@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -37,9 +38,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -277,17 +276,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      boolean isAzureSQL = false;
-
-      try (Statement stmt = connection.createStatement();
-          ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
-        isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
-      }
-
-      // Azure SQL does not support USE clause
-      final String sql =
-          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
-
+      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
@@ -380,13 +369,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
-  }
-
-  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream()
-        .map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-    return any.isPresent();
   }
 
   // Note: in place mutation.
