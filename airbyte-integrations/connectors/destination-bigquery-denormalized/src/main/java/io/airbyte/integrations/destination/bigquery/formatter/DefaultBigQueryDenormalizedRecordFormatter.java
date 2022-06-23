@@ -189,11 +189,10 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     } else {
       subFields = arrayField.getSubFields();
     }
-    final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
+    return Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
         .map(p -> formatData(subFields, p))
+        .map(p -> (p.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, p)) : p))
         .collect(Collectors.toList()));
-
-    return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, items));
   }
 
   private JsonNode getObjectNode(final FieldList fields, final JsonNode root) {
