@@ -15,7 +15,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SingleStateLifecycleManagerTest {
+class SingleDestStateLifecycleManagerTest {
 
   private static final AirbyteMessage MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -24,11 +24,11 @@ class SingleStateLifecycleManagerTest {
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("b")));
 
-  private SingleStateLifecycleManager mgr;
+  private SingleDestStateLifecycleManager mgr;
 
   @BeforeEach
   void setup() {
-    mgr = new SingleStateLifecycleManager();
+    mgr = new SingleDestStateLifecycleManager();
   }
 
   /**

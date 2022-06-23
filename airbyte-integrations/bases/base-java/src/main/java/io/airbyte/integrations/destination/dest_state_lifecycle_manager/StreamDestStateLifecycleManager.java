@@ -18,7 +18,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
- * This {@link StateLifecycleManager} handles any state where the state messages are scoped by
+ * This {@link DestStateLifecycleManager} handles any state where the state messages are scoped by
  * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
  * stream (no duplicates!).
  *
@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
  * were received. State messages across streams will be emitted in alphabetical order (primary sort
  * on namespace, secondary on name).
  */
-public class StreamStateLifecycleManager implements StateLifecycleManager {
+public class StreamDestStateLifecycleManager implements DestStateLifecycleManager {
 
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
 
-  public StreamStateLifecycleManager() {
+  public StreamDestStateLifecycleManager() {
     streamToLastPendingState = new HashMap<>();
     streamToLastFlushedState = new HashMap<>();
     streamToLastCommittedState = new HashMap<>();

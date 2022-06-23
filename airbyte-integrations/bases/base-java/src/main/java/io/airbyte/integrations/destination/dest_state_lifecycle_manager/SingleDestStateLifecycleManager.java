@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * This {@link StateLifecycleManager} handles any state where there is a guarantee that any single
+ * This {@link DestStateLifecycleManager} handles any state where there is a guarantee that any single
  * state message represents the state for the ENTIRE connection. At the time of writing, GLOBAL and
  * LEGACY state types are the state type that match this pattern.
  *
  * Does NOT store duplicates. Because each state message represents the entire state for the
  * connection, it only stores (and emits) the LAST state it received at each phase.
  */
-public class SingleStateLifecycleManager implements StateLifecycleManager {
+public class SingleDestStateLifecycleManager implements DestStateLifecycleManager {
 
   private AirbyteMessage lastPendingState;
   private AirbyteMessage lastFlushedState;

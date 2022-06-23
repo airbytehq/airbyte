@@ -13,8 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultStateLifecycleManager;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.StateLifecycleManager;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -82,7 +82,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
-  private final StateLifecycleManager stateManager;
+  private final DestStateLifecycleManager stateManager;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -103,7 +103,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultStateLifecycleManager();
+    this.stateManager = new DefaultDestStateLifecycleManager();
   }
 
   @Override

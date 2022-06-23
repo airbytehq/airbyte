@@ -24,17 +24,16 @@ import java.util.function.Supplier;
  *
  * Per the protocol, if state type is not set, assumes the LEGACY state type.
  */
-public class DefaultStateLifecycleManager implements StateLifecycleManager {
+public class DefaultDestStateLifecycleManager implements DestStateLifecycleManager {
 
   private AirbyteStateType stateType;
-  private final Supplier<StateLifecycleManager> internalStateManagerSupplier;
+  private final Supplier<DestStateLifecycleManager> internalStateManagerSupplier;
 
-  public DefaultStateLifecycleManager() {
-    this(new SingleStateLifecycleManager(), new StreamStateLifecycleManager());
+  public DefaultDestStateLifecycleManager() {
+    this(new SingleDestStateLifecycleManager(), new StreamDestStateLifecycleManager());
   }
 
-  @VisibleForTesting
-  DefaultStateLifecycleManager(final StateLifecycleManager singleStateManager, final StateLifecycleManager streamStateManager) {
+  @VisibleForTesting DefaultDestStateLifecycleManager(final DestStateLifecycleManager singleStateManager, final DestStateLifecycleManager streamStateManager) {
     stateType = null;
     // allows us to delegate calls to the appropriate underlying state manager.
     internalStateManagerSupplier = () -> {

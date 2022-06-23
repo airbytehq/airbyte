@@ -17,7 +17,7 @@ import java.util.Queue;
  * <li>committed - associated records have been committed</li>
  * </ol>
  */
-public interface StateLifecycleManager {
+public interface DestStateLifecycleManager {
 
   /**
    * Accepts a state into the manager. The state starts in a pending state.
