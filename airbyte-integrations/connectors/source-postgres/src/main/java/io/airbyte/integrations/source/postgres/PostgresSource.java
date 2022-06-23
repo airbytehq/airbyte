@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -39,6 +40,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -48,6 +50,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,16 +235,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    /**
-     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
-     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
-     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
-     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
-     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
-     * part
-     */
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
@@ -417,10 +412,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
           .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
     } else {
       return List.of(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState()));
     }
   }

@@ -885,27 +885,27 @@ public abstract class JdbcSourceAcceptanceTest {
         ? states.stream()
             .map(s -> new AirbyteMessage().withType(Type.STATE)
                 .withState(
-                    new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+                    new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                         .withStream(new AirbyteStreamState()
                             .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                             .withStreamState(Jsons.jsonNode(s)))
                         .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
             .collect(
                 Collectors.toList())
-        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))));
   }
 
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
     return supportsPerStream()
         ? states.stream()
-            .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+            .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                     .withStreamState(Jsons.jsonNode(s))))
             .collect(
                 Collectors.toList())
-        : List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
+        : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState().withStreams(states))));
   }
 
   protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -1020,7 +1020,7 @@ public abstract class JdbcSourceAcceptanceTest {
   protected JsonNode createEmptyState(final String streamName, final String streamNamespace) {
     if (supportsPerStream()) {
       final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
       return Jsons.jsonNode(List.of(airbyteStateMessage));
     } else {
@@ -1049,14 +1049,14 @@ public abstract class JdbcSourceAcceptanceTest {
     if (supportsPerStream()) {
       return new AirbyteMessage().withType(Type.STATE)
           .withState(
-              new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+              new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                   .withStream(new AirbyteStreamState()
                       .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
                           .withName(dbStreamState.getStreamName()))
                       .withStreamState(Jsons.jsonNode(dbStreamState)))
                   .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     } else {
-      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY)
+      return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
   }
