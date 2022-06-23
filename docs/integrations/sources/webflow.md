@@ -30,7 +30,7 @@ Which should respond with something similar to:
 After retrieving your `site id`, you can create a file `secrets/config.json` conforming to the fields expected in `source_webflow/spec.yaml` file.
 (Note that any directory named `secrets` is git-ignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information in this folder).
 
-See `integration_tests/sample_config.json` for a sample config file that you can use as a template for entering in your `site id` and your `Webflow API Key`. 
+See [integration_tests/sample_config.json](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-webflow/integration_tests/sample_config.json) for a sample config file that you can use as a template for entering in your `site id` and your `Webflow API Key`. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
