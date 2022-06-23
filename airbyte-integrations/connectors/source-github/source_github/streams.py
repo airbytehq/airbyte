@@ -696,7 +696,12 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
     ) -> str:
         return "graphql"
 
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
             nodes = repository["pullRequests"]["nodes"]
@@ -764,6 +769,10 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     ) -> MutableMapping[str, Any]:
         return {}
 
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
     def _get_records(self, pull_request, repository_name):
         "yield review records from pull_request"
         for record in pull_request["reviews"]["nodes"]:
@@ -783,6 +792,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
         return repository["owner"]["login"] + "/" + repository["name"]
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
             repository_name = self._get_name(repository)
