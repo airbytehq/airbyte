@@ -5,6 +5,7 @@
 package io.airbyte.commons.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -134,15 +135,11 @@ class JsonSchemasTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void testTraverseArrayTypeWithNoItems() throws IOException {
+  void testTraverseArrayTypeWithNoItemsThrowsException() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json"));
     final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
 
-    JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
-    final InOrder inOrder = Mockito.inOrder(mock);
-    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
-    inOrder.verifyNoMoreInteractions();
+    assertThrows(IllegalArgumentException.class, () -> JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock));
   }
 
 }
