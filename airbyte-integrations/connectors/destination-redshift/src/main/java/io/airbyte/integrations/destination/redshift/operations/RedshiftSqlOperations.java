@@ -33,7 +33,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
   public static final int REDSHIFT_SUPER_MAX_BYTE_SIZE = 1000000;
 
-  private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
+  private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT =
+      """
       select tablename, schemaname
       from pg_table_def
       where tablename in (
@@ -54,27 +55,26 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE =
       """
-          ALTER TABLE %1$s ADD COLUMN %2$s_super super;
-          ALTER TABLE %1$s ADD COLUMN %3$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-          UPDATE %1$s SET %2$s_super = JSON_PARSE(%2$s);
-          UPDATE %1$s SET %3$s_reserve = %3$s;
-          ALTER TABLE %1$s DROP COLUMN %2$s CASCADE;
-          ALTER TABLE %1$s DROP COLUMN %3$s CASCADE;
-          ALTER TABLE %1$s RENAME %2$s_super to %2$s;
-          ALTER TABLE %1$s RENAME %3$s_reserve to %3$s;
-          """;
+      ALTER TABLE %1$s ADD COLUMN %2$s_super super;
+      ALTER TABLE %1$s ADD COLUMN %3$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+      UPDATE %1$s SET %2$s_super = JSON_PARSE(%2$s);
+      UPDATE %1$s SET %3$s_reserve = %3$s;
+      ALTER TABLE %1$s DROP COLUMN %2$s CASCADE;
+      ALTER TABLE %1$s DROP COLUMN %3$s CASCADE;
+      ALTER TABLE %1$s RENAME %2$s_super to %2$s;
+      ALTER TABLE %1$s RENAME %3$s_reserve to %3$s;
+      """;
 
-  public RedshiftSqlOperations() {
-  }
+  public RedshiftSqlOperations() {}
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("""
-            CREATE TABLE IF NOT EXISTS %s.%s (
-             %s VARCHAR PRIMARY KEY,
-             %s SUPER,
-             %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-             """, schemaName, tableName,
+                         CREATE TABLE IF NOT EXISTS %s.%s (
+                          %s VARCHAR PRIMARY KEY,
+                          %s SUPER,
+                          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+                          """, schemaName, tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -82,9 +82,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-      final List<AirbyteRecordMessage> records,
-      final String schemaName,
-      final String tmpTableName)
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -127,9 +127,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   }
 
   /**
-   * In case of redshift we need to discover all tables with not super type and update them after to SUPER type. This would be done once.
+   * In case of redshift we need to discover all tables with not super type and update them after to
+   * SUPER type. This would be done once.
    *
-   * @param database     - Database object for interacting with a JDBC connection.
+   * @param database - Database object for interacting with a JDBC connection.
    * @param writeConfigs - list of write configs.
    */
 
@@ -144,7 +145,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     final List<String> schemaAndTableWithNotSuperType = schemaTableMap
         .entrySet()
         .stream()
-        // String.join() we use to concat tables from list, in query, as follows: SELECT * FROM some_table WHERE smt_column IN ('test1', 'test2', etc)
+        // String.join() we use to concat tables from list, in query, as follows: SELECT * FROM some_table
+        // WHERE smt_column IN ('test1', 'test2', etc)
         .map(e -> discoverNotSuperTables(database, e.getKey(), join("', '", e.getValue())))
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -156,7 +158,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   }
 
   /**
-   * The method is responsible for building the map which consists from: Keys - Schema names, Values - List of related tables (Streams)
+   * The method is responsible for building the map which consists from: Keys - Schema names, Values -
+   * List of related tables (Streams)
    *
    * @param writeConfigs - write configs from which schema-related tables map will be built
    * @return map with Schemas as Keys and with Tables (Streams) as values
@@ -174,9 +177,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   }
 
   /**
-   * @param database   - Database object for interacting with a JDBC connection.
+   * @param database - Database object for interacting with a JDBC connection.
    * @param schemaName - schema to update.
-   * @param tablesName - tables to update.
+   * @param tableName - tables to update.
    */
   private List<String> discoverNotSuperTables(final JdbcDatabase database, final String schemaName, final String tableName) {
 
@@ -191,7 +194,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
               JavaBaseConstants.COLUMN_NAME_DATA,
               JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
               JavaBaseConstants.COLUMN_NAME_AB_ID,
-              tablesName)),
+              tableName)),
           getDefaultSourceOperations()::rowToJson);
       if (tablesNameWithoutSuperDatatype.isEmpty()) {
         return Collections.emptyList();
@@ -209,7 +212,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   /**
    * We prepare one query for all tables with not super type for updating.
    *
-   * @param database                       - Database object for interacting with a JDBC connection.
+   * @param database - Database object for interacting with a JDBC connection.
    * @param schemaAndTableWithNotSuperType - list of tables with not super type.
    */
   private void updateVarcharDataColumnToSuperDataColumn(final JdbcDatabase database, final List<String> schemaAndTableWithNotSuperType) {
