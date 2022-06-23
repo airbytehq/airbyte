@@ -15,8 +15,8 @@ class ConditionalPaginator:
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
     """
 
-    def __init__(self, stop_condition_template: str, state: DictState, decoder: Decoder, config):
-        self._stop_condition_template = InterpolatedBoolean(stop_condition_template)
+    def __init__(self, stop_condition: str, state: DictState, decoder: Decoder, config):
+        self._stop_condition_interpolator = InterpolatedBoolean(stop_condition)
         self._state: DictState = state
         self._decoder = decoder
         self._config = config
@@ -24,7 +24,7 @@ class ConditionalPaginator:
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         decoded_response = self._decoder.decode(response)
         headers = response.headers
-        should_stop = self._stop_condition_template.eval(
+        should_stop = self._stop_condition_interpolator.eval(
             self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
         )
 
