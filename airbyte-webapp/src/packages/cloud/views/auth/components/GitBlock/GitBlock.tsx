@@ -1,12 +1,18 @@
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FC } from "react";
+import React, { FC } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { useConfig } from "../../../../../../config";
 import styles from "./GitBlock.module.scss";
 
-export const GitBlock: FC = () => {
+export interface GitBlockProps {
+  title?: string;
+  titleStyle?: React.CSSProperties;
+  message?: string;
+  messageStyle?: React.CSSProperties;
+}
+export const GitBlock: FC<GitBlockProps> = ({ title, titleStyle, message, messageStyle }) => {
   const config = useConfig();
   return (
     <div className={styles.container}>
@@ -14,11 +20,11 @@ export const GitBlock: FC = () => {
         <div className={styles.content}>
           <FontAwesomeIcon icon={faGithub} className={styles.icon} />
           <div>
-            <p className={styles.hostingText}>
-              <FormattedMessage id="login.selfhosting" />
+            <p className={styles.hostingText} style={titleStyle}>
+              {title ? title : <FormattedMessage id="login.selfhosting" />}
             </p>
-            <p className={styles.deployText}>
-              <FormattedMessage id="login.deployInfrastructure" />
+            <p className={styles.deployText} style={messageStyle}>
+              {message ? message : <FormattedMessage id="login.deployInfrastructure" />}
             </p>
           </div>
         </div>
