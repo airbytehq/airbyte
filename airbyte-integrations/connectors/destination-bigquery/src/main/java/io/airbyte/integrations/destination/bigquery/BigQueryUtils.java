@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
@@ -234,15 +235,23 @@ public class BigQueryUtils {
   public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final ObjectNode data) {
     dateTimeFields.forEach(e -> {
       if (data.findValue(e) != null && !data.get(e).isNull()) {
-        final String googleBigQueryDateFormat = QueryParameterValue
-            .dateTime(new DateTime(convertDateToInstantFormat(data
-                .findValue(e)
-                .asText()))
-                    .toString(BIG_QUERY_DATETIME_FORMAT))
-            .getValue();
-        data.put(e, googleBigQueryDateFormat);
+        JsonNode value = data.findValue(e);
+        if (value.isArray()) {
+          ArrayNode arrayNode = (ArrayNode) value;
+          ArrayNode newArrayNode = data.putArray(e);
+          arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
+        } else if (value.isTextual()) {
+          data.put(e, getFormattedBigQueryDateTime(data.findValue(e).asText()));
+        } else {
+          throw new RuntimeException("Unexpected transformation case");
+        }
       }
     });
+  }
+
+  private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
+    return (dateTimeValue != null ? QueryParameterValue
+        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).toString(BIG_QUERY_DATETIME_FORMAT)).getValue() : null);
   }
 
   /**
