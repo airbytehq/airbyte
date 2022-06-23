@@ -67,7 +67,13 @@
           {
             "title": "S3 Staging",
             "additionalProperties": false,
-            "required": ["method", "s3_bucket_name", "s3_bucket_region", "access_key_id", "secret_access_key"],
+            "required": [
+              "method",
+              "s3_bucket_name",
+              "s3_bucket_region",
+              "access_key_id",
+              "secret_access_key"
+            ],
             "properties": {
               "method": {
                 "type": "string",
@@ -129,14 +135,6 @@
                 "title": "S3 Access Key",
                 "airbyte_secret": true
               },
-              "part_size": {
-                "type": "integer",
-                "minimum": 10,
-                "maximum": 100,
-                "examples": ["10"],
-                "description": "Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note: a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=above%20key%20id.-,Part%20Size,-Affects%20the%20size\",> docs</a> for details.",
-                "title": "Stream Part Size (Optional)"
-              },
               "purge_staging_data": {
                 "title": "Purge Staging Files and Tables (Optional)",
                 "type": "boolean",
@@ -150,4 +148,3 @@
     }
   }
 }
-

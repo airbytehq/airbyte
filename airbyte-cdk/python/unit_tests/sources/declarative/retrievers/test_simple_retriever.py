@@ -22,8 +22,8 @@ def test():
     next_page_token = {"cursor": "cursor_value"}
     paginator.next_page_token.return_value = next_page_token
 
-    extractor = MagicMock()
-    extractor.extract_records.return_value = records
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = records
 
     iterator = MagicMock()
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
@@ -62,7 +62,7 @@ def test():
     use_cache = True
     requester.use_cache = use_cache
 
-    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, extractor, iterator, state)
+    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, record_selector, iterator, state)
 
     # hack because we clone the state...
     retriever._state = state
