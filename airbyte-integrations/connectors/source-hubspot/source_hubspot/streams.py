@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 import sys
 import time
 from abc import ABC, abstractmethod
@@ -370,7 +370,10 @@ class Stream(HttpStream, ABC):
             raise e
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
-        body = response.json()
+        try:
+            body = response.json()
+        except json.decoder.JSONDecodeError:
+            return response.text
         if body.get("category") == "MISSING_SCOPES":
             if "errors" in body:
                 errors = body["errors"]
