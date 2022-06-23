@@ -37,14 +37,14 @@ public class JobErrorReporterTest {
   private static final String DESTINATION_DOCKER_IMAGE = "airbyte/destination-snowflake:1.2.3";
 
   private ConfigRepository configRepository;
-  private ErrorReportingClient errorReportingClient;
+  private JobErrorReportingClient jobErrorReportingClient;
   private JobErrorReporter jobErrorReporter;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
-    errorReportingClient = mock(ErrorReportingClient.class);
-    jobErrorReporter = new JobErrorReporter(configRepository, AIRBYTE_VERSION, errorReportingClient);
+    jobErrorReportingClient = mock(JobErrorReportingClient.class);
+    jobErrorReporter = new JobErrorReporter(configRepository, AIRBYTE_VERSION, jobErrorReportingClient);
   }
 
   @Test
@@ -106,10 +106,10 @@ public class JobErrorReporterTest {
         "connector_name", DESTINATION_DEFINITION_NAME,
         "connector_release_stage", DESTINATION_RELEASE_STAGE.toString());
 
-    Mockito.verify(errorReportingClient).reportJobFailureReason(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
-    Mockito.verify(errorReportingClient).reportJobFailureReason(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE,
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, sourceFailureReason, SOURCE_DOCKER_IMAGE, expectedSourceMetadata);
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE,
         expectedDestinationMetadata);
-    Mockito.verifyNoMoreInteractions(errorReportingClient);
+    Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
   }
 
 }

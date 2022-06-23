@@ -10,9 +10,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LoggingErrorReportingClient implements ErrorReportingClient {
+public class LoggingJobErrorReportingClient implements JobErrorReportingClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingErrorReportingClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingJobErrorReportingClient.class);
 
   @Override
   public void reportJobFailureReason(final StandardWorkspace workspace,

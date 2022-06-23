@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * A generic interface for a client that reports errors
  */
-public interface ErrorReportingClient {
+public interface JobErrorReportingClient {
 
   /**
    * Report a job failure reason

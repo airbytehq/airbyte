@@ -28,15 +28,15 @@ public class JobErrorReporter {
 
   private final ConfigRepository configRepository;
   private final String airbyteVersion;
-  private final ErrorReportingClient errorReportingClient;
+  private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
                           final String airbyteVersion,
-                          final ErrorReportingClient errorReportingClient) {
+                          final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.airbyteVersion = airbyteVersion;
-    this.errorReportingClient = errorReportingClient;
+    this.jobErrorReportingClient = jobErrorReportingClient;
   }
 
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
@@ -63,7 +63,7 @@ public class JobErrorReporter {
         metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
         metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
 
-        errorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
       } else if (failureOrigin == FailureOrigin.DESTINATION) {
         final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
         final String dockerImage = jobSyncConfig.getDestinationDockerImage();
@@ -72,7 +72,7 @@ public class JobErrorReporter {
         metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
         metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
 
-        errorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
       }
     }
   }

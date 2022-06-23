@@ -4,7 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
-import static io.airbyte.scheduler.persistence.job_error_reporter.SentryErrorReportingClient.STACKTRACE_PARSE_ERROR_TAG_KEY;
+import static io.airbyte.scheduler.persistence.job_error_reporter.SentryJobErrorReportingClient.STACKTRACE_PARSE_ERROR_TAG_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,14 +31,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class SentryErrorReportingClientTest {
+public class SentryJobErrorReportingClientTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "My Workspace";
   private static final String DOCKER_IMAGE = "airbyte/source-stripe:1.2.3";
 
   private final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME);
-  private SentryErrorReportingClient sentryErrorReportingClient;
+  private SentryJobErrorReportingClient sentryErrorReportingClient;
   private IHub mockSentryHub;
   private SentryExceptionHelper mockSentryExceptionHelper;
 
@@ -46,26 +46,26 @@ public class SentryErrorReportingClientTest {
   void setup() {
     mockSentryHub = mock(IHub.class);
     mockSentryExceptionHelper = mock(SentryExceptionHelper.class);
-    sentryErrorReportingClient = new SentryErrorReportingClient(mockSentryHub, mockSentryExceptionHelper);
+    sentryErrorReportingClient = new SentryJobErrorReportingClient(mockSentryHub, mockSentryExceptionHelper);
   }
 
   @Test
   void testCreateSentryHubWithBlankDSN() {
     final String sentryDSN = "";
-    final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(sentryDSN);
+    final IHub sentryHub = SentryJobErrorReportingClient.createSentryHubWithDSN(sentryDSN);
     assertEquals(NoOpHub.getInstance(), sentryHub);
   }
 
   @Test
   void testCreateSentryHubWithNullDSN() {
-    final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(null);
+    final IHub sentryHub = SentryJobErrorReportingClient.createSentryHubWithDSN(null);
     assertEquals(NoOpHub.getInstance(), sentryHub);
   }
 
   @Test
   void testCreateSentryHubWithDSN() {
     final String sentryDSN = "https://public@sentry.example.com/1";
-    final IHub sentryHub = SentryErrorReportingClient.createSentryHubWithDSN(sentryDSN);
+    final IHub sentryHub = SentryJobErrorReportingClient.createSentryHubWithDSN(sentryDSN);
     assertNotNull(sentryHub);
     assertEquals(sentryDSN, sentryHub.getOptions().getDsn());
     assertFalse(sentryHub.getOptions().isAttachStacktrace());

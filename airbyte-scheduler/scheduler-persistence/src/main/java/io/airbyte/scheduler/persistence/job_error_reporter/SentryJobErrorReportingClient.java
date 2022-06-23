@@ -19,18 +19,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SentryErrorReportingClient implements ErrorReportingClient {
+public class SentryJobErrorReportingClient implements JobErrorReportingClient {
 
   static final String STACKTRACE_PARSE_ERROR_TAG_KEY = "stacktrace_parse_error";
   private final IHub sentryHub;
   private final SentryExceptionHelper exceptionHelper;
 
-  SentryErrorReportingClient(final IHub sentryHub, final SentryExceptionHelper exceptionHelper) {
+  SentryJobErrorReportingClient(final IHub sentryHub, final SentryExceptionHelper exceptionHelper) {
     this.sentryHub = sentryHub;
     this.exceptionHelper = exceptionHelper;
   }
 
-  public SentryErrorReportingClient(final String sentryDSN, final SentryExceptionHelper exceptionHelper) {
+  public SentryJobErrorReportingClient(final String sentryDSN, final SentryExceptionHelper exceptionHelper) {
     this(createSentryHubWithDSN(sentryDSN), exceptionHelper);
   }
 
