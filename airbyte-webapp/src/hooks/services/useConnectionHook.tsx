@@ -33,7 +33,7 @@ export const connectionsKeys = {
 
 export interface ValuesProps {
   name?: string;
-  schedule: ConnectionSchedule | null;
+  schedule?: ConnectionSchedule;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: NamespaceDefinitionType;

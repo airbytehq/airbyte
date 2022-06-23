@@ -2620,7 +2620,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.35"
+- dockerImage: "airbyte/source-github:0.2.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4799,7 +4799,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.3"
+- dockerImage: "airbyte/source-marketo:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -4847,6 +4847,44 @@
           examples:
           - "2020-09-25T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-metabase:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/metabase"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Metabase Source Spec"
+      type: "object"
+      required:
+      - "instance_api_url"
+      additionalProperties: true
+      properties:
+        instance_api_url:
+          type: "string"
+          title: "Metabase Instance API URL"
+          description: "URL to your metabase instance API"
+          examples:
+          - "http://localhost:3000/api/"
+          order: 0
+        username:
+          type: "string"
+          order: 1
+        password:
+          type: "string"
+          airbyte_secret: true
+          order: 2
+        session_token:
+          type: "string"
+          description: "To generate your session token, you need to run the following\
+            \ command: ``` curl -X POST \\\n  -H \"Content-Type: application/json\"\
+            \ \\\n  -d '{\"username\": \"person@metabase.com\", \"password\": \"fakepassword\"\
+            }' \\\n  http://localhost:3000/api/session\n``` Then copy the value of\
+            \ the `id` field returned by a successful call to that API.\nNote that\
+            \ by default, sessions are good for 14 days and needs to be regenerated."
+          airbyte_secret: true
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5639,7 +5677,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.12"
+- dockerImage: "airbyte/source-mysql:0.5.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5910,7 +5948,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-openweather:0.1.4"
+- dockerImage: "airbyte/source-openweather:0.1.5"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -8884,7 +8922,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.1.1"
+- dockerImage: "airbyte/source-tidb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
@@ -9248,7 +9286,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.4"
+- dockerImage: "airbyte/source-twilio:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
@@ -9266,11 +9304,13 @@
           description: "Twilio account SID"
           airbyte_secret: true
           type: "string"
+          order: 1
         auth_token:
           title: "Auth Token"
           description: "Twilio Auth Token."
           airbyte_secret: true
           type: "string"
+          order: 2
         start_date:
           title: "Replication Start Date"
           description: "UTC date and time in the format 2020-10-01T00:00:00Z. Any\
@@ -9279,12 +9319,21 @@
           examples:
           - "2020-10-01T00:00:00Z"
           type: "string"
+          order: 3
+        lookback_window:
+          title: "Lookback window"
+          description: "How far into the past to look for records. (in minutes)"
+          examples:
+          - 60
+          default: 0
+          type: "integer"
+          order: 4
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-typeform:0.1.6"
+- dockerImage: "airbyte/source-typeform:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
     connectionSpecification:
@@ -9442,6 +9491,35 @@
           type: "string"
           title: "VictorOps Current Phase"
           default: "triggered,acknowledged,resolved"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-webflow:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/webflow"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Webflow Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "site_id"
+      additionalProperties: false
+      properties:
+        site_id:
+          title: "Site id"
+          type: "string"
+          description: "The id of the Webflow site you are requesting data from. See\
+            \ https://developers.webflow.com/#sites"
+          example: "a relatively long hex sequence"
+          order: 0
+        api_key:
+          title: "API token"
+          type: "string"
+          description: "The API token for authenticating to Webflow. See https://university.webflow.com/lesson/intro-to-the-webflow-api"
+          example: "a very long hex sequence"
+          order: 1
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

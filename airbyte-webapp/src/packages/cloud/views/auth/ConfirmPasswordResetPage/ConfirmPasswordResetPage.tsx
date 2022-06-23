@@ -22,7 +22,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
   const { push, query } = useRouterHook<{ oobCode: string }>();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <div>
@@ -86,7 +86,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
             }
           }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (
