@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.61
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
 ## 0.1.60
 - Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
 
