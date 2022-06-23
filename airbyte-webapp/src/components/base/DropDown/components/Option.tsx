@@ -10,7 +10,7 @@ export type IProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
 } & OptionProps<OptionTypeBase, false>;
 
-export type IDataItem = {
+export interface IDataItem {
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
@@ -21,7 +21,7 @@ export type IDataItem = {
   secondary?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: any;
-};
+}
 
 export const OptionView = styled.div<{
   isSelected?: boolean;

@@ -7,14 +7,14 @@ import StatusIcon from "components/StatusIcon";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
-type IProps = {
+interface IProps {
   isLoading?: boolean;
   success?: boolean;
   type: "source" | "destination";
   error?: number;
   retry?: () => void;
   linkToSettings?: string;
-};
+}
 
 const Content = styled.div`
   min-height: 320px;

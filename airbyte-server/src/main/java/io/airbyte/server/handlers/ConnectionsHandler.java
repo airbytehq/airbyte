@@ -10,11 +10,11 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSearch;
@@ -22,7 +22,6 @@ import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
@@ -35,16 +34,17 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
+import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.util.Collections;
@@ -66,39 +66,29 @@ public class ConnectionsHandler {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
   private final EventRunner eventRunner;
-  private final FeatureFlags featureFlags;
-  private final WorkerConfigs workerConfigs;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final EventRunner eventRunner,
-                     final FeatureFlags featureFlags,
-                     final WorkerConfigs workerConfigs) {
+                     final EventRunner eventRunner) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
     this.eventRunner = eventRunner;
-    this.featureFlags = featureFlags;
-    this.workerConfigs = workerConfigs;
   }
 
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final EventRunner eventRunner,
-                            final FeatureFlags featureFlags,
-                            final WorkerConfigs workerConfigs) {
+                            final EventRunner eventRunner) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        eventRunner,
-        featureFlags,
-        workerConfigs);
+        eventRunner);
 
   }
 
@@ -157,15 +147,13 @@ public class ConnectionsHandler {
 
     trackNewConnection(standardSync);
 
-    if (featureFlags.usesNewScheduler()) {
-      try {
-        LOGGER.info("Starting a connection using the new scheduler");
-        eventRunner.createNewSchedulerWorkflow(connectionId);
-      } catch (final Exception e) {
-        LOGGER.error("Start of the temporal connection manager workflow failed", e);
-        configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
-        throw e;
-      }
+    try {
+      LOGGER.info("Starting a connection manager workflow");
+      eventRunner.createConnectionManagerWorkflow(connectionId);
+    } catch (final Exception e) {
+      LOGGER.error("Start of the connection manager workflow failed", e);
+      configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+      throw e;
     }
 
     return buildConnectionRead(connectionId);
@@ -223,9 +211,7 @@ public class ConnectionsHandler {
 
     configRepository.writeStandardSync(newConnection);
 
-    if (featureFlags.usesNewScheduler()) {
-      eventRunner.update(connectionUpdate.getConnectionId());
-    }
+    eventRunner.update(connectionUpdate.getConnectionId());
 
     return buildConnectionRead(connectionUpdate.getConnectionId());
   }
@@ -271,6 +257,15 @@ public class ConnectionsHandler {
   public ConnectionRead getConnection(final UUID connectionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionId);
+  }
+
+  public static CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+    return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
+        .stream()
+        .map(CatalogDiffConverters::streamTransformToApi)
+        .toList());
   }
 
   public Optional<AirbyteCatalog> getConnectionAirbyteCatalog(final UUID connectionId)
@@ -320,7 +315,7 @@ public class ConnectionsHandler {
         matchSearch(connectionSearch.getDestination(), destinationRead);
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in SourceHandlerTest
+  // todo (cgardens) - make this static. requires removing one bad dependency in SourceHandlerTest
   public boolean matchSearch(final SourceSearch sourceSearch, final SourceRead sourceRead) {
     final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
     final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
@@ -328,7 +323,7 @@ public class ConnectionsHandler {
     return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in
+  // todo (cgardens) - make this static. requires removing one bad dependency in
   // DestinationHandlerTest
   public boolean matchSearch(final DestinationSearch destinationSearch, final DestinationRead destinationRead) {
     final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);
@@ -337,36 +332,8 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  public void deleteConnection(final UUID connectionId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    if (featureFlags.usesNewScheduler()) {
-      // todo (cgardens) - need an interface over this.
-      eventRunner.deleteConnection(connectionId);
-    } else {
-      final ConnectionRead connectionRead = getConnection(connectionId);
-      deleteConnection(connectionRead);
-    }
-  }
-
-  public void deleteConnection(final ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-        .namespaceDefinition(connectionRead.getNamespaceDefinition())
-        .namespaceFormat(connectionRead.getNamespaceFormat())
-        .prefix(connectionRead.getPrefix())
-        .connectionId(connectionRead.getConnectionId())
-        .operationIds(connectionRead.getOperationIds())
-        .syncCatalog(connectionRead.getSyncCatalog())
-        .schedule(connectionRead.getSchedule())
-        .status(ConnectionStatus.DEPRECATED)
-        .resourceRequirements(connectionRead.getResourceRequirements());
-
-    updateConnection(connectionUpdate);
-  }
-
-  private boolean isStandardSyncInWorkspace(final UUID workspaceId,
-                                            final StandardSync standardSync)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    return configRepository.getSourceConnection(standardSync.getSourceId()).getWorkspaceId().equals(workspaceId);
+  public void deleteConnection(final UUID connectionId) {
+    eventRunner.deleteConnection(connectionId);
   }
 
   private ConnectionRead buildConnectionRead(final UUID connectionId)
