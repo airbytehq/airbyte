@@ -30,8 +30,7 @@ public class JobErrorReporter {
   private final String airbyteVersion;
   private final ErrorReportingClient errorReportingClient;
 
-  public JobErrorReporter(
-                          final ConfigRepository configRepository,
+  public JobErrorReporter(final ConfigRepository configRepository,
                           final String airbyteVersion,
                           final ErrorReportingClient errorReportingClient) {
 

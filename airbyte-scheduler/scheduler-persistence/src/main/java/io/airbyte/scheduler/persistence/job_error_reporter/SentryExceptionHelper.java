@@ -35,9 +35,14 @@ public class SentryExceptionHelper {
     }, null);
   }
 
-  public static List<SentryException> buildPythonSentryExceptions(final String stacktrace) {
+  private static List<SentryException> buildPythonSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
-    final String[] exceptions = stacktrace.split("\n\n"); // chained exceptions are separated by two new lines
+
+    // separate chained exceptions
+    // e.g "\n\nThe above exception was the direct cause of the following exception:\n\n"
+    // "\n\nDuring handling of the above exception, another exception occurred:\n\n"
+    final String exceptionSeparator = "\n\n[\\w ,]+:\n\n";
+    final String[] exceptions = stacktrace.split(exceptionSeparator);
 
     for (final String exceptionStr : exceptions) {
       final SentryStackTrace stackTrace = new SentryStackTrace();
@@ -70,15 +75,15 @@ public class SentryExceptionHelper {
         final SentryException sentryException = new SentryException();
         sentryException.setStacktrace(stackTrace);
 
-        // The final part of our stack trace has the exception type and (optionally) a value (e.g.
-        // "RuntimeError: This is the value")
+        // The final part of our stack trace has the exception type and (optionally) a value
+        // (e.g. "RuntimeError: This is the value")
         final String remaining = exceptionStr.substring(lastMatchIdx);
-        final String[] parts = remaining.split(": ", 2);
+        final String[] parts = remaining.split(":", 2);
 
         if (parts.length > 0) {
-          sentryException.setType(parts[0]);
+          sentryException.setType(parts[0].trim());
           if (parts.length == 2) {
-            sentryException.setValue(parts[1]);
+            sentryException.setValue(parts[1].trim());
           }
 
           sentryExceptions.add(sentryException);
@@ -86,12 +91,18 @@ public class SentryExceptionHelper {
       }
     }
 
+    if (sentryExceptions.size() == 0)
+      return null;
     return sentryExceptions;
   }
 
-  public static List<SentryException> buildJavaSentryExceptions(final String stacktrace) {
+  private static List<SentryException> buildJavaSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
-    final String[] exceptions = stacktrace.split("\n[\\w ]+: "); // separate chained exceptions
+
+    // separate chained exceptions
+    // e.g "\nCaused By: "
+    final String exceptionSeparator = "\n[\\w ]+: ";
+    final String[] exceptions = stacktrace.split(exceptionSeparator);
 
     for (final String exceptionStr : exceptions) {
       final SentryStackTrace stackTrace = new SentryStackTrace();
@@ -99,7 +110,7 @@ public class SentryExceptionHelper {
 
       // Use a regex to grab stack trace frame information
       final Pattern framePattern = Pattern.compile(
-          "\n\tat (?:[\\w.$]+/)?(?<module>[\\w$.]+)\\.(?<function>[\\w$]+)\\((?:(?<filename>[\\w]+\\.java):(?<lineno>\\d+)\\)|(?<desc>[\\w\\s]*))");
+          "\n\tat (?:[\\w.$/]+/)?(?<module>[\\w$.]+)\\.(?<function>[\\w<>$]+)\\((?:(?<filename>[\\w]+\\.java):(?<lineno>\\d+)\\)|(?<desc>[\\w\\s]*))");
       final Matcher matcher = framePattern.matcher(exceptionStr);
 
       while (matcher.find()) {
@@ -131,15 +142,14 @@ public class SentryExceptionHelper {
         final SentryException sentryException = new SentryException();
         sentryException.setStacktrace(stackTrace);
 
-        // The first line of our stacktrace has exception type and value
-        final String[] lines = exceptionStr.split("\n", 2);
-        final String firstLine = lines[0];
-        final String[] parts = firstLine.split(": ", 2);
+        // The first section of our stacktrace before the first frame has exception type and value
+        final String[] sections = exceptionStr.split("\n\tat ", 2);
+        final String[] headerParts = sections[0].split(": ", 2);
 
-        if (parts.length > 0) {
-          sentryException.setType(parts[0]);
-          if (parts.length == 2) {
-            sentryException.setValue(parts[1]);
+        if (headerParts.length > 0) {
+          sentryException.setType(headerParts[0].trim());
+          if (headerParts.length == 2) {
+            sentryException.setValue(headerParts[1].trim());
           }
 
           sentryExceptions.add(sentryException);
@@ -147,6 +157,8 @@ public class SentryExceptionHelper {
       }
     }
 
+    if (sentryExceptions.size() == 0)
+      return null;
     return sentryExceptions;
   }
 

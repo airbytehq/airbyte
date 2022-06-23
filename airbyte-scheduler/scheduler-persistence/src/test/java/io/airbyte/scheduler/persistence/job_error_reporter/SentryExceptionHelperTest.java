@@ -4,11 +4,9 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
-import io.airbyte.commons.resources.MoreResources;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -17,9 +15,45 @@ import org.junit.jupiter.api.Test;
 public class SentryExceptionHelperTest {
 
   final SentryExceptionHelper exceptionHelper = new SentryExceptionHelper();
+
   @Test
-  void testBuildSentryExceptionsPython() throws IOException {
-    final String stacktrace = MoreResources.readResource("sample_python_stacktrace.txt");
+  void testBuildSentryExceptionsInvalid() {
+    final String stacktrace = "this is not a stacktrace";
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNull(exceptionList);
+  }
+
+  @Test
+  void testBuildSentryExceptionsPartiallyInvalid() {
+    final String stacktrace = "Traceback (most recent call last):\n  Oops!";
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNull(exceptionList);
+  }
+
+  @Test
+  void testBuildSentryExceptionsPythonChained() {
+    final String stacktrace =
+        """
+        Traceback (most recent call last):
+          File "/airbyte/connector-errors/error.py", line 31, in read_records
+            failing_method()
+          File "/airbyte/connector-errors/error.py", line 36, in failing_method
+            raise HTTPError(http_error_msg, response=self)
+        requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://airbyte.com
+
+        The above exception was the direct cause of the following exception:
+
+        Traceback (most recent call last):
+          File "/airbyte/connector-errors/error.py", line 39, in <module>
+            main()
+          File "/airbyte/connector-errors/error.py", line 13, in main
+            sync_mode("incremental")
+          File "/airbyte/connector-errors/error.py", line 17, in sync_mode
+            incremental()
+          File "/airbyte/connector-errors/error.py", line 33, in incremental
+            raise RuntimeError("My other error") from err
+        RuntimeError: My other error
+        """;
 
     final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
@@ -63,16 +97,86 @@ public class SentryExceptionHelperTest {
   }
 
   @Test
-  void testBuildSentryExceptionsInvalid() {
-    final String stacktrace = "this is not a stacktrace";
+  void testBuildSentryExceptionsPythonNoValue() {
+    final String stacktrace =
+        """
+        Traceback (most recent call last):
+          File "/airbyte/connector-errors/error.py", line 33, in incremental
+            raise RuntimeError()
+        RuntimeError
+        """;
 
-    final List<SentryException> exceptionList = SentryExceptionHelper.buildSentryExceptions(stacktrace);
-    Assertions.assertNull(exceptionList);
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNotNull(exceptionList);
+    Assertions.assertEquals(1, exceptionList.size());
+
+    assertExceptionContent(exceptionList.get(0), "RuntimeError", null, List.of(
+        Map.of(
+            "abspath", "/airbyte/connector-errors/error.py",
+            "lineno", 33,
+            "function", "incremental",
+            "context_line", "raise RuntimeError()")));
   }
 
   @Test
-  void testBuildSentryExceptionsJava() throws IOException {
-    final String stacktrace = MoreResources.readResource("sample_java_stacktrace.txt");
+  void testBuildSentryExceptionsPythonMultilineValue() {
+    final String stacktrace =
+        """
+        Traceback (most recent call last):
+          File "/usr/local/lib/python3.9/site-packages/grpc/_channel.py", line 849, in _end_unary_response_blocking
+            raise _InactiveRpcError(state)
+        grpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:
+          status = StatusCode.INTERNAL
+          details = "Internal error encountered."
+        >
+
+        During handling of the above exception, another exception occurred:
+
+        Traceback (most recent call last):
+          File "/usr/local/lib/python3.9/site-packages/google/api_core/exceptions.py", line 553, in _parse_grpc_error_details
+            status = rpc_status.from_call(rpc_exc)
+        AttributeError: 'NoneType' object has no attribute 'from_call'
+        """;
+
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNotNull(exceptionList);
+    Assertions.assertEquals(2, exceptionList.size());
+
+    final String expectedValue =
+        """
+        <_InactiveRpcError of RPC that terminated with:
+         status = StatusCode.INTERNAL
+         details = "Internal error encountered."
+        >""";
+
+    assertExceptionContent(exceptionList.get(0), "grpc._channel._InactiveRpcError", expectedValue, List.of(
+        Map.of(
+            "abspath", "/usr/local/lib/python3.9/site-packages/grpc/_channel.py",
+            "lineno", 849,
+            "function", "_end_unary_response_blocking",
+            "context_line", "raise _InactiveRpcError(state)")));
+
+    assertExceptionContent(exceptionList.get(1), "AttributeError", "'NoneType' object has no attribute 'from_call'", List.of(
+        Map.of(
+            "abspath", "/usr/local/lib/python3.9/site-packages/google/api_core/exceptions.py",
+            "lineno", 553,
+            "function", "_parse_grpc_error_details",
+            "context_line", "status = rpc_status.from_call(rpc_exc)")));
+  }
+
+  @Test
+  void testBuildSentryExceptionsJava() {
+    final String stacktrace =
+        """
+        java.lang.ArithmeticException: / by zero
+        	at io.airbyte.integrations.base.AirbyteTraceMessageUtilityTest.testCorrectStacktraceFormat(AirbyteTraceMessageUtilityTest.java:61)
+        	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        	at org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(ExecutableInvoker.java:115)
+        	at app//org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+        	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+        	at jdk.proxy2/jdk.proxy2.$Proxy5.stop(Unknown Source)
+        	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+        """;
 
     final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
@@ -115,8 +219,24 @@ public class SentryExceptionHelperTest {
   }
 
   @Test
-  void testBuildSentryExceptionsJavaChained() throws IOException {
-    final String stacktrace = MoreResources.readResource("sample_java_stacktrace_chained.txt");
+  void testBuildSentryExceptionsJavaChained() {
+    final String stacktrace =
+        """
+        java.util.concurrent.CompletionException: io.airbyte.workers.DefaultReplicationWorker$DestinationException: Destination process exited with non-zero exit code 1
+        	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+        	at java.base/java.lang.Thread.run(Thread.java:833)
+        		Suppressed: io.airbyte.workers.exception.WorkerException: Source process exit with code 1. This warning is normal if the job was cancelled.
+        				at io.airbyte.workers.internal.DefaultAirbyteSource.close(DefaultAirbyteSource.java:136)
+        				at io.airbyte.workers.general.DefaultReplicationWorker.run(DefaultReplicationWorker.java:137)
+        				at io.airbyte.workers.general.DefaultReplicationWorker.run(DefaultReplicationWorker.java:65)
+        				at io.airbyte.workers.temporal.TemporalAttemptExecution.lambda$getWorkerThread$2(TemporalAttemptExecution.java:158)
+        				at java.lang.Thread.run(Thread.java:833)
+        Caused by: io.airbyte.workers.DefaultReplicationWorker$DestinationException: Destination process exited with non-zero exit code 1
+        	at io.airbyte.workers.DefaultReplicationWorker.lambda$getDestinationOutputRunnable$7(DefaultReplicationWorker.java:397)
+        	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
+        	... 3 more
+        """;
 
     final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertNotNull(exceptionList);
@@ -153,6 +273,40 @@ public class SentryExceptionHelperTest {
                 "lineno", 397,
                 "module", "io.airbyte.workers.DefaultReplicationWorker",
                 "function", "lambda$getDestinationOutputRunnable$7")));
+  }
+
+  @Test
+  void testBuildSentryExceptionsJavaMultilineValue() {
+    final String stacktrace =
+        """
+        io.temporal.failure.ApplicationFailure: GET https://storage.googleapis.com/
+        {
+          "code" : 401,
+          "message" : "Invalid Credentials"
+        }
+          at com.google.api.client.googleapis.json.GoogleJsonResponseException.from(GoogleJsonResponseException.java:146)
+          ... 22 more
+        """;
+
+    final List<SentryException> exceptionList = exceptionHelper.buildSentryExceptions(stacktrace);
+    Assertions.assertNotNull(exceptionList);
+    Assertions.assertEquals(1, exceptionList.size());
+
+    final String expectedValue =
+        """
+        GET https://storage.googleapis.com/
+        {
+         "code" : 401,
+         "message" : "Invalid Credentials"
+        }""";
+
+    assertExceptionContent(exceptionList.get(0), "io.temporal.failure.ApplicationFailure",
+        expectedValue, List.of(
+            Map.of(
+                "filename", "GoogleJsonResponseException.java",
+                "lineno", 146,
+                "module", "com.google.api.client.googleapis.json.GoogleJsonResponseException",
+                "function", "from")));
   }
 
   private void assertExceptionContent(final SentryException exception,
