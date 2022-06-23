@@ -6,7 +6,9 @@ description: 'This connector extracts "collections" from Webflow'
 
 Webflow is used for publishing Airbyte's blogs, and this connector returns data that is made available by [Webflow APIs](https://developers.webflow.com/). 
 
-Webflow uses [Collections](https://developers.webflow.com/#collections) to store different kinds of information. A collection can be "Blog Posts", or "Blog Authors", etc. Collection names are not pre-defined, the number of collections is not known in advance, and the schema for each collection may be different. Therefore this connector dynamically figures our which collections are available and downloads the schema for each collection from Webflow, and each collection is returns as an [Airbyte Stream](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream/). 
+Webflow uses [Collections](https://developers.webflow.com/#collections) to store different kinds of information. A collection can be "Blog Posts", or "Blog Authors", etc. Collection names are not pre-defined, the number of collections is not known in advance, and the schema for each collection may be different. 
+
+This connector dynamically figures our which collections are available, creates the schema for each collection based on data extracted from Webflow, and creates an [Airbyte Stream](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream/) for each collection. 
 
 # Webflow credentials
 You should be able to create a Webflow  `API key` (aka `API token`) as described in [Intro to the Webflow API](https://university.webflow.com/lesson/intro-to-the-webflow-api). 
