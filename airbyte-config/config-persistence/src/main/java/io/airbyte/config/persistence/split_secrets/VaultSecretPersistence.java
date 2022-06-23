@@ -61,4 +61,5 @@ final public class VaultSecretPersistence implements SecretPersistence {
         .build();
     return new Vault(config);
   }
+
 }

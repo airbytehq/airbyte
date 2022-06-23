@@ -1,4 +1,11 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence.split_secrets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import lombok.val;
 import org.apache.commons.lang3.RandomUtils;
@@ -7,10 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.vault.VaultContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class VaultSecretPersistenceTest {
+
   private VaultSecretPersistence persistence;
   private String baseCoordinate;
 
@@ -55,5 +60,5 @@ public class VaultSecretPersistenceTest {
     assertThat(thirdRead.isPresent()).isTrue();
     assertEquals(secondPayload, thirdRead.get());
   }
-}
 
+}
