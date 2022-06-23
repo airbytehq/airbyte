@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.server.helpers.ConnectionHelpers.generateBasicConfiguredAirbyteCatalog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -73,6 +74,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.scheduler.client.EventRunner;
@@ -93,6 +95,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -842,4 +845,22 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  public void testGetStreamsToReset() {
+    final StreamTransform streamTransformAdd = new StreamTransform().addStream(new StreamDescriptor().name("added_stream")).transformType(TransformTypeEnum.ADD_STREAM);
+    final StreamTransform streamTransformRemove = new StreamTransform().addStream(new StreamDescriptor().name("removed_stream")).transformType(TransformTypeEnum.REMOVE_STREAM);;
+    final StreamTransform streamTransformUpdate = new StreamTransform().addStream(new StreamDescriptor().name("updated_stream")).transformType(TransformTypeEnum.UPDATE_STREAM);;
+    final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd, streamTransformRemove, streamTransformUpdate));
+    final List<TransformTypeEnum> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
+    System.out.println(resultList);
+    assertTrue(
+        resultList.stream().anyMatch(
+            transformType -> transformType == TransformTypeEnum.ADD_STREAM));
+    assertTrue(
+        resultList.stream().anyMatch(
+            transformType -> transformType == TransformTypeEnum.UPDATE_STREAM));
+    assertFalse(
+        resultList.stream().anyMatch(
+            transformType -> transformType == TransformTypeEnum.REMOVE_STREAM));
+  }
 }

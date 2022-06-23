@@ -35,6 +35,7 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
@@ -50,7 +51,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.transform_models.StreamTransform;
 import io.airbyte.scheduler.client.EventRunner;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
@@ -355,17 +361,21 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
 
-    ConnectionRead connectionRead;
+    final ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
 
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (needReset) {
+      final ConfiguredAirbyteCatalog existingConfiguredCatalog = configRepository.getConfiguredCatalogForConnection(webBackendConnectionUpdate.getConnectionId());
+      final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
+      final AirbyteCatalog modelExisting = CatalogConverter.toApi(existingCatalog);
+      final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
+      final CatalogDiff catalogDiff = ConnectionsHandler.getDiff(modelExisting, newAirbyteCatalog);
+      final List<TransformTypeEnum> streamsToReset = getStreamsToReset(catalogDiff);
       ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
           webBackendConnectionUpdate.getConnectionId(),
-          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
-          // streams, instead of all
-          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
+          streamsToReset);
       verifyManualOperationResult(manualOperationResult);
       manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
       verifyManualOperationResult(manualOperationResult);
@@ -486,6 +496,22 @@ public class WebBackendConnectionsHandler {
         .prefix(webBackendConnectionSearch.getPrefix())
         .schedule(webBackendConnectionSearch.getSchedule())
         .status(webBackendConnectionSearch.getStatus());
+  }
+
+  public static List<TransformTypeEnum> getStreamsToReset(final CatalogDiff catalogDiff) {
+    final List<TransformTypeEnum> streamsToReset = catalogDiff.getTransforms().stream()
+        .filter(streamTransform ->
+            TransformTypeEnum.ADD_STREAM == streamTransform.getTransformType() ||
+                TransformTypeEnum.UPDATE_STREAM == streamTransform.getTransformType())
+        .map(sT -> sT.getTransformType()).toList();
+
+//    catalogDiff.getTransforms().forEach(stream -> {
+//      final TransformTypeEnum transformType = stream.getTransformType();
+//      if(TransformTypeEnum.ADD_STREAM == transformType || TransformTypeEnum.UPDATE_STREAM == transformType){
+//        streamsToReset.add(stream.getTransformType());
+//      };
+//    });
+    return streamsToReset;
   }
 
   /**
