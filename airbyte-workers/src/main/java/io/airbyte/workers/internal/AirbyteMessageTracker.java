@@ -123,10 +123,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * Save the latest state with the format expected based on the message type, increment the
+   * Save the lastest state on the provided output state. It is using the {@link StateLifecycleManager} to manage the state transition.
+   * The markState method is a runnable to call the right method to mark a state and the state supplier provide the states that are updated teh last.
    *
-   * @param stateMessage
-   * @param outputState
+   * @param stateMessage - the state message to ingest
+   * @param outputState - atomic reference on the state to update (source or destination)
+   * @param markState - runnnable whose responsability is to call the right mark method
+   * @param stateSupplier - Supplier to get the state with the right formats
    * @return
    */
   private AirbyteStateMessage saveStateOutput(final AirbyteMessage stateMessage,
