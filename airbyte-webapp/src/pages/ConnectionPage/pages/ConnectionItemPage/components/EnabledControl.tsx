@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import { Switch } from "components";
 
+import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
@@ -39,17 +40,11 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
   const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      schedule: connection.schedule,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      prefix: connection.prefix,
-      operations: connection.operations,
-      name: connection.name,
-      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-    });
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      })
+    );
 
     analyticsService.track("Source - Action", {
       action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",

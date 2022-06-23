@@ -1,7 +1,7 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormikHelpers } from "formik";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
+import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
@@ -19,6 +20,7 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
+import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -51,6 +53,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -64,18 +67,43 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     [connectionId]
   );
 
-  const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
+  const connection = useMemo(() => {
+    if (activeUpdatingSchemaMode && connectionWithRefreshCatalog) {
+      // merge connectionFormValues (unsaved previous form state) with the refreshed connection data:
+      // 1. if there is a namespace definition, format, prefix, or schedule in connectionFormValues,
+      //    use those and fill in the rest from the database
+      // 2. otherwise, use the values from the database
+      // 3. if none of the above, use the default values.
+      return {
+        ...connectionWithRefreshCatalog,
+        namespaceDefinition:
+          connectionFormValues?.namespaceDefinition ?? connectionWithRefreshCatalog.namespaceDefinition,
+        namespaceFormat: connectionFormValues?.namespaceFormat ?? connectionWithRefreshCatalog.namespaceFormat,
+        prefix: connectionFormValues?.prefix ?? connectionWithRefreshCatalog.prefix,
+        schedule: connectionFormValues?.schedule ?? connectionWithRefreshCatalog.schedule,
+      };
+    }
+    return initialConnection;
+  }, [activeUpdatingSchemaMode, connectionWithRefreshCatalog, initialConnection, connectionFormValues]);
 
   const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
-    const initialSyncSchema = connection?.syncCatalog;
+    if (!connection) {
+      // onSubmit should only be called when a connection object exists.
+      return;
+    }
+
+    const initialSyncSchema = connection.syncCatalog;
+    const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
     await updateConnection({
+      ...connectionAsUpdate,
       ...values,
       connectionId,
+      // Use the name and status from the initial connection because
+      // The status can be toggled and the name can be changed in-between refreshing the schema
+      name: initialConnection.name,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
-      sourceCatalogId: connection?.catalogId,
-      name: connection?.name,
     });
 
     setSaved(true);
@@ -116,7 +144,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     await refreshCatalog();
   };
 
-  const onExitRefreshCatalogMode = () => {
+  const onCancelConnectionFormEdit = () => {
     setActiveUpdatingSchemaMode(false);
   };
 
@@ -149,9 +177,10 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
             onSubmit={onSubmitForm}
             onReset={onReset}
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-            onCancel={onExitRefreshCatalogMode}
+            onCancel={onCancelConnectionFormEdit}
             editSchemeMode={activeUpdatingSchemaMode}
             additionalSchemaControl={renderUpdateSchemaButton()}
+            onChangeValues={setConnectionFormValues}
           />
         ) : (
           <LoadingSchema />

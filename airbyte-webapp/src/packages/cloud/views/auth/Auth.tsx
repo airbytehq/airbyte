@@ -7,7 +7,7 @@ import { LoadingPage } from "components";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
+import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
 import FormContent from "./components/FormContent";
 import News from "./components/News";
@@ -41,17 +41,18 @@ const NewsPart = styled(Part)`
 const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
   const { loggedOut } = useAuthService();
+  const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
     <Content>
       <Part>
-        <FormContent toLogin={pathname === `${CloudRoutes.Signup}`}>
+        <FormContent toLogin={toLogin}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route path={CloudRoutes.Login} element={<LoginPage />} />
               <Route path={CloudRoutes.Signup} element={<SignupPage />} />
               <Route path={CloudRoutes.ResetPassword} element={<ResetPasswordPage />} />
-              <Route path={CloudRoutes.FirebaseAction} element={<ResetPasswordAction />} />
+              <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
                 element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${location.pathname}`}`} />}
