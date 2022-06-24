@@ -6,6 +6,7 @@ package io.airbyte.config.helpers;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -13,6 +14,8 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
@@ -118,6 +121,61 @@ public class StateMessageHelperTest {
   public void testEmptyStateList() {
     Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList())))
         .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  public void testLegacyStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.LEGACY)
+        .withLegacyState(Jsons.deserialize("{\"json\": \"blob\"}"));
+    final State expectedState = new State().withState(Jsons.deserialize("{\"json\": \"blob\"}"));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
+  }
+
+  @Test
+  public void testGlobalStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.GLOBAL)
+        .withGlobal(
+            new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(
+                new AirbyteGlobalState()
+                    .withSharedState(Jsons.deserialize("\"shared\""))
+                    .withStreamStates(Collections.singletonList(
+                        new AirbyteStreamState()
+                            .withStreamDescriptor(new StreamDescriptor().withNamespace("ns").withName("name"))
+                            .withStreamState(Jsons.deserialize("\"stream state\""))))));
+    final State expectedState = new State().withState(Jsons.deserialize(
+        "[{\"type\":\"GLOBAL\",\"global\":{\"shared_state\":\"shared\",\"stream_states\":[" +
+            "{\"stream_descriptor\":{\"name\":\"name\",\"namespace\":\"ns\"},\"stream_state\":\"stream state\"}" +
+            "]}}]"));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
+  }
+
+  @Test
+  public void testStreamStateConversion() {
+    final StateWrapper stateWrapper = new StateWrapper()
+        .withStateType(StateType.STREAM)
+        .withStateMessages(Arrays.asList(
+            new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace("ns1").withName("name1"))
+                    .withStreamState(Jsons.deserialize("\"state1\""))),
+            new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(
+                new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace("ns2").withName("name2"))
+                    .withStreamState(Jsons.deserialize("\"state2\"")))));
+    final State expectedState = new State().withState(Jsons.deserialize(
+        "[" +
+            "{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"name1\",\"namespace\":\"ns1\"},\"stream_state\":\"state1\"}}," +
+            "{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"name2\",\"namespace\":\"ns2\"},\"stream_state\":\"state2\"}}" +
+            "]"));
+
+    final State convertedState = StateMessageHelper.getState(stateWrapper);
+    Assertions.assertThat(convertedState).isEqualTo(expectedState);
   }
 
 }
