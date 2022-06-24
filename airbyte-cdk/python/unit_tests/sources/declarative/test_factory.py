@@ -4,6 +4,8 @@
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -86,6 +88,13 @@ decoder:
 extractor:
   class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
   decoder: "*ref(decoder)"
+selector:
+  class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+  extractor:
+    decoder: "*ref(decoder)"
+  record_filter:
+    class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
   class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
   next_page_token_template:
@@ -139,6 +148,8 @@ list_stream:
         default: "marketing/lists"
     paginator:
       ref: "*ref(metadata_paginator)"
+    record_selector:
+      ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -156,8 +167,11 @@ check:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert type(stream._retriever._extractor._decoder) == JsonDecoder
-    assert stream._retriever._extractor._transform == ".result[]"
+    assert type(stream._retriever._record_selector) == RecordSelector
+    assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
+    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert type(stream._retriever._record_selector._record_filter) == RecordFilter
+    assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
 
     checker = factory.create_component(config["check"], input_config)()
