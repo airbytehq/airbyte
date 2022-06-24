@@ -4281,7 +4281,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.29"
+- dockerImage: "airbyte/destination-snowflake:0.4.30"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4412,7 +4412,6 @@
           order: 8
           oneOf:
           - title: "Select another option"
-            additionalProperties: false
             description: "Select another option"
             required:
             - "method"
@@ -4425,7 +4424,6 @@
                 - "Standard"
                 default: "Standard"
           - title: "[Recommended] Internal Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file.\
               \ Recommended for large production workloads for better speed and scalability."
@@ -4440,7 +4438,6 @@
                 - "Internal Staging"
                 default: "Internal Staging"
           - title: "AWS S3 Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
               \ for large production workloads for better speed and scalability."
@@ -4562,7 +4559,6 @@
                         \ key for each sync."
                       airbyte_secret: true
           - title: "GCS Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
               \ for large production workloads for better speed and scalability."
@@ -4609,7 +4605,6 @@
                 multiline: true
                 order: 3
           - title: "Azure Blob Storage Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload\
               \ the file. Recommended for large production workloads for better speed\
