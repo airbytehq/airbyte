@@ -12,7 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.transform_models.FieldTransform;
 import io.airbyte.protocol.models.transform_models.StreamTransform;
-import io.airbyte.protocol.models.transform_models.UpdateFieldTransform;
+import io.airbyte.protocol.models.transform_models.UpdateFieldSchemaTransform;
 import io.airbyte.protocol.models.transform_models.UpdateStreamTransform;
 import java.io.IOException;
 import java.util.Comparator;
@@ -103,12 +103,11 @@ class CatalogHelpersTest {
     final List<StreamTransform> expectedDiff = Stream.of(
         StreamTransform.createAddStreamTransform(new StreamDescriptor().withName("sales")),
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
-        StreamTransform.createUpdateStreamTransform(new UpdateStreamTransform(new StreamDescriptor().withName("users"), Set.of(
+        StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName("users"), new UpdateStreamTransform(Set.of(
             FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get("properties").get("COD")),
             FieldTransform.createRemoveFieldTransform(List.of("something2"), schema1.get("properties").get("something2")),
             FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get("properties").get("HKD")),
-            FieldTransform.createUpdateFieldTransform(new UpdateFieldTransform(
-                List.of("CAD"),
+            FieldTransform.createUpdateFieldTransform(List.of("CAD"), new UpdateFieldSchemaTransform(
                 schema1.get("properties").get("CAD"),
                 schema2.get("properties").get("CAD")))))))
         .sorted(STREAM_TRANSFORM_COMPARATOR)
