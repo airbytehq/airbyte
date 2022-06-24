@@ -3775,26 +3775,35 @@
                 default: true
               encryption:
                 title: "Encryption"
+                type: "object"
                 description: "How to encrypt the staging data"
+                default:
+                  encryption_type: "none"
                 oneOf:
                 - title: "No encryption"
                   description: "Staging data will be stored in plaintext."
                   type: "object"
                   required:
-                    "encryption_type"
+                  - "encryption_type"
                   properties:
                     encryption_type:
                       type: "string"
                       const: "none"
+                      enum:
+                      - "none"
+                      default: "none"
                 - title: "AES-CBC envelope encryption",
                   description: "Staging data will be encrypted using AES-CBC envelope encryption."
                   type: "object"
                   required:
-                    "encryption_type"
+                  - "encryption_type"
                   properties:
                     encryption_type:
                       type: "string"
                       const: "aes_cbc_envelope"
+                      enum:
+                      - "aes_cbc_envelope"
+                      default: "aes_cbc_envelope"
                     key_encrypting_key:
                       type: "string"
                       title: "Key"
