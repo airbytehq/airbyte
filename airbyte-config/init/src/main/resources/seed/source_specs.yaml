@@ -3658,7 +3658,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.70"
+- dockerImage: "airbyte/source-hubspot:0.1.72"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4850,7 +4850,45 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.3"
+- dockerImage: "airbyte/source-metabase:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/metabase"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Metabase Source Spec"
+      type: "object"
+      required:
+      - "instance_api_url"
+      additionalProperties: true
+      properties:
+        instance_api_url:
+          type: "string"
+          title: "Metabase Instance API URL"
+          description: "URL to your metabase instance API"
+          examples:
+          - "http://localhost:3000/api/"
+          order: 0
+        username:
+          type: "string"
+          order: 1
+        password:
+          type: "string"
+          airbyte_secret: true
+          order: 2
+        session_token:
+          type: "string"
+          description: "To generate your session token, you need to run the following\
+            \ command: ``` curl -X POST \\\n  -H \"Content-Type: application/json\"\
+            \ \\\n  -d '{\"username\": \"person@metabase.com\", \"password\": \"fakepassword\"\
+            }' \\\n  http://localhost:3000/api/session\n``` Then copy the value of\
+            \ the `id` field returned by a successful call to that API.\nNote that\
+            \ by default, sessions are good for 14 days and needs to be regenerated."
+          airbyte_secret: true
+          order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-mssql:0.4.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5639,7 +5677,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.13"
+- dockerImage: "airbyte/source-mysql:0.5.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -6394,7 +6432,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.5"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -6745,7 +6783,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.26"
+- dockerImage: "airbyte/source-postgres:0.4.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:

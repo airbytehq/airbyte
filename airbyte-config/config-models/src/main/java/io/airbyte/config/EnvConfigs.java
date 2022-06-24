@@ -167,6 +167,10 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
+  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
+  private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
+
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
@@ -337,6 +341,21 @@ public class EnvConfigs implements Configs {
   public SecretPersistenceType getSecretPersistenceType() {
     final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.TESTING_CONFIG_DB_TABLE.name());
     return SecretPersistenceType.valueOf(secretPersistenceStr);
+  }
+
+  @Override
+  public String getVaultAddress() {
+    return getEnv(VAULT_ADDRESS);
+  }
+
+  @Override
+  public String getVaultPrefix() {
+    return getEnvOrDefault(VAULT_PREFIX, "");
+  }
+
+  @Override
+  public String getVaultToken() {
+    return getEnv(VAULT_AUTH_TOKEN);
   }
 
   // Database
