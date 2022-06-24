@@ -95,6 +95,15 @@ class BaseResource(abc.ABC):
     def _find_by_resource_name(
         self,
     ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+        """Retrieve a remote resource from its name by listing the available resources on the Airbyte instance.
+
+        Raises:
+            ResourceNotFoundError: Raised if no resource was found with the current resource_name.
+            DuplicateResourceError:  Raised if multiple resources were found with the current resource_name.
+
+        Returns:
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+        """
 
         api_response = self._list_for_workspace_fn(self.api_instance, self.list_for_workspace_payload)
         matching_resources = []
@@ -112,15 +121,30 @@ class BaseResource(abc.ABC):
     def _find_by_resource_id(
         self,
     ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+        """Retrieve a remote resource from its id by calling the get endpoint of the resource type.
+
+        Returns:
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+        """
         return self._get_fn(self.api_instance, self.get_payload)
 
     def get_remote_resource(self) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+        """Retrieve a remote resource with a resource_name or a resource_id
+
+        Returns:
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+        """
         if self.resource_id is not None:
             return self._find_by_resource_id()
         else:
             return self._find_by_resource_name()
 
-    def to_json(self):
+    def to_json(self) -> str:
+        """Get the JSON representation of the remote resource model instance.
+
+        Returns:
+            str: The JSON representation of the remote resource model instance.
+        """
         return json.dumps(self.get_remote_resource().to_dict())
 
 

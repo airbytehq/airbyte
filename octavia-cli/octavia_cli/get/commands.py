@@ -3,8 +3,9 @@
 #
 
 import uuid
-from typing import List
+from typing import List, Optional, Tuple, Type, Union
 
+import airbyte_api_client
 import click
 from octavia_cli.base_commands import OctaviaCommand
 
@@ -13,11 +14,27 @@ from .resources import Connection, Destination, Source
 COMMON_HELP_MESSAGE_PREFIX = "Get a JSON representation of a remote"
 
 
-def build_help_message(resource_type):
+def build_help_message(resource_type: str) -> str:
+    """Helper function to build help message consistently for all the commands in this module.
+
+    Args:
+        resource_type (str): source, destination or connection
+
+    Returns:
+        str: The generated help message.
+    """
     return f"Get a JSON representation of a remote {resource_type}."
 
 
-def get_resource_id_or_name(resource):
+def get_resource_id_or_name(resource: str) -> Tuple[Optional[str], Optional[str]]:
+    """Helper function to detect if the resource argument passed to the CLI is a resource ID or name.
+
+    Args:
+        resource (str): the resource ID or name passed as an argument to the CLI.
+
+    Returns:
+        Tuple[Optional[str], Optional[str]]: the resource_id and resource_name, the not detected kind is set to None.
+    """
     resource_id, resource_name = None, None
     try:
         uuid.UUID(resource)
@@ -27,7 +44,24 @@ def get_resource_id_or_name(resource):
     return resource_id, resource_name
 
 
-def get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get):
+def get_json_representation(
+    api_client: airbyte_api_client.ApiClient,
+    workspace_id: str,
+    ResourceCls: Type[Union[Source, Destination, Connection]],
+    resource_to_get: str,
+) -> str:
+    """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
+
+
+    Args:
+        api_client (airbyte_api_client.ApiClient): The Airbyte API client.
+        workspace_id (str): Current workspace id.
+        ResourceCls (Type[Union[Source, Destination, Connection]]): Resource class to use
+        resource_to_get (str): resource name or id to get JSON representation for.
+
+    Returns:
+        str: The resource's JSON representation.
+    """
     resource_id, resource_name = get_resource_id_or_name(resource_to_get)
     resource = ResourceCls(api_client, workspace_id, resource_id=resource_id, resource_name=resource_name)
     return resource.to_json()
