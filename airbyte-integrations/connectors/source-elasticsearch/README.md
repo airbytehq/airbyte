@@ -1,6 +1,7 @@
 # Elasticsearch source
 
-This is the source connector of the [E2E Test Source](https://docs.airbyte.io/integrations/sources/elasticsearch-test). It only allows the "continuous feed" mode a finite number of record messages. The two legacy modes ("infinite feed" and "exception after n") are excluded from cloud because 1) the catalog is not customized under those modes, and 2) the connector should not emit infinite records, which may result in high cost accidentally.
+This is the repository for the Elasticsearch source connector, written in Java using Elasticsearch's High Level Rest Client([HLRC](https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high.html)).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/elasticsearch).
 
 ## Local development
 
@@ -34,8 +35,8 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-elasticsearch:dev disc
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-elasticsearch:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-#### Cloud variant
-The cloud version of this connector only allows the `FULL REFRESH` mode. When this mode is changed, please make sure that the cloud variant is updated and published accordingly as well.
+#### Sync Mode Support
+Current version of this connector only allows the `FULL REFRESH` mode.
 
 ## Testing
 We use `JUnit` for Java tests.
