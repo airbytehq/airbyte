@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.features;
 
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -28,7 +29,18 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean useStreamCapableState() {
-    return Boolean.parseBoolean(System.getenv("USE_STREAM_CAPABLE_STATE"));
+    return getEnvOrDefault("USE_STREAM_CAPABLE_STATE", false, Boolean::parseBoolean);
+  }
+
+  // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
+  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
+    final String value = System.getenv(key);
+    if (value != null && !value.isEmpty()) {
+      return parser.apply(value);
+    } else {
+      log.info("Using default value for environment variable {}: '{}'", key, defaultValue);
+      return defaultValue;
+    }
   }
 
 }
