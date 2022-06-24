@@ -34,9 +34,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final Job job = jobPersistence.getJob(jobId);
       final ConfigType jobConfigType = job.getConfig().getConfigType();
-      if (jobConfigType.equals(ConfigType.SYNC)) {
+      if (ConfigType.SYNC.equals(jobConfigType)) {
         config = job.getConfig().getSync();
-      } else if (jobConfigType.equals(ConfigType.RESET_CONNECTION)) {
+      } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
         config = new JobSyncConfig()

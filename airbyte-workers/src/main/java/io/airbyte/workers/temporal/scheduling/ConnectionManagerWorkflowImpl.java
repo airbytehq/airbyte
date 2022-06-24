@@ -377,7 +377,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private boolean isResetJob(final IntegrationLauncherConfig sourceLauncherConfig) {
-    return sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB);
+    return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage());
   }
 
   // reset the ConnectionUpdaterInput back to a default state

@@ -33,7 +33,7 @@ public class StreamResetActivityImpl implements StreamResetActivity {
     try {
       final Job job = jobPersistence.getJob(input.getJobId());
       final ConfigType configType = job.getConfig().getConfigType();
-      if (!configType.equals(ConfigType.RESET_CONNECTION)) {
+      if (!ConfigType.RESET_CONNECTION.equals(configType)) {
         log.info("deleteStreamResetRecordsForJob was called for job {} with config type {}. Returning, as config type is not {}.",
             input.getJobId(),
             configType,
