@@ -787,9 +787,9 @@ def test_stream_reviews_incremental_read():
 
     stream_state = {}
     records = read_incremental(stream, stream_state)
-    assert [r["id"] for r in records] == [1000, 1001, 1002, 1003, 1004, 1005]
+    assert [r["id"] for r in records] == [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008]
     assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:01Z"}}
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
 
 
 @responses.activate
