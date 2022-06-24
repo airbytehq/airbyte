@@ -1,0 +1,67 @@
+{
+  "SellerOrderNumber": "",
+  "SellerID": "AG49",
+  "OrderNumber": 536024891,
+  "InvoiceNumber": 198556431,
+  "OrderDownloaded": true,
+  "OrderDate": "06/07/2022 10:27:43",
+  "OrderStatus": 3,
+  "OrderStatusDescription": "Invoiced",
+  "CustomerName": "Keith Hehmann",
+  "CustomerPhoneNumber": "512-461-2188",
+  "CustomerEmailAddress": "cusa.q5cw1uqer9ot9n8m@marketplace.newegg.com",
+  "ShipToAddress1": "2406 Howry Dr",
+  "ShipToAddress2": "",
+  "ShipToCityName": "Georgetown",
+  "ShipToStateCode": "TX",
+  "ShipToZipCode": "78626-8187",
+  "ShipToCountryCode": "UNITED STATES",
+  "ShipService": "Standard Shipping (5-7 business days)",
+  "ShipToFirstName": "Keith",
+  "ShipToLastName": "Hehmann",
+  "ShipToCompany": "",
+  "OrderItemAmount": 469.99,
+  "ShippingAmount": 0.00,
+  "DiscountAmount": 0.00,
+  "RefundAmount": 0.00,
+  "SalesTax": 0.00,
+  "RecyclingFeeAmount": 0.00,
+  "OrderTotalAmount": 469.99,
+  "OrderQty": 1,
+  "IsAutoVoid": false,
+  "SalesChannel": 0,
+  "FulfillmentOption": 0,
+  "ItemInfoList": [
+    {
+      "SellerPartNumber": "B05-IM07-SR00",
+      "NeweggItemNumber": "9SIAG49HHA7720",
+      "MfrPartNumber": "IM1102-UL",
+      "UPCCode": "850014439552",
+      "Description": "CROWNFUL Nugget Ice Maker Portable Countertop Machine, Auto Water Refill, Makes 26lbs Crunchy Pellet in 24H, 3lbs Basket at a time, with Scoop and Basket, Perfect for Home/Kitchen/Office/Bar",
+      "OrderedQty": 1,
+      "ShippedQty": 1,
+      "UnitPrice": 469.99,
+      "ExtendUnitPrice": 469.99,
+      "ExtendShippingCharge": 0.00,
+      "ExtendSalesTax": 0.00,
+      "Status": 2,
+      "StatusDescription": "Shipped"
+    }
+  ],
+  "PackageInfoList": [
+    {
+      "PackageType": "Shipped",
+      "ShipCarrier": "FedEx",
+      "ShipService": "Home",
+      "TrackingNumber": "274105217779",
+      "ShipDate": "06/08/2022 14:09:01",
+      "ItemInfoList": [
+        {
+          "SellerPartNumber": "B05-IM07-SR00",
+          "MfrPartNumber": "IM1102-UL",
+          "ShippedQty": 1
+        }
+      ]
+    }
+  ]
+}

@@ -242,7 +242,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
+        replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=30))
 
         params = {
             "reportType": self.name,
