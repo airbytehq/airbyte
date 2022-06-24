@@ -75,6 +75,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.transform_models.StreamTransformType;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
@@ -845,23 +846,22 @@ class WebBackendConnectionsHandlerTest {
   @Test
   public void testGetStreamsToReset() {
     final StreamTransform streamTransformAdd =
-        new StreamTransform().addStream(new StreamDescriptor().name("added_stream")).transformType(TransformTypeEnum.ADD_STREAM);
+        new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM).streamDescriptor(new StreamDescriptor().name("added_stream"));
     final StreamTransform streamTransformRemove =
-        new StreamTransform().addStream(new StreamDescriptor().name("removed_stream")).transformType(TransformTypeEnum.REMOVE_STREAM);;
+        new StreamTransform().transformType(TransformTypeEnum.REMOVE_STREAM).streamDescriptor(new StreamDescriptor().name("removed_stream"));
     final StreamTransform streamTransformUpdate =
-        new StreamTransform().addStream(new StreamDescriptor().name("updated_stream")).transformType(TransformTypeEnum.UPDATE_STREAM);;
+        new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM).streamDescriptor(new StreamDescriptor().name("updated_stream"));
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd, streamTransformRemove, streamTransformUpdate));
-    final List<TransformTypeEnum> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
-    System.out.println(resultList);
+    final List<StreamDescriptor> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
     assertTrue(
         resultList.stream().anyMatch(
-            transformType -> transformType == TransformTypeEnum.ADD_STREAM));
+            streamDescriptor -> streamDescriptor == new StreamDescriptor().name("added_stream")));
     assertTrue(
         resultList.stream().anyMatch(
-            transformType -> transformType == TransformTypeEnum.UPDATE_STREAM));
+            streamDescriptor -> streamDescriptor == new StreamDescriptor().name("updated_stream")));
     assertTrue(
         resultList.stream().anyMatch(
-            transformType -> transformType == TransformTypeEnum.REMOVE_STREAM));
+            streamDescriptor -> streamDescriptor == new StreamDescriptor().name("removed_stream")));
   }
 
 }
